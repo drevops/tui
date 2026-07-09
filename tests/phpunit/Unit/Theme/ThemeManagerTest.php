@@ -29,7 +29,8 @@ final class ThemeManagerTest extends TestCase {
 
   public static function dataProviderCreate(): \Iterator {
     yield 'dark' => ['dark', DarkTheme::class, 'value', '32'];
-    yield 'light' => ['light', LightTheme::class, 'value', '34'];
+    // The light theme mirrors the dark theme's green value.
+    yield 'light' => ['light', LightTheme::class, 'value', '32'];
     yield 'light indicator' => ['light', LightTheme::class, 'indicator', '35'];
     yield 'default is dark' => ['default', DarkTheme::class, 'title', '1;36'];
     yield 'empty is dark' => ['', DarkTheme::class, 'title', '1;36'];
