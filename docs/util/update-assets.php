@@ -653,7 +653,7 @@ function processOne(string $name): void {
   }
 
   convertToSvg($cast_file, $svg_file, $script_dir, is_int($at) ? $at : NULL);
-  verifySvg($svg_file, $name, is_string($needle) ? $needle : ($job['verify'] ?? NULL));
+  verifySvg($svg_file, $name, is_string($needle) ? $needle : ($job['verify'] ?? NULL), is_string($needle));
 }
 
 /**
@@ -706,6 +706,8 @@ function castTimeOf(string $cast_file, string $needle): ?int {
  *
  * Guards against a frame captured before the demo painted anything: the SVG
  * must contain text nodes and, when expected text is given, every word of it.
+ * A static render must also hold exactly one frame window - a second window
+ * sits outside the viewBox and hides the real content behind an empty frame.
  *
  * @param string $svg_file
  *   Path to the generated SVG.
@@ -713,12 +715,18 @@ function castTimeOf(string $cast_file, string $needle): ?int {
  *   The job name, for error messages.
  * @param string|null $expected
  *   Text the SVG must contain, or NULL to only require any text at all.
+ * @param bool $single_frame
+ *   Whether the SVG must contain exactly one frame window (static renders).
  */
-function verifySvg(string $svg_file, string $name, ?string $expected): void {
+function verifySvg(string $svg_file, string $name, ?string $expected, bool $single_frame = FALSE): void {
   $content = (string) file_get_contents($svg_file);
 
   if (!str_contains($content, '<text')) {
     throw new \RuntimeException(sprintf('Generated SVG for "%s" has no text content - the captured frame is empty.', $name));
+  }
+
+  if ($single_frame && substr_count($content, '<use xlink:href="#a"') !== 1) {
+    throw new \RuntimeException(sprintf('Generated SVG for "%s" holds more than one frame window - the visible frame may be empty.', $name));
   }
 
   if ($expected === NULL || $expected === '') {
