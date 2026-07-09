@@ -120,8 +120,9 @@ class Terminal {
   /**
    * Query the terminal background colour via OSC 11.
    *
-   * Writes the query and reads the reply under a brief, bounded raw-mode
-   * timeout, so a terminal that does not answer cannot block. Leaves the
+   * Writes the query and polls for the reply with stream_select() so a terminal
+   * that never answers cannot block, and so a no-reply probe never issues the
+   * zero-byte read that would latch EOF on the shared input stream. Leaves the
    * terminal on the main screen.
    *
    * @return string|null
@@ -134,14 +135,27 @@ class Terminal {
       return NULL;
     }
 
-    $this->stty('-echo -icanon min 0 time 1');
+    $this->stty('-echo -icanon');
     $response = '';
 
     try {
       $this->write(TerminalControl::queryBackground());
       fflush($this->output);
 
-      for ($read = 0; $read < 3; $read++) {
+      for ($poll = 0; $poll < 3; $poll++) {
+        $read = [$this->input];
+        $write = [];
+        $except = [];
+        $ready = stream_select($read, $write, $except, 0, 100000);
+
+        if ($ready === FALSE || $ready < 1) {
+          if ($response !== '') {
+            break;
+          }
+
+          continue;
+        }
+
         $chunk = fread($this->input, 64);
         if (!is_string($chunk)) {
           continue;
