@@ -1,6 +1,5 @@
 <p align="center">
-  <a href="" rel="noopener">
-  <img height=200px src="logo.png" alt="TUI logo"></a>
+  <img height="200" src="logo.png" alt="TUI logo">
 </p>
 
 <h1 align="center">Panel-based terminal forms for PHP</h1>
@@ -57,9 +56,7 @@ use DrevOps\Tui\Builder\PanelBuilder;
 use DrevOps\Tui\Tui;
 
 $form = Form::create('My form')
-  ->panel('general', 'General', function (PanelBuilder $p): void {
-    $p->text('name', 'Your name')->required();
-  });
+  ->panel('general', 'General', fn(PanelBuilder $p) => $p->text('name', 'Your name')->required());
 
 $tui = new Tui($form, ['App\\Handler']);
 
@@ -482,9 +479,9 @@ Behaviour beyond a static value is declared on the field itself - a dynamic defa
 use DrevOps\Tui\Handler\Context;
 
 $p->text('name', 'Project name')
-  ->default(fn (Context $c): string => basename($c->directory))
-  ->validate(fn (mixed $v): ?string => is_string($v) && trim($v) !== '' ? NULL : 'A name is required.')
-  ->transform(fn (mixed $v): mixed => is_string($v) ? trim($v) : $v);
+  ->default(fn(Context $c): string => basename($c->directory))
+  ->validate(fn(mixed $v): ?string => is_string($v) && trim($v) !== '' ? NULL : 'A name is required.')
+  ->transform(fn(mixed $v): mixed => is_string($v) ? trim($v) : $v);
 ```
 
 Reusable validators and transformers live as public static methods on a consumer class. Reference one explicitly with a first-class callable - `->validate(Webroot::validate(...))` - or let the engine discover it: registering a namespace (`new Tui($form, ['App\\Handler'])`) resolves the class by field id (`machine_name` -> `MachineName`) and uses its static `validate()`/`transform()` whenever the field declares none. The field declaration always wins.
@@ -493,7 +490,7 @@ The TUI only collects: it presents answers and never applies them. **Applying an
 
 ## Discovery
 
-In update mode, `->discover()` rules detect defaults from an existing project directory: a `.env` key (`new Dotenv('KEY')`), a JSON dot-path (`new JsonValue('composer.json', 'name')`), a path check (`new PathExists('docker-compose.yml')`), a directory scan (`new Scan('modules', type: 'dir')`), or a custom `fn (Context $c): mixed` closure:
+In update mode, `->discover()` rules detect defaults from an existing project directory: a `.env` key (`new Dotenv('KEY')`), a JSON dot-path (`new JsonValue('composer.json', 'name')`), a path check (`new PathExists('docker-compose.yml')`), a directory scan (`new Scan('modules', type: 'dir')`), or a custom `fn(Context $c): mixed` closure:
 
 ```php
 $p->text('name', 'Project name')->discover(new JsonValue('composer.json', 'name'));
@@ -529,34 +526,34 @@ The returned `Answers` set needs no form configuration to present or process: ea
 
 ## Themes
 
-A theme is a self-contained class that owns the entire visual representation - the palette, the glyphs (marker, scroll indicators, separators) and how every row is composed. Two are built in:
+A theme is a self-contained class that owns the entire visual representation - the palette (per-role ANSI style codes), the glyphs (marker, caret, scroll indicators, separators - each a Unicode/ASCII pair) and how every row is composed. `AbstractTheme` implements all of it with a neutral base, and a concrete theme overrides only what it colours. The `ThemeManager` turns a theme name into an instance; two themes are built in:
 
 ```php
-use DrevOps\Tui\Theme\AbstractTheme;
+use DrevOps\Tui\Theme\ThemeManager;
 
-AbstractTheme::create('dark');   // the default
-AbstractTheme::create('light');  // for light terminals
+ThemeManager::create('dark');   // the default
+ThemeManager::create('light');  // for light terminals
 ```
 
-A custom theme subclasses a built-in theme (e.g. `DarkTheme`) or `AbstractTheme`, and defines its palette (override `defineStyles()`/`defineGlyphs()` or any `render*` method for more):
+A custom theme subclasses a built-in theme (e.g. `DarkTheme`) or `AbstractTheme`, overrides the styles or glyphs it changes and merges the rest from the parent - roles it does not mention keep working:
 
 ```php
 use DrevOps\Tui\Theme\DarkTheme;
 
 class OceanTheme extends DarkTheme {
   protected function defineStyles(): array {
-    return ['title' => '1;96', 'value' => '96', 'marker' => '1;96', /* ... */];
+    return ['title' => '1;96', 'value' => '96', 'marker' => '1;96'] + parent::defineStyles();
   }
 }
 ```
 
-Lowest friction: a form names the class directly, with no registration:
+Override any `render*` method to change how an element is laid out. Lowest friction: a form names the class directly, with no registration:
 
 ```php
 $form = Form::create('My form')->theme('\App\OceanTheme')/* ... */;
 ```
 
-Or register a short alias and use it by name: `AbstractTheme::register('ocean', OceanTheme::class)`, then `->theme('ocean')`. Here is the [playground's ocean theme](playground/2-custom-theme) with a start banner:
+Or register a short alias with `ThemeManager::register('ocean', OceanTheme::class)`, then `->theme('ocean')` - an unknown theme name fails loudly instead of silently falling back. Here is the [playground's ocean theme](playground/2-custom-theme) with a start banner:
 
 <p align="center">
   <img src="docs/assets/theme-ocean.svg" width="100%" alt="Custom ocean theme with a banner">
