@@ -12,7 +12,7 @@ Read it in three bands:
 
 - **Left - what you provide.** A **Config** (assembled by the fluent `Form` builder into `Config` -> `Panel` -> `Field`) and, optionally, **Handlers** (classes that carry behaviour). Together these declare the questions and how each one behaves.
 - **Middle - the Engine and its helpers.** The Engine drives collection, leaning on `InputResolver` (read a payload), `Discovery` (detect from the directory), `Deriver` + `Transform` (compute values), and `ConditionEvaluator` (decide what is shown).
-- **Right - what comes out, and how it is shown.** `Answers` (plus a `SchemaGenerator` / `SchemaValidator` for agents and forms), and the **interactive TUI** - `PanelController` composing a `Theme`, widgets, a `Navigator` and a `Terminal`.
+- **Right - what comes out, and how it is shown.** `Answers` (plus a `SchemaGenerator` / `SchemaValidator` for agents and forms), and the **interactive TUI** - `PanelController` composing a `Theme` (resolved by name through `ThemeManager`), widgets, a `Navigator` and a `Terminal`.
 
 ## Step 1 - describe the questions
 
@@ -43,7 +43,7 @@ For interactive use, `PanelController::run()` seeds itself with the engine's res
 
 ![Interactive panel TUI](dataflow-tui.svg)
 
-Each turn it asks the **Theme** to compose a frame (the theme owns colours, glyphs and layout), computes the visible window with the `Navigator` and `Scroller`, and renders it to the `Terminal`. A key press is parsed by `KeyParser`; the controller either moves the cursor / drills into a sub-panel, or opens a widget to edit a field. Editing writes the new value back and marks it "edited". When the user finishes, it returns the same `Answers` object the headless path produces.
+The theme instance comes from `ThemeManager` - a registry keyed by name ("dark", "light", or a registered custom class) that also detects the terminal's colour and Unicode capabilities. Each turn the controller asks the **Theme** to compose a frame (the theme owns colours, glyphs and layout), computes the visible window with the `Navigator` and `Scroller`, and renders it to the `Terminal`. A key press is parsed by `KeyParser`; the controller either moves the cursor / drills into a sub-panel, or opens a widget to edit a field - widgets also render themselves through the theme, under a theme-composed underlined label header. Editing writes the new value back and marks it "edited". When the user finishes, it returns the same `Answers` object the headless path produces.
 
 ## Step 5 - apply the answers (the consumer's job)
 
