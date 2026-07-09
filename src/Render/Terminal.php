@@ -135,24 +135,29 @@ class Terminal {
     }
 
     $this->stty('-echo -icanon min 0 time 1');
-    $this->write(TerminalControl::queryBackground());
-
     $response = '';
-    for ($read = 0; $read < 3; $read++) {
-      $chunk = fread($this->input, 64);
 
-      if (!is_string($chunk) || $chunk === '') {
-        continue;
-      }
+    try {
+      $this->write(TerminalControl::queryBackground());
+      fflush($this->output);
 
-      $response .= $chunk;
+      for ($read = 0; $read < 3; $read++) {
+        $chunk = fread($this->input, 64);
 
-      if (str_contains($response, "\007") || str_contains($response, Ansi::ESC . '\\')) {
-        break;
+        if (!is_string($chunk) || $chunk === '') {
+          continue;
+        }
+
+        $response .= $chunk;
+
+        if (str_contains($response, "\007") || str_contains($response, Ansi::ESC . '\\')) {
+          break;
+        }
       }
     }
-
-    $this->stty('sane');
+    finally {
+      $this->stty('sane');
+    }
 
     return $response === '' ? NULL : $response;
     // @codeCoverageIgnoreEnd
