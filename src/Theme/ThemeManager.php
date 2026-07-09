@@ -222,7 +222,7 @@ final class ThemeManager {
     }
 
     $parts = explode(';', $value);
-    $background = (string) end($parts);
+    $background = end($parts);
 
     if (!ctype_digit($background)) {
       return NULL;

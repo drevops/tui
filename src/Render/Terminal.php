@@ -143,8 +143,10 @@ class Terminal {
 
       for ($read = 0; $read < 3; $read++) {
         $chunk = fread($this->input, 64);
-
-        if (!is_string($chunk) || $chunk === '') {
+        if (!is_string($chunk)) {
+          continue;
+        }
+        if ($chunk === '') {
           continue;
         }
 
