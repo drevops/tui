@@ -54,6 +54,13 @@ final class ThemeManagerTest extends TestCase {
     $this->assertInstanceOf(LightTheme::class, ThemeManager::create('mylight'));
   }
 
+  public function testRegisterNonThemeClassThrows(): void {
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessage('must extend');
+
+    ThemeManager::register('bogus', \stdClass::class);
+  }
+
   public function testCreateFromClassName(): void {
     // A theme class name resolves directly, without registration.
     $this->assertInstanceOf(LightTheme::class, ThemeManager::create(LightTheme::class));

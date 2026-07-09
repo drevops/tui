@@ -32,10 +32,18 @@ final class ThemeManager {
    *
    * @param string $name
    *   The theme name.
-   * @param class-string<\DrevOps\Tui\Theme\AbstractTheme> $class
-   *   The theme class.
+   * @param string $class
+   *   The theme class name.
+   *
+   * @throws \InvalidArgumentException
+   *   When the class is not an AbstractTheme subclass - registration fails
+   *   early rather than at the later create() call.
    */
   public static function register(string $name, string $class): void {
+    if (!is_subclass_of($class, AbstractTheme::class)) {
+      throw new \InvalidArgumentException(sprintf('Theme class "%s" must extend %s.', $class, AbstractTheme::class));
+    }
+
     self::$registry[$name] = $class;
   }
 
