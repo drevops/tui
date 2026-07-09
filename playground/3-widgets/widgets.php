@@ -37,7 +37,8 @@ $theme = new DarkTheme(!isset($opts['no-ansi']), 76, !isset($opts['no-unicode'])
 
 // Drive a widget to completion against the real terminal, then print the
 // value; the single-widget examples inline this same loop.
-$interact = static function (WidgetInterface $widget, string $label, string $hint = 'edit · Enter accept · Esc cancel') use ($theme): void {
+$interact = static function (WidgetInterface $widget, string $label, array $hints = []) use ($theme): void {
+  $hints = $hints === [] ? ['edit', 'Enter accept', 'Esc cancel'] : $hints;
   $terminal = new Terminal();
   $parser = new KeyParser();
   $terminal->setup();
@@ -45,8 +46,8 @@ $interact = static function (WidgetInterface $widget, string $label, string $hin
   try {
     while (!$widget->isComplete() && !$widget->isCancelled()) {
       $terminal->render(implode("\n", [
-        $theme->style('title', $label . ' widget'),
-        $theme->style('footer', $hint),
+        $theme->renderEditorHeader($label . ' widget'),
+        $theme->renderHintLine(...$hints),
         '',
         $widget->view($theme),
       ]));
@@ -65,7 +66,7 @@ $interact = static function (WidgetInterface $widget, string $label, string $hin
 
 $interact(new TextWidget('Acme Site'), 'Text');
 $interact(new NumberWidget('8080'), 'Number');
-$interact(new TextareaWidget("Redis for cache\nSolr for search"), 'Textarea', 'edit · Tab accept · Esc cancel');
+$interact(new TextareaWidget("Redis for cache\nSolr for search"), 'Textarea', ['edit', 'Tab accept', 'Esc cancel']);
 $interact(new PasswordWidget('hunter2'), 'Password');
 $interact(new SelectWidget(['standard' => 'Standard', 'minimal' => 'Minimal', 'demo_umami' => 'Demo Umami'], 'minimal'), 'Select');
 $interact(new MultiSelectWidget(['redis' => 'Redis', 'solr' => 'Solr', 'clamav' => 'ClamAV'], ['redis']), 'MultiSelect');
@@ -78,4 +79,4 @@ $interact(new SearchWidget([
 ], 'london'), 'Search');
 $interact(new MultiSearchWidget(['redis' => 'Redis', 'solr' => 'Solr', 'clamav' => 'ClamAV', 'memcached' => 'Memcached'], ['redis']), 'MultiSearch');
 $interact(new ConfirmWidget(TRUE), 'Confirm');
-$interact(new PauseWidget(), 'Pause', 'Enter continue · Esc cancel');
+$interact(new PauseWidget(), 'Pause', ['Enter continue', 'Esc cancel']);

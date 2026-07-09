@@ -15,15 +15,16 @@ use DrevOps\Tui\Render\Navigator;
  *
  * It demonstrates three kinds of override, all shown below:
  *  - the constructor - to change the defaults (here, a narrower 72-col frame);
- *  - defineStyles() and defineGlyphs() - the palette and the glyph pairs;
+ *  - defineStyles() and defineGlyphs() - override the roles and glyph pairs
+ *    that differ, and merge the rest with `+ parent::defineStyles()`;
  *  - any render*() and summarizePanel() method - to change how an element is
  *    laid out.
  *
  * It extends DarkTheme, so anything left un-overridden (e.g. renderBody(),
  * renderFrame()) falls back to the dark theme. Extend AbstractTheme instead to
- * start from a blank slate. Select it from a config with
+ * start from the neutral base. Select it from a config with
  * `theme: '\Playground\CustomTheme\OceanTheme'`, or register a short name with
- * Theme::register('ocean', OceanTheme::class).
+ * ThemeManager::register('ocean', OceanTheme::class).
  */
 class OceanTheme extends DarkTheme {
 
@@ -48,16 +49,16 @@ class OceanTheme extends DarkTheme {
   protected function defineStyles(): array {
     return [
       'title' => '1;96',
-      'breadcrumb' => '2;36',
-      'label' => '',
+      'breadcrumb' => '36',
       'value' => '96',
-      'description' => '2;34',
+      'description' => '34',
       'marker' => '1;96',
       'badge' => '7;36',
       'cursor' => '1;7;96',
-      'footer' => '2;36',
+      'footer' => '36',
       'indicator' => '1;96',
-    ];
+      'highlight' => '1;96',
+    ] + parent::defineStyles();
   }
 
   /**
@@ -71,16 +72,14 @@ class OceanTheme extends DarkTheme {
       'indicator_down' => ['▾', 'v'],
       'separator' => ['/', '/'],
       'arrow' => ['»', '>'],
-      'arrow_up' => ['↑', '^'],
-      'arrow_down' => ['↓', 'v'],
       'enter' => ['⏎', '<'],
       'dot' => ['•', '*'],
       'radio_on' => ['◉', '(o)'],
       'radio_off' => ['◯', '( )'],
       'check_on' => ['▣', '[x]'],
       'check_off' => ['▢', '[ ]'],
-      'caret' => ['▏', '|'],
-    ];
+      'caret' => ['▎', '|'],
+    ] + parent::defineGlyphs();
   }
 
   /**

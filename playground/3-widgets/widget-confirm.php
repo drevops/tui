@@ -33,8 +33,8 @@ $terminal->setup();
 try {
   while (!$widget->isComplete() && !$widget->isCancelled()) {
     $terminal->render(implode("\n", [
-      $theme->style('title', 'Confirm widget'),
-      $theme->style('footer', 'edit · Enter accept · Esc cancel'),
+      $theme->renderEditorHeader('Confirm widget'),
+      $theme->renderHintLine('edit', 'Enter accept', 'Esc cancel'),
       '',
       $widget->view($theme),
     ]));

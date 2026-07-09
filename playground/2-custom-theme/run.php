@@ -19,7 +19,7 @@ use DrevOps\Tui\Tui;
 
 require __DIR__ . '/../../vendor/autoload.php';
 // The require makes the class loadable; the form names it directly, so no
-// Theme::register() call is needed.
+// ThemeManager::register() call is needed.
 require __DIR__ . '/OceanTheme.php';
 
 $options = getopt('', ['prompts::']);

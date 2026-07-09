@@ -120,14 +120,20 @@ final class PanelControllerTest extends TestCase {
     $this->assertStringContainsString('[ Submit ]', Ansi::strip($controller->frame(12)));
   }
 
-  public function testEditingFrameShowsStatusLine(): void {
+  public function testEditingFrameShowsHeaderAndHints(): void {
     $controller = $this->controller();
     $controller->handle(Key::named(KeyName::Enter));
     $controller->handle(Key::named(KeyName::Enter));
     $this->assertTrue($controller->isEditing());
 
-    // The status-line hint stays visible while editing a field.
-    $this->assertStringContainsString('move', Ansi::strip($controller->frame(12)));
+    $frame = Ansi::strip($controller->frame(12));
+
+    // The editor shows the field label underlined with the rule glyph, and
+    // editing hints instead of the panel status line.
+    $this->assertStringContainsString("Name\n────", $frame);
+    $this->assertStringContainsString('accept', $frame);
+    $this->assertStringContainsString('esc cancel', $frame);
+    $this->assertStringNotContainsString('move', $frame);
   }
 
   public function testButtonsNavigateWithLeftRight(): void {

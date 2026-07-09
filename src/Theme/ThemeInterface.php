@@ -221,6 +221,28 @@ interface ThemeInterface {
   public function renderStatusLine(): string;
 
   /**
+   * Render a dimmed line of key hints, joined with the dot glyph.
+   *
+   * @param string ...$hints
+   *   The hint fragments (e.g. "enter accept", "esc cancel").
+   *
+   * @return string
+   *   The themed hint line.
+   */
+  public function renderHintLine(string ...$hints): string;
+
+  /**
+   * Render the header shown above a field's editor: its label, underlined.
+   *
+   * @param string $label
+   *   The field label.
+   *
+   * @return string
+   *   The two-line themed header.
+   */
+  public function renderEditorHeader(string $label): string;
+
+  /**
    * Render a row of inline submit/cancel buttons.
    *
    * @param list<string> $labels

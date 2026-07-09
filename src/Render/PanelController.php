@@ -236,8 +236,9 @@ class PanelController {
   public function frame(int $height = 12): string {
     if ($this->editor instanceof WidgetInterface) {
       $label = $this->editing instanceof Field ? $this->editing->label : '';
+      $hints = $this->theme->renderHintLine($this->theme->glyph('enter') . ' accept', 'esc cancel');
 
-      return $label . "\n" . $this->editor->view($this->theme) . "\n\n" . $this->theme->renderStatusLine();
+      return $this->theme->renderEditorHeader($label) . "\n" . $this->editor->view($this->theme) . "\n\n" . $hints;
     }
 
     $panel = $this->navigator->current();

@@ -95,10 +95,12 @@ class ConfirmWidget extends AbstractWidget {
    * {@inheritdoc}
    */
   public function view(ThemeInterface $theme): string {
-    $on = $theme->glyph('radio_on');
+    $on = $theme->style('marker', $theme->glyph('radio_on'));
     $off = $theme->glyph('radio_off');
+    $yes = $this->current ? $theme->style('highlight', 'Yes') : 'Yes';
+    $no = $this->current ? 'No' : $theme->style('highlight', 'No');
 
-    return $this->current ? $on . ' Yes  ' . $off . ' No' : $off . ' Yes  ' . $on . ' No';
+    return $this->current ? $on . ' ' . $yes . '  ' . $off . ' ' . $no : $off . ' ' . $yes . '  ' . $on . ' ' . $no;
   }
 
 }

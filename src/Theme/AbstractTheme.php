@@ -15,18 +15,27 @@ use DrevOps\Tui\Render\Scroller;
 use DrevOps\Tui\Render\Viewport;
 
 /**
- * Abstract visual authority for the TUI - one self-contained class per theme.
+ * Abstract visual authority for the TUI - the complete base implementation.
  *
  * A theme owns the entire visual representation: the palette (per-role style
  * codes), the glyphs (marker, scroll indicators, separators), and how every
  * element is composed (field rows, sub-panel rows, descriptions, breadcrumb,
  * the scrolled frame and the start banner).
  *
- * To make a theme, subclass this and define its palette in defineStyles() and,
- * optionally, its glyphs in defineGlyphs(); override any render*
- * method for full control over layout. Register the class under a name with
- * {@see register()} so the config can select it - the config only ever
- * references a theme name.
+ * This base implements all of it, with a neutral monochrome palette and the
+ * full glyph set. A concrete theme only declares what differs - override
+ * defineStyles() and/or defineGlyphs() and merge the specific overrides over
+ * the parent's map:
+ *
+ * @code
+ * protected function defineStyles(): array {
+ *   return ['title' => '1;96', 'value' => '96'] + parent::defineStyles();
+ * }
+ * @endcode
+ *
+ * Override any render* method for full control over layout. Themes are
+ * created and registered through {@see \DrevOps\Tui\Theme\ThemeManager} - the
+ * config only ever references a theme name.
  *
  * @package DrevOps\Tui\Theme
  */
@@ -47,16 +56,6 @@ abstract class AbstractTheme implements ThemeInterface {
   protected array $glyphs;
 
   /**
-   * The name => theme-class registry.
-   *
-   * @var array<string,class-string<\DrevOps\Tui\Theme\AbstractTheme>>
-   */
-  protected static array $registry = [
-    'dark' => DarkTheme::class,
-    'light' => LightTheme::class,
-  ];
-
-  /**
    * Construct a theme.
    *
    * @param bool $color
@@ -74,98 +73,67 @@ abstract class AbstractTheme implements ThemeInterface {
   /**
    * The role => style-code palette for this theme.
    *
+   * The base palette is neutral - structure and emphasis only, no hues - so
+   * it reads on any terminal background. A concrete theme overrides the roles
+   * it colours and merges the rest: `return [...] + parent::defineStyles();`.
+   *
+   * Roles: "title" (headings and editor labels), "breadcrumb", "label",
+   * "value", "description", "marker" (selection cursor), "badge"
+   * (provenance), "cursor" (active button), "footer" (status and hint
+   * lines), "indicator" (scroll arrows), "highlight" (the cursor row in list
+   * widgets), "error" (validation messages) and "rule" (the editor-header
+   * underline).
+   *
    * @return array<string,string>
    *   The palette, keyed by role.
    */
-  abstract protected function defineStyles(): array;
+  protected function defineStyles(): array {
+    return [
+      'title' => '1',
+      'breadcrumb' => '90',
+      'label' => '',
+      'value' => '',
+      'description' => '90',
+      'marker' => '1',
+      'badge' => '7',
+      'cursor' => '1;7',
+      'footer' => '90',
+      'indicator' => '1',
+      'highlight' => '1',
+      'error' => '31',
+      'rule' => '90',
+    ];
+  }
 
   /**
    * The name => [unicode, ascii] glyph pair map for this theme.
    *
-   * Every glyph is defined here as a pair - the Unicode form and its ASCII
-   * fallback - so a theme is a complete, self-contained definition. Clone a
-   * concrete theme and override what you want - nothing comes from a base.
+   * Every glyph is a pair - the Unicode form and its ASCII fallback - and the
+   * base defines the complete set. A concrete theme overrides the pairs it
+   * changes and merges the rest: `return [...] + parent::defineGlyphs();`.
    *
    * @return array<string,array{0:string,1:string}>
    *   The glyphs, keyed by name, each a [unicode, ascii] pair.
    */
-  abstract protected function defineGlyphs(): array;
-
-  /**
-   * Register a theme class under a name so a config can select it.
-   *
-   * @param string $name
-   *   The theme name.
-   * @param class-string<\DrevOps\Tui\Theme\AbstractTheme> $class
-   *   The theme class.
-   */
-  public static function register(string $name, string $class): void {
-    static::$registry[$name] = $class;
-  }
-
-  /**
-   * Create a theme by name.
-   *
-   * Lowest friction first: a fully-qualified theme class name is instantiated
-   * directly, so a config can point at a consumer's own theme class with no
-   * registration. Otherwise the name is looked up in the registry ("dark",
-   * "light", "default", or a name passed to {@see register()}), falling back
-   * to dark.
-   *
-   * @param string $name
-   *   A theme class name, a registered name, or "default" for dark.
-   * @param bool $color
-   *   Whether colour is enabled.
-   * @param int $width
-   *   The frame width.
-   * @param bool $unicode
-   *   Whether Unicode glyphs are used (FALSE falls back to ASCII).
-   *
-   * @return \DrevOps\Tui\Theme\AbstractTheme
-   *   The theme instance.
-   */
-  public static function create(string $name = 'dark', bool $color = TRUE, int $width = 76, bool $unicode = TRUE): AbstractTheme {
-    $name = $name === 'default' ? 'dark' : $name;
-
-    $class = static::$registry[$name] ?? (is_subclass_of($name, self::class) ? $name : DarkTheme::class);
-
-    return new $class($color, $width, $unicode);
-  }
-
-  /**
-   * Detect whether the environment advertises a Unicode-capable locale.
-   *
-   * Mirrors prompty: the first set of LC_ALL, LC_CTYPE or LANG decides, and a
-   * "UTF" locale enables Unicode. An unset locale falls back to ASCII.
-   *
-   * @return bool
-   *   TRUE when a UTF locale is advertised.
-   */
-  public static function detectUnicode(): bool {
-    foreach (['LC_ALL', 'LC_CTYPE', 'LANG'] as $var) {
-      $value = getenv($var);
-      if (is_string($value) && $value !== '') {
-        return stripos($value, 'utf') !== FALSE;
-      }
-    }
-
-    return FALSE;
-  }
-
-  /**
-   * Detect whether the environment supports ANSI colour.
-   *
-   * Honours the NO_COLOR convention and the "dumb" terminal.
-   *
-   * @return bool
-   *   TRUE unless NO_COLOR is set or TERM is "dumb".
-   */
-  public static function detectColor(): bool {
-    if (getenv('NO_COLOR') !== FALSE) {
-      return FALSE;
-    }
-
-    return getenv('TERM') !== 'dumb';
+  protected function defineGlyphs(): array {
+    return [
+      'marker' => ['❯', '>'],
+      'indicator_up' => ['▲', '^'],
+      'indicator_down' => ['▼', 'v'],
+      'separator' => ['›', '>'],
+      'arrow' => ['›', '>'],
+      'arrow_up' => ['↑', '^'],
+      'arrow_down' => ['↓', 'v'],
+      'enter' => ['↵', '<'],
+      'dot' => ['·', '*'],
+      'radio_on' => ['●', '(*)'],
+      'radio_off' => ['○', '( )'],
+      'check_on' => ['◼', '[x]'],
+      'check_off' => ['◻', '[ ]'],
+      'caret' => ['█', '|'],
+      'mask' => ['•', '*'],
+      'rule' => ['─', '-'],
+    ];
   }
 
   /**
@@ -511,10 +479,39 @@ abstract class AbstractTheme implements ThemeInterface {
    *   The themed status line (hint text and arrow glyphs).
    */
   public function renderStatusLine(): string {
-    $dot = ' ' . $this->glyph('dot') . ' ';
-    $hint = $this->glyph('arrow_up') . '/' . $this->glyph('arrow_down') . ' move' . $dot . $this->glyph('enter') . ' select' . $dot . 'esc back';
+    return $this->renderHintLine($this->glyph('arrow_up') . '/' . $this->glyph('arrow_down') . ' move', $this->glyph('enter') . ' select', 'esc back');
+  }
 
-    return $this->style('footer', $hint);
+  /**
+   * Render a dimmed line of key hints, joined with the dot glyph.
+   *
+   * @param string ...$hints
+   *   The hint fragments (e.g. "enter accept", "esc cancel").
+   *
+   * @return string
+   *   The themed hint line.
+   */
+  public function renderHintLine(string ...$hints): string {
+    return $this->style('footer', implode(' ' . $this->glyph('dot') . ' ', $hints));
+  }
+
+  /**
+   * Render the header shown above a field's editor: its label, underlined.
+   *
+   * The rule under the label keeps a label recognisable as a label in every
+   * display mode - with colour off, the underline alone carries the
+   * distinction from the value being edited.
+   *
+   * @param string $label
+   *   The field label.
+   *
+   * @return string
+   *   The two-line themed header.
+   */
+  public function renderEditorHeader(string $label): string {
+    $rule = str_repeat($this->glyph('rule'), max(1, mb_strlen($label)));
+
+    return $this->style('title', $label) . "\n" . $this->style('rule', $rule);
   }
 
   /**

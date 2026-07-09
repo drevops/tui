@@ -37,7 +37,7 @@ final class PasswordWidgetTest extends TestCase {
     $this->assertStringNotContainsString('abc', $view);
     $this->assertStringNotContainsString('a', $view);
     $this->assertSame(3, substr_count($view, '•'));
-    $this->assertStringContainsString('│', $view);
+    $this->assertStringContainsString('█', $view);
   }
 
   public function testValidationErrorShownUnderMask(): void {

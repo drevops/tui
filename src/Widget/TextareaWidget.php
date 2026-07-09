@@ -89,12 +89,12 @@ class TextareaWidget extends TextWidget {
    */
   #[\Override]
   public function view(ThemeInterface $theme): string {
-    $text = substr($this->buffer, 0, $this->cursor) . $theme->glyph('caret') . substr($this->buffer, $this->cursor);
-    $hint = $theme->style('footer', 'enter newline ' . $theme->glyph('dot') . ' tab accept');
+    $text = substr($this->buffer, 0, $this->cursor) . $theme->style('marker', $theme->glyph('caret')) . substr($this->buffer, $this->cursor);
+    $hint = $theme->renderHintLine('enter newline', 'tab accept');
 
     $out = $text . "\n" . $hint;
 
-    return $this->error === NULL ? $out : $out . "\n" . $this->error;
+    return $this->error === NULL ? $out : $out . "\n" . $theme->style('error', $this->error);
   }
 
 }

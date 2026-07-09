@@ -186,9 +186,11 @@ class MultiSelectWidget extends AbstractWidget {
     $lines = [];
 
     foreach ($this->visible() as $index => $value) {
-      $box = isset($this->selected[$value]) ? $theme->glyph('check_on') : $theme->glyph('check_off');
-      $marker = $index === $this->cursor ? $theme->glyph('marker') : ' ';
-      $lines[] = $marker . ' ' . $box . ' ' . ($this->labels[$value] ?? $value);
+      $box = isset($this->selected[$value]) ? $theme->style('value', $theme->glyph('check_on')) : $theme->glyph('check_off');
+      $current = $index === $this->cursor;
+      $marker = $current ? $theme->style('marker', $theme->glyph('marker')) : ' ';
+      $label = $this->labels[$value] ?? $value;
+      $lines[] = $marker . ' ' . $box . ' ' . ($current ? $theme->style('highlight', $label) : $label);
     }
 
     return implode("\n", $lines);
