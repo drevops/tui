@@ -8,7 +8,7 @@ use DrevOps\Tui\Input\ArrayKeyStream;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Render\Ansi;
-use DrevOps\Tui\Theme\DarkTheme;
+use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\MultiSearchWidget;
 use DrevOps\Tui\Widget\WidgetRunner;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -49,7 +49,7 @@ final class MultiSearchWidgetTest extends TestCase {
     $widget = new MultiSearchWidget($this->labels);
 
     $widget->handle(Key::char('r'));
-    $view = $widget->view(new DarkTheme());
+    $view = $widget->view(new DefaultTheme());
 
     $this->assertStringContainsString("r█\n", Ansi::strip($view));
     $this->assertStringContainsString('Redis', $view);

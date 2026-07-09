@@ -8,7 +8,7 @@ use DrevOps\Tui\Input\ArrayKeyStream;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Render\Ansi;
-use DrevOps\Tui\Theme\DarkTheme;
+use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\SearchWidget;
 use DrevOps\Tui\Widget\WidgetRunner;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -82,7 +82,7 @@ final class SearchWidgetTest extends TestCase {
     $widget = new SearchWidget($this->labels);
 
     $widget->handle(Key::char('c'));
-    $view = $widget->view(new DarkTheme());
+    $view = $widget->view(new DefaultTheme());
 
     $this->assertStringContainsString('c█', Ansi::strip($view));
     $this->assertStringContainsString('CircleCI', $view);

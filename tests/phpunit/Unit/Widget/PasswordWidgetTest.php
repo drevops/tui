@@ -7,7 +7,7 @@ namespace DrevOps\Tui\Tests\Unit\Widget;
 use DrevOps\Tui\Input\ArrayKeyStream;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
-use DrevOps\Tui\Theme\DarkTheme;
+use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\PasswordWidget;
 use DrevOps\Tui\Widget\WidgetRunner;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -32,7 +32,7 @@ final class PasswordWidgetTest extends TestCase {
   public function testViewMasksEveryCharacter(): void {
     $widget = new PasswordWidget('abc');
 
-    $view = $widget->view(new DarkTheme());
+    $view = $widget->view(new DefaultTheme());
 
     $this->assertStringNotContainsString('abc', $view);
     $this->assertStringNotContainsString('a', $view);
@@ -46,7 +46,7 @@ final class PasswordWidgetTest extends TestCase {
     $widget->handle(Key::named(KeyName::Enter));
 
     $this->assertFalse($widget->isComplete());
-    $this->assertStringContainsString('Required.', $widget->view(new DarkTheme()));
+    $this->assertStringContainsString('Required.', $widget->view(new DefaultTheme()));
   }
 
 }

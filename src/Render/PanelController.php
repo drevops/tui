@@ -236,9 +236,8 @@ class PanelController {
   public function frame(int $height = 12): string {
     if ($this->editor instanceof WidgetInterface) {
       $label = $this->editing instanceof Field ? $this->editing->label : '';
-      $hints = $this->theme->renderHintLine($this->theme->glyph('enter') . ' accept', 'esc cancel');
 
-      return $this->theme->renderEditorHeader($label) . "\n" . $this->editor->view($this->theme) . "\n\n" . $hints;
+      return $this->theme->renderEditor($label, $this->editor->view($this->theme));
     }
 
     $panel = $this->navigator->current();
@@ -247,9 +246,14 @@ class PanelController {
     if ($this->buttonsVisible()) {
       $base = $this->theme->itemCount($panel);
       $selected = $this->cursor >= $base ? $this->cursor - $base : -1;
+
+      // The action row always detaches from the items above it.
+      $body[] = '';
+
       if ($this->cursor >= $base) {
         $cursor_line = count($body);
       }
+
       $body[] = $this->theme->renderButtonBar([$this->config->submitLabel, $this->config->cancelLabel], $selected);
     }
 

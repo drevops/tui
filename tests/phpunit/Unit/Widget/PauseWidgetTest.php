@@ -7,7 +7,7 @@ namespace DrevOps\Tui\Tests\Unit\Widget;
 use DrevOps\Tui\Input\ArrayKeyStream;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
-use DrevOps\Tui\Theme\DarkTheme;
+use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\PauseWidget;
 use DrevOps\Tui\Widget\WidgetRunner;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -51,7 +51,7 @@ final class PauseWidgetTest extends TestCase {
   public function testCancelAndView(): void {
     $widget = new PauseWidget();
 
-    $this->assertStringContainsString('Press Enter to continue', $widget->view(new DarkTheme()));
+    $this->assertStringContainsString('Press Enter to continue', $widget->view(new DefaultTheme()));
 
     $widget->handle(Key::named(KeyName::Escape));
     $this->assertTrue($widget->isCancelled());

@@ -7,7 +7,7 @@ namespace DrevOps\Tui\Tests\Unit\Widget;
 use DrevOps\Tui\Input\ArrayKeyStream;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
-use DrevOps\Tui\Theme\DarkTheme;
+use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\AbstractWidget;
 use DrevOps\Tui\Widget\SuggestWidget;
 use DrevOps\Tui\Widget\WidgetRunner;
@@ -37,8 +37,8 @@ final class SuggestWidgetTest extends TestCase {
     $widget->handle(Key::char('l'));
     $widget->handle(Key::char('o'));
     $widget->handle(Key::char('n'));
-    $this->assertStringContainsString('Europe/London', $widget->view(new DarkTheme()));
-    $this->assertStringNotContainsString('Australia/Sydney', $widget->view(new DarkTheme()));
+    $this->assertStringContainsString('Europe/London', $widget->view(new DefaultTheme()));
+    $this->assertStringNotContainsString('Australia/Sydney', $widget->view(new DefaultTheme()));
 
     $value = WidgetRunner::run($widget, ArrayKeyStream::of(Key::named(KeyName::Down), Key::named(KeyName::Enter)));
 
@@ -50,7 +50,7 @@ final class SuggestWidgetTest extends TestCase {
 
     $widget->handle(Key::named(KeyName::Down));
     $this->assertSame('x', $widget->value());
-    $this->assertStringContainsString('y', $widget->view(new DarkTheme()));
+    $this->assertStringContainsString('y', $widget->view(new DefaultTheme()));
   }
 
   public function testBackspaceAndUpResetHighlight(): void {

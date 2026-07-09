@@ -16,6 +16,7 @@ use DrevOps\Tui\Schema\SchemaGenerator;
 use DrevOps\Tui\Schema\SchemaValidator;
 use DrevOps\Tui\Render\PanelController;
 use DrevOps\Tui\Render\Terminal;
+use DrevOps\Tui\Theme\ThemeInterface;
 use DrevOps\Tui\Theme\ThemeManager;
 
 /**
@@ -142,18 +143,17 @@ final class Tui {
 
     $terminal ??= new Terminal();
 
-    // The banner comes from the argument, then the config. Colour and Unicode
-    // come from the config when set, otherwise they are auto-detected from the
-    // environment.
+    // The banner comes from the argument, then the config. The theme's display
+    // options (colour, Unicode, mode) come from the config when set, otherwise
+    // they are auto-detected from the terminal.
     $banner_text = $banner !== '' ? $banner : $this->config->banner;
-    $color = $this->config->color ?? ThemeManager::detectColor();
-    $unicode = $this->config->unicode ?? ThemeManager::detectUnicode();
 
-    $theme_name = $this->resolveTheme($theme, $color, $terminal);
+    $theme_name = $this->resolveTheme($theme);
+    $options = $this->resolveThemeOptions($terminal);
 
     $controller = new PanelController(
       $this->config,
-      ThemeManager::create($theme_name, $color, 76, $unicode),
+      ThemeManager::create($theme_name, 76, $options),
       $this->engine->answers()->values,
       $this->engine->answers()->provenance,
       $banner_text,
@@ -228,31 +228,54 @@ final class Tui {
   }
 
   /**
-   * Resolve the interactive theme name, auto-detecting when none is set.
+   * Resolve the interactive theme name.
    *
    * The argument wins over the config theme; an empty result or the explicit
-   * "auto" sentinel resolves the theme from the terminal background, which
-   * still falls back to dark. With colour off the theme is invisible, so the
-   * background query is skipped.
+   * "auto" sentinel selects the default theme. The dark/light mode is a display
+   * option resolved separately, no longer a theme choice.
    *
    * @param string $theme
    *   The theme argument (empty to fall back to the config theme).
-   * @param bool $color
-   *   Whether colour is enabled.
-   * @param \DrevOps\Tui\Render\Terminal $terminal
-   *   The terminal queried for its background during detection.
    *
    * @return string
    *   The resolved theme name.
    */
-  protected function resolveTheme(string $theme, bool $color, Terminal $terminal): string {
+  protected function resolveTheme(string $theme): string {
     $name = $theme !== '' ? $theme : $this->config->theme;
 
-    if ($name !== '' && $name !== 'auto') {
-      return $name;
+    return $name === '' || $name === 'auto' ? 'default' : $name;
+  }
+
+  /**
+   * Build the theme's display options, auto-detecting what the consumer omits.
+   *
+   * The config's options win; anything unset for colour, Unicode and the
+   * dark/light mode is filled from the detected terminal capabilities. The mode
+   * follows the background only when colour is on - with colour off the palette
+   * is invisible, so the background query is skipped.
+   *
+   * @param \DrevOps\Tui\Render\Terminal $terminal
+   *   The terminal queried for its background during detection.
+   *
+   * @return array<string,mixed>
+   *   The resolved options.
+   */
+  protected function resolveThemeOptions(Terminal $terminal): array {
+    $options = $this->config->themeOptions;
+
+    if (!isset($options['color'])) {
+      $options['color'] = $this->config->color ?? Terminal::detectColor();
     }
 
-    return $color ? ThemeManager::detectTheme($terminal->queryBackground()) : 'dark';
+    if (!isset($options['unicode'])) {
+      $options['unicode'] = $this->config->unicode ?? Terminal::detectUnicode();
+    }
+
+    if (!isset($options['mode'])) {
+      $options['mode'] = $options['color'] ? Terminal::detectMode($terminal->queryBackground()) : ThemeInterface::MODE_DARK;
+    }
+
+    return $options;
   }
 
   /**

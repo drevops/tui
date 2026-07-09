@@ -22,6 +22,51 @@ use DrevOps\Tui\Render\Viewport;
 interface ThemeInterface {
 
   /**
+   * Colour mode: bright foregrounds for a dark terminal background.
+   */
+  public const string MODE_DARK = 'dark';
+
+  /**
+   * Colour mode: darker foregrounds for a light terminal background.
+   */
+  public const string MODE_LIGHT = 'light';
+
+  /**
+   * Spacing option: labels and values only, no descriptions, no gaps.
+   */
+  public const string SPACING_COMPACT = 'compact';
+
+  /**
+   * Spacing option: descriptions under each item, no gaps (the default).
+   */
+  public const string SPACING_NORMAL = 'normal';
+
+  /**
+   * Spacing option: descriptions plus a blank line between items.
+   */
+  public const string SPACING_PADDED = 'padded';
+
+  /**
+   * Border option: no box (the default).
+   */
+  public const string BORDER_NONE = 'none';
+
+  /**
+   * Border option: a single-line box.
+   */
+  public const string BORDER_LINE = 'line';
+
+  /**
+   * Border option: a single-line box with rounded corners.
+   */
+  public const string BORDER_ROUNDED = 'rounded';
+
+  /**
+   * Border option: a double-line box.
+   */
+  public const string BORDER_DOUBLE = 'double';
+
+  /**
    * Style text for a role.
    *
    * @param string $role
@@ -241,6 +286,19 @@ interface ThemeInterface {
    *   The two-line themed header.
    */
   public function renderEditorHeader(string $label): string;
+
+  /**
+   * Compose a field's editor screen: the label, the widget view and hints.
+   *
+   * @param string $label
+   *   The field label.
+   * @param string $view
+   *   The widget's rendered view.
+   *
+   * @return string
+   *   The editor screen - boxed when the theme has a border, else plain.
+   */
+  public function renderEditor(string $label, string $view): string;
 
   /**
    * Render a row of inline submit/cancel buttons.

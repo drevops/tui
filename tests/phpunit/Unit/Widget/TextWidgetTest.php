@@ -7,7 +7,7 @@ namespace DrevOps\Tui\Tests\Unit\Widget;
 use DrevOps\Tui\Input\ArrayKeyStream;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
-use DrevOps\Tui\Theme\DarkTheme;
+use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\AbstractWidget;
 use DrevOps\Tui\Widget\TextWidget;
 use DrevOps\Tui\Widget\WidgetRunner;
@@ -48,7 +48,7 @@ final class TextWidgetTest extends TestCase {
     $widget->handle(Key::named(KeyName::Enter));
     $this->assertFalse($widget->isComplete());
     $this->assertSame('Required.', $widget->error());
-    $this->assertStringContainsString('Required.', $widget->view(new DarkTheme()));
+    $this->assertStringContainsString('Required.', $widget->view(new DefaultTheme()));
 
     $widget->handle(Key::char('a'));
     $widget->handle(Key::char('b'));
@@ -70,7 +70,7 @@ final class TextWidgetTest extends TestCase {
     $this->assertSame('ac', $widget->value());
 
     $widget->handle(Key::named(KeyName::Right));
-    $this->assertStringContainsString('█', $widget->view(new DarkTheme()));
+    $this->assertStringContainsString('█', $widget->view(new DefaultTheme()));
   }
 
   public function testCancel(): void {

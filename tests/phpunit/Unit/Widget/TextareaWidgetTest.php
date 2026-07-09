@@ -7,7 +7,7 @@ namespace DrevOps\Tui\Tests\Unit\Widget;
 use DrevOps\Tui\Input\ArrayKeyStream;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
-use DrevOps\Tui\Theme\DarkTheme;
+use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\TextareaWidget;
 use DrevOps\Tui\Widget\WidgetRunner;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -67,11 +67,11 @@ final class TextareaWidgetTest extends TestCase {
   public function testViewShowsHintAndError(): void {
     $widget = new TextareaWidget('x', fn(mixed $value): string => 'Nope.');
 
-    $view = $widget->view(new DarkTheme());
+    $view = $widget->view(new DefaultTheme());
     $this->assertStringContainsString('tab accept', $view);
 
     $widget->handle(Key::named(KeyName::Tab));
-    $this->assertStringContainsString('Nope.', $widget->view(new DarkTheme()));
+    $this->assertStringContainsString('Nope.', $widget->view(new DefaultTheme()));
   }
 
   public function testCancel(): void {

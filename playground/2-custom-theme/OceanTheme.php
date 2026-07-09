@@ -7,7 +7,7 @@ namespace Playground\CustomTheme;
 use DrevOps\Tui\Answers\Answers;
 use DrevOps\Tui\Config\Field;
 use DrevOps\Tui\Config\Panel;
-use DrevOps\Tui\Theme\DarkTheme;
+use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Render\Navigator;
 
 /**
@@ -20,26 +20,24 @@ use DrevOps\Tui\Render\Navigator;
  *  - any render*() and summarizePanel() method - to change how an element is
  *    laid out.
  *
- * It extends DarkTheme, so anything left un-overridden (e.g. renderBody(),
- * renderFrame()) falls back to the dark theme. Extend AbstractTheme instead to
- * start from the neutral base. Select it from a config with
- * `theme: '\Playground\CustomTheme\OceanTheme'`, or register a short name with
- * ThemeManager::register('ocean', OceanTheme::class).
+ * It extends DefaultTheme, so anything left un-overridden (e.g. renderBody(),
+ * renderFrame()) falls back to the default theme, including its dark/light
+ * mode. Extend AbstractTheme instead to start from the neutral base. Select it
+ * from a config with `theme: '\Playground\CustomTheme\OceanTheme'`, or register
+ * a short name with ThemeManager::register('ocean', OceanTheme::class).
  */
-class OceanTheme extends DarkTheme {
+class OceanTheme extends DefaultTheme {
 
   /**
    * Override the constructor to default to a narrower 72-column frame.
    *
-   * @param bool $color
-   *   Whether colour is enabled.
    * @param int $width
    *   The frame width.
-   * @param bool $unicode
-   *   Whether Unicode glyphs are used.
+   * @param array<string,mixed> $options
+   *   The theme display options.
    */
-  public function __construct(bool $color = TRUE, int $width = 72, bool $unicode = TRUE) {
-    parent::__construct(color: $color, width: $width, unicode: $unicode);
+  public function __construct(int $width = 72, array $options = []) {
+    parent::__construct($width, $options);
   }
 
   /**
