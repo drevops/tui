@@ -563,7 +563,7 @@ Or register a short alias with `ThemeManager::register('ocean', OceanTheme::clas
 
 ## Playground
 
-Runnable, self-contained examples are in [`playground/`](playground): a minimal form, a full "package scaffolder", a custom-theme demo, per-widget demos, nested panels with fix-ups, and update-mode discovery. Each is independent - copy one as a starting point.
+Runnable, self-contained examples are in [`playground/`](playground): a minimal form, a full "package scaffolder", a custom-theme demo, per-widget demos, nested panels with fix-ups, update-mode discovery, and a theme auto-detection demo. Each is independent - copy one as a starting point.
 
 The SVG demos on this page are generated from the playground scripts with `php docs/util/update-assets.php` (requires `asciinema`, `expect`, `node` and `npm`), which records each demo through a scripted terminal session and renders the recordings to SVG.
 
