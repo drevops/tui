@@ -128,11 +128,10 @@ class SearchWidget extends AbstractWidget {
    * {@inheritdoc}
    */
   public function view(ThemeInterface $theme): string {
-    $lines = [$this->filter . $theme->glyph('caret')];
+    $lines = [$this->filter . $theme->style('marker', $theme->glyph('caret'))];
 
     foreach ($this->visible() as $index => $value) {
-      $marker = $index === $this->cursor ? $theme->glyph('radio_on') : $theme->glyph('radio_off');
-      $lines[] = $marker . ' ' . ($this->labels[$value] ?? $value);
+      $lines[] = $this->renderRadioRow($theme, $this->labels[$value] ?? $value, $index === $this->cursor);
     }
 
     return implode("\n", $lines);

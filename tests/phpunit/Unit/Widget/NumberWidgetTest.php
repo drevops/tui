@@ -74,7 +74,7 @@ final class NumberWidgetTest extends TestCase {
     $widget = new NumberWidget('42');
 
     $this->assertStringContainsString('42', $widget->view(new DarkTheme()));
-    $this->assertStringContainsString('│', $widget->view(new DarkTheme()));
+    $this->assertStringContainsString('█', $widget->view(new DarkTheme()));
   }
 
 }

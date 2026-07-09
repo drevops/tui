@@ -16,6 +16,7 @@
 
 const fs = require('fs');
 const {render} = require('svg-term');
+const {load} = require('load-asciicast');
 
 // Parse command line arguments.
 const args = process.argv.slice(2);
@@ -51,19 +52,26 @@ for (let i = 2; i < args.length; i++) {
   }
 }
 
-// Read input cast file and convert v3 to v2 if needed.
+// Read input cast file and normalize it.
 // svg-term only supports asciicast v1 and v2 formats, but asciinema 3.x
 // produces v3 format with two breaking differences:
 //   1. Header uses {term: {cols, rows, type}} instead of {width, height}
 //   2. Timestamps are relative (delta from previous event) not absolute
 // Additionally, v3 introduces event type "x" (exit) which v2 doesn't have.
+//
+// With --at, all output up to the timestamp is also collapsed into a single
+// event. svg-term's own `at` picks the frame with the *nearest* timestamp and
+// keeps every frame sharing it - when the empty terminal-setup frame and the
+// first paint land on the same quantized stamp, both render side by side and
+// the visible viewport shows the empty one. A single merged event carries the
+// full screen state at the timestamp, so exactly one frame can ever exist.
 let input = fs.readFileSync(inputFile, 'utf8');
 const lines = input.split('\n');
 if (lines.length > 0) {
   try {
     const header = JSON.parse(lines[0]);
-    if (header.version === 3) {
-      // Convert header.
+    const isV3 = header.version === 3;
+    if (isV3) {
       header.version = 2;
       if (header.term) {
         header.width = header.term.cols;
@@ -76,26 +84,35 @@ if (lines.length > 0) {
         }
         delete header.term;
       }
-      // Convert event lines: relative timestamps to absolute, drop non-"o" events.
-      const convertedLines = [JSON.stringify(header)];
-      let absoluteTime = 0;
-      for (let i = 1; i < lines.length; i++) {
-        const line = lines[i].trim();
-        if (!line) {
-          continue;
-        }
-        try {
-          const event = JSON.parse(line);
-          absoluteTime += event[0];
-          if (event[1] === 'o') {
-            convertedLines.push(JSON.stringify([parseFloat(absoluteTime.toFixed(6)), 'o', event[2]]));
-          }
-        } catch (_) {
-          // Skip malformed lines.
-        }
-      }
-      input = convertedLines.join('\n') + '\n';
     }
+    // Collect output events with absolute timestamps, dropping other types.
+    const events = [];
+    let absoluteTime = 0;
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) {
+        continue;
+      }
+      try {
+        const event = JSON.parse(line);
+        absoluteTime = isV3 ? absoluteTime + event[0] : event[0];
+        if (event[1] === 'o') {
+          events.push([parseFloat(absoluteTime.toFixed(6)), 'o', event[2]]);
+        }
+      } catch (_) {
+        // Skip malformed lines.
+      }
+    }
+    let outEvents = events;
+    if (at !== null) {
+      const merged = events.filter((event) => event[0] * 1000 <= at).map((event) => event[2]).join('');
+      if (merged === '') {
+        console.error(`Error rendering SVG: no terminal output before --at ${at}ms`);
+        process.exit(1);
+      }
+      outEvents = [[0, 'o', merged]];
+    }
+    input = [JSON.stringify(header)].concat(outEvents.map((event) => JSON.stringify(event))).join('\n') + '\n';
   } catch (_) {
     // Not valid JSON header - let svg-term handle the error.
   }
@@ -135,13 +152,26 @@ const options = {
   theme: theme,
 };
 
+// With --at, load the merged cast and keep only its final frame. The cast
+// loader synthesizes an initial blank screen state at the same stamp as the
+// merged event, and svg-term renders every frame sharing the selected stamp -
+// side by side, with the blank one filling the viewport. Passing exactly one
+// frame makes that impossible.
+let renderInput = input;
 if (at !== null) {
-  options.at = at;
+  const cast = load(renderInput);
+  renderInput = {
+    version: cast.version,
+    width: cast.width,
+    height: cast.height,
+    duration: 0,
+    frames: [[0, cast.frames[cast.frames.length - 1][1]]],
+  };
 }
 
 // Render SVG.
 try {
-  const svg = render(input, options);
+  const svg = render(renderInput, options);
   fs.writeFileSync(outputFile, svg, 'utf8');
   console.log(`SVG rendered successfully: ${outputFile}`);
   console.log(`  lineHeight: ${lineHeight}`);

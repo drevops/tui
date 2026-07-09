@@ -19,9 +19,9 @@ class PasswordWidget extends TextWidget {
   #[\Override]
   public function view(ThemeInterface $theme): string {
     $mask = $theme->glyph('mask');
-    $line = str_repeat($mask, $this->cursor) . $theme->glyph('caret') . str_repeat($mask, strlen($this->buffer) - $this->cursor);
+    $line = str_repeat($mask, $this->cursor) . $theme->style('marker', $theme->glyph('caret')) . str_repeat($mask, strlen($this->buffer) - $this->cursor);
 
-    return $this->error === NULL ? $line : $line . "\n" . $this->error;
+    return $this->error === NULL ? $line : $line . "\n" . $theme->style('error', $this->error);
   }
 
 }

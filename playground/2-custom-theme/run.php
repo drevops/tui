@@ -19,7 +19,7 @@ use DrevOps\Tui\Tui;
 
 require __DIR__ . '/../../vendor/autoload.php';
 // The require makes the class loadable; the form names it directly, so no
-// Theme::register() call is needed.
+// ThemeManager::register() call is needed.
 require __DIR__ . '/OceanTheme.php';
 
 $options = getopt('', ['prompts::']);
@@ -51,4 +51,6 @@ catch (EngineException $exception) {
   exit(1);
 }
 
-echo $answers->toJson() . PHP_EOL;
+// The self-describing summary: answers grouped by panel, with provenance
+// badges - clearer than raw JSON for a human reading the result.
+echo $answers->toSummary() . PHP_EOL;

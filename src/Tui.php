@@ -16,7 +16,7 @@ use DrevOps\Tui\Schema\SchemaGenerator;
 use DrevOps\Tui\Schema\SchemaValidator;
 use DrevOps\Tui\Render\PanelController;
 use DrevOps\Tui\Render\Terminal;
-use DrevOps\Tui\Theme\AbstractTheme;
+use DrevOps\Tui\Theme\ThemeManager;
 
 /**
  * The one-class entry point for collecting a form's answers.
@@ -143,12 +143,12 @@ final class Tui {
     // config when set, otherwise they are auto-detected from the environment.
     $theme_name = $theme !== '' ? $theme : ($this->config->theme !== '' ? $this->config->theme : 'dark');
     $banner_text = $banner !== '' ? $banner : $this->config->banner;
-    $color = $this->config->color ?? AbstractTheme::detectColor();
-    $unicode = $this->config->unicode ?? AbstractTheme::detectUnicode();
+    $color = $this->config->color ?? ThemeManager::detectColor();
+    $unicode = $this->config->unicode ?? ThemeManager::detectUnicode();
 
     $controller = new PanelController(
       $this->config,
-      AbstractTheme::create($theme_name, $color, 76, $unicode),
+      ThemeManager::create($theme_name, $color, 76, $unicode),
       $this->engine->answers()->values,
       $this->engine->answers()->provenance,
       $banner_text,

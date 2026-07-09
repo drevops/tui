@@ -110,9 +110,9 @@ class TextWidget extends AbstractWidget {
    * {@inheritdoc}
    */
   public function view(ThemeInterface $theme): string {
-    $line = substr($this->buffer, 0, $this->cursor) . $theme->glyph('caret') . substr($this->buffer, $this->cursor);
+    $line = substr($this->buffer, 0, $this->cursor) . $theme->style('marker', $theme->glyph('caret')) . substr($this->buffer, $this->cursor);
 
-    return $this->error === NULL ? $line : $line . "\n" . $this->error;
+    return $this->error === NULL ? $line : $line . "\n" . $theme->style('error', $this->error);
   }
 
 }

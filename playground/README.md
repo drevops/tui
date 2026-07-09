@@ -82,6 +82,6 @@ Set it on the builder with `->theme(...)`, lowest friction first:
 
 1. **Name the class** - `->theme('\Your\ThemeClass')`. The class is instantiated
    directly; no registration needed. This is what `2-custom-theme` does.
-2. **Register a short name** - `AbstractTheme::register('ocean', OceanTheme::class)`,
+2. **Register a short name** - `ThemeManager::register('ocean', OceanTheme::class)`,
    then `->theme('ocean')`. Useful to give a class a stable alias.
 3. **Built-ins** - `->theme('dark')` (the default) or `->theme('light')`.

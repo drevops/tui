@@ -7,6 +7,7 @@ namespace DrevOps\Tui\Tests\Unit\Widget;
 use DrevOps\Tui\Input\ArrayKeyStream;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
+use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Theme\DarkTheme;
 use DrevOps\Tui\Widget\SearchWidget;
 use DrevOps\Tui\Widget\WidgetRunner;
@@ -83,7 +84,7 @@ final class SearchWidgetTest extends TestCase {
     $widget->handle(Key::char('c'));
     $view = $widget->view(new DarkTheme());
 
-    $this->assertStringContainsString('c│', $view);
+    $this->assertStringContainsString('c█', Ansi::strip($view));
     $this->assertStringContainsString('CircleCI', $view);
     $this->assertStringNotContainsString('None', $view);
   }

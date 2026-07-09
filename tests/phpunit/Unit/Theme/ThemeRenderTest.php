@@ -184,9 +184,34 @@ final class ThemeRenderTest extends TestCase {
   public function testStatusLineIsThemed(): void {
     $line = (new DarkTheme())->renderStatusLine();
 
-    // Themed with the footer role (dim) and composed from arrow glyphs.
-    $this->assertStringContainsString("\033[2m", $line);
+    // Themed with the footer role (dim gray) and composed from arrow glyphs.
+    $this->assertStringContainsString("\033[90m", $line);
     $this->assertStringContainsString('↑/↓ move', Ansi::strip($line));
+  }
+
+  public function testHintLineJoinsWithDotGlyph(): void {
+    $line = (new DarkTheme())->renderHintLine('enter accept', 'esc cancel');
+
+    $this->assertSame('enter accept · esc cancel', Ansi::strip($line));
+    $this->assertStringContainsString("\033[90m", $line);
+
+    $ascii = (new DarkTheme(TRUE, 76, FALSE))->renderHintLine('a', 'b');
+    $this->assertSame('a * b', Ansi::strip($ascii));
+  }
+
+  public function testEditorHeaderUnderlinesLabel(): void {
+    $header = (new DarkTheme())->renderEditorHeader('Site name');
+
+    // The label styled as a title, over a rule of the same visible width.
+    $this->assertSame("Site name\n" . str_repeat('─', 9), Ansi::strip($header));
+    $this->assertStringContainsString("\033[1;36mSite name\033[0m", $header);
+    $this->assertStringContainsString("\033[90m", $header);
+
+    $ascii = (new DarkTheme(FALSE, 76, FALSE))->renderEditorHeader('Site name');
+    $this->assertSame("Site name\n---------", $ascii);
+
+    // An empty label still yields a visible rule.
+    $this->assertSame("\n─", Ansi::strip((new DarkTheme())->renderEditorHeader('')));
   }
 
   public function testButtonBar(): void {

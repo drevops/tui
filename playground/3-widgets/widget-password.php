@@ -35,8 +35,8 @@ $terminal->setup();
 try {
   while (!$widget->isComplete() && !$widget->isCancelled()) {
     $terminal->render(implode("\n", [
-      $theme->style('title', 'Password widget'),
-      $theme->style('footer', 'edit · Enter accept · Esc cancel'),
+      $theme->renderEditorHeader('Password widget'),
+      $theme->renderHintLine('edit', 'Enter accept', 'Esc cancel'),
       '',
       $widget->view($theme),
     ]));

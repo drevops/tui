@@ -33,8 +33,8 @@ $terminal->setup();
 try {
   while (!$widget->isComplete() && !$widget->isCancelled()) {
     $terminal->render(implode("\n", [
-      $theme->style('title', 'Textarea widget'),
-      $theme->style('footer', 'edit · Tab accept · Esc cancel'),
+      $theme->renderEditorHeader('Textarea widget'),
+      $theme->renderHintLine('edit', 'Tab accept', 'Esc cancel'),
       '',
       $widget->view($theme),
     ]));

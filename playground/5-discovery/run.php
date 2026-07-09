@@ -60,5 +60,3 @@ catch (EngineException $exception) {
 // badges non-default provenance - "detected" for discovered values, "edited"
 // for env and prompt inputs.
 echo $answers->toSummary() . PHP_EOL;
-echo PHP_EOL;
-echo $answers->toJson() . PHP_EOL;

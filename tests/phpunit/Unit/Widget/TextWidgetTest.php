@@ -70,7 +70,7 @@ final class TextWidgetTest extends TestCase {
     $this->assertSame('ac', $widget->value());
 
     $widget->handle(Key::named(KeyName::Right));
-    $this->assertStringContainsString('│', $widget->view(new DarkTheme()));
+    $this->assertStringContainsString('█', $widget->view(new DarkTheme()));
   }
 
   public function testCancel(): void {

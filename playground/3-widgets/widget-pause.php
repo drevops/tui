@@ -33,8 +33,8 @@ $terminal->setup();
 try {
   while (!$widget->isComplete() && !$widget->isCancelled()) {
     $terminal->render(implode("\n", [
-      $theme->style('title', 'Pause widget'),
-      $theme->style('footer', 'Enter continue · Esc cancel'),
+      $theme->renderEditorHeader('Pause widget'),
+      $theme->renderHintLine('Enter continue', 'Esc cancel'),
       '',
       $widget->view($theme),
     ]));

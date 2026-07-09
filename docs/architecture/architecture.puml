@@ -45,6 +45,7 @@ package "Output" #ECEFF1 {
 
 package "Interactive TUI" #FFEBEE {
   [PanelController]
+  [ThemeManager]
   [Theme]
   [WidgetFactory]
   interface WidgetInterface
@@ -71,9 +72,11 @@ package "Interactive TUI" #FFEBEE {
 [SchemaValidator] --> [Config]
 
 [PanelController] --> [Config]
+[ThemeManager] --> [Theme]
 [PanelController] --> [Theme]
 [PanelController] --> [WidgetFactory]
 [WidgetFactory] --> WidgetInterface
+WidgetInterface --> [Theme]
 [PanelController] --> [Navigator]
 [PanelController] --> [Terminal]
 [PanelController] --> [KeyParser]

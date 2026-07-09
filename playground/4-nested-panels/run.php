@@ -73,4 +73,6 @@ catch (EngineException $exception) {
   exit(1);
 }
 
-echo $answers->toJson() . PHP_EOL;
+// The self-describing summary: answers grouped by panel, with provenance
+// badges - clearer than raw JSON for a human reading the result.
+echo $answers->toSummary() . PHP_EOL;

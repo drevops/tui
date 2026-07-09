@@ -8,7 +8,9 @@
  * Records terminal sessions for the playground demos (the panel TUI runners
  * and the per-widget scripts), then converts the recordings to SVGs for use
  * in README.md: animated SVGs for the full demos, static frames for the
- * per-widget screenshots.
+ * per-widget screenshots. Static frames are anchored to the moment the
+ * demo's gate text first appears in the recording, and every generated SVG
+ * is verified to contain the expected content before the job succeeds.
  *
  * Supports parallel execution: when run without arguments, launches all
  * recordings as parallel worker processes for faster generation.
@@ -36,6 +38,11 @@ define('MAX_IDLE_TIME', 3);
 
 // Pause at the end of each recording before the animation loops (seconds).
 define('END_PAUSE', 10);
+
+// Offset of a static frame after its anchor text first appears (ms). The
+// interactions pause for 1000ms after their gate matches, so half of that
+// lands safely inside the stable initial frame.
+define('FRAME_SETTLE_MS', 500);
 
 /**
  * The expect snippets driving each widget demo, keyed by widget name.
@@ -384,7 +391,10 @@ EXPECT;
  *
  * @return array<string, array<string, mixed>>
  *   Keyed by job name, each containing command, interact, rows, cols and
- *   optionally at (for static screenshots).
+ *   optionally: at_needle (text anchoring a static frame - the frame is
+ *   captured FRAME_SETTLE_MS after the text first appears), at (a fixed
+ *   static-frame timestamp in ms), and verify (text every animated SVG must
+ *   contain).
  */
 function getJobs(string $project_dir): array {
   $jobs = [];
@@ -396,7 +406,8 @@ function getJobs(string $project_dir): array {
   // colour follows NO_COLOR, so the modes are forced via the environment.
   $env_variants = ['' => '', '-ascii' => 'LC_ALL=C ', '-no-ansi' => 'NO_COLOR=1 ', '-ascii-no-ansi' => 'LC_ALL=C NO_COLOR=1 '];
 
-  // The all-widgets sequence, in the order widgets.php runs them.
+  // The all-widgets sequence, in the order widgets.php runs them. The last
+  // widget's title proves the whole sequence was recorded.
   $sequence = implode("\n\n", widgetInteractions());
   foreach ($flag_variants as $suffix => $flags) {
     $jobs['widgets' . $suffix] = [
@@ -404,6 +415,7 @@ function getJobs(string $project_dir): array {
       'interact' => $sequence,
       'rows' => 14,
       'cols' => 60,
+      'verify' => 'Pause widget',
     ];
   }
 
@@ -414,6 +426,7 @@ function getJobs(string $project_dir): array {
       'interact' => scaffolderInteraction(),
       'rows' => TERMINAL_ROWS,
       'cols' => TERMINAL_COLS,
+      'verify' => 'Build & features',
     ];
   }
 
@@ -423,6 +436,7 @@ function getJobs(string $project_dir): array {
     'interact' => nestedPanelsInteraction(),
     'rows' => TERMINAL_ROWS,
     'cols' => TERMINAL_COLS,
+    'verify' => 'Identity',
   ];
 
   // The custom ocean theme with a banner.
@@ -431,15 +445,16 @@ function getJobs(string $project_dir): array {
     'interact' => themeOceanInteraction(),
     'rows' => 20,
     'cols' => TERMINAL_COLS,
+    'verify' => 'Diver profile',
   ];
 
   // Update-mode discovery: headless, shows the provenance-badged summary.
   $jobs['discovery'] = [
     'command' => 'php ' . $project_dir . '/playground/5-discovery/run.php',
     'interact' => '# Headless run: wait for the summary output.',
-    'rows' => 12,
+    'rows' => 8,
     'cols' => TERMINAL_COLS,
-    'at' => 2500,
+    'at_needle' => 'Project name',
   ];
 
   // Static per-widget screenshots: a single frame of the initial state.
@@ -458,13 +473,18 @@ function getJobs(string $project_dir): array {
   ];
 
   foreach (widgetInteractions() as $widget => $interact) {
+    // The frame is anchored to the interaction's own gate text - the widget
+    // title it waits for - so the capture never races the process startup.
+    preg_match('/expect "([^"]+)"/', $interact, $matches);
+    $gate = $matches[1] ?? '';
+
     foreach ($flag_variants as $suffix => $flags) {
       $jobs['widget-' . $widget . $suffix] = [
         'command' => 'php ' . $project_dir . '/playground/3-widgets/widget-' . $widget . '.php' . $flags,
         'interact' => $interact,
         'rows' => $widget_rows[$widget],
         'cols' => 44,
-        'at' => 800,
+        'at_needle' => $gate,
       ];
     }
   }
@@ -611,12 +631,116 @@ function processOne(string $name): void {
   $svg_file = $assets_dir . '/' . $name . '.svg';
   $rows = $job['rows'] ?? TERMINAL_ROWS;
   $cols = $job['cols'] ?? TERMINAL_COLS;
-  $at = $job['at'] ?? NULL;
 
   createExpectScript($expect_script, $job['command'], $job['interact']);
   recordSession($cast_file, $expect_script, $rows, $cols);
   postProcessCast($cast_file);
-  convertToSvg($cast_file, $svg_file, $script_dir, $at);
+
+  // A static frame is anchored to the moment its expected text first appears
+  // in the recording; a fixed timestamp would race the process startup and
+  // capture an empty screen (or the spawn echo) on a loaded machine.
+  $needle = $job['at_needle'] ?? NULL;
+  $at = $job['at'] ?? NULL;
+
+  if (is_string($needle) && $needle !== '') {
+    $appeared = castTimeOf($cast_file, $needle);
+
+    if ($appeared === NULL) {
+      throw new \RuntimeException(sprintf('Anchor text "%s" never appeared in the recording for "%s".', $needle, $name));
+    }
+
+    $at = $appeared + FRAME_SETTLE_MS;
+  }
+
+  convertToSvg($cast_file, $svg_file, $script_dir, is_int($at) ? $at : NULL);
+  verifySvg($svg_file, $name, is_string($needle) ? $needle : ($job['verify'] ?? NULL), is_string($needle));
+}
+
+/**
+ * The time at which given text first appears in a cast's output.
+ *
+ * Handles both asciicast v2 (absolute timestamps) and v3 (deltas). The cast
+ * must already be post-processed, so the returned time matches the timeline
+ * the SVG renderer sees.
+ *
+ * @param string $cast_file
+ *   Path to the cast file.
+ * @param string $needle
+ *   The text to look for in output events.
+ *
+ * @return int|null
+ *   The time in milliseconds, or NULL when the text never appears.
+ */
+function castTimeOf(string $cast_file, string $needle): ?int {
+  $lines = file($cast_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+
+  if ($lines === FALSE || count($lines) < 2) {
+    return NULL;
+  }
+
+  $header = json_decode($lines[0], TRUE);
+  $version = is_array($header) && isset($header['version']) ? (int) $header['version'] : 2;
+  $time = 0.0;
+
+  for ($index = 1; $index < count($lines); $index++) {
+    $event = json_decode($lines[$index], TRUE);
+    if (!is_array($event)) {
+        continue;
+    }
+    if (count($event) < 3) {
+        continue;
+    }
+
+    $time = $version >= 3 ? $time + (float) $event[0] : (float) $event[0];
+
+    if ($event[1] === 'o' && str_contains((string) $event[2], $needle)) {
+      return (int) round($time * 1000);
+    }
+  }
+
+  return NULL;
+}
+
+/**
+ * Verify a generated SVG actually shows terminal content.
+ *
+ * Guards against a frame captured before the demo painted anything: the SVG
+ * must contain text nodes and, when expected text is given, every word of it.
+ * A static render must also hold exactly one frame window - a second window
+ * sits outside the viewBox and hides the real content behind an empty frame.
+ *
+ * @param string $svg_file
+ *   Path to the generated SVG.
+ * @param string $name
+ *   The job name, for error messages.
+ * @param string|null $expected
+ *   Text the SVG must contain, or NULL to only require any text at all.
+ * @param bool $single_frame
+ *   Whether the SVG must contain exactly one frame window (static renders).
+ */
+function verifySvg(string $svg_file, string $name, ?string $expected, bool $single_frame = FALSE): void {
+  $content = (string) file_get_contents($svg_file);
+
+  if (!str_contains($content, '<text')) {
+    throw new \RuntimeException(sprintf('Generated SVG for "%s" has no text content - the captured frame is empty.', $name));
+  }
+
+  if ($single_frame && substr_count($content, '<use xlink:href="#a"') !== 1) {
+    throw new \RuntimeException(sprintf('Generated SVG for "%s" holds more than one frame window - the visible frame may be empty.', $name));
+  }
+
+  if ($expected === NULL || $expected === '') {
+    return;
+  }
+
+  $text = html_entity_decode(strip_tags($content));
+  $words = preg_split('/\s+/', $expected);
+
+  foreach (is_array($words) ? $words : [] as $word) {
+    if ($word !== '' && !str_contains($text, $word)) {
+      throw new \RuntimeException(sprintf('Generated SVG for "%s" is missing expected text "%s".', $name, $word));
+    }
+  }
 }
 
 /**
