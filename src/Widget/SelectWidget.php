@@ -85,9 +85,7 @@ class SelectWidget extends AbstractWidget {
     $lines = [];
 
     foreach ($this->values as $index => $value) {
-      $current = $index === $this->cursor;
-      $marker = $current ? $theme->style('marker', $theme->glyph('radio_on')) : $theme->glyph('radio_off');
-      $lines[] = $marker . ' ' . $this->highlightLabel($theme, $this->labels[$value] ?? $value, $current);
+      $lines[] = $this->renderRadioRow($theme, $this->labels[$value] ?? $value, $index === $this->cursor);
     }
 
     return implode("\n", $lines);

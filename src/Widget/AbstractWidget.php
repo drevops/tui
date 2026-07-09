@@ -123,6 +123,25 @@ abstract class AbstractWidget implements WidgetInterface {
   }
 
   /**
+   * Render a radio option row: the radio glyph plus the highlighted label.
+   *
+   * @param \DrevOps\Tui\Theme\ThemeInterface $theme
+   *   The theme.
+   * @param string $label
+   *   The option label.
+   * @param bool $current
+   *   Whether the option's row holds the cursor.
+   *
+   * @return string
+   *   The rendered row.
+   */
+  protected function renderRadioRow(ThemeInterface $theme, string $label, bool $current): string {
+    $marker = $current ? $theme->style('marker', $theme->glyph('radio_on')) : $theme->glyph('radio_off');
+
+    return $marker . ' ' . $this->highlightLabel($theme, $label, $current);
+  }
+
+  /**
    * Validate and, when valid, transform a value and complete the widget.
    *
    * @param mixed $value
