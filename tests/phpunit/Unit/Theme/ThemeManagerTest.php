@@ -29,7 +29,8 @@ final class ThemeManagerTest extends TestCase {
 
   public static function dataProviderCreate(): \Iterator {
     yield 'dark' => ['dark', DarkTheme::class, 'value', '32'];
-    yield 'light' => ['light', LightTheme::class, 'value', '34'];
+    // The light theme mirrors the dark theme's green value.
+    yield 'light' => ['light', LightTheme::class, 'value', '32'];
     yield 'light indicator' => ['light', LightTheme::class, 'indicator', '35'];
     yield 'default is dark' => ['default', DarkTheme::class, 'title', '1;36'];
     yield 'empty is dark' => ['', DarkTheme::class, 'title', '1;36'];
@@ -124,6 +125,43 @@ final class ThemeManagerTest extends TestCase {
     yield 'no_color set' => ['1', 'xterm', FALSE];
     yield 'dumb terminal' => [NULL, 'dumb', FALSE];
     yield 'no_color empty still disables' => ['', 'xterm', FALSE];
+  }
+
+  #[DataProvider('dataProviderDetectTheme')]
+  public function testDetectTheme(?string $osc_response, ?string $colorfgbg, string $expected): void {
+    $restore = getenv('COLORFGBG');
+    is_string($colorfgbg) ? putenv('COLORFGBG=' . $colorfgbg) : putenv('COLORFGBG');
+
+    try {
+      $this->assertSame($expected, ThemeManager::detectTheme($osc_response));
+    }
+    finally {
+      is_string($restore) ? putenv('COLORFGBG=' . $restore) : putenv('COLORFGBG');
+    }
+  }
+
+  public static function dataProviderDetectTheme(): \Iterator {
+    yield 'osc black is dark' => ["\033]11;rgb:0000/0000/0000\007", NULL, 'dark'];
+    yield 'osc white is light' => ["\033]11;rgb:ffff/ffff/ffff\007", NULL, 'light'];
+    yield 'osc 8-bit black' => ['rgb:00/00/00', NULL, 'dark'];
+    yield 'osc 8-bit white' => ['rgb:ff/ff/ff', NULL, 'light'];
+    yield 'osc single-digit white' => ['rgb:f/f/f', NULL, 'light'];
+    yield 'osc mid grey is light at the boundary' => ['rgb:8080/8080/8080', NULL, 'light'];
+    yield 'osc dark grey is dark' => ['rgb:3030/3030/3030', NULL, 'dark'];
+    yield 'osc rgba prefix ignores alpha' => ['rgba:0000/0000/0000/ffff', NULL, 'dark'];
+    yield 'osc st terminator' => ["\033]11;rgb:ffff/ffff/ffff\033\\", NULL, 'light'];
+    yield 'osc bright green is light' => ['rgb:0000/ffff/0000', NULL, 'light'];
+    yield 'osc pure blue is dark' => ['rgb:0000/0000/ffff', NULL, 'dark'];
+    yield 'unparseable osc falls through to colorfgbg' => ['garbage', '0;15', 'light'];
+    yield 'unparseable osc falls through to dark' => ['garbage', NULL, 'dark'];
+    yield 'null osc colorfgbg dark bg' => [NULL, '15;0', 'dark'];
+    yield 'null osc colorfgbg light bg' => [NULL, '0;15', 'light'];
+    yield 'null osc colorfgbg decoration field' => [NULL, '1;15;0', 'dark'];
+    yield 'null osc colorfgbg index 7 is light' => [NULL, '0;7', 'light'];
+    yield 'null osc colorfgbg index 8 is dark' => [NULL, '15;8', 'dark'];
+    yield 'null osc colorfgbg default bg is dark' => [NULL, 'default;default', 'dark'];
+    yield 'null osc colorfgbg empty is dark' => [NULL, '', 'dark'];
+    yield 'null osc no colorfgbg is dark' => [NULL, NULL, 'dark'];
   }
 
 }

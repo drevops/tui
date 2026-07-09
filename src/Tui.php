@@ -121,7 +121,9 @@ final class Tui {
    * Collect answers interactively through the panel TUI.
    *
    * @param string $theme
-   *   The theme name or class (defaults to the config's theme, then dark).
+   *   The theme name or class. Empty falls back to the config's theme; an
+   *   empty config theme (or "auto") auto-detects light/dark from the terminal
+   *   background.
    * @param string $banner
    *   An optional start banner.
    * @param string $version
@@ -138,13 +140,16 @@ final class Tui {
     // @codeCoverageIgnoreStart
     $this->engine->collect([], $this->context($directory, FALSE, $version));
 
-    // The theme comes from the argument, then the config, then dark; the banner
-    // from the argument, then the config. Colour and Unicode come from the
-    // config when set, otherwise they are auto-detected from the environment.
-    $theme_name = $theme !== '' ? $theme : ($this->config->theme !== '' ? $this->config->theme : 'dark');
+    $terminal ??= new Terminal();
+
+    // The banner comes from the argument, then the config. Colour and Unicode
+    // come from the config when set, otherwise they are auto-detected from the
+    // environment.
     $banner_text = $banner !== '' ? $banner : $this->config->banner;
     $color = $this->config->color ?? ThemeManager::detectColor();
     $unicode = $this->config->unicode ?? ThemeManager::detectUnicode();
+
+    $theme_name = $this->resolveTheme($theme, $color, $terminal);
 
     $controller = new PanelController(
       $this->config,
@@ -155,7 +160,7 @@ final class Tui {
       $version,
     );
 
-    return $controller->run($terminal ?? new Terminal());
+    return $controller->run($terminal);
     // @codeCoverageIgnoreEnd
   }
 
@@ -220,6 +225,34 @@ final class Tui {
    */
   public function registry(): HandlerRegistry {
     return $this->registry;
+  }
+
+  /**
+   * Resolve the interactive theme name, auto-detecting when none is set.
+   *
+   * The argument wins over the config theme; an empty result or the explicit
+   * "auto" sentinel resolves the theme from the terminal background, which
+   * still falls back to dark. With colour off the theme is invisible, so the
+   * background query is skipped.
+   *
+   * @param string $theme
+   *   The theme argument (empty to fall back to the config theme).
+   * @param bool $color
+   *   Whether colour is enabled.
+   * @param \DrevOps\Tui\Render\Terminal $terminal
+   *   The terminal queried for its background during detection.
+   *
+   * @return string
+   *   The resolved theme name.
+   */
+  protected function resolveTheme(string $theme, bool $color, Terminal $terminal): string {
+    $name = $theme !== '' ? $theme : $this->config->theme;
+
+    if ($name !== '' && $name !== 'auto') {
+      return $name;
+    }
+
+    return $color ? ThemeManager::detectTheme($terminal->queryBackground()) : 'dark';
   }
 
   /**

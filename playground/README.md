@@ -76,6 +76,17 @@ composer install
   php playground/5-discovery/run.php --prompts='{"name":"Renamed"}'
   ```
 
+- **[`6-theme-detect/`](6-theme-detect)** - the same form resolved two ways:
+  auto-detecting the light or dark theme from the terminal background, or forcing
+  one with `--theme`. The auto path follows your terminal's colour scheme; forcing
+  overrides it.
+
+  ```bash
+  php playground/6-theme-detect/run.php                 # auto-detect from the background
+  php playground/6-theme-detect/run.php --theme=dark    # force dark
+  php playground/6-theme-detect/run.php --theme=light   # force light
+  ```
+
 ## How a form picks a theme
 
 Set it on the builder with `->theme(...)`, lowest friction first:
@@ -84,4 +95,8 @@ Set it on the builder with `->theme(...)`, lowest friction first:
    directly; no registration needed. This is what `2-custom-theme` does.
 2. **Register a short name** - `ThemeManager::register('ocean', OceanTheme::class)`,
    then `->theme('ocean')`. Useful to give a class a stable alias.
-3. **Built-ins** - `->theme('dark')` (the default) or `->theme('light')`.
+3. **Built-ins** - `->theme('dark')` or `->theme('light')` to force one.
+4. **Auto-detect** - leave it unset (or `->theme('auto')`) and the interactive TUI
+   picks `dark` or `light` from the terminal background (an OSC 11 query, then
+   `COLORFGBG`, then a dark default). Forcing a built-in opts out. This is what
+   `6-theme-detect` demonstrates.

@@ -85,6 +85,16 @@ final class TerminalControl {
   }
 
   /**
+   * Query the terminal's background colour (OSC 11).
+   *
+   * @return string
+   *   The control sequence.
+   */
+  public static function queryBackground(): string {
+    return Ansi::ESC . ']11;?' . "\007";
+  }
+
+  /**
    * The full restore sequence (mouse off, cursor shown, main screen).
    *
    * @return string

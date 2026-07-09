@@ -29,7 +29,10 @@ final class ThemeTest extends TestCase {
   public static function dataProviderPalette(): \Iterator {
     yield 'dark value' => [new DarkTheme(), 'value', '32'];
     yield 'dark title' => [new DarkTheme(), 'title', '1;36'];
-    yield 'light value' => [new LightTheme(), 'value', '34'];
+    // The light theme keeps green for values, like the dark theme; its accents
+    // differ (blue title, magenta indicator).
+    yield 'light value' => [new LightTheme(), 'value', '32'];
+    yield 'light title' => [new LightTheme(), 'title', '1;34'];
     yield 'light indicator' => [new LightTheme(), 'indicator', '35'];
     // Roles a concrete theme does not override come from the base palette.
     yield 'dark footer inherited' => [new DarkTheme(), 'footer', '90'];

@@ -118,6 +118,68 @@ class Terminal {
   }
 
   /**
+   * Query the terminal background colour via OSC 11.
+   *
+   * Writes the query and polls for the reply with stream_select() so a terminal
+   * that never answers cannot block, and so a no-reply probe never issues the
+   * zero-byte read that would latch EOF on the shared input stream. Leaves the
+   * terminal on the main screen.
+   *
+   * @return string|null
+   *   The raw reply bytes, or NULL when the input is not a TTY or no reply
+   *   arrived.
+   */
+  public function queryBackground(): ?string {
+    // @codeCoverageIgnoreStart
+    if (!stream_isatty($this->input)) {
+      return NULL;
+    }
+
+    $this->stty('-echo -icanon');
+    $response = '';
+
+    try {
+      $this->write(TerminalControl::queryBackground());
+      fflush($this->output);
+
+      for ($poll = 0; $poll < 3; $poll++) {
+        $read = [$this->input];
+        $write = [];
+        $except = [];
+        $ready = stream_select($read, $write, $except, 0, 100000);
+
+        if ($ready === FALSE || $ready < 1) {
+          if ($response !== '') {
+            break;
+          }
+
+          continue;
+        }
+
+        $chunk = fread($this->input, 64);
+        if (!is_string($chunk)) {
+          continue;
+        }
+        if ($chunk === '') {
+          continue;
+        }
+
+        $response .= $chunk;
+
+        if (str_contains($response, "\007") || str_contains($response, Ansi::ESC . '\\')) {
+          break;
+        }
+      }
+    }
+    finally {
+      $this->stty('sane');
+    }
+
+    return $response === '' ? NULL : $response;
+    // @codeCoverageIgnoreEnd
+  }
+
+  /**
    * Run stty with the given arguments.
    *
    * @param string $args
