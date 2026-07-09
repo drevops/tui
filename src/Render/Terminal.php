@@ -118,6 +118,47 @@ class Terminal {
   }
 
   /**
+   * Query the terminal background colour via OSC 11.
+   *
+   * Writes the query and reads the reply under a brief, bounded raw-mode
+   * timeout, so a terminal that does not answer cannot block. Leaves the
+   * terminal on the main screen.
+   *
+   * @return string|null
+   *   The raw reply bytes, or NULL when the input is not a TTY or no reply
+   *   arrived.
+   */
+  public function queryBackground(): ?string {
+    // @codeCoverageIgnoreStart
+    if (!stream_isatty($this->input)) {
+      return NULL;
+    }
+
+    $this->stty('-echo -icanon min 0 time 1');
+    $this->write(TerminalControl::queryBackground());
+
+    $response = '';
+    for ($read = 0; $read < 3; $read++) {
+      $chunk = fread($this->input, 64);
+
+      if (!is_string($chunk) || $chunk === '') {
+        continue;
+      }
+
+      $response .= $chunk;
+
+      if (str_contains($response, "\007") || str_contains($response, Ansi::ESC . '\\')) {
+        break;
+      }
+    }
+
+    $this->stty('sane');
+
+    return $response === '' ? NULL : $response;
+    // @codeCoverageIgnoreEnd
+  }
+
+  /**
    * Run stty with the given arguments.
    *
    * @param string $args

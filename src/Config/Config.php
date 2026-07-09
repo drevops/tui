@@ -23,7 +23,8 @@ final readonly class Config {
    * @param \DrevOps\Tui\Config\Fixup[] $fixups
    *   Post-settle fix-up rules, evaluated by the engine.
    * @param string $theme
-   *   The theme name or class for the interactive TUI (empty for the default).
+   *   The theme name or class for the interactive TUI. Empty (or "auto")
+   *   auto-detects light/dark from the terminal background.
    * @param string $banner
    *   The start banner (logo) shown before the interactive TUI (optional).
    * @param bool $buttons

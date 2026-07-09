@@ -448,7 +448,7 @@ $form = Form::create('My form')
 
 Each field builder chains `->description()`, `->default()`, `->required()`, `->weight()`, `->options()` / `->option()` (with per-option descriptions), `->when(new Condition(...))`, `->derive(new Derive(...))`, `->discover(...)`, `->validate(...)` and `->transform(...)`.
 
-Form-level methods tune the interactive TUI: `->theme()` names a theme (see [Themes](#themes)), `->banner()` sets a start banner, `->buttons()` controls the submit/cancel buttons, `->clearOnExit()` keeps or clears the final frame, and `->color()` / `->unicode()` force a [display mode](#display-modes).
+Form-level methods tune the interactive TUI: `->theme()` names a theme, auto-detected from the terminal background when unset (see [Themes](#themes)), `->banner()` sets a start banner, `->buttons()` controls the submit/cancel buttons, `->clearOnExit()` keeps or clears the final frame, and `->color()` / `->unicode()` force a [display mode](#display-modes).
 
 ### Derived values
 
@@ -531,9 +531,11 @@ A theme is a self-contained class that owns the entire visual representation - t
 ```php
 use DrevOps\Tui\Theme\ThemeManager;
 
-ThemeManager::create('dark');   // the default
-ThemeManager::create('light');  // for light terminals
+ThemeManager::create('dark');   // bright foregrounds for a dark terminal
+ThemeManager::create('light');  // higher-contrast foregrounds for a light terminal
 ```
+
+When a form sets no theme (or the explicit `'auto'` sentinel), the interactive TUI picks `dark` or `light` from the actual terminal background: it queries the background colour over OSC 11, falls back to the `COLORFGBG` environment variable, and settles on `dark` when neither answers. An explicit `->theme('dark')` or `->theme('light')` opts out of detection.
 
 A custom theme subclasses a built-in theme (e.g. `DarkTheme`) or `AbstractTheme`, overrides the styles or glyphs it changes and merges the rest from the parent - roles it does not mention keep working:
 

@@ -105,7 +105,8 @@ final class Form {
    * Set the theme name or class.
    *
    * @param string $theme
-   *   The theme name or class (empty for the default).
+   *   The theme name or class. Empty (or "auto") auto-detects light/dark from
+   *   the terminal background.
    *
    * @return $this
    *   The builder.
