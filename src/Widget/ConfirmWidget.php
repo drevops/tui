@@ -6,7 +6,7 @@ namespace DrevOps\Tui\Widget;
 
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
-use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Theme\AbstractTheme;
 
 /**
  * A yes/no toggle.
@@ -94,7 +94,7 @@ class ConfirmWidget extends AbstractWidget {
   /**
    * {@inheritdoc}
    */
-  public function view(ThemeInterface $theme): string {
+  public function view(AbstractTheme $theme): string {
     $marker_on = $theme->style('marker', $theme->glyph('radio_on'));
     $marker_off = $theme->glyph('radio_off');
     $yes_label = $this->highlightLabel($theme, 'Yes', $this->current);

@@ -6,7 +6,7 @@ namespace DrevOps\Tui\Widget;
 
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
-use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Theme\AbstractTheme;
 
 /**
  * A single-choice list with type-to-filter over the option labels.
@@ -127,7 +127,7 @@ class SearchWidget extends AbstractWidget {
   /**
    * {@inheritdoc}
    */
-  public function view(ThemeInterface $theme): string {
+  public function view(AbstractTheme $theme): string {
     $lines = [$this->filter . $theme->style('marker', $theme->glyph('caret'))];
 
     foreach ($this->visible() as $index => $value) {

@@ -6,7 +6,7 @@ namespace DrevOps\Tui\Widget;
 
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
-use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Theme\AbstractTheme;
 
 /**
  * A checkbox list with type-to-filter and select-all/none.
@@ -182,7 +182,7 @@ class MultiSelectWidget extends AbstractWidget {
   /**
    * {@inheritdoc}
    */
-  public function view(ThemeInterface $theme): string {
+  public function view(AbstractTheme $theme): string {
     $lines = [];
 
     foreach ($this->visible() as $index => $value) {

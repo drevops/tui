@@ -6,7 +6,7 @@ namespace DrevOps\Tui\Widget;
 
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
-use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Theme\AbstractTheme;
 
 /**
  * An autocomplete text input filtering a fixed option set.
@@ -114,7 +114,7 @@ class SuggestWidget extends AbstractWidget {
   /**
    * {@inheritdoc}
    */
-  public function view(ThemeInterface $theme): string {
+  public function view(AbstractTheme $theme): string {
     $lines = [$this->buffer . $theme->style('marker', $theme->glyph('caret'))];
 
     foreach ($this->matches() as $index => $value) {

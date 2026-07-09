@@ -6,7 +6,7 @@ namespace DrevOps\Tui\Widget;
 
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
-use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Theme\AbstractTheme;
 
 /**
  * A single-choice radio list.
@@ -81,7 +81,7 @@ class SelectWidget extends AbstractWidget {
   /**
    * {@inheritdoc}
    */
-  public function view(ThemeInterface $theme): string {
+  public function view(AbstractTheme $theme): string {
     $lines = [];
 
     foreach ($this->values as $index => $value) {

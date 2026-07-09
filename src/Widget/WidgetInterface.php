@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Widget;
 
 use DrevOps\Tui\Input\Key;
-use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Theme\AbstractTheme;
 
 /**
  * A single interactive field collector driven one key at a time.
@@ -51,12 +51,12 @@ interface WidgetInterface {
   /**
    * A rendering of the current state, using the theme's glyphs.
    *
-   * @param \DrevOps\Tui\Theme\ThemeInterface $theme
+   * @param \DrevOps\Tui\Theme\AbstractTheme $theme
    *   The theme supplying Unicode or ASCII glyphs.
    *
    * @return string
    *   The rendered view.
    */
-  public function view(ThemeInterface $theme): string;
+  public function view(AbstractTheme $theme): string;
 
 }

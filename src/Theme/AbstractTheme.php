@@ -15,27 +15,38 @@ use DrevOps\Tui\Render\Scroller;
 use DrevOps\Tui\Render\Viewport;
 
 /**
- * Abstract visual authority for the TUI - the complete base implementation.
+ * The base theme: the complete visual authority for the TUI.
  *
- * A theme owns the entire visual representation: the palette (per-role style
- * codes), the glyphs (marker, scroll indicators, separators), and how every
- * element is composed (field rows, sub-panel rows, descriptions, breadcrumb,
- * the scrolled frame and the start banner).
+ * A theme owns every colour, symbol and layout decision. This base implements
+ * {@see ThemeInterface} in full - a neutral monochrome palette, the full glyph
+ * set, and how each element is composed - so a concrete theme changes only what
+ * it wants.
  *
- * This base implements all of it, with a neutral monochrome palette and the
- * full glyph set. A concrete theme only declares what differs - override
- * defineStyles() and/or defineGlyphs() and merge the specific overrides over
- * the parent's map:
+ * To extend a theme, override one of four things and merge over the parent:
+ *  - defineStyles(): the per-role colour palette (recolour titles, values, ...);
+ *  - defineGlyphs(): the named symbols (change the cursor, arrows, checkboxes);
+ *  - optionSchema(): declare a custom display option, then read it via option();
+ *  - any render*() method: change how one element is laid out.
  *
  * @code
- * protected function defineStyles(): array {
- *   return ['title' => '1;96', 'value' => '96'] + parent::defineStyles();
+ * class OceanTheme extends DefaultTheme {
+ *   // Recolour one role.
+ *   protected function defineStyles(): array {
+ *     return ['title' => '1;96'] + parent::defineStyles();
+ *   }
+ *   // Relayout one element.
+ *   public function renderPanelLine(Panel $panel, bool $selected): string {
+ *     return '> ' . $panel->title;
+ *   }
  * }
  * @endcode
  *
- * Override any render* method for full control over layout. Themes are
- * created and registered through {@see \DrevOps\Tui\Theme\ThemeManager} - the
- * config only ever references a theme name.
+ * A render method (or a widget) composes text with two low-level helpers:
+ * style($role, $text) wraps text in a role's palette colour, and glyph($name)
+ * returns a named symbol (Unicode or ASCII per the mode). Colour, Unicode and
+ * the dark/light mode are display options; the option constants (MODE_*,
+ * SPACING_*, BORDER_*) live on {@see ThemeInterface}, and themes are built
+ * through {@see ThemeManager}.
  *
  * @package DrevOps\Tui\Theme
  */
@@ -280,15 +291,21 @@ abstract class AbstractTheme implements ThemeInterface {
   }
 
   /**
-   * Style text for a role.
+   * Wrap text in a palette role's colour.
+   *
+   * The primitive a render method or widget uses to colour its output: it looks
+   * the role up in the palette (defineStyles()) and wraps the text in that ANSI
+   * colour. For example style('title', 'Setup') returns "Setup" in bold cyan,
+   * and style('error', $message) returns it in red. With colour off the text is
+   * returned unchanged.
    *
    * @param string $role
-   *   The role name.
+   *   A palette role - e.g. "title", "value", "label", "error", "border".
    * @param string $text
-   *   The text.
+   *   The text to colour.
    *
    * @return string
-   *   The styled text (plain when colour is disabled).
+   *   The text wrapped in the role's colour (unchanged when colour is off).
    */
   public function style(string $role, string $text): string {
     return Ansi::style($text, $this->styleCodes($role));
@@ -341,13 +358,19 @@ abstract class AbstractTheme implements ThemeInterface {
   }
 
   /**
-   * The glyph for a decorative element.
+   * The theme's character for a named symbol.
+   *
+   * The decorative character a render method or widget draws for a named
+   * element, and the single place Unicode-vs-ASCII is chosen. For example
+   * glyph('marker') is the selection cursor ("❯" or ">"), glyph('radio_on') a
+   * filled bullet ("●" or "(*)"), and glyph('caret') the input caret ("█" or
+   * "|"). Change the map with defineGlyphs().
    *
    * @param string $name
-   *   The glyph name (e.g. "marker", "indicator_up", "separator").
+   *   A glyph name - e.g. "marker", "arrow", "radio_on", "check_on", "caret".
    *
    * @return string
-   *   The glyph character (empty when unknown).
+   *   The symbol in the theme's mode (empty when the name is unknown).
    */
   public function glyph(string $name): string {
     return $this->glyphs[$name][$this->unicode ? 0 : 1] ?? '';

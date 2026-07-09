@@ -6,7 +6,7 @@ namespace DrevOps\Tui\Widget;
 
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
-use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Theme\AbstractTheme;
 
 /**
  * Multi-line text input: Enter inserts a newline, Tab accepts.
@@ -88,7 +88,7 @@ class TextareaWidget extends TextWidget {
    * {@inheritdoc}
    */
   #[\Override]
-  public function view(ThemeInterface $theme): string {
+  public function view(AbstractTheme $theme): string {
     $text = substr($this->buffer, 0, $this->cursor) . $theme->style('marker', $theme->glyph('caret')) . substr($this->buffer, $this->cursor);
     $hint = $theme->renderHintLine('enter newline', 'tab accept');
 

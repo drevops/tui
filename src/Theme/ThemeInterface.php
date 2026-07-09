@@ -11,11 +11,18 @@ use DrevOps\Tui\Render\Navigator;
 use DrevOps\Tui\Render\Viewport;
 
 /**
- * The contract a theme fulfils: style and glyph resolution plus TUI rendering.
+ * A theme's rendering contract: the elements a theme composes, and how.
  *
- * A theme is the single visual authority for the TUI. Implement this - usually
- * by extending AbstractTheme and defining a palette and a glyph set - to own
- * the colours, glyphs and how every element is composed.
+ * Every method here renders one part of the TUI - a field row, a description, a
+ * sub-panel summary, the frame, the editor, the buttons. That is the whole
+ * extension surface: to change how any element looks, a theme overrides just
+ * that one method (see {@see AbstractTheme}, which implements the lot). The
+ * option constants below (MODE_*, SPACING_*, BORDER_*) are the values a consumer
+ * passes in the theme options array.
+ *
+ * The low-level helpers a render method uses - style() to colour text by role,
+ * glyph() to fetch a named symbol - are not part of this contract; they live on
+ * {@see AbstractTheme}.
  *
  * @package DrevOps\Tui\Theme
  */
@@ -65,61 +72,6 @@ interface ThemeInterface {
    * Border option: a double-line box.
    */
   public const string BORDER_DOUBLE = 'double';
-
-  /**
-   * Style text for a role.
-   *
-   * @param string $role
-   *   The role name.
-   * @param string $text
-   *   The text.
-   *
-   * @return string
-   *   The styled text (plain when colour is disabled).
-   */
-  public function style(string $role, string $text): string;
-
-  /**
-   * The raw ANSI style codes for a role.
-   *
-   * The numbers that go inside an escape sequence to colour or emphasise text -
-   * for example "1;36" (bold cyan) for the "title" role. Prefer style(), which
-   * wraps text in these; this returns the raw codes for callers that need them.
-   *
-   * @param string $role
-   *   The role name (e.g. "title", "value", "description").
-   *
-   * @return string
-   *   The ANSI codes (empty when colour is off or the role is unknown).
-   */
-  public function styleCodes(string $role): string;
-
-  /**
-   * The glyph for a decorative element.
-   *
-   * @param string $name
-   *   The glyph name.
-   *
-   * @return string
-   *   The glyph (Unicode or ASCII per the theme's mode; empty when unknown).
-   */
-  public function glyph(string $name): string;
-
-  /**
-   * Whether colour is enabled.
-   *
-   * @return bool
-   *   TRUE when colour is enabled.
-   */
-  public function hasColor(): bool;
-
-  /**
-   * Whether Unicode glyphs are enabled.
-   *
-   * @return bool
-   *   TRUE for Unicode glyphs, FALSE for the ASCII fallback.
-   */
-  public function hasUnicode(): bool;
 
   /**
    * The number of navigable items in a panel (fields plus sub-panels).
