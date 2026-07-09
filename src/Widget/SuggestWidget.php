@@ -120,7 +120,7 @@ class SuggestWidget extends AbstractWidget {
     foreach ($this->matches() as $index => $value) {
       $current = $index === $this->highlight;
       $marker = $current ? $theme->style('marker', $theme->glyph('marker')) : ' ';
-      $lines[] = $marker . ' ' . ($current ? $theme->style('highlight', $value) : $value);
+      $lines[] = $marker . ' ' . $this->highlightLabel($theme, $value, $current);
     }
 
     return implode("\n", $lines);

@@ -87,8 +87,7 @@ class SelectWidget extends AbstractWidget {
     foreach ($this->values as $index => $value) {
       $current = $index === $this->cursor;
       $marker = $current ? $theme->style('marker', $theme->glyph('radio_on')) : $theme->glyph('radio_off');
-      $label = $this->labels[$value] ?? $value;
-      $lines[] = $marker . ' ' . ($current ? $theme->style('highlight', $label) : $label);
+      $lines[] = $marker . ' ' . $this->highlightLabel($theme, $this->labels[$value] ?? $value, $current);
     }
 
     return implode("\n", $lines);

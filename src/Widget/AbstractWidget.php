@@ -6,6 +6,7 @@ namespace DrevOps\Tui\Widget;
 
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
+use DrevOps\Tui\Theme\ThemeInterface;
 
 /**
  * Shared widget behaviour: accept/cancel, validation and transformation.
@@ -102,6 +103,23 @@ abstract class AbstractWidget implements WidgetInterface {
     }
 
     return FALSE;
+  }
+
+  /**
+   * Style an option label, highlighted when its row holds the cursor.
+   *
+   * @param \DrevOps\Tui\Theme\ThemeInterface $theme
+   *   The theme.
+   * @param string $label
+   *   The option label.
+   * @param bool $current
+   *   Whether the option's row holds the cursor.
+   *
+   * @return string
+   *   The label, highlight-styled when current.
+   */
+  protected function highlightLabel(ThemeInterface $theme, string $label, bool $current): string {
+    return $current ? $theme->style('highlight', $label) : $label;
   }
 
   /**
