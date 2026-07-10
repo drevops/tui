@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Tests\Unit\Widget;
 
+use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Input\ArrayKeyStream;
 use DrevOps\Tui\Input\Key;
+use DrevOps\Tui\Input\KeyMapManager;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\AbstractWidget;
@@ -62,6 +64,17 @@ final class SelectWidgetTest extends TestCase {
     $widget->handle(Key::named(KeyName::Escape));
 
     $this->assertTrue($widget->isCancelled());
+  }
+
+  public function testSetKeysInjectsBindings(): void {
+    // An injected scope map takes over from the lazy default: the vim select
+    // scope binds j to move-down, which the default preset does not.
+    $widget = (new SelectWidget(['a' => 'A', 'b' => 'B'], 'a'))
+      ->setKeys(KeyMapManager::create('vim')->forField(FieldType::Select));
+
+    $widget->handle(Key::char('j'));
+
+    $this->assertSame('b', $widget->value());
   }
 
 }

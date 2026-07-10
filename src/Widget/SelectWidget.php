@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Widget;
 
+use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Key;
-use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Theme\ThemeInterface;
 
 /**
@@ -50,23 +50,25 @@ class SelectWidget extends AbstractWidget {
    * {@inheritdoc}
    */
   public function handle(Key $key): void {
+    $keys = $this->keys();
+
     if ($this->handleCancel($key)) {
       return;
     }
 
-    if ($key->is(KeyName::Up)) {
+    if ($keys->matches($key, Action::MoveUp)) {
       $this->cursor = max(0, $this->cursor - 1);
 
       return;
     }
 
-    if ($key->is(KeyName::Down)) {
+    if ($keys->matches($key, Action::MoveDown)) {
       $this->cursor = min(count($this->values) - 1, $this->cursor + 1);
 
       return;
     }
 
-    if ($key->is(KeyName::Enter)) {
+    if ($keys->matches($key, Action::Accept)) {
       $this->accept($this->liveValue());
     }
   }

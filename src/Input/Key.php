@@ -62,4 +62,27 @@ final readonly class Key {
     return $this->name === $name;
   }
 
+  /**
+   * Whether this key is the same key as another.
+   *
+   * @param \DrevOps\Tui\Input\Key $other
+   *   The key to compare.
+   *
+   * @return bool
+   *   TRUE when both are the same named key or the same character.
+   */
+  public function equals(Key $other): bool {
+    return $this->token() === $other->token();
+  }
+
+  /**
+   * A stable token identifying this key, usable as an array key.
+   *
+   * @return string
+   *   The token.
+   */
+  public function token(): string {
+    return $this->name instanceof KeyName ? 'name:' . $this->name->name : 'char:' . $this->char;
+  }
+
 }

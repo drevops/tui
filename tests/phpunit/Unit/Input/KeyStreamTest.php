@@ -57,4 +57,18 @@ final class KeyStreamTest extends TestCase {
     $this->assertNotInstanceOf(Key::class, $stream->read());
   }
 
+  public function testEqualsAndToken(): void {
+    $this->assertTrue(Key::named(KeyName::Enter)->equals(Key::named(KeyName::Enter)));
+    $this->assertFalse(Key::named(KeyName::Enter)->equals(Key::named(KeyName::Escape)));
+
+    $this->assertTrue(Key::char('a')->equals(Key::char('a')));
+    $this->assertFalse(Key::char('a')->equals(Key::char('b')));
+
+    // A named key and a character never collide.
+    $this->assertFalse(Key::named(KeyName::Space)->equals(Key::char(' ')));
+
+    $this->assertSame('name:Enter', Key::named(KeyName::Enter)->token());
+    $this->assertSame('char:a', Key::char('a')->token());
+  }
+
 }

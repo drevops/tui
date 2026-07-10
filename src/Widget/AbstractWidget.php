@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Widget;
 
+use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Key;
-use DrevOps\Tui\Input\KeyName;
+use DrevOps\Tui\Input\KeyMapManager;
+use DrevOps\Tui\Input\Scope;
+use DrevOps\Tui\Input\ScopedKeyMap;
 use DrevOps\Tui\Theme\ThemeInterface;
 
 /**
@@ -14,6 +17,14 @@ use DrevOps\Tui\Theme\ThemeInterface;
  * @package DrevOps\Tui\Widget
  */
 abstract class AbstractWidget implements WidgetInterface {
+
+  /**
+   * The resolved key bindings for this widget's scope.
+   *
+   * Injected by the widget factory; when a widget is constructed directly (for
+   * a test or a one-off), it falls back to the default preset for its scope.
+   */
+  protected ?ScopedKeyMap $scoped = NULL;
 
   /**
    * Whether a valid value has been accepted.
@@ -86,6 +97,15 @@ abstract class AbstractWidget implements WidgetInterface {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function setKeys(ScopedKeyMap $keys): static {
+    $this->scoped = $keys;
+
+    return $this;
+  }
+
+  /**
    * The in-progress value before acceptance.
    *
    * @return mixed
@@ -94,7 +114,30 @@ abstract class AbstractWidget implements WidgetInterface {
   abstract protected function liveValue(): mixed;
 
   /**
-   * Cancel the widget when the key is Escape.
+   * The scope whose default bindings apply when none are injected.
+   *
+   * Widgets whose bindings differ from the base defaults override this; the
+   * base scope is the right fallback for the rest.
+   *
+   * @return \DrevOps\Tui\Input\Scope
+   *   The widget's binding scope.
+   */
+  protected function keyScope(): Scope {
+    return Scope::base();
+  }
+
+  /**
+   * The resolved bindings for this widget, defaulting to the built-in preset.
+   *
+   * @return \DrevOps\Tui\Input\ScopedKeyMap
+   *   The scoped bindings.
+   */
+  protected function keys(): ScopedKeyMap {
+    return $this->scoped ??= KeyMapManager::create()->scope($this->keyScope());
+  }
+
+  /**
+   * Cancel the widget when the key triggers the cancel action.
    *
    * @param \DrevOps\Tui\Input\Key $key
    *   The key to test.
@@ -103,7 +146,7 @@ abstract class AbstractWidget implements WidgetInterface {
    *   TRUE when the key cancelled the widget.
    */
   protected function handleCancel(Key $key): bool {
-    if ($key->is(KeyName::Escape)) {
+    if ($this->keys()->matches($key, Action::Cancel)) {
       $this->cancelled = TRUE;
 
       return TRUE;

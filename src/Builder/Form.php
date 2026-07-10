@@ -10,6 +10,7 @@ use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\Fixup;
 use DrevOps\Tui\Config\Option;
 use DrevOps\Tui\Config\Panel;
+use DrevOps\Tui\Input\KeyMapManager;
 
 /**
  * A fluent builder declaring a form: its panels, fields and TUI options.
@@ -29,6 +30,18 @@ final class Form {
    * @var array<string,mixed>
    */
   protected array $themeOptions = [];
+
+  /**
+   * The key-map preset name or class (empty for the default).
+   */
+  protected string $keymap = '';
+
+  /**
+   * Bindings overriding the preset, applied on top of it.
+   *
+   * @var list<\DrevOps\Tui\Input\Binding>
+   */
+  protected array $keymapOverrides = [];
 
   /**
    * The start banner (logo).
@@ -127,6 +140,30 @@ final class Form {
   public function theme(string $theme, array $options = []): self {
     $this->theme = $theme;
     $this->themeOptions = $options;
+
+    return $this;
+  }
+
+  /**
+   * Set the key-binding preset and optional overrides.
+   *
+   * The preset names the base bindings ("default", "vim", a registered name, or
+   * a preset class); the overrides retune individual bindings on top of it,
+   * each a {@see \DrevOps\Tui\Input\Binding} naming a scope, an action and its
+   * keys. Conflicting, un-typeable or malformed bindings throw when the form is
+   * built, not mid-session.
+   *
+   * @param string $preset
+   *   The preset name or class. Empty selects the default preset.
+   * @param list<\DrevOps\Tui\Input\Binding> $overrides
+   *   Bindings applied on top of the preset.
+   *
+   * @return $this
+   *   The builder.
+   */
+  public function keys(string $preset = '', array $overrides = []): self {
+    $this->keymap = $preset;
+    $this->keymapOverrides = $overrides;
 
     return $this;
   }
@@ -287,6 +324,7 @@ final class Form {
       $this->unicode,
       $this->envPrefix,
       $this->themeOptions,
+      KeyMapManager::create($this->keymap, $this->keymapOverrides),
     );
 
     $this->assertUniqueFieldIds($config);

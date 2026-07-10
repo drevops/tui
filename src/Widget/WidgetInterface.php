@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Widget;
 
 use DrevOps\Tui\Input\Key;
+use DrevOps\Tui\Input\ScopedKeyMap;
 use DrevOps\Tui\Theme\ThemeInterface;
 
 /**
@@ -21,6 +22,17 @@ interface WidgetInterface {
    *   The key to process.
    */
   public function handle(Key $key): void;
+
+  /**
+   * Give the widget the resolved bindings for its scope.
+   *
+   * @param \DrevOps\Tui\Input\ScopedKeyMap $keys
+   *   The scoped key bindings.
+   *
+   * @return static
+   *   The widget, for chaining.
+   */
+  public function setKeys(ScopedKeyMap $keys): static;
 
   /**
    * Whether a valid value has been accepted.

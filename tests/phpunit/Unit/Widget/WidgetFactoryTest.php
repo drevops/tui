@@ -9,6 +9,7 @@ use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\NumberBounds;
 use DrevOps\Tui\Config\Option;
 use DrevOps\Tui\Input\Key;
+use DrevOps\Tui\Input\KeyMapManager;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Widget\ConfirmWidget;
 use DrevOps\Tui\Widget\MultiSearchWidget;
@@ -102,7 +103,7 @@ final class WidgetFactoryTest extends TestCase {
   public function testTextareaExternalEditorOfferedWhenOptedInAndAvailable(): void {
     $field = new Field('f', 'F', '', FieldType::Textarea, '', externalEditor: TRUE);
 
-    $widget = (new WidgetFactory(TRUE))->create($field, 'x');
+    $widget = (new WidgetFactory(externalEditorAvailable: TRUE))->create($field, 'x');
     $this->assertInstanceOf(TextareaWidget::class, $widget);
 
     $widget->handle(Key::char("\x05"));
@@ -112,7 +113,7 @@ final class WidgetFactoryTest extends TestCase {
   public function testTextareaExternalEditorNotOfferedWhenUnavailable(): void {
     $field = new Field('f', 'F', '', FieldType::Textarea, '', externalEditor: TRUE);
 
-    $widget = (new WidgetFactory(FALSE))->create($field, 'x');
+    $widget = (new WidgetFactory(externalEditorAvailable: FALSE))->create($field, 'x');
     $this->assertInstanceOf(TextareaWidget::class, $widget);
 
     $widget->handle(Key::char("\x05"));
@@ -120,11 +121,21 @@ final class WidgetFactoryTest extends TestCase {
   }
 
   public function testTextareaExternalEditorNotOfferedWhenNotOptedIn(): void {
-    $widget = (new WidgetFactory(TRUE))->create($this->field(FieldType::Textarea), 'x');
+    $widget = (new WidgetFactory(externalEditorAvailable: TRUE))->create($this->field(FieldType::Textarea), 'x');
     $this->assertInstanceOf(TextareaWidget::class, $widget);
 
     $widget->handle(Key::char("\x05"));
     $this->assertFalse($widget->wantsExternalEdit());
+  }
+
+  public function testInjectsScopedKeymapIntoWidget(): void {
+    // The vim preset binds j to move-down in the select scope, so the injected
+    // widget responds to j where a default-preset widget would not.
+    $widget = (new WidgetFactory(KeyMapManager::create('vim')))->create($this->fieldWithOptions(FieldType::Select), 'a');
+
+    $widget->handle(Key::char('j'));
+
+    $this->assertSame('b', $widget->value());
   }
 
   /**

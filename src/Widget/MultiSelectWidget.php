@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Widget;
 
+use DrevOps\Tui\Config\FieldType;
+use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Key;
-use DrevOps\Tui\Input\KeyName;
+use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Theme\ThemeInterface;
 
 /**
@@ -66,48 +68,58 @@ class MultiSelectWidget extends AbstractWidget {
   /**
    * {@inheritdoc}
    */
+  #[\Override]
+  protected function keyScope(): Scope {
+    return Scope::field(FieldType::MultiSelect);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function handle(Key $key): void {
+    $keys = $this->keys();
+
     if ($this->handleCancel($key)) {
       return;
     }
 
-    if ($key->is(KeyName::Enter)) {
+    if ($keys->matches($key, Action::Accept)) {
       $this->accept($this->liveValue());
 
       return;
     }
 
-    if ($key->is(KeyName::Up)) {
+    if ($keys->matches($key, Action::MoveUp)) {
       $this->cursor = max(0, $this->cursor - 1);
 
       return;
     }
 
-    if ($key->is(KeyName::Down)) {
+    if ($keys->matches($key, Action::MoveDown)) {
       $this->cursor = min(count($this->visible()) - 1, $this->cursor + 1);
 
       return;
     }
 
-    if ($key->is(KeyName::Space)) {
+    if ($keys->matches($key, Action::Toggle)) {
       $this->toggleCurrent();
 
       return;
     }
 
-    if ($key->is(KeyName::Right)) {
+    if ($keys->matches($key, Action::SelectAll)) {
       $this->setAllVisible(TRUE);
 
       return;
     }
 
-    if ($key->is(KeyName::Left)) {
+    if ($keys->matches($key, Action::SelectNone)) {
       $this->setAllVisible(FALSE);
 
       return;
     }
 
-    if ($key->is(KeyName::Backspace)) {
+    if ($keys->matches($key, Action::DeleteBack)) {
       $this->filter = substr($this->filter, 0, -1);
       $this->cursor = 0;
 
@@ -208,8 +220,10 @@ class MultiSelectWidget extends AbstractWidget {
   /**
    * Build the key-hint line shown beneath the option list.
    *
-   * Space is the non-obvious key here - nothing else signals that it toggles
-   * the highlighted option - so it leads, followed by the remaining bindings.
+   * Toggle is the non-obvious action here - nothing else signals that a key
+   * toggles the highlighted option - so it leads, followed by the remaining
+   * bindings. Every glyph is drawn from the live bindings, so the line stays
+   * truthful when the keys are remapped.
    *
    * @param \DrevOps\Tui\Theme\ThemeInterface $theme
    *   The theme.
@@ -218,13 +232,13 @@ class MultiSelectWidget extends AbstractWidget {
    *   The themed, dot-joined hint line.
    */
   protected function hint(ThemeInterface $theme): string {
-    $fragments = [
-      'space select',
-      $theme->arrowUp() . '/' . $theme->arrowDown() . ' move',
-      $theme->arrowLeft() . '/' . $theme->arrowRight() . ' none/all',
-      $theme->enter() . ' accept',
-      'esc cancel',
-    ];
+    $fragments = array_filter([
+      $theme->keysHint($this->keys(), 'select', Action::Toggle),
+      $theme->keysHint($this->keys(), 'move', Action::MoveUp, Action::MoveDown),
+      $theme->keysHint($this->keys(), 'none/all', Action::SelectNone, Action::SelectAll),
+      $theme->keysHint($this->keys(), 'accept', Action::Accept),
+      $theme->keysHint($this->keys(), 'cancel', Action::Cancel),
+    ]);
 
     return $theme->footer(implode(' ' . $theme->dot() . ' ', $fragments));
   }

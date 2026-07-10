@@ -38,6 +38,7 @@ It powers the [Vortex](https://www.vortextemplate.com) project installer, but kn
 - ⚙️ [**Declared behaviour**](#field-behaviour) - validation, transforms and dynamic defaults as closures on the field; per-field handler classes remain as a fallback
 - 📦 [**Self-describing answers**](#self-describing-answers) - each answer carries a snapshot of its question and its provenance; summaries need no form config
 - 🎨 [**Themes**](#themes) - the whole visual representation (colours, glyphs, layout) is a theme class; ships with dark and light
+- ⌨️ [**Key bindings**](#key-bindings) - remap navigation, edit, accept and cancel keys per widget type; ships a vim-style preset, and a bad binding fails loudly at build time
 - ✨ [**Unicode and ASCII**](#display-modes) - glyphs follow the terminal locale and colour honours `NO_COLOR`; both can be forced on the form
 
 ## Installation
@@ -417,7 +418,7 @@ $p->pause('ready', 'Review the summary above');
 
 ## Panels and navigation
 
-The interactive TUI is a full-screen panel browser: the root hub lists the form's panels with live value summaries, and each panel lists its fields with their current values and provenance badges. Up/Down move the cursor, Enter edits a field (or drills into a sub-panel), Esc goes back, `q` quits, and the mouse wheel scrolls long panels without moving the cursor. **Submit** and **Cancel** buttons live on the root panel - `->buttons(FALSE)` hides them, `->buttons(TRUE, 'Save', 'Discard')` relabels them.
+The interactive TUI is a full-screen panel browser: the root hub lists the form's panels with live value summaries, and each panel lists its fields with their current values and provenance badges. Up/Down move the cursor, Enter edits a field (or drills into a sub-panel), Esc goes back, `q` quits, and the mouse wheel scrolls long panels without moving the cursor - all of these keys are configurable (see [Key bindings](#key-bindings)). **Submit** and **Cancel** buttons live on the root panel - `->buttons(FALSE)` hides them, `->buttons(TRUE, 'Save', 'Discard')` relabels them.
 
 A form-level `->banner()` shows a start screen (with an optional version) before the panels, and `->clearOnExit(FALSE)` keeps the final frame on screen after the TUI exits.
 
@@ -612,9 +613,52 @@ Or register a short alias with `ThemeManager::register('ocean', OceanTheme::clas
   <img src="docs/assets/theme-ocean.svg" width="100%" alt="Custom ocean theme with a banner">
 </p>
 
+## Key bindings
+
+Navigation, edit, accept and cancel keys are configurable. A widget asks for a semantic **action** - `MoveUp`, `Accept`, `Toggle`, `NewLine` and so on - rather than a fixed key, and a **key map** binds each action to one or more keys. Set it on the form with `->keys(...)`, mirroring `->theme(...)`:
+
+```php
+$form = Form::create('My form')->keys('vim');   // built-in vim navigation (h/j/k/l)
+```
+
+Two presets ship: `default` (the bindings described in [Panels and navigation](#panels-and-navigation)) and `vim`, which adds `h`/`j`/`k`/`l` alongside the arrow keys - only where a letter is not typed input, so text and filter fields keep the arrows.
+
+### Per-widget-type overrides
+
+Bindings are layered by **scope**: a base layer shared by every widget, a navigation layer for the panel browser, and one layer per widget type that overrides the base only where it differs (Enter inserts a newline in a textarea, Space toggles a checkbox option). Retune individual bindings by passing overrides on top of a preset - each names a scope, an action and its keys:
+
+```php
+use DrevOps\Tui\Config\FieldType;
+use DrevOps\Tui\Input\Action;
+use DrevOps\Tui\Input\Binding;
+use DrevOps\Tui\Input\KeyName;
+use DrevOps\Tui\Input\Scope;
+
+$form = Form::create('My form')->keys('default', [
+  // Quit with x as well as q.
+  new Binding(Scope::navigation(), Action::Quit, 'x'),
+  // In the single-choice list, Tab accepts too.
+  new Binding(Scope::field(FieldType::Select), Action::Accept, KeyName::Tab, KeyName::Enter),
+]);
+```
+
+A binding's keys accept a `KeyName` for a named key or a single-character string for a printable one. The panel and editor hints are drawn from the live bindings, so they always reflect the active keys.
+
+### Presets and validation
+
+A preset is a class listing its bindings. Subclass `DefaultKeyMap` to ship your own, name it directly with `->keys('\App\MyKeyMap')`, or register a short alias with `KeyMapManager::register('mine', MyKeyMap::class)` and then `->keys('mine')`.
+
+Bindings are validated when the form is built, so a bad key map is caught at declaration time, not mid-session:
+
+- a key bound to two different actions in the same scope is a conflict;
+- a printable character bound in the base scope, or in a scope whose widget consumes typed input (text, search, checkbox), would be un-typeable and is rejected;
+- an unknown preset name, or a character binding that is not exactly one character, is rejected.
+
+See [`playground/8-key-bindings`](playground/8-key-bindings) for the default map, the vim preset and a custom override side by side.
+
 ## Playground
 
-Runnable, self-contained examples are in [`playground/`](playground): a minimal form, a full "package scaffolder", a custom-theme demo, per-widget demos, nested panels with fix-ups, update-mode discovery, and a theme auto-detection demo. Each is independent - copy one as a starting point.
+Runnable, self-contained examples are in [`playground/`](playground): a minimal form, a full "package scaffolder", a custom-theme demo, per-widget demos, nested panels with fix-ups, update-mode discovery, theme auto-detection, theme options, and a configurable key-bindings demo. Each is independent - copy one as a starting point.
 
 The SVG demos on this page are generated from the playground scripts with `php docs/util/update-assets.php` (requires `asciinema`, `expect`, `node` and `npm`), which records each demo through a scripted terminal session and renders the recordings to SVG.
 

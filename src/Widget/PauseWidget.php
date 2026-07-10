@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Widget;
 
+use DrevOps\Tui\Config\FieldType;
+use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Key;
-use DrevOps\Tui\Input\KeyName;
+use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Theme\ThemeInterface;
 
 /**
@@ -18,12 +20,22 @@ class PauseWidget extends AbstractWidget {
   /**
    * {@inheritdoc}
    */
+  #[\Override]
+  protected function keyScope(): Scope {
+    return Scope::field(FieldType::Pause);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function handle(Key $key): void {
+    $keys = $this->keys();
+
     if ($this->handleCancel($key)) {
       return;
     }
 
-    if ($key->is(KeyName::Enter) || $key->is(KeyName::Space)) {
+    if ($keys->matches($key, Action::Accept)) {
       $this->accept(TRUE);
     }
   }
@@ -39,7 +51,10 @@ class PauseWidget extends AbstractWidget {
    * {@inheritdoc}
    */
   public function view(ThemeInterface $theme): string {
-    return $theme->highlight($theme->enter()) . ' Press Enter to continue';
+    $key = $this->keys()->primary(Action::Accept);
+    $glyph = $key instanceof Key ? $theme->keyHint($key) : $theme->enter();
+
+    return 'Press ' . $theme->highlight($glyph) . ' to continue';
   }
 
 }

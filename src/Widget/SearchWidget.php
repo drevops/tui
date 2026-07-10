@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Widget;
 
+use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Key;
-use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Theme\ThemeInterface;
 
 /**
@@ -55,11 +55,13 @@ class SearchWidget extends AbstractWidget {
    * {@inheritdoc}
    */
   public function handle(Key $key): void {
+    $keys = $this->keys();
+
     if ($this->handleCancel($key)) {
       return;
     }
 
-    if ($key->is(KeyName::Enter)) {
+    if ($keys->matches($key, Action::Accept)) {
       if ($this->visible() !== []) {
         $this->accept($this->liveValue());
       }
@@ -67,26 +69,26 @@ class SearchWidget extends AbstractWidget {
       return;
     }
 
-    if ($key->is(KeyName::Up)) {
+    if ($keys->matches($key, Action::MoveUp)) {
       $this->cursor = max(0, $this->cursor - 1);
 
       return;
     }
 
-    if ($key->is(KeyName::Down)) {
+    if ($keys->matches($key, Action::MoveDown)) {
       $this->cursor = min(count($this->visible()) - 1, $this->cursor + 1);
 
       return;
     }
 
-    if ($key->is(KeyName::Backspace)) {
+    if ($keys->matches($key, Action::DeleteBack)) {
       $this->filter = substr($this->filter, 0, -1);
       $this->cursor = 0;
 
       return;
     }
 
-    if ($key->is(KeyName::Space)) {
+    if ($keys->matches($key, Action::InsertSpace)) {
       $this->filter .= ' ';
       $this->cursor = 0;
 

@@ -51,7 +51,11 @@ final class PauseWidgetTest extends TestCase {
   public function testCancelAndView(): void {
     $widget = new PauseWidget();
 
-    $this->assertStringContainsString('Press Enter to continue', $widget->view(new DefaultTheme()));
+    // The prompt key glyph is drawn from the live binding (Enter by default).
+    $view = $widget->view(new DefaultTheme());
+    $this->assertStringContainsString('Press ', $view);
+    $this->assertStringContainsString('to continue', $view);
+    $this->assertStringContainsString('↵', $view);
 
     $widget->handle(Key::named(KeyName::Escape));
     $this->assertTrue($widget->isCancelled());

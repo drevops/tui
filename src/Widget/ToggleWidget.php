@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Widget;
 
+use DrevOps\Tui\Config\FieldType;
+use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Key;
-use DrevOps\Tui\Input\KeyName;
+use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Theme\ThemeInterface;
 
 /**
@@ -49,18 +51,28 @@ class ToggleWidget extends AbstractWidget {
   /**
    * {@inheritdoc}
    */
+  #[\Override]
+  protected function keyScope(): Scope {
+    return Scope::field(FieldType::Toggle);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function handle(Key $key): void {
+    $keys = $this->keys();
+
     if ($this->handleCancel($key)) {
       return;
     }
 
-    if ($key->is(KeyName::Enter)) {
+    if ($keys->matches($key, Action::Accept)) {
       $this->accept($this->liveValue());
 
       return;
     }
 
-    if ($this->isToggle($key)) {
+    if ($keys->matches($key, Action::Toggle)) {
       $this->flip();
 
       return;
@@ -69,19 +81,6 @@ class ToggleWidget extends AbstractWidget {
     if ($key->isChar()) {
       $this->applyChar($key->char ?? '');
     }
-  }
-
-  /**
-   * Whether the key flips the switch.
-   *
-   * @param \DrevOps\Tui\Input\Key $key
-   *   The key to test.
-   *
-   * @return bool
-   *   TRUE when the key flips.
-   */
-  protected function isToggle(Key $key): bool {
-    return in_array($key->name, [KeyName::Left, KeyName::Right, KeyName::Space, KeyName::Up, KeyName::Down], TRUE);
   }
 
   /**
