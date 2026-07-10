@@ -110,9 +110,22 @@ class TextWidget extends AbstractWidget {
    * {@inheritdoc}
    */
   public function view(ThemeInterface $theme): string {
-    $line = substr($this->buffer, 0, $this->cursor) . $theme->caret() . substr($this->buffer, $this->cursor);
+    $line = $this->caretLine($theme);
 
     return $this->error === NULL ? $line : $line . "\n" . $theme->error($this->error);
+  }
+
+  /**
+   * Render the input line with the caret at the cursor position.
+   *
+   * @param \DrevOps\Tui\Theme\ThemeInterface $theme
+   *   The theme supplying the caret glyph.
+   *
+   * @return string
+   *   The input line.
+   */
+  protected function caretLine(ThemeInterface $theme): string {
+    return substr($this->buffer, 0, $this->cursor) . $theme->caret() . substr($this->buffer, $this->cursor);
   }
 
 }

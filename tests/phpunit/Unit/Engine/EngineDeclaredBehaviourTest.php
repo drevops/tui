@@ -59,6 +59,18 @@ final class EngineDeclaredBehaviourTest extends TestCase {
     $engine->collect(['name' => 'nope'], new Context());
   }
 
+  public function testNumberBoundsRejectOutOfRange(): void {
+    $engine = $this->engine(function (PanelBuilder $p): void {
+      $p->number('port')->min(1)->max(10);
+    });
+
+    $this->assertSame(['port' => 5], $engine->collect(['port' => 5], new Context()));
+
+    $this->expectException(EngineException::class);
+    $this->expectExceptionMessage('Invalid value for field "port": must be between 1 and 10.');
+    $engine->collect(['port' => 50], new Context());
+  }
+
   public function testDeclaredTransformApplies(): void {
     $engine = $this->engine(function (PanelBuilder $p): void {
       $p->text('name')->transform(fn (mixed $v): mixed => is_string($v) ? trim($v) : $v);

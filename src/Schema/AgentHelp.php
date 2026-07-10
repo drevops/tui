@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Schema;
 
 use DrevOps\Tui\Config\Config;
+use DrevOps\Tui\Config\Field;
+use DrevOps\Tui\Config\NumberBounds;
 
 /**
  * Produces instructions for driving the form non-interactively.
@@ -48,10 +50,38 @@ class AgentHelp {
 
     foreach ($this->config->fields() as $field) {
       $required = $field->required ? ' (required)' : '';
-      $lines[] = sprintf('  %s [%s]%s - %s', $field->id, $field->type->value, $required, $field->label);
+      $lines[] = sprintf('  %s [%s]%s - %s%s', $field->id, $field->type->value, $required, $field->label, $this->rangeNote($field));
     }
 
     return implode("\n", $lines);
+  }
+
+  /**
+   * A compact range annotation for a bounded number field.
+   *
+   * @param \DrevOps\Tui\Config\Field $field
+   *   The field.
+   *
+   * @return string
+   *   The annotation (e.g. " (between 1 and 10, step 2)"), or an empty string.
+   */
+  protected function rangeNote(Field $field): string {
+    if (!$field->bounds instanceof NumberBounds) {
+      return '';
+    }
+
+    $parts = [];
+
+    $described = $field->bounds->describe();
+    if ($described !== '') {
+      $parts[] = $described;
+    }
+
+    if ($field->bounds->step !== NULL) {
+      $parts[] = sprintf('step %d', $field->bounds->step);
+    }
+
+    return sprintf(' (%s)', implode(', ', $parts));
   }
 
 }

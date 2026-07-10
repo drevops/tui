@@ -6,6 +6,7 @@ namespace DrevOps\Tui\Tests\Unit\Widget;
 
 use DrevOps\Tui\Config\Field;
 use DrevOps\Tui\Config\FieldType;
+use DrevOps\Tui\Config\NumberBounds;
 use DrevOps\Tui\Config\Option;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
@@ -73,6 +74,17 @@ final class WidgetFactoryTest extends TestCase {
     $widget = (new WidgetFactory())->create($this->field(FieldType::Number), 'oops');
 
     $this->assertSame(0, $widget->value());
+  }
+
+  public function testNumberBoundsPassedThrough(): void {
+    $field = new Field('f', 'F', '', FieldType::Number, 0, bounds: new NumberBounds(0, 10));
+
+    $widget = (new WidgetFactory())->create($field, 5);
+
+    // Bounds show through the widget owning its own hint line and stepping.
+    $this->assertTrue($widget->rendersHint());
+    $widget->handle(Key::named(KeyName::Up));
+    $this->assertSame(6, $widget->value());
   }
 
   public function testSeedsCurrentValue(): void {

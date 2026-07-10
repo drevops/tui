@@ -36,6 +36,24 @@ final class AgentHelpTest extends TestCase {
     $this->assertStringContainsString('agree [confirm] - Agree', $help);
   }
 
+  public function testNumberRangeAnnotation(): void {
+    $config = Form::create('T')
+      ->panel('p', 'p', function (PanelBuilder $p): void {
+        $p->number('port', 'HTTP port')->min(1)->max(65535)->step(5);
+        $p->number('count', 'Count')->min(1);
+        $p->number('tick', 'Tick')->step(2);
+        $p->number('plain', 'Plain');
+      })
+      ->build();
+
+    $help = (new AgentHelp($config))->generate();
+
+    $this->assertStringContainsString('port [number] - HTTP port (between 1 and 65535, step 5)', $help);
+    $this->assertStringContainsString('count [number] - Count (at least 1)', $help);
+    $this->assertStringContainsString('tick [number] - Tick (step 2)', $help);
+    $this->assertStringContainsString('plain [number] - Plain', $help);
+  }
+
   public function testNoEnvPrefixOmitsEnvLine(): void {
     $config = Form::create('T')
       ->panel('p', 'p', function (PanelBuilder $p): void {

@@ -130,6 +130,12 @@ $p->number('port', 'HTTP port')->default(8080);
   </tr>
 </table>
 
+Declare optional `min`, `max` and `step` to bound the value and enable keyboard adjustment. Up and Down then adjust the value by the step (defaulting to `1`), clamped to the range, and an entry outside the range is rejected inline with a clear message. The bounds are enforced headlessly too - a `--prompts` or environment value outside the range is rejected - and are reflected in the JSON schema as `min`, `max` and `step` on the prompt. With none declared the field stays a plain integer entry with the arrow keys inert.
+
+```php
+$p->number('port', 'HTTP port')->min(1)->max(65535)->step(1)->default(8080);
+```
+
 ### Textarea
 
 Multi-line text input: Enter inserts a newline, Up/Down move between lines keeping the column, Tab accepts.

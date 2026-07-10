@@ -26,6 +26,7 @@ final class SchemaGeneratorTest extends TestCase {
         $profile = $p->select('profile', 'Profile')->description('The profile')->default('standard')->required();
         $profile->option('standard', 'Standard', 'Std')->option('minimal', 'Minimal');
         $p->text('theme')->derive(new Derive('{{profile}}'))->when(new Condition('profile', eq: 'standard'));
+        $p->number('port', 'Port')->min(1)->max(65535)->step(5);
       })
       ->build();
 
@@ -42,6 +43,9 @@ final class SchemaGeneratorTest extends TestCase {
           ],
           'default' => 'standard',
           'required' => TRUE,
+          'min' => NULL,
+          'max' => NULL,
+          'step' => NULL,
           'when' => NULL,
           'derive' => NULL,
           'discover' => NULL,
@@ -55,10 +59,29 @@ final class SchemaGeneratorTest extends TestCase {
           'options' => [],
           'default' => '',
           'required' => FALSE,
+          'min' => NULL,
+          'max' => NULL,
+          'step' => NULL,
           'when' => ['field' => 'profile', 'eq' => 'standard'],
           'derive' => ['template' => '{{profile}}'],
           'discover' => NULL,
           'depends_on' => ['profile'],
+        ],
+        [
+          'id' => 'port',
+          'type' => 'number',
+          'label' => 'Port',
+          'description' => '',
+          'options' => [],
+          'default' => 0,
+          'required' => FALSE,
+          'min' => 1,
+          'max' => 65535,
+          'step' => 5,
+          'when' => NULL,
+          'derive' => NULL,
+          'discover' => NULL,
+          'depends_on' => [],
         ],
       ],
     ];
