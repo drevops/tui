@@ -8,6 +8,7 @@ use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Binding;
 use DrevOps\Tui\Input\DefaultKeyMap;
+use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyMap;
 use DrevOps\Tui\Input\KeyMapManager;
@@ -25,6 +26,7 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass(Action::class)]
 #[CoversClass(Binding::class)]
+#[CoversClass(Hint::class)]
 #[CoversClass(Scope::class)]
 #[CoversClass(ScopedKeyMap::class)]
 #[CoversClass(KeyMap::class)]
@@ -49,6 +51,12 @@ final class KeyMapTest extends TestCase {
     yield 'nav q quits' => [Scope::navigation(), Key::char('q'), Action::Quit, TRUE];
     yield 'nav escape backs out' => [Scope::navigation(), Key::named(KeyName::Escape), Action::Back, TRUE];
     yield 'nav wheel scrolls' => [Scope::navigation(), Key::named(KeyName::MouseWheelDown), Action::ScrollDown, TRUE];
+    yield 'nav ? opens help' => [Scope::navigation(), Key::char('?'), Action::Help, TRUE];
+    // A bounded number steps with the arrows, which override base movement.
+    yield 'number up increments' => [Scope::field(FieldType::Number), Key::named(KeyName::Up), Action::Increment, TRUE];
+    yield 'number down decrements' => [Scope::field(FieldType::Number), Key::named(KeyName::Down), Action::Decrement, TRUE];
+    yield 'number up is no longer move up' => [Scope::field(FieldType::Number), Key::named(KeyName::Up), Action::MoveUp, FALSE];
+    yield 'number left still moves the caret' => [Scope::field(FieldType::Number), Key::named(KeyName::Left), Action::MoveLeft, TRUE];
     // Text.
     yield 'text enter accepts' => [Scope::field(FieldType::Text), Key::named(KeyName::Enter), Action::Accept, TRUE];
     yield 'text space inserts' => [Scope::field(FieldType::Text), Key::named(KeyName::Space), Action::InsertSpace, TRUE];
@@ -235,6 +243,13 @@ final class KeyMapTest extends TestCase {
     $this->assertTrue($binding->scope->navigation);
     $this->assertSame(Action::Quit, $binding->action);
     $this->assertSame([KeyName::Escape, 'x'], $binding->keys);
+  }
+
+  public function testHintHoldsItsDeclaration(): void {
+    $hint = new Hint('none/all', Action::SelectNone, Action::SelectAll);
+
+    $this->assertSame('none/all', $hint->label);
+    $this->assertSame([Action::SelectNone, Action::SelectAll], $hint->actions);
   }
 
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Widget;
 
+use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\ScopedKeyMap;
 use DrevOps\Tui\Theme\ThemeInterface;
@@ -72,11 +73,15 @@ interface WidgetInterface {
   public function view(ThemeInterface $theme): string;
 
   /**
-   * Whether view() renders its own key-hint line.
+   * The key-hint fragments for this widget, in display order.
    *
-   * @return bool
-   *   TRUE when the view already includes a hint line of its own.
+   * Each fragment pairs a label with the actions whose live keys illustrate it;
+   * the footer renders them against the widget's bindings. This is the widget's
+   * own contribution to the contextual help footer.
+   *
+   * @return list<\DrevOps\Tui\Input\Hint>
+   *   The ordered hint fragments.
    */
-  public function rendersHint(): bool;
+  public function hints(): array;
 
 }

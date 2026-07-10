@@ -6,6 +6,7 @@ namespace DrevOps\Tui\Widget;
 
 use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Input\Action;
+use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Theme\ThemeInterface;
@@ -135,6 +136,14 @@ class ToggleWidget extends AbstractWidget {
     }
 
     return implode('  ', $parts);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  public function hints(): array {
+    return [new Hint('toggle', Action::Toggle), new Hint('accept', Action::Accept), new Hint('cancel', Action::Cancel)];
   }
 
 }

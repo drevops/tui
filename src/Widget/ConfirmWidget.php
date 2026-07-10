@@ -6,6 +6,7 @@ namespace DrevOps\Tui\Widget;
 
 use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Input\Action;
+use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Theme\ThemeInterface;
@@ -89,6 +90,14 @@ class ConfirmWidget extends AbstractWidget {
     $no_label = $this->highlightLabel($theme, 'No', !$this->current);
 
     return $this->current ? $marker_on . ' ' . $yes_label . '  ' . $marker_off . ' ' . $no_label : $marker_off . ' ' . $yes_label . '  ' . $marker_on . ' ' . $no_label;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  public function hints(): array {
+    return [new Hint('yes/no', Action::Yes, Action::No), new Hint('toggle', Action::Toggle), new Hint('accept', Action::Accept), new Hint('cancel', Action::Cancel)];
   }
 
 }

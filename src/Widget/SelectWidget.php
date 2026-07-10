@@ -6,6 +6,7 @@ namespace DrevOps\Tui\Widget;
 
 use DrevOps\Tui\Config\OptionKind;
 use DrevOps\Tui\Input\Action;
+use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Theme\ThemeInterface;
 
@@ -131,6 +132,14 @@ class SelectWidget extends AbstractWidget {
     }
 
     return implode("\n", $lines);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  public function hints(): array {
+    return [new Hint('move', Action::MoveUp, Action::MoveDown), new Hint('accept', Action::Accept), new Hint('cancel', Action::Cancel)];
   }
 
 }

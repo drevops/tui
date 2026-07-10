@@ -10,6 +10,7 @@ use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\NumberBounds;
 use DrevOps\Tui\Config\Option;
 use DrevOps\Tui\Config\OptionKind;
+use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyMapManager;
 use DrevOps\Tui\Input\KeyName;
@@ -79,8 +80,9 @@ final class WidgetFactoryTest extends TestCase {
 
     $widget = (new WidgetFactory())->create($field, 'secret');
 
-    // Revealable shows through the widget owning its own hint line.
-    $this->assertTrue($widget->rendersHint());
+    // Revealable shows through the reveal hint the widget contributes.
+    $labels = array_map(static fn(Hint $hint): string => $hint->label, $widget->hints());
+    $this->assertContains('reveal', $labels);
 
     // Confirm shows through the two-step flow: the first Enter does not accept.
     $widget->handle(Key::named(KeyName::Enter));
@@ -104,8 +106,9 @@ final class WidgetFactoryTest extends TestCase {
 
     $widget = (new WidgetFactory())->create($field, 5);
 
-    // Bounds show through the widget owning its own hint line and stepping.
-    $this->assertTrue($widget->rendersHint());
+    // Bounds show through the adjust hint the widget contributes and stepping.
+    $labels = array_map(static fn(Hint $hint): string => $hint->label, $widget->hints());
+    $this->assertContains('adjust', $labels);
     $widget->handle(Key::named(KeyName::Up));
     $this->assertSame(6, $widget->value());
   }

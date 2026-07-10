@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Tests\Unit\Widget;
 
 use DrevOps\Tui\Input\ArrayKeyStream;
+use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Render\Ansi;
@@ -229,6 +230,12 @@ final class SearchWidgetTest extends TestCase {
     $this->assertStringContainsString('Cherry', $view);
     $this->assertStringContainsString('▲', $view);
     $this->assertStringNotContainsString('Apple', $view);
+  }
+
+  public function testHints(): void {
+    $labels = array_map(static fn(Hint $hint): string => $hint->label, (new SearchWidget($this->labels))->hints());
+
+    $this->assertSame(['move', 'accept', 'cancel'], $labels);
   }
 
 }

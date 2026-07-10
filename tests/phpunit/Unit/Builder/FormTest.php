@@ -47,6 +47,7 @@ final class FormTest extends TestCase {
       ->banner('LOGO')
       ->buttons(TRUE, 'Install', 'Quit')
       ->clearOnExit(FALSE)
+      ->footer(FALSE)
       ->color(TRUE)
       ->unicode(FALSE)
       ->envPrefix('APP_')
@@ -75,6 +76,7 @@ final class FormTest extends TestCase {
     $this->assertSame('Install', $config->submitLabel);
     $this->assertSame('Quit', $config->cancelLabel);
     $this->assertFalse($config->clearOnExit);
+    $this->assertFalse($config->footer);
     $this->assertTrue($config->color);
     $this->assertFalse($config->unicode);
     $this->assertSame('APP_', $config->envPrefix);
@@ -192,6 +194,7 @@ final class FormTest extends TestCase {
     // Config-level defaults.
     $this->assertSame('', $config->subject);
     $this->assertTrue($config->buttons);
+    $this->assertTrue($config->footer);
     $this->assertSame('Submit', $config->submitLabel);
     $this->assertSame('', $config->theme);
     $this->assertNull($config->color);

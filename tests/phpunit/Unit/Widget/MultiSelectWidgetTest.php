@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Tests\Unit\Widget;
 
+use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\ArrayKeyStream;
+use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Render\Ansi;
@@ -130,21 +132,16 @@ final class MultiSelectWidgetTest extends TestCase {
     $this->assertSame([], $value);
   }
 
-  public function testViewShowsKeyHint(): void {
-    $widget = new MultiSelectWidget(['a' => 'Apple', 'b' => 'Banana']);
+  public function testHints(): void {
+    $hints = array_map(static fn(Hint $hint): array => [$hint->label, $hint->actions], (new MultiSelectWidget(['a' => 'A']))->hints());
 
-    $unicode = Ansi::strip($widget->view(new DefaultTheme()));
-    $this->assertStringContainsString('space select · ↑/↓ move · ←/→ none/all · ↵ accept · esc cancel', $unicode);
-
-    // The glyphs degrade with the theme's Unicode mode.
-    $ascii = Ansi::strip($widget->view(new DefaultTheme(76, ['unicode' => FALSE])));
-    $this->assertStringContainsString('</> none/all', $ascii);
-  }
-
-  public function testRendersOwnHint(): void {
-    // The view carries its own hint line, so the editor chrome must not add the
-    // generic "enter accept" hint on top.
-    $this->assertTrue((new MultiSelectWidget(['a' => 'A']))->rendersHint());
+    $this->assertSame([
+      ['select', [Action::Toggle]],
+      ['move', [Action::MoveUp, Action::MoveDown]],
+      ['none/all', [Action::SelectNone, Action::SelectAll]],
+      ['accept', [Action::Accept]],
+      ['cancel', [Action::Cancel]],
+    ], $hints);
   }
 
   public function testSpaceSkipsDisabledAndTogglesSelectable(): void {

@@ -10,10 +10,12 @@ use DrevOps\Tui\Config\Field;
 use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\Panel;
 use DrevOps\Tui\Input\Action;
+use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyMapManager;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Render\Ansi;
+use DrevOps\Tui\Render\HelpSection;
 use DrevOps\Tui\Render\Navigator;
 use DrevOps\Tui\Render\Viewport;
 use DrevOps\Tui\Theme\DefaultTheme;
@@ -26,6 +28,7 @@ use PHPUnit\Framework\TestCase;
  * Tests the theme's rendering via headless frame probes.
  */
 #[CoversClass(DefaultTheme::class)]
+#[CoversClass(HelpSection::class)]
 #[Group('tui')]
 final class ThemeRenderTest extends TestCase {
 
@@ -185,12 +188,51 @@ final class ThemeRenderTest extends TestCase {
     $this->assertSame(2, $this->theme()->itemCount($panel));
   }
 
-  public function testStatusLineIsThemed(): void {
-    $line = (new DefaultTheme())->renderStatusLine(KeyMapManager::create()->navigation());
+  public function testHintsLineIsThemed(): void {
+    $line = (new DefaultTheme())->renderHints(KeyMapManager::create()->navigation(), new Hint('move', Action::MoveUp, Action::MoveDown));
 
     // Themed with the footer role (dim gray) and composed from arrow glyphs.
     $this->assertStringContainsString("\033[90m", $line);
     $this->assertStringContainsString('↑/↓ move', Ansi::strip($line));
+  }
+
+  public function testRenderHintsJoinsFragmentsInBothModes(): void {
+    $keys = KeyMapManager::create()->forField(FieldType::MultiSelect);
+    $hints = [new Hint('select', Action::Toggle), new Hint('none/all', Action::SelectNone, Action::SelectAll)];
+
+    $unicode = Ansi::strip((new DefaultTheme())->renderHints($keys, ...$hints));
+    $this->assertSame('space select · ←/→ none/all', $unicode);
+
+    // The glyphs degrade with the theme's Unicode mode.
+    $ascii = Ansi::strip((new DefaultTheme(76, ['unicode' => FALSE]))->renderHints($keys, ...$hints));
+    $this->assertStringContainsString('</> none/all', $ascii);
+  }
+
+  public function testRenderHintsEmptyWhenNothingBound(): void {
+    $nav = KeyMapManager::create()->navigation();
+
+    // Newline is not a navigation action, so the whole line collapses to empty.
+    $this->assertSame('', (new DefaultTheme())->renderHints($nav, new Hint('newline', Action::NewLine)));
+  }
+
+  public function testRenderHelpListsSectionsAndCloseHint(): void {
+    $nav = KeyMapManager::create()->navigation();
+    $text = KeyMapManager::create()->forField(FieldType::Text);
+
+    $help = Ansi::strip((new DefaultTheme())->renderHelp(
+      $nav,
+      new HelpSection('Navigation', $nav, new Hint('move', Action::MoveUp, Action::MoveDown)),
+      new HelpSection('Text', $text, new Hint('accept', Action::Accept)),
+      // A section whose hints resolve to nothing lists its heading only.
+      new HelpSection('Empty', $nav, new Hint('newline', Action::NewLine)),
+    ));
+
+    $this->assertStringContainsString('Keyboard help', $help);
+    $this->assertStringContainsString('Navigation', $help);
+    $this->assertStringContainsString('↑/↓ move', $help);
+    $this->assertStringContainsString('Text', $help);
+    $this->assertStringContainsString('Empty', $help);
+    $this->assertStringContainsString('? close', $help);
   }
 
   #[DataProvider('dataProviderKeyHint')]
@@ -231,9 +273,10 @@ final class ThemeRenderTest extends TestCase {
 
   public function testRenderEditorDerivesHintFromKeys(): void {
     $keys = KeyMapManager::create()->forField(FieldType::Text);
-    $editor = Ansi::strip((new DefaultTheme())->renderEditor('Name', 'value', FALSE, $keys));
+    $hints = [new Hint('accept', Action::Accept), new Hint('cancel', Action::Cancel)];
+    $editor = Ansi::strip((new DefaultTheme())->renderEditor('Name', 'value', $hints, $keys));
 
-    // The generic accept/cancel hint reflects the active bindings.
+    // The hint reflects the active bindings.
     $this->assertStringContainsString('↵ accept', $editor);
     $this->assertStringContainsString('esc cancel', $editor);
   }

@@ -45,6 +45,11 @@ class DefaultKeyMap {
       new Binding(Scope::navigation(), Action::Quit, 'q'),
       new Binding(Scope::navigation(), Action::ScrollUp, KeyName::MouseWheelUp),
       new Binding(Scope::navigation(), Action::ScrollDown, KeyName::MouseWheelDown),
+      new Binding(Scope::navigation(), Action::Help, '?'),
+
+      // The arrow keys step a bounded number, overriding base movement.
+      new Binding(Scope::field(FieldType::Number), Action::Increment, KeyName::Up),
+      new Binding(Scope::field(FieldType::Number), Action::Decrement, KeyName::Down),
 
       // The text field accepts its inline ghost-text completion on Tab.
       new Binding(Scope::field(FieldType::Text), Action::Complete, KeyName::Tab),

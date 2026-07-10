@@ -50,6 +50,8 @@ final readonly class Config {
    * @param \DrevOps\Tui\Input\KeyMap|null $keymap
    *   The resolved key bindings for the interactive TUI; NULL uses the default
    *   preset. The Form builder resolves and validates this at build time.
+   * @param bool $footer
+   *   Whether the interactive TUI shows the contextual key-hint footer.
    */
   public function __construct(
     public string $title,
@@ -67,6 +69,7 @@ final readonly class Config {
     public string $envPrefix = '',
     public array $themeOptions = [],
     public ?KeyMap $keymap = NULL,
+    public bool $footer = TRUE,
   ) {
   }
 

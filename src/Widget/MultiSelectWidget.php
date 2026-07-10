@@ -8,6 +8,7 @@ use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\Option;
 use DrevOps\Tui\Config\OptionKind;
 use DrevOps\Tui\Input\Action;
+use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Theme\ThemeInterface;
@@ -313,43 +314,24 @@ class MultiSelectWidget extends AbstractWidget {
       $lines[] = $theme->indicator('  ' . $theme->indicatorDown());
     }
 
-    $lines[] = $this->hint($theme);
-
     return implode("\n", $lines);
   }
 
   /**
    * {@inheritdoc}
-   */
-  #[\Override]
-  public function rendersHint(): bool {
-    return TRUE;
-  }
-
-  /**
-   * Build the key-hint line shown beneath the option list.
    *
    * Toggle is the non-obvious action here - nothing else signals that a key
-   * toggles the highlighted option - so it leads, followed by the remaining
-   * bindings. Every glyph is drawn from the live bindings, so the line stays
-   * truthful when the keys are remapped.
-   *
-   * @param \DrevOps\Tui\Theme\ThemeInterface $theme
-   *   The theme.
-   *
-   * @return string
-   *   The themed, dot-joined hint line.
+   * toggles the highlighted option - so it leads, followed by the rest.
    */
-  protected function hint(ThemeInterface $theme): string {
-    $fragments = array_filter([
-      $theme->keysHint($this->keys(), 'select', Action::Toggle),
-      $theme->keysHint($this->keys(), 'move', Action::MoveUp, Action::MoveDown),
-      $theme->keysHint($this->keys(), 'none/all', Action::SelectNone, Action::SelectAll),
-      $theme->keysHint($this->keys(), 'accept', Action::Accept),
-      $theme->keysHint($this->keys(), 'cancel', Action::Cancel),
-    ]);
-
-    return $theme->footer(implode(' ' . $theme->dot() . ' ', $fragments));
+  #[\Override]
+  public function hints(): array {
+    return [
+      new Hint('select', Action::Toggle),
+      new Hint('move', Action::MoveUp, Action::MoveDown),
+      new Hint('none/all', Action::SelectNone, Action::SelectAll),
+      new Hint('accept', Action::Accept),
+      new Hint('cancel', Action::Cancel),
+    ];
   }
 
 }

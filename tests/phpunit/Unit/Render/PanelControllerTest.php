@@ -264,6 +264,58 @@ final class PanelControllerTest extends TestCase {
     $this->assertTrue($controller->isDone());
   }
 
+  public function testHubFooterShowsQuitAndHelp(): void {
+    $controller = $this->controller();
+
+    // The hub footer is complete: it surfaces quit and the help toggle, not
+    // just the move/select/back subset.
+    $footer = Ansi::strip($controller->frame(12));
+    $this->assertStringContainsString('q quit', $footer);
+    $this->assertStringContainsString('? help', $footer);
+  }
+
+  public function testHelpOverlayTogglesAndCloses(): void {
+    $controller = $this->controller();
+
+    // '?' opens the overlay; the frame becomes the help screen listing the hub
+    // and each widget type the form uses (here Text and Confirm).
+    $controller->handle(Key::char('?'));
+    $this->assertTrue($controller->isShowingHelp());
+
+    $help = Ansi::strip($controller->frame(12));
+    $this->assertStringContainsString('Keyboard help', $help);
+    $this->assertStringContainsString('Navigation', $help);
+    $this->assertStringContainsString('Text', $help);
+    $this->assertStringContainsString('Confirm', $help);
+    $this->assertStringContainsString('? close', $help);
+
+    // Any key dismisses it, and that key does nothing else (the cursor stays).
+    $controller->handle(Key::named(KeyName::Down));
+    $this->assertFalse($controller->isShowingHelp());
+    $this->assertSame(0, $controller->cursor());
+    $this->assertStringContainsString('Demo', Ansi::strip($controller->frame(12)));
+  }
+
+  public function testFooterHiddenWhenTurnedOff(): void {
+    $config = Form::create('Demo')
+      ->footer(FALSE)
+      ->buttons(FALSE)
+      ->panel('p', 'p', function (PanelBuilder $p): void {
+        $p->text('a', 'A');
+      })
+      ->build();
+    $controller = new PanelController($config, new DefaultTheme(40, ['color' => FALSE]), ['a' => 'x'], []);
+
+    // The hub footer is gone.
+    $this->assertStringNotContainsString('quit', Ansi::strip($controller->frame(12)));
+
+    // And so is the editor's hint line (drill into the panel, then the field).
+    $controller->handle(Key::named(KeyName::Enter));
+    $controller->handle(Key::named(KeyName::Enter));
+    $this->assertTrue($controller->isEditing());
+    $this->assertStringNotContainsString('accept', Ansi::strip($controller->frame(12)));
+  }
+
   public function testTextareaExternalEditCommitsCapturedValue(): void {
     $controller = $this->textareaController($this->fixedEditor('FROM EDITOR'));
 

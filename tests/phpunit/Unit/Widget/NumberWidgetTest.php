@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Tests\Unit\Widget;
 
 use DrevOps\Tui\Config\NumberBounds;
+use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\ArrayKeyStream;
+use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Theme\DefaultTheme;
@@ -86,8 +88,10 @@ final class NumberWidgetTest extends TestCase {
     $widget->handle(Key::named(KeyName::Down));
 
     $this->assertSame(5, $widget->value());
-    $this->assertFalse($widget->rendersHint());
-    $this->assertStringNotContainsString('adjust', $widget->view(new DefaultTheme()));
+
+    // Without bounds it contributes only the shared accept/cancel hints.
+    $labels = array_map(static fn(Hint $hint): string => $hint->label, $widget->hints());
+    $this->assertSame(['accept', 'cancel'], $labels);
   }
 
   public function testUpDownStepByOneWithinBounds(): void {
@@ -151,14 +155,16 @@ final class NumberWidgetTest extends TestCase {
     $this->assertStringNotContainsString('Enter a number', $widget->view(new DefaultTheme()));
   }
 
-  public function testRendersOwnHintWhenBounded(): void {
+  public function testHintsWhenBounded(): void {
     $widget = new NumberWidget('5', bounds: new NumberBounds(0, 10));
 
-    $view = $widget->view(new DefaultTheme());
+    $hints = array_map(static fn(Hint $hint): array => [$hint->label, $hint->actions], $widget->hints());
 
-    $this->assertTrue($widget->rendersHint());
-    $this->assertStringContainsString('adjust', $view);
-    $this->assertStringContainsString('accept', $view);
+    $this->assertSame([
+      ['adjust', [Action::Increment, Action::Decrement]],
+      ['accept', [Action::Accept]],
+      ['cancel', [Action::Cancel]],
+    ], $hints);
   }
 
 }

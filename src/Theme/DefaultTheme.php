@@ -10,11 +10,13 @@ use DrevOps\Tui\Config\Field;
 use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\Panel;
 use DrevOps\Tui\Input\Action;
+use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Input\ScopedKeyMap;
 use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Render\Box;
+use DrevOps\Tui\Render\HelpSection;
 use DrevOps\Tui\Render\Navigator;
 use DrevOps\Tui\Render\Scroller;
 use DrevOps\Tui\Render\Viewport;
@@ -908,20 +910,32 @@ class DefaultTheme implements ThemeInterface {
   }
 
   /**
-   * Render the status line shown at the foot of a panel.
+   * Render a context's hint fragments as one dot-joined footer line.
    *
-   * @param \DrevOps\Tui\Input\ScopedKeyMap $nav
-   *   The navigation-scope bindings, so the hint reflects the active keys.
+   * Each {@see Hint} becomes a labelled fragment drawn from the live bindings,
+   * so the line never contradicts a remapped key. Fragments whose actions are
+   * all unbound drop out, and an entirely unbound context yields an empty line.
+   *
+   * @param \DrevOps\Tui\Input\ScopedKeyMap $keys
+   *   The active scope's bindings.
+   * @param \DrevOps\Tui\Input\Hint ...$hints
+   *   The hint fragments, in display order.
    *
    * @return string
-   *   The themed status line (hint text and arrow glyphs).
+   *   The themed hint line, or an empty string when nothing is bound.
    */
-  public function renderStatusLine(ScopedKeyMap $nav): string {
-    return $this->renderHintLine(
-      $this->keysHint($nav, 'move', Action::MoveUp, Action::MoveDown),
-      $this->keysHint($nav, 'select', Action::Activate),
-      $this->keysHint($nav, 'back', Action::Back),
-    );
+  public function renderHints(ScopedKeyMap $keys, Hint ...$hints): string {
+    $fragments = [];
+
+    foreach ($hints as $hint) {
+      $fragment = $this->keysHint($keys, $hint->label, ...$hint->actions);
+
+      if ($fragment !== '') {
+        $fragments[] = $fragment;
+      }
+    }
+
+    return $fragments === [] ? '' : $this->renderHintLine(...$fragments);
   }
 
   /**
@@ -954,27 +968,24 @@ class DefaultTheme implements ThemeInterface {
   }
 
   /**
-   * Compose a field's editor screen: the label, the widget view and hints.
+   * Compose a field's editor screen: the label, the widget view and its hints.
    *
    * @param string $label
    *   The field label.
    * @param string $view
    *   The widget's rendered view.
-   * @param bool $renders_hint
-   *   Whether the view already carries its own key-hint line, in which case the
-   *   generic accept/cancel hint is omitted so the two cannot contradict.
+   * @param list<\DrevOps\Tui\Input\Hint> $hints
+   *   The widget's hint fragments; an empty list draws no hint line, so the
+   *   footer can be turned off form-wide.
    * @param \DrevOps\Tui\Input\ScopedKeyMap|null $keys
-   *   The editor's scope bindings, so the accept/cancel hint reflects the
-   *   active keys; NULL uses the default accept/cancel glyphs.
+   *   The editor's scope bindings, so the hint glyphs reflect the active keys.
    *
    * @return string
    *   The editor screen - boxed when the theme has a border, else plain.
    */
-  public function renderEditor(string $label, string $view, bool $renders_hint = FALSE, ?ScopedKeyMap $keys = NULL): string {
-    $hint = $keys instanceof ScopedKeyMap
-      ? $this->renderHintLine($this->keysHint($keys, 'accept', Action::Accept), $this->keysHint($keys, 'cancel', Action::Cancel))
-      : $this->renderHintLine($this->enter() . ' accept', 'esc cancel');
-    $footer = $renders_hint ? [] : [$hint];
+  public function renderEditor(string $label, string $view, array $hints = [], ?ScopedKeyMap $keys = NULL): string {
+    $hint = $keys instanceof ScopedKeyMap ? $this->renderHints($keys, ...$hints) : '';
+    $footer = $hint === '' ? [] : [$hint];
 
     if ($this->borderStyle() !== self::BORDER_NONE) {
       $body = explode("\n", $view);
@@ -984,7 +995,37 @@ class DefaultTheme implements ThemeInterface {
 
     $screen = $this->renderEditorHeader($label) . "\n" . $view;
 
-    return $renders_hint ? $screen : $screen . "\n\n" . $hint;
+    return $hint === '' ? $screen : $screen . "\n\n" . $hint;
+  }
+
+  /**
+   * Compose the full-screen key-binding help overlay.
+   *
+   * @param \DrevOps\Tui\Input\ScopedKeyMap $nav
+   *   The navigation bindings, for the close hint.
+   * @param \DrevOps\Tui\Render\HelpSection ...$sections
+   *   The contexts to list, each a heading with its bindings and hints.
+   *
+   * @return string
+   *   The rendered overlay.
+   */
+  public function renderHelp(ScopedKeyMap $nav, HelpSection ...$sections): string {
+    $lines = [$this->title('Keyboard help'), ''];
+
+    foreach ($sections as $section) {
+      $lines[] = $this->label($section->title);
+      $hint = $this->renderHints($section->keys, ...$section->hints);
+
+      if ($hint !== '') {
+        $lines[] = $hint;
+      }
+
+      $lines[] = '';
+    }
+
+    $lines[] = $this->renderHints($nav, new Hint('close', Action::Help));
+
+    return implode("\n", $lines);
   }
 
   /**

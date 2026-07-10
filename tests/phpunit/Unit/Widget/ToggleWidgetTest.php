@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Tests\Unit\Widget;
 
 use DrevOps\Tui\Input\ArrayKeyStream;
+use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Render\Ansi;
@@ -134,6 +135,12 @@ final class ToggleWidgetTest extends TestCase {
     $widget->handle(Key::named(KeyName::Space));
 
     $this->assertSame('', $widget->value());
+  }
+
+  public function testHints(): void {
+    $labels = array_map(static fn(Hint $hint): string => $hint->label, (new ToggleWidget(['on' => 'On', 'off' => 'Off']))->hints());
+
+    $this->assertSame(['toggle', 'accept', 'cancel'], $labels);
   }
 
 }

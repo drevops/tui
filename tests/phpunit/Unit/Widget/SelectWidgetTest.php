@@ -8,6 +8,7 @@ use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\Option;
 use DrevOps\Tui\Config\OptionKind;
 use DrevOps\Tui\Input\ArrayKeyStream;
+use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyMapManager;
 use DrevOps\Tui\Input\KeyName;
@@ -161,6 +162,12 @@ final class SelectWidgetTest extends TestCase {
     $this->assertStringContainsString('Cherry', $scrolled);
     $this->assertStringContainsString('▲', $scrolled);
     $this->assertStringNotContainsString('Apple', $scrolled);
+  }
+
+  public function testHints(): void {
+    $labels = array_map(static fn(Hint $hint): string => $hint->label, (new SelectWidget(['a' => 'A']))->hints());
+
+    $this->assertSame(['move', 'accept', 'cancel'], $labels);
   }
 
 }

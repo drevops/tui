@@ -6,6 +6,7 @@ namespace DrevOps\Tui\Widget;
 
 use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Input\Action;
+use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Theme\ThemeInterface;
@@ -129,19 +130,25 @@ class PasswordWidget extends TextWidget {
       $rows[] = $theme->footer('re-enter to confirm');
     }
 
-    if ($this->revealable) {
-      $rows[] = $theme->footer(implode(' ' . $theme->dot() . ' ', array_filter([
-        $theme->keysHint($this->keys(), 'accept', Action::Accept),
-        $theme->keysHint($this->keys(), 'reveal', Action::Reveal),
-        $theme->keysHint($this->keys(), 'cancel', Action::Cancel),
-      ])));
-    }
-
     if ($this->error !== NULL) {
       $rows[] = $theme->error($this->error);
     }
 
     return implode("\n", $rows);
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * The reveal toggle is only offered when the widget is revealable.
+   */
+  #[\Override]
+  public function hints(): array {
+    if (!$this->revealable) {
+      return parent::hints();
+    }
+
+    return [new Hint('accept', Action::Accept), new Hint('reveal', Action::Reveal), new Hint('cancel', Action::Cancel)];
   }
 
   /**
@@ -159,14 +166,6 @@ class PasswordWidget extends TextWidget {
       PasswordDisplay::Masked => str_repeat($theme->mask(), $this->cursor) . $theme->caret() . str_repeat($theme->mask(), strlen($this->buffer) - $this->cursor),
       PasswordDisplay::Plaintext => substr($this->buffer, 0, $this->cursor) . $theme->caret() . substr($this->buffer, $this->cursor),
     };
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  #[\Override]
-  public function rendersHint(): bool {
-    return $this->revealable;
   }
 
 }

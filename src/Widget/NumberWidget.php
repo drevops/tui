@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Widget;
 
+use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\NumberBounds;
+use DrevOps\Tui\Input\Action;
+use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
-use DrevOps\Tui\Input\KeyName;
-use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Input\Scope;
 
 /**
  * Integer input: digits with an optional leading minus, accepted as an int.
@@ -40,19 +42,31 @@ class NumberWidget extends TextWidget {
    * {@inheritdoc}
    */
   #[\Override]
+  protected function keyScope(): Scope {
+    return Scope::field(FieldType::Number);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
   public function handle(Key $key): void {
     $bounds = $this->bounds;
 
-    if ($bounds instanceof NumberBounds && $key->is(KeyName::Up)) {
-      $this->adjust($bounds, 1);
+    if ($bounds instanceof NumberBounds) {
+      $keys = $this->keys();
 
-      return;
-    }
+      if ($keys->matches($key, Action::Increment)) {
+        $this->adjust($bounds, 1);
 
-    if ($bounds instanceof NumberBounds && $key->is(KeyName::Down)) {
-      $this->adjust($bounds, -1);
+        return;
+      }
 
-      return;
+      if ($keys->matches($key, Action::Decrement)) {
+        $this->adjust($bounds, -1);
+
+        return;
+      }
     }
 
     parent::handle($key);
@@ -114,50 +128,17 @@ class NumberWidget extends TextWidget {
 
   /**
    * {@inheritdoc}
+   *
+   * The step keys are the non-obvious binding here - nothing else signals that
+   * they adjust the value - so they lead when bounds are set.
    */
   #[\Override]
-  public function view(ThemeInterface $theme): string {
+  public function hints(): array {
     if (!$this->bounds instanceof NumberBounds) {
-      return parent::view($theme);
+      return parent::hints();
     }
 
-    $rows = [$this->caretLine($theme), $this->hint($theme)];
-
-    if ($this->error !== NULL) {
-      $rows[] = $theme->error($this->error);
-    }
-
-    return implode("\n", $rows);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  #[\Override]
-  public function rendersHint(): bool {
-    return $this->bounds instanceof NumberBounds;
-  }
-
-  /**
-   * Build the key-hint line shown beneath a bounded number entry.
-   *
-   * The arrow keys are the non-obvious binding here - nothing else signals that
-   * they adjust the value - so they lead, followed by the remaining bindings.
-   *
-   * @param \DrevOps\Tui\Theme\ThemeInterface $theme
-   *   The theme.
-   *
-   * @return string
-   *   The themed, dot-joined hint line.
-   */
-  protected function hint(ThemeInterface $theme): string {
-    $fragments = [
-      $theme->arrowUp() . '/' . $theme->arrowDown() . ' adjust',
-      $theme->enter() . ' accept',
-      'esc cancel',
-    ];
-
-    return $theme->footer(implode(' ' . $theme->dot() . ' ', $fragments));
+    return [new Hint('adjust', Action::Increment, Action::Decrement), new Hint('accept', Action::Accept), new Hint('cancel', Action::Cancel)];
   }
 
 }

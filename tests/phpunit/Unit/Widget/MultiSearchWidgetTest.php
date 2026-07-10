@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Tests\Unit\Widget;
 
 use DrevOps\Tui\Input\ArrayKeyStream;
+use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Render\Ansi;
@@ -61,12 +62,10 @@ final class MultiSearchWidgetTest extends TestCase {
     $this->assertStringNotContainsString('ClamAV', $view);
   }
 
-  public function testViewShowsInheritedKeyHint(): void {
-    $widget = new MultiSearchWidget($this->labels);
+  public function testInheritsMultiselectHints(): void {
+    $labels = array_map(static fn(Hint $hint): string => $hint->label, (new MultiSearchWidget($this->labels))->hints());
 
-    $view = Ansi::strip($widget->view(new DefaultTheme()));
-
-    $this->assertStringContainsString('space select · ↑/↓ move · ←/→ none/all · ↵ accept · esc cancel', $view);
+    $this->assertSame(['select', 'move', 'none/all', 'accept', 'cancel'], $labels);
   }
 
   public function testSkipsNonSelectableWhenToggling(): void {
