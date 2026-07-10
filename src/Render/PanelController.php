@@ -491,11 +491,11 @@ class PanelController {
 
     $seen = [];
     foreach ($this->config->fields() as $field) {
-      if (isset($seen[$field->type->value])) {
+      if (in_array($field->type, $seen, TRUE)) {
         continue;
       }
 
-      $seen[$field->type->value] = TRUE;
+      $seen[] = $field->type;
       $widget = $this->widgets->create($field, $this->values[$field->id] ?? $field->default);
       $sections[] = new HelpSection(ucfirst($field->type->value), $this->keymap->forField($field->type), ...$widget->hints());
     }
