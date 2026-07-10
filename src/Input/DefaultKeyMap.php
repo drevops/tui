@@ -70,6 +70,13 @@ class DefaultKeyMap {
       $bindings[] = new Binding(Scope::field($type), Action::SelectNone, KeyName::Left);
     }
 
+    // Both pickers reveal hidden entries on Tab (Left/Right browse in and out,
+    // inherited from the base); the multiple picker also toggles the
+    // highlighted entry on Space.
+    $bindings[] = new Binding(Scope::field(FieldType::FilePicker), Action::Reveal, KeyName::Tab);
+    $bindings[] = new Binding(Scope::field(FieldType::MultiFilePicker), Action::Reveal, KeyName::Tab);
+    $bindings[] = new Binding(Scope::field(FieldType::MultiFilePicker), Action::Toggle, KeyName::Space);
+
     return $bindings;
   }
 

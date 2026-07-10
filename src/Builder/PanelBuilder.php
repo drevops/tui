@@ -226,6 +226,36 @@ final class PanelBuilder {
   }
 
   /**
+   * Add a file picker field (browse the filesystem for a single path).
+   *
+   * @param string $id
+   *   The field id.
+   * @param string $label
+   *   The label (defaults to the id).
+   *
+   * @return \DrevOps\Tui\Builder\FieldBuilder
+   *   The field builder.
+   */
+  public function filePicker(string $id, string $label = ''): FieldBuilder {
+    return $this->field($id, $label, FieldType::FilePicker);
+  }
+
+  /**
+   * Add a multi file picker field (browse the filesystem for several paths).
+   *
+   * @param string $id
+   *   The field id.
+   * @param string $label
+   *   The label (defaults to the id).
+   *
+   * @return \DrevOps\Tui\Builder\FieldBuilder
+   *   The field builder.
+   */
+  public function multiFilePicker(string $id, string $label = ''): FieldBuilder {
+    return $this->field($id, $label, FieldType::MultiFilePicker);
+  }
+
+  /**
    * Add a pause field (an acknowledgement gate).
    *
    * @param string $id

@@ -61,6 +61,17 @@ final readonly class Field {
    * @param \DrevOps\Tui\Config\NumberBounds|null $bounds
    *   Number only: optional min/max/step bounds; NULL for a plain integer
    *   entry with no range or keyboard stepping.
+   * @param \DrevOps\Tui\Config\FilePickerMode $pickerMode
+   *   File picker only: which entries may be selected (any, files or
+   *   directories); ignored by other types.
+   * @param string $pickerStart
+   *   File picker only: the directory the browser opens at and cannot ascend
+   *   above; empty falls back to the current working directory.
+   * @param list<string> $pickerExtensions
+   *   File picker only: the file extensions selectable files are limited to
+   *   (dot-less, case-insensitive); empty allows every extension.
+   * @param bool $pickerShowHidden
+   *   File picker only: whether dot-entries are shown when the browser opens.
    */
   public function __construct(
     public string $id,
@@ -80,6 +91,10 @@ final readonly class Field {
     public bool $confirm = FALSE,
     public bool $externalEditor = FALSE,
     public ?NumberBounds $bounds = NULL,
+    public FilePickerMode $pickerMode = FilePickerMode::Any,
+    public string $pickerStart = '',
+    public array $pickerExtensions = [],
+    public bool $pickerShowHidden = FALSE,
   ) {
   }
 

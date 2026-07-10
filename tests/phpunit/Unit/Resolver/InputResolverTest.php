@@ -81,6 +81,17 @@ final class InputResolverTest extends TestCase {
     $this->assertSame('VORTEX_MACHINE_NAME', (new InputResolver('VORTEX_'))->envName('machine_name'));
   }
 
+  public function testFilePickerCoercion(): void {
+    $inputs = (new InputResolver('VORTEX_'))->resolve($this->fields(), '', [
+      'VORTEX_PATHS' => 'a/b, c/d',
+      'VORTEX_CFG' => '/etc/app.yml',
+    ]);
+
+    // A multiple picker splits a comma list; a single picker stays a string.
+    $this->assertSame(['a/b', 'c/d'], $inputs['paths']);
+    $this->assertSame('/etc/app.yml', $inputs['cfg']);
+  }
+
   public function testNumberPauseAndMultisearchCoercion(): void {
     $inputs = (new InputResolver('VORTEX_'))->resolve($this->fields(), '', [
       'VORTEX_PORT' => ' 8080 ',
@@ -108,6 +119,8 @@ final class InputResolverTest extends TestCase {
       new Field('ack', 'Ack', '', FieldType::Pause, TRUE),
       new Field('tags', 'Tags', '', FieldType::MultiSearch, []),
       new Field('vis', 'Visibility', '', FieldType::Toggle, 'public'),
+      new Field('paths', 'Paths', '', FieldType::MultiFilePicker, []),
+      new Field('cfg', 'Config', '', FieldType::FilePicker, ''),
     ];
   }
 

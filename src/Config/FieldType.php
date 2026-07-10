@@ -22,6 +22,8 @@ enum FieldType: string {
   case Password = 'password';
   case Search = 'search';
   case MultiSearch = 'multisearch';
+  case FilePicker = 'filepicker';
+  case MultiFilePicker = 'multifilepicker';
   case Pause = 'pause';
 
 }

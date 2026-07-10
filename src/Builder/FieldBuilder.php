@@ -8,6 +8,7 @@ use DrevOps\Tui\Condition\ConditionInterface;
 use DrevOps\Tui\Config\ConfigException;
 use DrevOps\Tui\Config\Field;
 use DrevOps\Tui\Config\FieldType;
+use DrevOps\Tui\Config\FilePickerMode;
 use DrevOps\Tui\Config\NumberBounds;
 use DrevOps\Tui\Config\Option;
 use DrevOps\Tui\Derive\Derive;
@@ -106,6 +107,28 @@ final class FieldBuilder {
    * The number field's Up/Down increment, when declared.
    */
   protected ?int $step = NULL;
+
+  /**
+   * File picker only: which entries may be selected.
+   */
+  protected FilePickerMode $pickerMode = FilePickerMode::Any;
+
+  /**
+   * File picker only: the start directory and the floor it cannot ascend above.
+   */
+  protected string $pickerStart = '';
+
+  /**
+   * File picker only: the extensions selectable files are limited to.
+   *
+   * @var list<string>
+   */
+  protected array $pickerExtensions = [];
+
+  /**
+   * File picker only: whether dot-entries are shown when the browser opens.
+   */
+  protected bool $pickerShowHidden = FALSE;
 
   /**
    * Construct a field builder.
@@ -276,6 +299,82 @@ final class FieldBuilder {
   }
 
   /**
+   * File picker only: set the directory the browser opens at.
+   *
+   * The browser cannot ascend above this directory, so it also bounds where a
+   * path may be chosen. An empty value falls back to the current working
+   * directory at collection time.
+   *
+   * @param string $directory
+   *   The start directory.
+   *
+   * @return $this
+   *   The builder.
+   */
+  public function start(string $directory): self {
+    $this->pickerStart = $directory;
+
+    return $this;
+  }
+
+  /**
+   * File picker only: allow only files to be selected.
+   *
+   * Directories stay navigable so files beneath them remain reachable.
+   *
+   * @return $this
+   *   The builder.
+   */
+  public function filesOnly(): self {
+    $this->pickerMode = FilePickerMode::File;
+
+    return $this;
+  }
+
+  /**
+   * File picker only: allow only directories to be selected.
+   *
+   * @return $this
+   *   The builder.
+   */
+  public function directoriesOnly(): self {
+    $this->pickerMode = FilePickerMode::Directory;
+
+    return $this;
+  }
+
+  /**
+   * File picker only: limit selectable files to the given extensions.
+   *
+   * @param list<string> $extensions
+   *   The allowed extensions (dot-less, case-insensitive); empty allows every
+   *   extension.
+   *
+   * @return $this
+   *   The builder.
+   */
+  public function extensions(array $extensions): self {
+    $this->pickerExtensions = $extensions;
+
+    return $this;
+  }
+
+  /**
+   * File picker only: show dot-entries when the browser opens.
+   *
+   * @param bool $show
+   *   Whether hidden entries are shown initially.
+   *
+   * @return $this
+   *   The builder.
+   */
+  public function showHidden(bool $show = TRUE): self {
+    $this->pickerShowHidden = $show;
+
+    return $this;
+  }
+
+  /**
    * Set the conditional-visibility rule.
    *
    * @param \DrevOps\Tui\Condition\ConditionInterface $condition
@@ -414,6 +513,10 @@ final class FieldBuilder {
       $this->confirm,
       $this->externalEditor,
       $this->buildBounds(),
+      $this->pickerMode,
+      $this->pickerStart,
+      $this->pickerExtensions,
+      $this->pickerShowHidden,
     );
   }
 
@@ -475,7 +578,7 @@ final class FieldBuilder {
    */
   protected function defaultFor(FieldType $type): mixed {
     return match ($type) {
-      FieldType::MultiSelect, FieldType::MultiSearch => [],
+      FieldType::MultiSelect, FieldType::MultiSearch, FieldType::MultiFilePicker => [],
       FieldType::Confirm => FALSE,
       FieldType::Number => 0,
       // A pause is an interactive acknowledgement; headless runs have nothing

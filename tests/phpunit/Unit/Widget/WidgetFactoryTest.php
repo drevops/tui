@@ -12,6 +12,7 @@ use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyMapManager;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Widget\ConfirmWidget;
+use DrevOps\Tui\Widget\FilePickerWidget;
 use DrevOps\Tui\Widget\MultiSearchWidget;
 use DrevOps\Tui\Widget\MultiSelectWidget;
 use DrevOps\Tui\Widget\NumberWidget;
@@ -49,7 +50,22 @@ final class WidgetFactoryTest extends TestCase {
     $this->assertInstanceOf(PasswordWidget::class, $factory->create($this->field(FieldType::Password), 'x'));
     $this->assertInstanceOf(SearchWidget::class, $factory->create($this->fieldWithOptions(FieldType::Search), 'a'));
     $this->assertInstanceOf(MultiSearchWidget::class, $factory->create($this->fieldWithOptions(FieldType::MultiSearch), ['a']));
+    $this->assertInstanceOf(FilePickerWidget::class, $factory->create($this->field(FieldType::FilePicker), '/tmp'));
+    $this->assertInstanceOf(FilePickerWidget::class, $factory->create($this->field(FieldType::MultiFilePicker), ['/tmp']));
     $this->assertInstanceOf(PauseWidget::class, $factory->create($this->field(FieldType::Pause), TRUE));
+  }
+
+  public function testFilePickerFlagsPassedThrough(): void {
+    $single = new Field('f', 'F', '', FieldType::FilePicker, '', pickerStart: '/nonexistent');
+    $multi = new Field('g', 'G', '', FieldType::MultiFilePicker, [], pickerStart: '/nonexistent');
+
+    // The single picker yields a string; a current path outside the start is
+    // ignored and the missing directory lists nothing, so the value is empty.
+    $this->assertSame('', (new WidgetFactory())->create($single, 'x')->value());
+
+    // The multiple picker yields a list seeded from the current value, proving
+    // the multiple flag is threaded through.
+    $this->assertSame(['/a', '/b'], (new WidgetFactory())->create($multi, ['/a', '/b'])->value());
   }
 
   public function testPasswordFlagsPassedThrough(): void {

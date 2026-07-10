@@ -29,7 +29,7 @@ It powers the [Vortex](https://www.vortextemplate.com) project installer, but kn
 ## Features
 
 - 🧭 [**Panel TUI**](#panels-and-navigation) - a full-screen, scrollable, keyboard-driven form: panels hold fields, sub-panels drill in to any depth
-- 🧩 [**Widgets**](#widgets) - `text`, `number`, `textarea`, `password`, `select`, `multiselect`, `suggest`, `search`, `multisearch`, `confirm`, `toggle`, `pause`
+- 🧩 [**Widgets**](#widgets) - `text`, `number`, `textarea`, `password`, `select`, `multiselect`, `suggest`, `search`, `multisearch`, `filepicker`, `multifilepicker`, `confirm`, `toggle`, `pause`
 - 🏗️ [**Builder-driven**](#configuration) - panels and fields are declared in PHP with a fluent builder; the common cases need no code
 - 🤖 [**Interactive or headless**](#headless-collection) - drive the panel TUI by keyboard, or collect answers non-interactively from a JSON payload and environment variables (and emit a JSON schema for agents and forms)
 - 🔗 [**Derived values**](#derived-values) - compute one field from others with [str2name](https://github.com/AlexSkrypnyk/str2name) transforms; chains settle to a fixpoint
@@ -73,7 +73,7 @@ It also exposes `schema()`, `agentHelp()` and `validate()`, and - when you want 
 
 ## Widgets
 
-Twelve widget types cover text entry, choices and gates. Every field of the form opens its widget in an editor; the same widgets also run standalone (see [`playground/3-widgets/`](playground/3-widgets)). Widgets pull their glyphs and colours from the theme, so each one below is shown in all four display modes.
+Fourteen widget types cover text entry, choices, filesystem browsing and gates. Every field of the form opens its widget in an editor; the same widgets also run standalone (see [`playground/3-widgets/`](playground/3-widgets)). Widgets pull their glyphs and colours from the theme, so each one below is shown in all four display modes.
 
 <p align="center">
   <img src="docs/assets/widgets.svg" width="100%" alt="All widgets, one after another">
@@ -335,6 +335,58 @@ $p->multisearch('services', 'Services')->default(['redis'])->options(['redis' =>
     <td align="right"><strong>ASCII</strong></td>
     <td><img src="docs/assets/widget-multisearch-ascii.svg" alt="MultiSearch: ASCII + ANSI"></td>
     <td><img src="docs/assets/widget-multisearch-ascii-no-ansi.svg" alt="MultiSearch: ASCII + No ANSI"></td>
+  </tr>
+</table>
+
+### FilePicker
+
+Browse the filesystem for a single path. Arrows move, `→` enters the highlighted directory and `←` returns to its parent (never above the start directory), typing filters the current directory and `Tab` reveals hidden entries; `Enter` selects the highlighted entry. Restrict what may be chosen with `filesOnly()` or `directoriesOnly()`, limit files with `extensions()`, and choose where browsing starts with `start()`. It collects the chosen path.
+
+```php
+$p->filePicker('config', 'Config file')->start(getcwd())->filesOnly()->extensions(['yml', 'yaml']);
+```
+
+<table>
+  <tr>
+    <td></td>
+    <td align="center"><strong>ANSI</strong></td>
+    <td align="center"><strong>No ANSI</strong></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>Unicode</strong></td>
+    <td><img src="docs/assets/widget-filepicker.svg" alt="File picker: Unicode + ANSI"></td>
+    <td><img src="docs/assets/widget-filepicker-no-ansi.svg" alt="File picker: Unicode + No ANSI"></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>ASCII</strong></td>
+    <td><img src="docs/assets/widget-filepicker-ascii.svg" alt="File picker: ASCII + ANSI"></td>
+    <td><img src="docs/assets/widget-filepicker-ascii-no-ansi.svg" alt="File picker: ASCII + No ANSI"></td>
+  </tr>
+</table>
+
+### MultiFilePicker
+
+Like the file picker, but several paths can be chosen: `Space` toggles the highlighted entry and selections accumulate as you browse between directories, `Enter` accepts them all. It collects the list of chosen paths.
+
+```php
+$p->multiFilePicker('assets', 'Asset files')->start(getcwd())->extensions(['png', 'svg']);
+```
+
+<table>
+  <tr>
+    <td></td>
+    <td align="center"><strong>ANSI</strong></td>
+    <td align="center"><strong>No ANSI</strong></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>Unicode</strong></td>
+    <td><img src="docs/assets/widget-multifilepicker.svg" alt="Multi file picker: Unicode + ANSI"></td>
+    <td><img src="docs/assets/widget-multifilepicker-no-ansi.svg" alt="Multi file picker: Unicode + No ANSI"></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>ASCII</strong></td>
+    <td><img src="docs/assets/widget-multifilepicker-ascii.svg" alt="Multi file picker: ASCII + ANSI"></td>
+    <td><img src="docs/assets/widget-multifilepicker-ascii-no-ansi.svg" alt="Multi file picker: ASCII + No ANSI"></td>
   </tr>
 </table>
 

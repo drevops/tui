@@ -134,6 +134,20 @@ final class SchemaValidatorTest extends TestCase {
     $this->assertContains('Question "flag" must be one of: 0, 1.', $validator->validate(['flag' => '2']));
   }
 
+  public function testFilePickerAcceptsString(): void {
+    $validator = new SchemaValidator($this->config());
+
+    $this->assertSame([], $validator->validate(['name' => 'Acme', 'cfg' => '/etc/app.yml']));
+    $this->assertContains('Question "cfg" must be a string.', $validator->validate(['name' => 'Acme', 'cfg' => ['x']]));
+  }
+
+  public function testMultiFilePickerAcceptsList(): void {
+    $validator = new SchemaValidator($this->config());
+
+    $this->assertSame([], $validator->validate(['name' => 'Acme', 'paths' => ['/a', '/b']]));
+    $this->assertContains('Question "paths" must be a list.', $validator->validate(['name' => 'Acme', 'paths' => 'notalist']));
+  }
+
   /**
    * Build a config exercising every validation branch.
    */
@@ -150,6 +164,8 @@ final class SchemaValidatorTest extends TestCase {
         $p->search('engine')->option('solr')->option('none');
         $p->multisearch('tags')->option('a')->option('b');
         $p->toggle('visibility')->option('public')->option('private');
+        $p->filePicker('cfg');
+        $p->multiFilePicker('paths');
       })
       ->build();
   }
