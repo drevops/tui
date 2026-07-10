@@ -39,7 +39,7 @@ class PauseWidget extends AbstractWidget {
    * {@inheritdoc}
    */
   public function view(ThemeInterface $theme): string {
-    return $theme->style('marker', $theme->glyph('enter')) . ' Press Enter to continue';
+    return $theme->highlight($theme->enter()) . ' Press Enter to continue';
   }
 
 }

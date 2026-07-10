@@ -1,0 +1,44 @@
+<?php
+
+declare(strict_types=1);
+
+namespace DrevOps\Tui\Tests\Fixtures\Theme;
+
+use DrevOps\Tui\Theme\DefaultTheme;
+
+/**
+ * Test fixture: a theme declaring a custom "accent" display option.
+ *
+ * @package DrevOps\Tui\Tests\Fixtures\Theme
+ */
+class AccentOptionTheme extends DefaultTheme {
+
+  /**
+   * Construct at a fixed width, taking options only.
+   *
+   * @param array<string,mixed> $options
+   *   The theme options.
+   */
+  public function __construct(array $options = []) {
+    parent::__construct(40, $options);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  protected function optionSchema(): array {
+    return ['accent' => ['cool', 'warm', 'mono']] + parent::optionSchema();
+  }
+
+  /**
+   * The value of the custom "accent" option.
+   *
+   * @return string
+   *   The accent, or "cool" when unset.
+   */
+  public function accent(): string {
+    return $this->option('accent', 'cool');
+  }
+
+}

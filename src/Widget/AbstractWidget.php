@@ -79,6 +79,13 @@ abstract class AbstractWidget implements WidgetInterface {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function rendersHint(): bool {
+    return FALSE;
+  }
+
+  /**
    * The in-progress value before acceptance.
    *
    * @return mixed
@@ -119,7 +126,7 @@ abstract class AbstractWidget implements WidgetInterface {
    *   The label, highlight-styled when current.
    */
   protected function highlightLabel(ThemeInterface $theme, string $label, bool $current): string {
-    return $current ? $theme->style('highlight', $label) : $label;
+    return $current ? $theme->highlight($label) : $label;
   }
 
   /**
@@ -136,9 +143,7 @@ abstract class AbstractWidget implements WidgetInterface {
    *   The rendered row.
    */
   protected function renderRadioRow(ThemeInterface $theme, string $label, bool $current): string {
-    $marker = $current ? $theme->style('marker', $theme->glyph('radio_on')) : $theme->glyph('radio_off');
-
-    return $marker . ' ' . $this->highlightLabel($theme, $label, $current);
+    return $theme->radio($current) . ' ' . $this->highlightLabel($theme, $label, $current);
   }
 
   /**

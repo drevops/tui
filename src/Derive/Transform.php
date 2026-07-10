@@ -9,19 +9,14 @@ use AlexSkrypnyk\Str2Name\Str2Name;
 /**
  * Value transforms for derive rules.
  *
- * Extends str2name so every str2name conversion (machine, kebab, pascal, ...)
- * is usable as a derive transform by name, and adds a few TUI-only
- * transforms (host, lower, upper, initials). A config derive rule names a
- * transform; the engine validates the name against supports().
+ * Extends str2name so every str2name conversion (machine, kebab, pascal,
+ * host, initials, ...) is usable as a derive transform by name. A config
+ * derive rule names a transform; the engine validates the name against
+ * supports().
  *
  * @package DrevOps\Tui\Derive
  */
 class Transform extends Str2Name {
-
-  /**
-   * The TUI-only transforms, in addition to the str2name conversions.
-   */
-  protected const EXTRA = ['host', 'lower', 'upper', 'initials'];
 
   /**
    * The str2name conversions exposed as transforms.
@@ -48,6 +43,10 @@ class Transform extends Str2Name {
     'phpNamespace',
     'phpPackage',
     'phpPackageName',
+    'host',
+    'lower',
+    'upper',
+    'initials',
   ];
 
   /**
@@ -93,69 +92,7 @@ class Transform extends Str2Name {
    *   All transform names (str2name conversions plus the TUI extras).
    */
   public static function names(): array {
-    return array_values(array_merge(static::STR2NAME, static::EXTRA));
-  }
-
-  /**
-   * Lowercase a value.
-   *
-   * @param string $value
-   *   The value.
-   *
-   * @return string
-   *   The lowercased value.
-   */
-  public static function lower(string $value): string {
-    return strtolower($value);
-  }
-
-  /**
-   * Uppercase a value.
-   *
-   * @param string $value
-   *   The value.
-   *
-   * @return string
-   *   The uppercased value.
-   */
-  public static function upper(string $value): string {
-    return strtoupper($value);
-  }
-
-  /**
-   * Normalize a value to a hostname (lowercase, hyphen-separated, dots kept).
-   *
-   * @param string $value
-   *   The value.
-   *
-   * @return string
-   *   The hostname.
-   */
-  public static function host(string $value): string {
-    $out = preg_replace('/[^a-z0-9.]+/', '-', strtolower($value)) ?? '';
-
-    return trim($out, '-.');
-  }
-
-  /**
-   * Reduce a value to the initials of its underscore-separated words.
-   *
-   * @param string $value
-   *   The value.
-   *
-   * @return string
-   *   The initials (up to four characters).
-   */
-  public static function initials(string $value): string {
-    $letters = '';
-
-    foreach (explode('_', static::machine($value)) as $part) {
-      if ($part !== '') {
-        $letters .= $part[0];
-      }
-    }
-
-    return substr($letters, 0, 4);
+    return array_values(static::STR2NAME);
   }
 
 }

@@ -87,35 +87,66 @@ final class TuiTest extends TestCase {
   }
 
   #[DataProvider('dataProviderResolveTheme')]
-  public function testResolveTheme(string $config_theme, string $theme, bool $color, ?string $osc, string $expected): void {
+  public function testResolveTheme(string $config_theme, string $theme, string $expected): void {
+    $tui = $this->themedTui($config_theme);
+    $resolved = (new \ReflectionMethod($tui, 'resolveTheme'))->invoke($tui, $theme);
+
+    $this->assertSame($expected, $resolved);
+  }
+
+  public static function dataProviderResolveTheme(): \Iterator {
+    // The argument wins over the config theme.
+    yield 'argument wins over config' => ['ocean', 'reef', 'reef'];
+    // An empty argument falls back to the config theme.
+    yield 'config theme used' => ['ocean', '', 'ocean'];
+    // Empty or the "auto" sentinel selects the default theme; the dark/light
+    // mode is a separate option now, not a theme choice.
+    yield 'empty is default' => ['', '', 'default'];
+    yield 'auto argument is default' => ['', 'auto', 'default'];
+    yield 'auto config is default' => ['auto', '', 'default'];
+  }
+
+  #[DataProvider('dataProviderResolveThemeOptionsDetectsMode')]
+  public function testResolveThemeOptionsDetectsMode(bool $color, ?string $osc, string $expected_mode): void {
     $restore = getenv('COLORFGBG');
     putenv('COLORFGBG');
 
     try {
-      $tui = $this->themedTui($config_theme);
-      $resolved = (new \ReflectionMethod($tui, 'resolveTheme'))->invoke($tui, $theme, $color, $this->terminalReturning($osc));
+      $tui = $this->colouredTui($color);
+      $options = (array) (new \ReflectionMethod($tui, 'resolveThemeOptions'))->invoke($tui, $this->terminalReturning($osc));
 
-      $this->assertSame($expected, $resolved);
+      $this->assertSame($color, $options['color']);
+      $this->assertTrue($options['unicode']);
+      $this->assertSame($expected_mode, $options['mode']);
     }
     finally {
       is_string($restore) ? putenv('COLORFGBG=' . $restore) : putenv('COLORFGBG');
     }
   }
 
-  public static function dataProviderResolveTheme(): \Iterator {
-    // The argument wins over the config, with no detection.
-    yield 'argument wins over config' => ['ocean', 'light', TRUE, 'rgb:0000/0000/0000', 'light'];
-    // An empty argument falls back to the config theme.
-    yield 'config theme used' => ['ocean', '', TRUE, 'rgb:0000/0000/0000', 'ocean'];
-    // Colour off skips detection and defaults to dark.
-    yield 'colour off defaults dark' => ['', '', FALSE, "\033]11;rgb:ffff/ffff/ffff\007", 'dark'];
-    // An empty theme with colour on detects from the background.
-    yield 'empty detects light' => ['', '', TRUE, "\033]11;rgb:ffff/ffff/ffff\007", 'light'];
-    yield 'empty detects dark' => ['', '', TRUE, "\033]11;rgb:0000/0000/0000\007", 'dark'];
-    // The explicit "auto" sentinel triggers detection over a config theme.
-    yield 'auto sentinel detects' => ['dark', 'auto', TRUE, "\033]11;rgb:ffff/ffff/ffff\007", 'light'];
-    // No terminal reply falls back to dark.
-    yield 'no reply defaults dark' => ['', '', TRUE, NULL, 'dark'];
+  public static function dataProviderResolveThemeOptionsDetectsMode(): \Iterator {
+    // With colour on, the mode follows the terminal background.
+    yield 'colour on detects light' => [TRUE, "\033]11;rgb:ffff/ffff/ffff\007", 'light'];
+    yield 'colour on detects dark' => [TRUE, "\033]11;rgb:0000/0000/0000\007", 'dark'];
+    yield 'colour on no reply defaults dark' => [TRUE, NULL, 'dark'];
+    // With colour off, the background query is skipped and mode is dark.
+    yield 'colour off skips detection' => [FALSE, "\033]11;rgb:ffff/ffff/ffff\007", 'dark'];
+  }
+
+  public function testResolveThemeOptionsRespectsConsumerOptions(): void {
+    $form = Form::create('Demo')
+      ->theme('', ['mode' => 'light', 'color' => FALSE, 'unicode' => FALSE])
+      ->panel('p', 'p', function (PanelBuilder $panel): void {
+        $panel->text('name');
+      });
+    $tui = new Tui($form);
+
+    // A consumer's explicit options win over detection.
+    $options = (array) (new \ReflectionMethod($tui, 'resolveThemeOptions'))->invoke($tui, $this->terminalReturning("\033]11;rgb:0000/0000/0000\007"));
+
+    $this->assertSame('light', $options['mode']);
+    $this->assertFalse($options['color']);
+    $this->assertFalse($options['unicode']);
   }
 
   /**
@@ -137,6 +168,20 @@ final class TuiTest extends TestCase {
   protected function themedTui(string $theme): Tui {
     $form = Form::create('Demo')
       ->theme($theme)
+      ->panel('p', 'p', function (PanelBuilder $panel): void {
+        $panel->text('name');
+      });
+
+    return new Tui($form);
+  }
+
+  /**
+   * A TUI whose config forces colour on or off (and Unicode on).
+   */
+  protected function colouredTui(bool $color): Tui {
+    $form = Form::create('Demo')
+      ->color($color)
+      ->unicode(TRUE)
       ->panel('p', 'p', function (PanelBuilder $panel): void {
         $panel->text('name');
       });

@@ -7,7 +7,7 @@ namespace DrevOps\Tui\Tests\Unit\Widget;
 use DrevOps\Tui\Input\ArrayKeyStream;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
-use DrevOps\Tui\Theme\DarkTheme;
+use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\NumberWidget;
 use DrevOps\Tui\Widget\WidgetRunner;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -73,8 +73,8 @@ final class NumberWidgetTest extends TestCase {
   public function testSeededFromCurrentAndRendersCaret(): void {
     $widget = new NumberWidget('42');
 
-    $this->assertStringContainsString('42', $widget->view(new DarkTheme()));
-    $this->assertStringContainsString('█', $widget->view(new DarkTheme()));
+    $this->assertStringContainsString('42', $widget->view(new DefaultTheme()));
+    $this->assertStringContainsString('█', $widget->view(new DefaultTheme()));
   }
 
 }

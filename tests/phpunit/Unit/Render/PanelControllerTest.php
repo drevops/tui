@@ -11,7 +11,7 @@ use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Render\PanelController;
-use DrevOps\Tui\Theme\DarkTheme;
+use DrevOps\Tui\Theme\DefaultTheme;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -94,7 +94,7 @@ final class PanelControllerTest extends TestCase {
         $p->text('a', 'A');
       })
       ->build();
-    $controller = new PanelController($config, new DarkTheme(FALSE, 40), ['a' => 'x'], []);
+    $controller = new PanelController($config, new DefaultTheme(40, ['color' => FALSE]), ['a' => 'x'], []);
 
     $this->assertStringNotContainsString('Submit', Ansi::strip($controller->frame(12)));
 
@@ -277,7 +277,7 @@ final class PanelControllerTest extends TestCase {
         $p->text('profile', 'Profile');
       })
       ->build();
-    $theme = new DarkTheme(FALSE, 40);
+    $theme = new DefaultTheme(40, ['color' => FALSE]);
 
     return new PanelController($config, $theme, ['name' => 'Acme', 'debug' => FALSE, 'profile' => 'standard'], []);
   }

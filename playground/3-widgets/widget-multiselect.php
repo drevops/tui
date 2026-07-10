@@ -14,7 +14,7 @@ declare(strict_types=1);
 
 use DrevOps\Tui\Input\KeyParser;
 use DrevOps\Tui\Render\Terminal;
-use DrevOps\Tui\Theme\DarkTheme;
+use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\MultiSelectWidget;
 
 require __DIR__ . '/../../vendor/autoload.php';
@@ -22,7 +22,7 @@ require __DIR__ . '/../../vendor/autoload.php';
 // Forcing the mode with a flag shows the textual (ASCII) or no-colour
 // rendering without changing the terminal locale.
 $opts = getopt('', ['no-unicode', 'no-ansi']);
-$theme = new DarkTheme(!isset($opts['no-ansi']), 76, !isset($opts['no-unicode']));
+$theme = new DefaultTheme(76, ['color' => !isset($opts['no-ansi']), 'unicode' => !isset($opts['no-unicode'])]);
 
 $widget = new MultiSelectWidget(['redis' => 'Redis', 'solr' => 'Solr', 'clamav' => 'ClamAV'], ['redis']);
 

@@ -10,10 +10,9 @@ use DrevOps\Tui\Config\Field;
 use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\Panel;
 use DrevOps\Tui\Render\Ansi;
-use DrevOps\Tui\Theme\DarkTheme;
 use DrevOps\Tui\Render\Navigator;
-use DrevOps\Tui\Theme\AbstractTheme;
 use DrevOps\Tui\Render\Viewport;
+use DrevOps\Tui\Theme\DefaultTheme;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -21,7 +20,7 @@ use PHPUnit\Framework\TestCase;
 /**
  * Tests the theme's rendering via headless frame probes.
  */
-#[CoversClass(AbstractTheme::class)]
+#[CoversClass(DefaultTheme::class)]
 #[Group('tui')]
 final class ThemeRenderTest extends TestCase {
 
@@ -133,7 +132,7 @@ final class ThemeRenderTest extends TestCase {
   }
 
   public function testSelectedItemIsBold(): void {
-    $theme = new DarkTheme(TRUE, 40);
+    $theme = new DefaultTheme(40);
     $field = new Field('name', 'Name', '', FieldType::Text, '');
     $answers = new Answers(['name' => 'Acme'], ['name' => Provenance::Default]);
 
@@ -182,7 +181,7 @@ final class ThemeRenderTest extends TestCase {
   }
 
   public function testStatusLineIsThemed(): void {
-    $line = (new DarkTheme())->renderStatusLine();
+    $line = (new DefaultTheme())->renderStatusLine();
 
     // Themed with the footer role (dim gray) and composed from arrow glyphs.
     $this->assertStringContainsString("\033[90m", $line);
@@ -190,32 +189,32 @@ final class ThemeRenderTest extends TestCase {
   }
 
   public function testHintLineJoinsWithDotGlyph(): void {
-    $line = (new DarkTheme())->renderHintLine('enter accept', 'esc cancel');
+    $line = (new DefaultTheme())->renderHintLine('enter accept', 'esc cancel');
 
     $this->assertSame('enter accept · esc cancel', Ansi::strip($line));
     $this->assertStringContainsString("\033[90m", $line);
 
-    $ascii = (new DarkTheme(TRUE, 76, FALSE))->renderHintLine('a', 'b');
+    $ascii = (new DefaultTheme(76, ['unicode' => FALSE]))->renderHintLine('a', 'b');
     $this->assertSame('a * b', Ansi::strip($ascii));
   }
 
   public function testEditorHeaderUnderlinesLabel(): void {
-    $header = (new DarkTheme())->renderEditorHeader('Site name');
+    $header = (new DefaultTheme())->renderEditorHeader('Site name');
 
     // The label styled as a title, over a rule of the same visible width.
     $this->assertSame("Site name\n" . str_repeat('─', 9), Ansi::strip($header));
     $this->assertStringContainsString("\033[1;36mSite name\033[0m", $header);
     $this->assertStringContainsString("\033[90m", $header);
 
-    $ascii = (new DarkTheme(FALSE, 76, FALSE))->renderEditorHeader('Site name');
+    $ascii = (new DefaultTheme(76, ['color' => FALSE, 'unicode' => FALSE]))->renderEditorHeader('Site name');
     $this->assertSame("Site name\n---------", $ascii);
 
     // An empty label still yields a visible rule.
-    $this->assertSame("\n─", Ansi::strip((new DarkTheme())->renderEditorHeader('')));
+    $this->assertSame("\n─", Ansi::strip((new DefaultTheme())->renderEditorHeader('')));
   }
 
   public function testButtonBar(): void {
-    $bar = (new DarkTheme())->renderButtonBar(['Submit', 'Cancel'], 0);
+    $bar = (new DefaultTheme())->renderButtonBar(['Submit', 'Cancel'], 0);
 
     // Both buttons render inline on one row.
     $this->assertStringContainsString('[ Submit ]', Ansi::strip($bar));
@@ -224,14 +223,17 @@ final class ThemeRenderTest extends TestCase {
     $this->assertStringContainsString("\033[1;7m[ Submit ]", $bar);
 
     // With none selected, nothing is cursor-styled.
-    $this->assertStringNotContainsString("\033[1;7m", (new DarkTheme())->renderButtonBar(['Submit', 'Cancel'], -1));
+    $this->assertStringNotContainsString("\033[1;7m", (new DefaultTheme())->renderButtonBar(['Submit', 'Cancel'], -1));
   }
 
   /**
    * A colourless theme of fixed width for stable assertions.
+   *
+   * @return \DrevOps\Tui\Theme\DefaultTheme
+   *   The theme.
    */
-  protected function theme(): DarkTheme {
-    return new DarkTheme(FALSE, 40);
+  protected function theme(): DefaultTheme {
+    return new DefaultTheme(40, ['color' => FALSE]);
   }
 
 }

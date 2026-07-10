@@ -42,6 +42,9 @@ final readonly class Config {
    * @param string $envPrefix
    *   The prefix namespacing per-question env-variable overrides (empty for
    *   the facade default).
+   * @param array<string,mixed> $themeOptions
+   *   Display options passed to the interactive theme, keyed by name (e.g.
+   *   "spacing" and "border"; see ThemeInterface constants).
    */
   public function __construct(
     public string $title,
@@ -57,6 +60,7 @@ final readonly class Config {
     public ?bool $color = NULL,
     public ?bool $unicode = NULL,
     public string $envPrefix = '',
+    public array $themeOptions = [],
   ) {
   }
 

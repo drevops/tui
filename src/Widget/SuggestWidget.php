@@ -115,11 +115,11 @@ class SuggestWidget extends AbstractWidget {
    * {@inheritdoc}
    */
   public function view(ThemeInterface $theme): string {
-    $lines = [$this->buffer . $theme->style('marker', $theme->glyph('caret'))];
+    $lines = [$this->buffer . $theme->caret()];
 
     foreach ($this->matches() as $index => $value) {
       $current = $index === $this->highlight;
-      $marker = $current ? $theme->style('marker', $theme->glyph('marker')) : ' ';
+      $marker = $theme->marker($current);
       $lines[] = $marker . ' ' . $this->highlightLabel($theme, $value, $current);
     }
 

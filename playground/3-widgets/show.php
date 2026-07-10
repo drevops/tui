@@ -16,7 +16,7 @@
 
 declare(strict_types=1);
 
-use DrevOps\Tui\Theme\DarkTheme;
+use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\ConfirmWidget;
 use DrevOps\Tui\Widget\MultiSearchWidget;
 use DrevOps\Tui\Widget\MultiSelectWidget;
@@ -33,8 +33,8 @@ use DrevOps\Tui\Widget\WidgetInterface;
 require __DIR__ . '/../../vendor/autoload.php';
 
 // Colour is disabled so the output is plain; only the glyph mode differs.
-$unicode = new DarkTheme(FALSE, 76, TRUE);
-$ascii = new DarkTheme(FALSE, 76, FALSE);
+$unicode = new DefaultTheme(76, ['color' => FALSE]);
+$ascii = new DefaultTheme(76, ['color' => FALSE, 'unicode' => FALSE]);
 
 /**
  * The widgets to showcase, each built freshly (widgets are stateful).

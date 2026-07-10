@@ -23,18 +23,12 @@ final class TransformTest extends TestCase {
   }
 
   public static function dataProviderApply(): \Iterator {
-    // Inherited str2name conversions.
+    // A sample of the exposed str2name conversions - each transform's own
+    // output is covered upstream, so this just checks apply() dispatches.
     yield 'machine' => ['machine', 'My Site! 2', 'my_site_2'];
     yield 'kebab' => ['kebab', 'My Site', 'my-site'];
     yield 'pascal' => ['pascal', 'my_site', 'MySite'];
     yield 'snake' => ['snake', 'My Site', 'my_site'];
-    // TUI-only transforms.
-    yield 'lower' => ['lower', 'HeLLo', 'hello'];
-    yield 'upper' => ['upper', 'HeLLo', 'HELLO'];
-    yield 'host' => ['host', 'My_Site.Com', 'my-site.com'];
-    yield 'initials' => ['initials', 'My Awesome Site', 'mas'];
-    yield 'initials capped' => ['initials', 'a b c d e', 'abcd'];
-    yield 'initials empty' => ['initials', '!!!', ''];
     // An unknown transform passes the value through unchanged.
     yield 'unknown passthrough' => ['bogus', 'As Is', 'As Is'];
   }
@@ -47,8 +41,6 @@ final class TransformTest extends TestCase {
   public static function dataProviderSupports(): \Iterator {
     yield 'machine (str2name)' => ['machine', TRUE];
     yield 'abbreviation (str2name)' => ['abbreviation', TRUE];
-    yield 'initials (extra)' => ['initials', TRUE];
-    yield 'host (extra)' => ['host', TRUE];
     yield 'unknown' => ['bogus', FALSE];
     yield 'empty' => ['', FALSE];
   }
@@ -57,8 +49,6 @@ final class TransformTest extends TestCase {
     $names = Transform::names();
 
     $this->assertContains('machine', $names);
-    $this->assertContains('initials', $names);
-    $this->assertContains('host', $names);
     $this->assertNotContains('bogus', $names);
   }
 

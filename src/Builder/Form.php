@@ -22,6 +22,13 @@ final class Form {
   protected string $theme = '';
 
   /**
+   * Display options passed to the interactive theme.
+   *
+   * @var array<string,mixed>
+   */
+  protected array $themeOptions = [];
+
+  /**
    * The start banner (logo).
    */
   protected string $banner = '';
@@ -107,12 +114,17 @@ final class Form {
    * @param string $theme
    *   The theme name or class. Empty (or "auto") auto-detects light/dark from
    *   the terminal background.
+   * @param array<string,mixed> $options
+   *   Display options for the theme, keyed by name - e.g.
+   *   `['spacing' => ThemeInterface::SPACING_PADDED, 'border' =>
+   *   ThemeInterface::BORDER_ROUNDED]` - plus any a custom theme reads.
    *
    * @return $this
    *   The builder.
    */
-  public function theme(string $theme): self {
+  public function theme(string $theme, array $options = []): self {
     $this->theme = $theme;
+    $this->themeOptions = $options;
 
     return $this;
   }
@@ -272,6 +284,7 @@ final class Form {
       $this->color,
       $this->unicode,
       $this->envPrefix,
+      $this->themeOptions,
     );
 
     $this->assertUniqueFieldIds($config);

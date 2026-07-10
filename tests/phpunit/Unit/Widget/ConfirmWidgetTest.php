@@ -8,7 +8,7 @@ use DrevOps\Tui\Input\ArrayKeyStream;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Render\Ansi;
-use DrevOps\Tui\Theme\DarkTheme;
+use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\AbstractWidget;
 use DrevOps\Tui\Widget\ConfirmWidget;
 use DrevOps\Tui\Widget\WidgetRunner;
@@ -27,11 +27,11 @@ final class ConfirmWidgetTest extends TestCase {
   public function testDefaultAndToggle(): void {
     $widget = new ConfirmWidget(FALSE);
     $this->assertFalse($widget->value());
-    $this->assertStringContainsString('● No', Ansi::strip($widget->view(new DarkTheme())));
+    $this->assertStringContainsString('● No', Ansi::strip($widget->view(new DefaultTheme())));
 
     $widget->handle(Key::named(KeyName::Space));
     $this->assertTrue($widget->value());
-    $this->assertStringContainsString('● Yes', Ansi::strip($widget->view(new DarkTheme())));
+    $this->assertStringContainsString('● Yes', Ansi::strip($widget->view(new DefaultTheme())));
   }
 
   public function testCharYesNo(): void {

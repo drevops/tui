@@ -18,7 +18,7 @@ class MultiSearchWidget extends MultiSelectWidget {
    */
   #[\Override]
   public function view(ThemeInterface $theme): string {
-    return $this->filter . $theme->style('marker', $theme->glyph('caret')) . "\n" . parent::view($theme);
+    return $this->filter . $theme->caret() . "\n" . parent::view($theme);
   }
 
 }
