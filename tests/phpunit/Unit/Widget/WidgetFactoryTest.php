@@ -214,7 +214,7 @@ final class WidgetFactoryTest extends TestCase {
     $items = new Field('a', 'A', '', FieldType::Text, '', completion: fn (array $answers): array => [123, NULL]);
     $this->assertStringNotContainsString("\033[90m", (new WidgetFactory())->create($items, 'ac')->view(new DefaultTheme()));
 
-    $scalar = new Field('b', 'B', '', FieldType::Text, '', completion: fn (array $answers) => 'oops');
+    $scalar = new Field('b', 'B', '', FieldType::Text, '', completion: fn (array $answers): string => 'oops');
     $this->assertStringNotContainsString("\033[90m", (new WidgetFactory())->create($scalar, 'ac')->view(new DefaultTheme()));
   }
 

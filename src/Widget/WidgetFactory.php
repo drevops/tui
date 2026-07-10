@@ -42,7 +42,7 @@ class WidgetFactory {
    * @param mixed $current
    *   The current value to seed the widget with.
    * @param array<string,mixed> $answers
-   *   The answers collected so far, passed to a text field's completion closure.
+   *   The answers collected so far, passed to a text completion closure.
    *
    * @return \DrevOps\Tui\Widget\WidgetInterface
    *   The widget.

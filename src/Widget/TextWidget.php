@@ -83,8 +83,8 @@ class TextWidget extends AbstractWidget {
     }
 
     if ($keys->matches($key, Action::MoveRight)) {
-      // At the end of a completable line Right accepts the ghost-text, mirroring
-      // Tab; anywhere else it just advances the caret.
+      // At the line's end, Right accepts the ghost-text like Tab; elsewhere
+      // it just advances the caret.
       if ($this->bestMatch() !== NULL) {
         $this->applyCompletion();
       }
@@ -148,9 +148,9 @@ class TextWidget extends AbstractWidget {
     $needle = mb_strtolower($this->buffer);
     $length = mb_strlen($this->buffer);
 
-    foreach ($this->completions as $candidate) {
-      if (mb_strlen($candidate) > $length && str_starts_with(mb_strtolower($candidate), $needle)) {
-        return $candidate;
+    foreach ($this->completions as $completion) {
+      if (mb_strlen($completion) > $length && str_starts_with(mb_strtolower($completion), $needle)) {
+        return $completion;
       }
     }
 

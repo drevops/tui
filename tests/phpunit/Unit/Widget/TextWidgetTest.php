@@ -107,7 +107,7 @@ final class TextWidgetTest extends TestCase {
     $this->assertStringContainsString('me-site', $view);
     $this->assertStringContainsString("\033[90m", $view);
 
-    // The ghost is a preview only: the value stays the typed text until accepted.
+    // The ghost is a preview: the value stays the typed text until accepted.
     $this->assertSame('ac', $widget->value());
   }
 
@@ -151,7 +151,7 @@ final class TextWidgetTest extends TestCase {
 
   public function testGhostTextIsUnicodeAware(): void {
     // strtolower() folds only ASCII, so a non-ASCII prefix must fold with
-    // mbstring; the multibyte suffix must also render whole, not split mid-byte.
+    // mbstring; the multibyte suffix must render whole, not split mid-byte.
     $widget = new TextWidget('', NULL, NULL, ['Éclair']);
 
     $widget->handle(Key::char('é'));
@@ -181,7 +181,7 @@ final class TextWidgetTest extends TestCase {
     $widget->handle(Key::char('h'));
     $widget->handle(Key::char('p'));
 
-    // The buffer already equals the only candidate, so nothing is left to ghost.
+    // The buffer already equals the only candidate; nothing is left to ghost.
     $this->assertStringNotContainsString("\033[90m", $widget->view(new DefaultTheme()));
   }
 
@@ -198,8 +198,8 @@ final class TextWidgetTest extends TestCase {
     $widget->handle(Key::char('a'));
     $widget->handle(Key::char('c'));
 
-    // Without colour the ghost cannot be dimmed, so it is suppressed entirely and
-    // no escape sequences leak into the plain-text line.
+    // Without colour the ghost cannot be dimmed, so it is suppressed and no
+    // escape sequences leak into the plain-text line.
     $view = $widget->view(new DefaultTheme(76, ['color' => FALSE]));
     $this->assertStringNotContainsString('me-site', $view);
     $this->assertStringNotContainsString("\033", $view);
