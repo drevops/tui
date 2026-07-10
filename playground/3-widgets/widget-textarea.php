@@ -46,12 +46,13 @@ try {
 
     foreach ($parser->parse($terminal->read()) as $key) {
       $widget->handle($key);
-    }
 
-    // Ctrl-E requested the editor: suspend the TUI, run it, capture the result.
-    if ($widget->wantsExternalEdit()) {
-      $value = $widget->value();
-      $widget->applyExternalEdit($external_editor->edit(is_string($value) ? $value : '', $terminal));
+      // Ctrl-E requested the editor: suspend the TUI, run it, capture the result
+      // before the next key in the batch is handled.
+      if ($widget->wantsExternalEdit()) {
+        $value = $widget->value();
+        $widget->applyExternalEdit($external_editor->edit(is_string($value) ? $value : '', $terminal));
+      }
     }
   }
 }
