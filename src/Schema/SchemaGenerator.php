@@ -52,7 +52,7 @@ class SchemaGenerator {
         'step' => $field->bounds?->step,
         'min_date' => $field->dateBounds?->min?->format('Y-m-d'),
         'max_date' => $field->dateBounds?->max?->format('Y-m-d'),
-        'week_start' => $field->dateBounds?->weekStart->name,
+        'week_start' => $field->dateBounds?->weekStart->value,
         'when' => $field->when?->toArray(),
         'derive' => $field->derive?->toArray(),
         'discover' => $field->discover instanceof DiscoverInterface ? $field->discover->toArray() : NULL,

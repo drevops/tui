@@ -107,7 +107,7 @@ final class SchemaGeneratorTest extends TestCase {
           'step' => NULL,
           'min_date' => '2000-01-01',
           'max_date' => '2030-12-31',
-          'week_start' => 'Sunday',
+          'week_start' => Weekday::Sunday->value,
           'when' => NULL,
           'derive' => NULL,
           'discover' => NULL,
