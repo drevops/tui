@@ -11,6 +11,7 @@ use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\FilePickerMode;
 use DrevOps\Tui\Config\NumberBounds;
 use DrevOps\Tui\Config\Option;
+use DrevOps\Tui\Config\OptionKind;
 use DrevOps\Tui\Derive\Derive;
 use DrevOps\Tui\Discovery\DiscoverInterface;
 
@@ -37,9 +38,9 @@ final class FieldBuilder {
   protected mixed $default = NULL;
 
   /**
-   * The options, keyed by value.
+   * The option rows, in display order.
    *
-   * @var array<string,\DrevOps\Tui\Config\Option>
+   * @var list<\DrevOps\Tui\Config\Option>
    */
   protected array $options = [];
 
@@ -461,12 +462,43 @@ final class FieldBuilder {
    *   The option label (defaults to the value).
    * @param string $description
    *   The option description.
+   * @param bool $disabled
+   *   Whether the option is shown but cannot be selected.
+   * @param string $disabled_reason
+   *   The reason shown beside a disabled option.
    *
    * @return $this
    *   The builder.
    */
-  public function option(string $value, string $label = '', string $description = ''): self {
-    $this->options[$value] = new Option($value, $label === '' ? $value : $label, $description);
+  public function option(string $value, string $label = '', string $description = '', bool $disabled = FALSE, string $disabled_reason = ''): self {
+    $this->options[] = new Option($value, $label === '' ? $value : $label, $description, OptionKind::Option, $disabled, $disabled_reason);
+
+    return $this;
+  }
+
+  /**
+   * Add a non-selectable separator row.
+   *
+   * @return $this
+   *   The builder.
+   */
+  public function separator(): self {
+    $this->options[] = new Option('', '', '', OptionKind::Separator);
+
+    return $this;
+  }
+
+  /**
+   * Add a non-selectable group heading row.
+   *
+   * @param string $label
+   *   The heading label.
+   *
+   * @return $this
+   *   The builder.
+   */
+  public function heading(string $label): self {
+    $this->options[] = new Option('', $label, '', OptionKind::Heading);
 
     return $this;
   }

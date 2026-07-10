@@ -8,9 +8,11 @@ use DrevOps\Tui\Config\Field;
 use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\NumberBounds;
 use DrevOps\Tui\Config\Option;
+use DrevOps\Tui\Config\OptionKind;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyMapManager;
 use DrevOps\Tui\Input\KeyName;
+use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\ConfirmWidget;
 use DrevOps\Tui\Widget\FilePickerWidget;
 use DrevOps\Tui\Widget\MultiSearchWidget;
@@ -152,6 +154,20 @@ final class WidgetFactoryTest extends TestCase {
     $widget->handle(Key::char('j'));
 
     $this->assertSame('b', $widget->value());
+  }
+
+  public function testSuggestReceivesSelectableValuesOnly(): void {
+    $field = new Field('tz', 'TZ', '', FieldType::Suggest, '', [
+      new Option('utc', 'UTC'),
+      new Option('gmt', 'GMT', '', OptionKind::Option, TRUE),
+      new Option('', '', '', OptionKind::Separator),
+    ]);
+
+    $widget = (new WidgetFactory())->create($field, '');
+    $view = $widget->view(new DefaultTheme());
+
+    $this->assertStringContainsString('utc', $view);
+    $this->assertStringNotContainsString('gmt', $view);
   }
 
   /**

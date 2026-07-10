@@ -7,7 +7,6 @@ namespace DrevOps\Tui\Schema;
 use DrevOps\Tui\Config\Config;
 use DrevOps\Tui\Config\Field;
 use DrevOps\Tui\Config\FieldType;
-use DrevOps\Tui\Config\Option;
 
 /**
  * Validates an answer set against the configuration.
@@ -168,6 +167,9 @@ class SchemaValidator {
   /**
    * Check option membership for choice fields.
    *
+   * Rejects any supplied value that is not a selectable option, telling a
+   * disabled option apart from an unknown one.
+   *
    * @param \DrevOps\Tui\Config\Field $field
    *   The field.
    * @param mixed $value
@@ -177,28 +179,9 @@ class SchemaValidator {
    *   An error, or NULL when valid.
    */
   protected function checkOptions(Field $field, mixed $value): ?string {
-    if ($field->options === []) {
-      return NULL;
-    }
+    $error = $field->optionError($value);
 
-    // Option values are read off each option, not from the array keys, so a
-    // numeric-string value like "0" is compared as a string rather than an
-    // int coerced by the array key.
-    $valid = array_map(static fn(Option $option): string => $option->value, $field->options);
-
-    if (in_array($field->type, [FieldType::Select, FieldType::Search, FieldType::Toggle], TRUE) && is_string($value) && !in_array($value, $valid, TRUE)) {
-      return sprintf('Question "%s" must be one of: %s.', $field->id, implode(', ', $valid));
-    }
-
-    if (in_array($field->type, [FieldType::MultiSelect, FieldType::MultiSearch], TRUE) && is_array($value)) {
-      foreach ($value as $item) {
-        if (!in_array($item, $valid, TRUE)) {
-          return sprintf('Question "%s" contains an invalid option "%s".', $field->id, is_scalar($item) ? (string) $item : '?');
-        }
-      }
-    }
-
-    return NULL;
+    return $error === NULL ? NULL : sprintf('Question "%s": %s.', $field->id, $error);
   }
 
 }

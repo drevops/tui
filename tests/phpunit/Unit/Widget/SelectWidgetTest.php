@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Tests\Unit\Widget;
 
 use DrevOps\Tui\Config\FieldType;
+use DrevOps\Tui\Config\Option;
+use DrevOps\Tui\Config\OptionKind;
 use DrevOps\Tui\Input\ArrayKeyStream;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyMapManager;
 use DrevOps\Tui\Input\KeyName;
+use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\AbstractWidget;
+use DrevOps\Tui\Widget\ChoiceList;
 use DrevOps\Tui\Widget\SelectWidget;
 use DrevOps\Tui\Widget\WidgetRunner;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -22,6 +26,7 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass(SelectWidget::class)]
 #[CoversClass(AbstractWidget::class)]
+#[CoversClass(ChoiceList::class)]
 #[Group('widget')]
 final class SelectWidgetTest extends TestCase {
 
@@ -75,6 +80,75 @@ final class SelectWidgetTest extends TestCase {
     $widget->handle(Key::char('j'));
 
     $this->assertSame('b', $widget->value());
+  }
+
+  public function testNavigationSkipsHeadingsSeparatorsAndDisabled(): void {
+    $widget = new SelectWidget($this->mixedOptions());
+
+    // From Apple (0): Down skips the heading to Banana (2); Down skips the
+    // separator and the disabled Cherry to Date (5).
+    $value = WidgetRunner::run($widget, ArrayKeyStream::of(
+      Key::named(KeyName::Down),
+      Key::named(KeyName::Down),
+      Key::named(KeyName::Enter),
+    ));
+
+    $this->assertSame('d', $value);
+  }
+
+  public function testUpSkipsBackOverDisabled(): void {
+    $widget = new SelectWidget($this->mixedOptions());
+
+    $value = WidgetRunner::run($widget, ArrayKeyStream::of(
+      Key::named(KeyName::Down),
+      Key::named(KeyName::Down),
+      Key::named(KeyName::Up),
+      Key::named(KeyName::Enter),
+    ));
+
+    $this->assertSame('b', $value);
+  }
+
+  public function testDefaultOnDisabledFallsBackToFirstSelectable(): void {
+    $widget = new SelectWidget($this->mixedOptions(), 'c');
+
+    $value = WidgetRunner::run($widget, ArrayKeyStream::of(Key::named(KeyName::Enter)));
+
+    $this->assertSame('a', $value);
+  }
+
+  public function testRendersHeadingSeparatorAndDisabledReason(): void {
+    $view = Ansi::strip((new SelectWidget($this->mixedOptions()))->view(new DefaultTheme()));
+
+    $this->assertStringContainsString('Fruits', $view);
+    $this->assertStringContainsString('Cherry (out of stock)', $view);
+    $this->assertStringContainsString('──', $view);
+  }
+
+  public function testNoSelectableRowYieldsNoValue(): void {
+    $widget = new SelectWidget([new Option('', 'Group', '', OptionKind::Heading)]);
+
+    $widget->handle(Key::named(KeyName::Enter));
+
+    $this->assertFalse($widget->isComplete());
+    $this->assertSame('', $widget->value());
+  }
+
+  /**
+   * A list mixing selectable options with a heading, separator and disabled.
+   *
+   * @return list<\DrevOps\Tui\Config\Option>
+   *   The option rows.
+   */
+  protected function mixedOptions(): array {
+    return [
+      new Option('a', 'Apple'),
+      new Option('', 'Fruits', '', OptionKind::Heading),
+      new Option('b', 'Banana'),
+      new Option('', '', '', OptionKind::Separator),
+      new Option('c', 'Cherry', '', OptionKind::Option, TRUE, 'out of stock'),
+      new Option('d', 'Date'),
+    ];
   }
 
 }

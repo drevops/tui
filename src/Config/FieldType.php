@@ -26,4 +26,26 @@ enum FieldType: string {
   case MultiFilePicker = 'multifilepicker';
   case Pause = 'pause';
 
+  /**
+   * Whether a supplied value must be one of the field's selectable options.
+   *
+   * Suggest is excluded: its options are autocomplete hints, not a closed set.
+   *
+   * @return bool
+   *   TRUE for the option-constrained choice types.
+   */
+  public function constrainsToOptions(): bool {
+    return in_array($this, [self::Select, self::Search, self::Toggle, self::MultiSelect, self::MultiSearch], TRUE);
+  }
+
+  /**
+   * Whether the field collects a list of values rather than a single value.
+   *
+   * @return bool
+   *   TRUE for the multi-choice types.
+   */
+  public function isMulti(): bool {
+    return in_array($this, [self::MultiSelect, self::MultiSearch], TRUE);
+  }
+
 }

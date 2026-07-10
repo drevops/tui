@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Widget;
 
 use DrevOps\Tui\Config\FieldType;
+use DrevOps\Tui\Config\Option;
+use DrevOps\Tui\Config\OptionKind;
 use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\Scope;
@@ -20,12 +22,7 @@ use DrevOps\Tui\Theme\ThemeInterface;
  */
 class MultiSelectWidget extends AbstractWidget {
 
-  /**
-   * The option values in display order.
-   *
-   * @var list<string>
-   */
-  protected array $values;
+  use ChoiceList;
 
   /**
    * The selected values as a set (value => TRUE).
@@ -47,22 +44,28 @@ class MultiSelectWidget extends AbstractWidget {
   /**
    * Construct a multiselect widget.
    *
-   * @param array<string,string> $labels
-   *   Options as value => label, in display order.
+   * @param array<int|string,\DrevOps\Tui\Config\Option|string> $options
+   *   Option rows in display order - a list of options or the value => label
+   *   shorthand map.
    * @param list<string> $default
-   *   The initially selected values.
+   *   The initially selected values (non-selectable values are ignored).
    * @param \Closure|null $validate
    *   Optional validator (see AbstractWidget).
    * @param \Closure|null $transform
    *   Optional transformer (see AbstractWidget).
    */
-  public function __construct(protected array $labels, array $default = [], ?\Closure $validate = NULL, ?\Closure $transform = NULL) {
+  public function __construct(array $options, array $default = [], ?\Closure $validate = NULL, ?\Closure $transform = NULL) {
     parent::__construct($validate, $transform);
-    $this->values = array_keys($this->labels);
+    $this->initOptions($options);
 
+    $selectable = array_fill_keys($this->selectableValues(), TRUE);
     foreach ($default as $value) {
-      $this->selected[$value] = TRUE;
+      if (isset($selectable[$value])) {
+        $this->selected[$value] = TRUE;
+      }
     }
+
+    $this->cursor = $this->firstSelectable($this->options);
   }
 
   /**
@@ -90,13 +93,13 @@ class MultiSelectWidget extends AbstractWidget {
     }
 
     if ($keys->matches($key, Action::MoveUp)) {
-      $this->cursor = max(0, $this->cursor - 1);
+      $this->cursor = $this->stepCursor($this->visible(), $this->cursor, -1);
 
       return;
     }
 
     if ($keys->matches($key, Action::MoveDown)) {
-      $this->cursor = min(count($this->visible()) - 1, $this->cursor + 1);
+      $this->cursor = $this->stepCursor($this->visible(), $this->cursor, 1);
 
       return;
     }
@@ -121,65 +124,90 @@ class MultiSelectWidget extends AbstractWidget {
 
     if ($keys->matches($key, Action::DeleteBack)) {
       $this->filter = substr($this->filter, 0, -1);
-      $this->cursor = 0;
+      $this->cursor = $this->firstSelectable($this->visible());
 
       return;
     }
 
     if ($key->isChar()) {
       $this->filter .= $key->char ?? '';
-      $this->cursor = 0;
+      $this->cursor = $this->firstSelectable($this->visible());
     }
   }
 
   /**
-   * The options currently visible under the filter.
+   * The rows currently visible under the filter.
    *
-   * @return list<string>
-   *   The visible option values.
+   * With no filter every row shows in declared order; once filtering, only
+   * matching options show - structural headings and separators drop away so the
+   * result reads as a flat relevance list.
+   *
+   * @return list<\DrevOps\Tui\Config\Option>
+   *   The visible rows.
    */
   protected function visible(): array {
     if ($this->filter === '') {
-      return $this->values;
+      return $this->options;
     }
 
     $needle = strtolower($this->filter);
 
-    return array_values(array_filter($this->values, fn(string $value): bool => str_contains(strtolower($this->labels[$value] ?? $value), $needle)));
+    return array_values(array_filter($this->options, fn(Option $option): bool => $option->kind === OptionKind::Option && str_contains(strtolower($option->label), $needle)));
   }
 
   /**
-   * Toggle the highlighted option.
+   * The selectable values, as a value => label map for filtering and display.
+   *
+   * @return list<string>
+   *   The selectable option values.
+   */
+  protected function selectableValues(): array {
+    $out = [];
+
+    foreach ($this->options as $option) {
+      if ($option->selectable()) {
+        $out[] = $option->value;
+      }
+    }
+
+    return $out;
+  }
+
+  /**
+   * Toggle the highlighted option when it is selectable.
    */
   protected function toggleCurrent(): void {
-    $visible = $this->visible();
-    $value = $visible[$this->cursor] ?? NULL;
+    $option = $this->visible()[$this->cursor] ?? NULL;
 
-    if ($value === NULL) {
+    if (!$option instanceof Option || !$option->selectable()) {
       return;
     }
 
-    if (isset($this->selected[$value])) {
-      unset($this->selected[$value]);
+    if (isset($this->selected[$option->value])) {
+      unset($this->selected[$option->value]);
     }
     else {
-      $this->selected[$value] = TRUE;
+      $this->selected[$option->value] = TRUE;
     }
   }
 
   /**
-   * Select or deselect all visible options.
+   * Select or deselect all selectable visible options.
    *
    * @param bool $selected
    *   TRUE to select, FALSE to deselect.
    */
   protected function setAllVisible(bool $selected): void {
-    foreach ($this->visible() as $value) {
+    foreach ($this->visible() as $option) {
+      if (!$option->selectable()) {
+        continue;
+      }
+
       if ($selected) {
-        $this->selected[$value] = TRUE;
+        $this->selected[$option->value] = TRUE;
       }
       else {
-        unset($this->selected[$value]);
+        unset($this->selected[$option->value]);
       }
     }
   }
@@ -188,7 +216,15 @@ class MultiSelectWidget extends AbstractWidget {
    * {@inheritdoc}
    */
   protected function liveValue(): mixed {
-    return array_values(array_filter($this->values, fn(string $value): bool => isset($this->selected[$value])));
+    $out = [];
+
+    foreach ($this->options as $option) {
+      if ($option->selectable() && isset($this->selected[$option->value])) {
+        $out[] = $option->value;
+      }
+    }
+
+    return $out;
   }
 
   /**
@@ -197,11 +233,27 @@ class MultiSelectWidget extends AbstractWidget {
   public function view(ThemeInterface $theme): string {
     $lines = [];
 
-    foreach ($this->visible() as $index => $value) {
-      $box = $theme->check(isset($this->selected[$value]));
+    foreach ($this->visible() as $index => $option) {
+      if ($option->kind === OptionKind::Heading) {
+        $lines[] = $this->renderHeadingRow($theme, $option);
+
+        continue;
+      }
+
+      if ($option->kind === OptionKind::Separator) {
+        $lines[] = $this->renderSeparatorRow($theme);
+
+        continue;
+      }
+
+      if ($option->disabled) {
+        $lines[] = $theme->marker(FALSE) . ' ' . $theme->check(FALSE) . ' ' . $this->renderDisabledLabel($theme, $option);
+
+        continue;
+      }
+
       $current = $index === $this->cursor;
-      $marker = $theme->marker($current);
-      $lines[] = $marker . ' ' . $box . ' ' . $this->highlightLabel($theme, $this->labels[$value] ?? $value, $current);
+      $lines[] = $theme->marker($current) . ' ' . $theme->check(isset($this->selected[$option->value])) . ' ' . $this->highlightLabel($theme, $option->label, $current);
     }
 
     $lines[] = $this->hint($theme);

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Tests\Unit\Engine;
 
+use DrevOps\Tui\Builder\FieldBuilder;
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Builder\PanelBuilder;
 use DrevOps\Tui\Engine\Engine;
@@ -12,6 +13,7 @@ use DrevOps\Tui\Handler\Context;
 use DrevOps\Tui\Handler\HandlerRegistry;
 use DrevOps\Tui\Tests\Fixtures\Handler\Spy;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
@@ -74,6 +76,57 @@ final class EngineTest extends TestCase {
     $answers = $engine->collect(['machine_name' => 'ACME'], new Context('project'));
 
     $this->assertSame('acme', $answers['machine_name']);
+  }
+
+  #[DataProvider('dataProviderRejectsNonSelectableOption')]
+  public function testCollectRejectsNonSelectableOption(\Closure $build, mixed $value, string $message): void {
+    $engine = $this->engine($build);
+
+    $this->expectException(EngineException::class);
+    $this->expectExceptionMessage($message);
+    $engine->collect(['choice' => $value], new Context('project'));
+  }
+
+  public static function dataProviderRejectsNonSelectableOption(): array {
+    return [
+      'select disabled' => [static fn(PanelBuilder $p): FieldBuilder => self::choiceOptions($p->select('choice')), 'demo', 'Invalid value for field "choice": option "demo" is disabled: unavailable'],
+      'select unknown' => [static fn(PanelBuilder $p): FieldBuilder => self::choiceOptions($p->select('choice')), 'bogus', 'Invalid value for field "choice": value "bogus" is not one of: standard, minimal'],
+      'search disabled' => [static fn(PanelBuilder $p): FieldBuilder => self::choiceOptions($p->search('choice')), 'demo', 'Invalid value for field "choice": option "demo" is disabled: unavailable'],
+      'search unknown' => [static fn(PanelBuilder $p): FieldBuilder => self::choiceOptions($p->search('choice')), 'bogus', 'Invalid value for field "choice": value "bogus" is not one of: standard, minimal'],
+      'multiselect disabled' => [static fn(PanelBuilder $p): FieldBuilder => self::choiceOptions($p->multiselect('choice')), ['demo'], 'Invalid value for field "choice": option "demo" is disabled: unavailable'],
+      'multiselect unknown' => [static fn(PanelBuilder $p): FieldBuilder => self::choiceOptions($p->multiselect('choice')), ['bogus'], 'Invalid value for field "choice": value "bogus" is not one of: standard, minimal'],
+      'multisearch disabled' => [static fn(PanelBuilder $p): FieldBuilder => self::choiceOptions($p->multisearch('choice')), ['demo'], 'Invalid value for field "choice": option "demo" is disabled: unavailable'],
+      'multisearch unknown' => [static fn(PanelBuilder $p): FieldBuilder => self::choiceOptions($p->multisearch('choice')), ['bogus'], 'Invalid value for field "choice": value "bogus" is not one of: standard, minimal'],
+    ];
+  }
+
+  public function testCollectAcceptsSelectableOptions(): void {
+    $engine = $this->engine(function (PanelBuilder $p): void {
+      $p->select('profile')->option('standard')->option('minimal');
+      $p->multiselect('mods')->option('a')->option('b');
+      $p->search('engine')->option('solr')->option('none');
+      $p->multisearch('tags')->option('x')->option('y');
+    });
+
+    $answers = $engine->collect(['profile' => 'standard', 'mods' => ['a', 'b'], 'engine' => 'solr', 'tags' => ['x']], new Context('project'));
+
+    $this->assertSame('standard', $answers['profile']);
+    $this->assertSame(['a', 'b'], $answers['mods']);
+    $this->assertSame('solr', $answers['engine']);
+    $this->assertSame(['x'], $answers['tags']);
+  }
+
+  /**
+   * Add a shared standard/minimal/disabled option set to a choice builder.
+   *
+   * @param \DrevOps\Tui\Builder\FieldBuilder $builder
+   *   The choice field builder.
+   *
+   * @return \DrevOps\Tui\Builder\FieldBuilder
+   *   The same builder, for chaining.
+   */
+  protected static function choiceOptions(FieldBuilder $builder): FieldBuilder {
+    return $builder->option('standard')->option('minimal')->option('demo', 'Demo', disabled: TRUE, disabled_reason: 'unavailable');
   }
 
   /**

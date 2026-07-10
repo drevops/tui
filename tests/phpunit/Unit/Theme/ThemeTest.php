@@ -37,6 +37,16 @@ final class ThemeTest extends TestCase {
     yield 'description' => [static fn(): string => (new DefaultTheme())->description('X'), '90'];
     yield 'error' => [static fn(): string => (new DefaultTheme())->error('X'), '31'];
     yield 'breadcrumb' => [static fn(): string => self::light()->breadcrumb('X'), '90'];
+    // Option-list roles: a bold-gray heading and a gray disabled option.
+    yield 'heading' => [static fn(): string => (new DefaultTheme())->heading('X'), '1;90'];
+    yield 'disabled' => [static fn(): string => (new DefaultTheme())->disabled('X'), '90'];
+  }
+
+  public function testDivider(): void {
+    $this->assertSame('──────────', (new DefaultTheme(10, ['color' => FALSE]))->divider());
+    $this->assertSame('----------', (new DefaultTheme(10, ['unicode' => FALSE, 'color' => FALSE]))->divider());
+    // The divider is dimmed when colour is on.
+    $this->assertStringContainsString("\033[90m", (new DefaultTheme(10))->divider());
   }
 
   public function testSelectedRowIsBold(): void {
