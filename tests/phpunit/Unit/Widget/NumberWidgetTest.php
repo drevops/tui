@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Tests\Unit\Widget;
 
+use DrevOps\Tui\Config\NumberBounds;
 use DrevOps\Tui\Input\ArrayKeyStream;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
@@ -75,6 +76,89 @@ final class NumberWidgetTest extends TestCase {
 
     $this->assertStringContainsString('42', $widget->view(new DefaultTheme()));
     $this->assertStringContainsString('█', $widget->view(new DefaultTheme()));
+  }
+
+  public function testArrowsInertAndUnhintedWithoutBounds(): void {
+    $widget = new NumberWidget('5');
+
+    // With no bounds the arrows fall through to the inert text handling.
+    $widget->handle(Key::named(KeyName::Up));
+    $widget->handle(Key::named(KeyName::Down));
+
+    $this->assertSame(5, $widget->value());
+    $this->assertFalse($widget->rendersHint());
+    $this->assertStringNotContainsString('adjust', $widget->view(new DefaultTheme()));
+  }
+
+  public function testUpDownStepByOneWithinBounds(): void {
+    $widget = new NumberWidget('5', bounds: new NumberBounds(0, 10));
+
+    $widget->handle(Key::named(KeyName::Up));
+    $this->assertSame(6, $widget->value());
+
+    $widget->handle(Key::named(KeyName::Down));
+    $this->assertSame(5, $widget->value());
+  }
+
+  public function testStepClampsToMax(): void {
+    $widget = new NumberWidget('9', bounds: new NumberBounds(0, 10, 3));
+
+    $widget->handle(Key::named(KeyName::Up));
+
+    $this->assertSame(10, $widget->value());
+  }
+
+  public function testStepClampsToMin(): void {
+    $widget = new NumberWidget('1', bounds: new NumberBounds(0, 10, 3));
+
+    $widget->handle(Key::named(KeyName::Down));
+
+    $this->assertSame(0, $widget->value());
+  }
+
+  public function testAcceptsInRangeValue(): void {
+    $widget = new NumberWidget('', bounds: new NumberBounds(1, 10));
+
+    $value = WidgetRunner::run($widget, ArrayKeyStream::of('5', Key::named(KeyName::Enter)));
+
+    $this->assertSame(5, $value);
+    $this->assertTrue($widget->isComplete());
+  }
+
+  public function testRejectsOutOfRangeInline(): void {
+    $widget = new NumberWidget('', bounds: new NumberBounds(1, 10));
+
+    $widget->handle(Key::char('5'));
+    $widget->handle(Key::char('0'));
+    $widget->handle(Key::named(KeyName::Enter));
+
+    $this->assertFalse($widget->isComplete());
+    $this->assertStringContainsString('Enter a number between 1 and 10.', $widget->view(new DefaultTheme()));
+  }
+
+  public function testSteppingClearsStaleError(): void {
+    $widget = new NumberWidget('', bounds: new NumberBounds(1, 10));
+
+    $widget->handle(Key::char('5'));
+    $widget->handle(Key::char('0'));
+    $widget->handle(Key::named(KeyName::Enter));
+    $this->assertStringContainsString('Enter a number', $widget->view(new DefaultTheme()));
+
+    // Stepping produces a clamped, in-range value, so the error clears.
+    $widget->handle(Key::named(KeyName::Up));
+
+    $this->assertSame(10, $widget->value());
+    $this->assertStringNotContainsString('Enter a number', $widget->view(new DefaultTheme()));
+  }
+
+  public function testRendersOwnHintWhenBounded(): void {
+    $widget = new NumberWidget('5', bounds: new NumberBounds(0, 10));
+
+    $view = $widget->view(new DefaultTheme());
+
+    $this->assertTrue($widget->rendersHint());
+    $this->assertStringContainsString('adjust', $view);
+    $this->assertStringContainsString('accept', $view);
   }
 
 }

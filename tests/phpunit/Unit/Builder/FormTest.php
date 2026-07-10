@@ -12,6 +12,7 @@ use DrevOps\Tui\Config\ConfigException;
 use DrevOps\Tui\Config\Field;
 use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\Fixup;
+use DrevOps\Tui\Config\NumberBounds;
 use DrevOps\Tui\Derive\Derive;
 use DrevOps\Tui\Discovery\Dotenv;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -185,6 +186,59 @@ final class FormTest extends TestCase {
 
     $this->assertTrue($config->field('notes')?->externalEditor);
     $this->assertFalse($config->field('plain')?->externalEditor);
+  }
+
+  public function testValidateAndTransformStored(): void {
+    $validator = fn (mixed $v): ?string => NULL;
+    $transformer = fn (mixed $v): mixed => $v;
+
+    $config = Form::create('T')
+      ->panel('p', 'P', function (PanelBuilder $panel) use ($validator, $transformer): void {
+        $panel->text('x')->validate($validator)->transform($transformer);
+      })
+      ->build();
+
+    $field = $config->field('x');
+    $this->assertInstanceOf(Field::class, $field);
+    $this->assertSame($validator, $field->validate);
+    $this->assertSame($transformer, $field->transform);
+  }
+
+  public function testNumberBoundsAssembled(): void {
+    $config = Form::create('T')
+      ->panel('p', 'P', function (PanelBuilder $panel): void {
+        $panel->number('port', 'Port')->min(1)->max(65535)->step(5);
+        $panel->number('plain', 'Plain');
+      })
+      ->build();
+
+    $port = $config->field('port');
+    $this->assertInstanceOf(Field::class, $port);
+    $this->assertInstanceOf(NumberBounds::class, $port->bounds);
+    $this->assertSame(1, $port->bounds->min);
+    $this->assertSame(65535, $port->bounds->max);
+    $this->assertSame(5, $port->bounds->step);
+
+    // A number with nothing declared carries no bounds - behaviour unchanged.
+    $this->assertNotInstanceOf(NumberBounds::class, $config->field('plain')?->bounds);
+  }
+
+  public function testNumberMinGreaterThanMaxThrows(): void {
+    $this->expectException(ConfigException::class);
+    $this->expectExceptionMessage('Field "n" declares min 10 greater than max 1.');
+
+    Form::create('T')
+      ->panel('p', 'P', fn(PanelBuilder $p): FieldBuilder => $p->number('n')->min(10)->max(1))
+      ->build();
+  }
+
+  public function testNumberNonPositiveStepThrows(): void {
+    $this->expectException(ConfigException::class);
+    $this->expectExceptionMessage('Field "n" declares a non-positive step 0.');
+
+    Form::create('T')
+      ->panel('p', 'P', fn(PanelBuilder $p): FieldBuilder => $p->number('n')->step(0))
+      ->build();
   }
 
   public function testDuplicateFieldIdThrows(): void {

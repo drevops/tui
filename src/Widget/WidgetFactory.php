@@ -46,7 +46,7 @@ class WidgetFactory {
       FieldType::MultiSearch => new MultiSearchWidget($labels, $this->toList($current)),
       FieldType::Suggest => new SuggestWidget(array_keys($labels), is_string($current) ? $current : ''),
       FieldType::Search => new SearchWidget($labels, is_string($current) ? $current : ''),
-      FieldType::Number => new NumberWidget(is_int($current) || is_float($current) ? (string) (int) $current : ''),
+      FieldType::Number => new NumberWidget(is_int($current) || is_float($current) ? (string) (int) $current : '', bounds: $field->bounds),
       FieldType::Textarea => new TextareaWidget(is_string($current) ? $current : '', externalEdit: $field->externalEditor && $this->externalEditorAvailable),
       FieldType::Password => new PasswordWidget(is_string($current) ? $current : '', revealable: $field->revealable, confirm: $field->confirm),
       FieldType::Pause => new PauseWidget(),

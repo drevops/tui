@@ -58,6 +58,9 @@ final readonly class Field {
    * @param bool $externalEditor
    *   Whether the field may hand off to the user's $EDITOR for composing its
    *   value. Honoured by the textarea widget; ignored by other types.
+   * @param \DrevOps\Tui\Config\NumberBounds|null $bounds
+   *   Number only: optional min/max/step bounds; NULL for a plain integer
+   *   entry with no range or keyboard stepping.
    */
   public function __construct(
     public string $id,
@@ -76,6 +79,7 @@ final readonly class Field {
     public bool $revealable = FALSE,
     public bool $confirm = FALSE,
     public bool $externalEditor = FALSE,
+    public ?NumberBounds $bounds = NULL,
   ) {
   }
 

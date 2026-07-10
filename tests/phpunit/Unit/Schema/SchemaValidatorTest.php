@@ -88,6 +88,13 @@ final class SchemaValidatorTest extends TestCase {
     $this->assertContains('Question "port" must be a number.', $validator->validate(['name' => 'Acme', 'port' => '8080']));
   }
 
+  public function testNumberBoundsRejectOutOfRange(): void {
+    $validator = new SchemaValidator($this->config());
+
+    $this->assertSame([], $validator->validate(['name' => 'Acme', 'port' => 8080]));
+    $this->assertContains('Question "port" must be between 1 and 65535.', $validator->validate(['name' => 'Acme', 'port' => 99999]));
+  }
+
   public function testPauseAcceptsBoolRejectsString(): void {
     $validator = new SchemaValidator($this->config());
 
@@ -138,7 +145,7 @@ final class SchemaValidatorTest extends TestCase {
         $p->confirm('agree');
         $p->multiselect('mods')->option('a')->option('b');
         $p->text('custom')->required()->when(new Condition('profile', eq: 'custom'));
-        $p->number('port');
+        $p->number('port')->min(1)->max(65535);
         $p->pause('ack');
         $p->search('engine')->option('solr')->option('none');
         $p->multisearch('tags')->option('a')->option('b');

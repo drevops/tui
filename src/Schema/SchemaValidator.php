@@ -89,7 +89,29 @@ class SchemaValidator {
       return sprintf('Question "%s" is required.', $field->id);
     }
 
+    $bounds_error = $this->checkBounds($field, $value);
+    if ($bounds_error !== NULL) {
+      return $bounds_error;
+    }
+
     return $this->checkOptions($field, $value);
+  }
+
+  /**
+   * Check a number value against its declared bounds.
+   *
+   * @param \DrevOps\Tui\Config\Field $field
+   *   The field.
+   * @param mixed $value
+   *   The value.
+   *
+   * @return string|null
+   *   An error, or NULL when in range (or when the field declares no bounds).
+   */
+  protected function checkBounds(Field $field, mixed $value): ?string {
+    $violation = $field->bounds?->violation($value);
+
+    return $violation === NULL ? NULL : sprintf('Question "%s" must be %s.', $field->id, $violation);
   }
 
   /**

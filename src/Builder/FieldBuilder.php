@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Builder;
 
 use DrevOps\Tui\Condition\ConditionInterface;
+use DrevOps\Tui\Config\ConfigException;
 use DrevOps\Tui\Config\Field;
 use DrevOps\Tui\Config\FieldType;
+use DrevOps\Tui\Config\NumberBounds;
 use DrevOps\Tui\Config\Option;
 use DrevOps\Tui\Derive\Derive;
 use DrevOps\Tui\Discovery\DiscoverInterface;
@@ -89,6 +91,21 @@ final class FieldBuilder {
    * Whether the field may hand off to the user's $EDITOR.
    */
   protected bool $externalEditor = FALSE;
+
+  /**
+   * The number field's inclusive minimum, when declared.
+   */
+  protected ?int $min = NULL;
+
+  /**
+   * The number field's inclusive maximum, when declared.
+   */
+  protected ?int $max = NULL;
+
+  /**
+   * The number field's Up/Down increment, when declared.
+   */
+  protected ?int $step = NULL;
 
   /**
    * Construct a field builder.
@@ -209,6 +226,51 @@ final class FieldBuilder {
    */
   public function externalEditor(bool $enabled = TRUE): self {
     $this->externalEditor = $enabled;
+
+    return $this;
+  }
+
+  /**
+   * Number only: set the inclusive minimum accepted value.
+   *
+   * @param int $min
+   *   The minimum.
+   *
+   * @return $this
+   *   The builder.
+   */
+  public function min(int $min): self {
+    $this->min = $min;
+
+    return $this;
+  }
+
+  /**
+   * Number only: set the inclusive maximum accepted value.
+   *
+   * @param int $max
+   *   The maximum.
+   *
+   * @return $this
+   *   The builder.
+   */
+  public function max(int $max): self {
+    $this->max = $max;
+
+    return $this;
+  }
+
+  /**
+   * Number only: set the Up/Down increment.
+   *
+   * @param int $step
+   *   The step; must be positive.
+   *
+   * @return $this
+   *   The builder.
+   */
+  public function step(int $step): self {
+    $this->step = $step;
 
     return $this;
   }
@@ -351,6 +413,7 @@ final class FieldBuilder {
       $this->revealable,
       $this->confirm,
       $this->externalEditor,
+      $this->buildBounds(),
     );
   }
 
@@ -374,6 +437,31 @@ final class FieldBuilder {
     }
 
     return $this->defaultFor($this->fieldType);
+  }
+
+  /**
+   * Assemble the number bounds from the declared min/max/step, if any.
+   *
+   * @return \DrevOps\Tui\Config\NumberBounds|null
+   *   The bounds, or NULL when none were declared.
+   *
+   * @throws \DrevOps\Tui\Config\ConfigException
+   *   When min exceeds max, or the step is not positive.
+   */
+  protected function buildBounds(): ?NumberBounds {
+    if ($this->min === NULL && $this->max === NULL && $this->step === NULL) {
+      return NULL;
+    }
+
+    if ($this->min !== NULL && $this->max !== NULL && $this->min > $this->max) {
+      throw new ConfigException(sprintf('Field "%s" declares min %d greater than max %d.', $this->id, $this->min, $this->max));
+    }
+
+    if ($this->step !== NULL && $this->step < 1) {
+      throw new ConfigException(sprintf('Field "%s" declares a non-positive step %d.', $this->id, $this->step));
+    }
+
+    return new NumberBounds($this->min, $this->max, $this->step);
   }
 
   /**

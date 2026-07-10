@@ -188,6 +188,11 @@ class Engine {
    *   An error message, or NULL when the value is valid.
    */
   protected function validateValue(Field $field, mixed $value): ?string {
+    $violation = $field->bounds?->violation($value);
+    if ($violation !== NULL) {
+      return sprintf('must be %s.', $violation);
+    }
+
     $validator = $field->validate ?? $this->handlers->validator($field->id);
     if (!$validator instanceof \Closure) {
       return NULL;
