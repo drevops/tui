@@ -4,6 +4,8 @@
  * @file
  * Interactive textarea widget: Enter inserts a newline, Tab accepts.
  *
+ * With $EDITOR (or $VISUAL) set, Ctrl-E hands off to that editor for the value.
+ *
  * Usage:
  *   php 3-widgets/widget-textarea.php
  *   php 3-widgets/widget-textarea.php --no-unicode   # textual glyphs
@@ -13,6 +15,7 @@
 declare(strict_types=1);
 
 use DrevOps\Tui\Input\KeyParser;
+use DrevOps\Tui\Render\ExternalEditor;
 use DrevOps\Tui\Render\Terminal;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\TextareaWidget;
@@ -24,7 +27,9 @@ require __DIR__ . '/../../vendor/autoload.php';
 $opts = getopt('', ['no-unicode', 'no-ansi']);
 $theme = new DefaultTheme(76, ['color' => !isset($opts['no-ansi']), 'unicode' => !isset($opts['no-unicode'])]);
 
-$widget = new TextareaWidget("Redis for cache\nSolr for search");
+// The handoff is offered only when an editor is actually available.
+$external_editor = new ExternalEditor();
+$widget = new TextareaWidget("Redis for cache\nSolr for search", $external_editor->isAvailable());
 
 $terminal = new Terminal();
 $parser = new KeyParser();
@@ -41,6 +46,12 @@ try {
 
     foreach ($parser->parse($terminal->read()) as $key) {
       $widget->handle($key);
+    }
+
+    // Ctrl-E requested the editor: suspend the TUI, run it, capture the result.
+    if ($widget->wantsExternalEdit()) {
+      $value = $widget->value();
+      $widget->applyExternalEdit($external_editor->edit(is_string($value) ? $value : '', $terminal));
     }
   }
 }

@@ -164,6 +164,18 @@ final class FormTest extends TestCase {
     $this->assertSame('', $config->panels[0]->description);
   }
 
+  public function testExternalEditorFlag(): void {
+    $config = Form::create('T')
+      ->panel('p', 'P', function (PanelBuilder $panel): void {
+        $panel->textarea('notes', 'Notes')->externalEditor();
+        $panel->textarea('plain', 'Plain');
+      })
+      ->build();
+
+    $this->assertTrue($config->field('notes')?->externalEditor);
+    $this->assertFalse($config->field('plain')?->externalEditor);
+  }
+
   public function testDuplicateFieldIdThrows(): void {
     $this->expectException(ConfigException::class);
     $this->expectExceptionMessage('Duplicate field id "x".');

@@ -13,6 +13,7 @@ use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Input\KeyParser;
 use DrevOps\Tui\Theme\DefaultTheme;
+use DrevOps\Tui\Widget\TextareaWidget;
 use DrevOps\Tui\Widget\WidgetFactory;
 use DrevOps\Tui\Widget\WidgetInterface;
 
@@ -65,6 +66,16 @@ class PanelController {
   protected WidgetFactory $widgets;
 
   /**
+   * The external-editor service.
+   */
+  protected ExternalEditor $externalEditor;
+
+  /**
+   * The terminal, set while the interactive loop is running.
+   */
+  protected ?Terminal $terminal = NULL;
+
+  /**
    * The scroller.
    */
   protected Scroller $scroller;
@@ -94,6 +105,9 @@ class PanelController {
    *   An optional start banner (logo) shown before the interactive loop.
    * @param string $version
    *   An optional version string shown below the banner.
+   * @param \DrevOps\Tui\Render\ExternalEditor|null $external_editor
+   *   The external-editor service (defaults to a real one); injectable for
+   *   tests and to gate the textarea handoff on editor availability.
    */
   public function __construct(
     protected Config $config,
@@ -102,8 +116,10 @@ class PanelController {
     protected array $provenance = [],
     protected string $banner = '',
     protected string $version = '',
+    ?ExternalEditor $external_editor = NULL,
   ) {
-    $this->widgets = new WidgetFactory();
+    $this->externalEditor = $external_editor ?? new ExternalEditor();
+    $this->widgets = new WidgetFactory($this->externalEditor->isAvailable());
     $this->scroller = new Scroller();
     $this->navigator = new Navigator(new Panel('hub', $config->title, '', [], $config->panels));
   }
@@ -166,6 +182,7 @@ class PanelController {
   public function run(Terminal $terminal): Answers {
     // @codeCoverageIgnoreStart
     $parser = new KeyParser();
+    $this->terminal = $terminal;
     $terminal->setup();
 
     try {
@@ -288,6 +305,12 @@ class PanelController {
     }
 
     $this->editor->handle($key);
+
+    if ($this->editor instanceof TextareaWidget && $this->editor->wantsExternalEdit()) {
+      $current = $this->editor->value();
+      $captured = $this->externalEditor->edit(is_string($current) ? $current : '', $this->terminal);
+      $this->editor->applyExternalEdit($captured);
+    }
 
     if ($this->editor->isComplete()) {
       $this->values[$this->editing->id] = $this->editor->value();

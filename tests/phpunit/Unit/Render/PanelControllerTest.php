@@ -10,7 +10,9 @@ use DrevOps\Tui\Builder\PanelBuilder;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Render\Ansi;
+use DrevOps\Tui\Render\ExternalEditor;
 use DrevOps\Tui\Render\PanelController;
+use DrevOps\Tui\Render\Terminal;
 use DrevOps\Tui\Theme\DefaultTheme;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
@@ -260,6 +262,115 @@ final class PanelControllerTest extends TestCase {
     $controller->handle(Key::char('q'));
 
     $this->assertTrue($controller->isDone());
+  }
+
+  public function testTextareaExternalEditCommitsCapturedValue(): void {
+    $controller = $this->textareaController($this->fixedEditor('FROM EDITOR'));
+
+    $controller->handle(Key::named(KeyName::Enter));
+    $controller->handle(Key::named(KeyName::Enter));
+    $this->assertTrue($controller->isEditing());
+
+    $controller->handle(Key::char("\x05"));
+
+    $this->assertFalse($controller->isEditing());
+    $this->assertSame('FROM EDITOR', $controller->answers()->value('notes'));
+    $this->assertSame(Provenance::Edited, $controller->answers()->provenanceOf('notes'));
+  }
+
+  public function testTextareaExternalEditAbortKeepsEditing(): void {
+    $controller = $this->textareaController($this->fixedEditor(NULL));
+
+    $controller->handle(Key::named(KeyName::Enter));
+    $controller->handle(Key::named(KeyName::Enter));
+    $controller->handle(Key::char("\x05"));
+
+    // A NULL capture (aborted edit) leaves the field open with its value intact.
+    $this->assertTrue($controller->isEditing());
+    $this->assertSame('seeded', $controller->answers()->value('notes'));
+  }
+
+  public function testTextareaEditorHintShownWhenAvailable(): void {
+    $controller = $this->textareaController($this->fixedEditor(NULL));
+
+    $controller->handle(Key::named(KeyName::Enter));
+    $controller->handle(Key::named(KeyName::Enter));
+
+    $this->assertStringContainsString('ctrl-e editor', Ansi::strip($controller->frame(12)));
+  }
+
+  public function testTextareaEditorHintHiddenAndHandoffInertWhenUnavailable(): void {
+    $controller = $this->textareaController($this->unavailableEditor());
+
+    $controller->handle(Key::named(KeyName::Enter));
+    $controller->handle(Key::named(KeyName::Enter));
+    $this->assertStringNotContainsString('ctrl-e editor', Ansi::strip($controller->frame(12)));
+
+    // With no editor available the trigger is inert - editing continues.
+    $controller->handle(Key::char("\x05"));
+    $this->assertTrue($controller->isEditing());
+    $this->assertSame('seeded', $controller->answers()->value('notes'));
+  }
+
+  /**
+   * A single-panel controller whose textarea opts into the editor handoff.
+   *
+   * @param \DrevOps\Tui\Render\ExternalEditor $editor
+   *   The external-editor service to inject.
+   */
+  protected function textareaController(ExternalEditor $editor): PanelController {
+    $config = Form::create('Demo')
+      ->buttons(FALSE)
+      ->panel('general', 'General', function (PanelBuilder $p): void {
+        $p->textarea('notes', 'Notes')->externalEditor();
+      })
+      ->build();
+
+    return new PanelController($config, new DefaultTheme(40, ['color' => FALSE]), ['notes' => 'seeded'], [], '', '', $editor);
+  }
+
+  /**
+   * An available editor stub returning a fixed capture.
+   *
+   * @param string|null $result
+   *   The value edit() returns (NULL simulates an aborted edit).
+   */
+  protected function fixedEditor(?string $result): ExternalEditor {
+    return new class($result) extends ExternalEditor {
+
+      public function __construct(protected ?string $result) {
+      }
+
+      #[\Override]
+      public function isAvailable(): bool {
+        return TRUE;
+      }
+
+      #[\Override]
+      public function edit(string $initial, ?Terminal $terminal = NULL): ?string {
+        return $this->result;
+      }
+
+    };
+  }
+
+  /**
+   * An editor stub reporting no editor is available.
+   */
+  protected function unavailableEditor(): ExternalEditor {
+    return new class extends ExternalEditor {
+
+      #[\Override]
+      public function isAvailable(): bool {
+        return FALSE;
+      }
+
+      #[\Override]
+      public function edit(string $initial, ?Terminal $terminal = NULL): ?string {
+        throw new \RuntimeException('the editor must not launch when unavailable');
+      }
+
+    };
   }
 
   /**
