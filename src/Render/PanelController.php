@@ -237,7 +237,7 @@ class PanelController {
     if ($this->editor instanceof WidgetInterface) {
       $label = $this->editing instanceof Field ? $this->editing->label : '';
 
-      return $this->theme->renderEditor($label, $this->editor->view($this->theme));
+      return $this->theme->renderEditor($label, $this->editor->view($this->theme), $this->editor->rendersHint());
     }
 
     $panel = $this->navigator->current();

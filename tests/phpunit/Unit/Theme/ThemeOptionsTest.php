@@ -125,6 +125,21 @@ final class ThemeOptionsTest extends TestCase {
     $this->assertStringContainsString('Acme', Ansi::strip($boxed));
   }
 
+  public function testEditorOmitsGenericHintWhenViewRendersOwn(): void {
+    $plain = new DefaultTheme(30, ['color' => FALSE]);
+
+    // With the flag set, the generic accept/cancel hint is dropped so it cannot
+    // contradict a hint the widget's own view already renders.
+    $this->assertStringNotContainsString('accept', $plain->renderEditor('Name', 'body', TRUE));
+    $this->assertStringContainsString('accept', $plain->renderEditor('Name', 'body', FALSE));
+
+    // Bordered: the dropped footer still closes the box with a single rule.
+    $boxed = new DefaultTheme(30, ['color' => FALSE, 'border' => ThemeInterface::BORDER_LINE]);
+    $frame = $boxed->renderEditor('Name', 'body', TRUE);
+    $this->assertStringNotContainsString('accept', $frame);
+    $this->assertStringContainsString('body', Ansi::strip($frame));
+  }
+
   public function testBorderColourFollowsMode(): void {
     $args = [['H'], ['b'], ['F'], new Viewport(0, FALSE, FALSE), 1];
 

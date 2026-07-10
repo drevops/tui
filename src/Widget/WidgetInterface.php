@@ -59,4 +59,12 @@ interface WidgetInterface {
    */
   public function view(ThemeInterface $theme): string;
 
+  /**
+   * Whether view() renders its own key-hint line.
+   *
+   * @return bool
+   *   TRUE when the view already includes a hint line of its own.
+   */
+  public function rendersHint(): bool;
+
 }

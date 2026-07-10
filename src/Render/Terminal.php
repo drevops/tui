@@ -206,10 +206,13 @@ class Terminal {
    * Honours the NO_COLOR convention and the "dumb" terminal.
    *
    * @return bool
-   *   TRUE unless NO_COLOR is set or TERM is "dumb".
+   *   TRUE unless NO_COLOR is set to a non-empty value or TERM is "dumb".
    */
   public static function detectColor(): bool {
-    if (getenv('NO_COLOR') !== FALSE) {
+    $no_color = getenv('NO_COLOR');
+
+    // The NO_COLOR convention treats an empty value as unset.
+    if (is_string($no_color) && $no_color !== '') {
       return FALSE;
     }
 

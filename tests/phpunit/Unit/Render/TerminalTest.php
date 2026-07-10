@@ -99,7 +99,7 @@ final class TerminalTest extends TestCase {
     yield 'normal terminal' => [NULL, 'xterm-256color', TRUE];
     yield 'no_color set' => ['1', 'xterm', FALSE];
     yield 'dumb terminal' => [NULL, 'dumb', FALSE];
-    yield 'no_color empty still disables' => ['', 'xterm', FALSE];
+    yield 'no_color empty is treated as unset' => ['', 'xterm', TRUE];
   }
 
   #[DataProvider('dataProviderDetectMode')]

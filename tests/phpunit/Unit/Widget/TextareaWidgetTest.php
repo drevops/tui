@@ -83,4 +83,10 @@ final class TextareaWidgetTest extends TestCase {
     $this->assertNull($value);
   }
 
+  public function testRendersOwnHint(): void {
+    // Its view already shows "enter newline / tab accept", so the editor chrome
+    // must not add the generic "enter accept" hint on top.
+    $this->assertTrue((new TextareaWidget('x'))->rendersHint());
+  }
+
 }

@@ -97,4 +97,12 @@ class TextareaWidget extends TextWidget {
     return $this->error === NULL ? $out : $out . "\n" . $theme->error($this->error);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  public function rendersHint(): bool {
+    return TRUE;
+  }
+
 }

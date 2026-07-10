@@ -79,6 +79,13 @@ abstract class AbstractWidget implements WidgetInterface {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function rendersHint(): bool {
+    return FALSE;
+  }
+
+  /**
    * The in-progress value before acceptance.
    *
    * @return mixed

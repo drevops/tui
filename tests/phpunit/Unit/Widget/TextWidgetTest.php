@@ -90,4 +90,9 @@ final class TextWidgetTest extends TestCase {
     $this->assertSame('a b', $value);
   }
 
+  public function testDoesNotRenderOwnHint(): void {
+    // A plain widget leaves the editor chrome to supply the accept/cancel hint.
+    $this->assertFalse((new TextWidget())->rendersHint());
+  }
+
 }

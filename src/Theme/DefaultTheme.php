@@ -695,10 +695,12 @@ class DefaultTheme implements ThemeInterface {
       $out[] = $this->boxLine('', $chars['v']);
     }
 
-    $out[] = $this->borderRule($chars['ml'], $chars['mr'], $chars['h']);
+    if ($footer !== []) {
+      $out[] = $this->borderRule($chars['ml'], $chars['mr'], $chars['h']);
 
-    foreach ($footer as $line) {
-      $out[] = $this->boxLine($line, $chars['v']);
+      foreach ($footer as $line) {
+        $out[] = $this->boxLine($line, $chars['v']);
+      }
     }
 
     $out[] = $this->borderRule($chars['bl'], $chars['br'], $chars['h']);
@@ -849,20 +851,26 @@ class DefaultTheme implements ThemeInterface {
    *   The field label.
    * @param string $view
    *   The widget's rendered view.
+   * @param bool $renders_hint
+   *   Whether the view already carries its own key-hint line, in which case the
+   *   generic accept/cancel hint is omitted so the two cannot contradict.
    *
    * @return string
    *   The editor screen - boxed when the theme has a border, else plain.
    */
-  public function renderEditor(string $label, string $view): string {
-    $hints = $this->renderHintLine($this->enter() . ' accept', 'esc cancel');
+  public function renderEditor(string $label, string $view, bool $renders_hint = FALSE): string {
+    $hint = $this->renderHintLine($this->enter() . ' accept', 'esc cancel');
+    $footer = $renders_hint ? [] : [$hint];
 
-    if ($this->borderStyle() === self::BORDER_NONE) {
-      return $this->renderEditorHeader($label) . "\n" . $view . "\n\n" . $hints;
+    if ($this->borderStyle() !== self::BORDER_NONE) {
+      $body = explode("\n", $view);
+
+      return $this->renderFrame([$this->title($label)], $body, $footer, new Viewport(0, FALSE, FALSE), count($body));
     }
 
-    $body = explode("\n", $view);
+    $screen = $this->renderEditorHeader($label) . "\n" . $view;
 
-    return $this->renderFrame([$this->title($label)], $body, [$hints], new Viewport(0, FALSE, FALSE), count($body));
+    return $renders_hint ? $screen : $screen . "\n\n" . $hint;
   }
 
   /**
