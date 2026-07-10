@@ -74,6 +74,11 @@ final class KeyMapTest extends TestCase {
     yield 'multiselect right selects all' => [Scope::field(FieldType::MultiSelect), Key::named(KeyName::Right), Action::SelectAll, TRUE];
     yield 'multiselect up moves up (inherited)' => [Scope::field(FieldType::MultiSelect), Key::named(KeyName::Up), Action::MoveUp, TRUE];
     yield 'multisearch space toggles' => [Scope::field(FieldType::MultiSearch), Key::named(KeyName::Space), Action::Toggle, TRUE];
+    // File pickers reveal hidden entries on Tab; base arrows browse in and out.
+    yield 'filepicker tab reveals' => [Scope::field(FieldType::FilePicker), Key::named(KeyName::Tab), Action::Reveal, TRUE];
+    yield 'filepicker right browses in (inherited)' => [Scope::field(FieldType::FilePicker), Key::named(KeyName::Right), Action::MoveRight, TRUE];
+    yield 'multifilepicker space toggles' => [Scope::field(FieldType::MultiFilePicker), Key::named(KeyName::Space), Action::Toggle, TRUE];
+    yield 'multifilepicker tab reveals' => [Scope::field(FieldType::MultiFilePicker), Key::named(KeyName::Tab), Action::Reveal, TRUE];
     // Pause binds two keys to accept.
     yield 'pause enter accepts' => [Scope::field(FieldType::Pause), Key::named(KeyName::Enter), Action::Accept, TRUE];
     yield 'pause space accepts' => [Scope::field(FieldType::Pause), Key::named(KeyName::Space), Action::Accept, TRUE];
@@ -219,6 +224,8 @@ final class KeyMapTest extends TestCase {
     yield 'navigation' => [Scope::navigation(), '@navigation', 'navigation', FALSE];
     yield 'text is a text-entry scope' => [Scope::field(FieldType::Text), 'field:Text', 'text', TRUE];
     yield 'select is not a text-entry scope' => [Scope::field(FieldType::Select), 'field:Select', 'select', FALSE];
+    // The file picker filters by typing, so it is a text-entry scope.
+    yield 'filepicker is a text-entry scope' => [Scope::field(FieldType::FilePicker), 'field:FilePicker', 'filepicker', TRUE];
   }
 
   public function testBindingHoldsItsDeclaration(): void {

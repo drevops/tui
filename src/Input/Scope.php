@@ -37,6 +37,8 @@ final readonly class Scope {
     FieldType::MultiSelect,
     FieldType::MultiSearch,
     FieldType::Toggle,
+    FieldType::FilePicker,
+    FieldType::MultiFilePicker,
   ];
 
   /**

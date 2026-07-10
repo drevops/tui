@@ -1,5 +1,8 @@
 <?php
 
-declare(strict_types=1);
+/**
+ * @file
+ * A placeholder source file for the file picker demo tree.
+ */
 
-// A placeholder source file for the file picker demo tree.
+declare(strict_types=1);

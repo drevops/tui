@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Widget;
 
+use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\FilePickerMode;
+use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Key;
-use DrevOps\Tui\Input\KeyName;
+use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Render\Scroller;
 use DrevOps\Tui\Theme\ThemeInterface;
@@ -127,54 +129,65 @@ class FilePickerWidget extends AbstractWidget {
   /**
    * {@inheritdoc}
    */
+  #[\Override]
+  protected function keyScope(): Scope {
+    return Scope::field($this->multiple ? FieldType::MultiFilePicker : FieldType::FilePicker);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function handle(Key $key): void {
+    $keys = $this->keys();
+
     if ($this->handleCancel($key)) {
       return;
     }
 
-    if ($key->is(KeyName::Enter)) {
+    if ($keys->matches($key, Action::Accept)) {
       $this->onEnter();
 
       return;
     }
 
-    if ($key->is(KeyName::Up)) {
+    if ($keys->matches($key, Action::MoveUp)) {
       $this->moveCursor(-1);
 
       return;
     }
 
-    if ($key->is(KeyName::Down)) {
+    if ($keys->matches($key, Action::MoveDown)) {
       $this->moveCursor(1);
 
       return;
     }
 
-    if ($key->is(KeyName::Right)) {
+    if ($keys->matches($key, Action::MoveRight)) {
       $this->descend();
 
       return;
     }
 
-    if ($key->is(KeyName::Left)) {
+    if ($keys->matches($key, Action::MoveLeft)) {
       $this->ascend();
 
       return;
     }
 
-    if ($key->is(KeyName::Tab)) {
+    // Reveal doubles as the show-hidden toggle, mirroring the password reveal.
+    if ($keys->matches($key, Action::Reveal)) {
       $this->toggleHidden();
 
       return;
     }
 
-    if ($this->multiple && $key->is(KeyName::Space)) {
+    if ($keys->matches($key, Action::Toggle)) {
       $this->toggleSelection();
 
       return;
     }
 
-    if ($key->is(KeyName::Backspace)) {
+    if ($keys->matches($key, Action::DeleteBack)) {
       $this->onBackspace();
 
       return;
@@ -251,7 +264,7 @@ class FilePickerWidget extends AbstractWidget {
    *   The default path or paths.
    */
   protected function seed(string|array $default): void {
-    $paths = is_array($default) ? array_values(array_filter($default, 'is_string')) : ($default === '' ? [] : [$default]);
+    $paths = is_array($default) ? array_values(array_filter($default, is_string(...))) : ($default === '' ? [] : [$default]);
 
     if ($this->multiple) {
       foreach ($paths as $path) {
@@ -419,14 +432,15 @@ class FilePickerWidget extends AbstractWidget {
       return [];
     }
     // @codeCoverageIgnoreEnd
-
     $dirs = [];
     $files = [];
     foreach ($raw as $name) {
-      if ($name === '.' || $name === '..') {
+      if ($name === '.') {
         continue;
       }
-
+      if ($name === '..') {
+        continue;
+      }
       if (!$this->showHidden && str_starts_with($name, '.')) {
         continue;
       }
@@ -436,8 +450,10 @@ class FilePickerWidget extends AbstractWidget {
 
         continue;
       }
-
-      if ($this->mode === FilePickerMode::Directory || !$this->extensionAllowed($name)) {
+      if ($this->mode === FilePickerMode::Directory) {
+        continue;
+      }
+      if (!$this->extensionAllowed($name)) {
         continue;
       }
 
@@ -462,9 +478,9 @@ class FilePickerWidget extends AbstractWidget {
       $names = array_filter($names, static fn(string $name): bool => str_contains(strtolower($name), $needle));
     }
 
-    usort($names, static fn(string $a, string $b): int => strcasecmp($a, $b));
+    usort($names, strcasecmp(...));
 
-    return array_values($names);
+    return $names;
   }
 
   /**
@@ -582,6 +598,11 @@ class FilePickerWidget extends AbstractWidget {
   /**
    * Build the key-hint line shown beneath the entry list.
    *
+   * Every glyph is drawn from the live bindings, so the line stays truthful
+   * when the keys are remapped. The Toggle fragment only appears in multiple
+   * mode, where Space is bound to it; Accept reads "select" for a single pick
+   * and "accept" for a multiple one.
+   *
    * @param \DrevOps\Tui\Theme\ThemeInterface $theme
    *   The theme.
    *
@@ -589,13 +610,17 @@ class FilePickerWidget extends AbstractWidget {
    *   The themed, dot-joined hint line.
    */
   protected function hint(ThemeInterface $theme): string {
-    $move = $theme->arrowUp() . '/' . $theme->arrowDown() . ' move';
-    $open = $theme->arrowRight() . ' open';
-    $up = $theme->arrowLeft() . ' up';
+    $keys = $this->keys();
 
-    $fragments = $this->multiple
-      ? ['space select', $move, $open, $up, $theme->enter() . ' accept', 'tab hidden', 'esc cancel']
-      : [$move, $open, $up, $theme->enter() . ' select', 'tab hidden', 'esc cancel'];
+    $fragments = array_filter([
+      $theme->keysHint($keys, 'select', Action::Toggle),
+      $theme->keysHint($keys, 'move', Action::MoveUp, Action::MoveDown),
+      $theme->keysHint($keys, 'open', Action::MoveRight),
+      $theme->keysHint($keys, 'up', Action::MoveLeft),
+      $theme->keysHint($keys, $this->multiple ? 'accept' : 'select', Action::Accept),
+      $theme->keysHint($keys, 'hidden', Action::Reveal),
+      $theme->keysHint($keys, 'cancel', Action::Cancel),
+    ]);
 
     return $theme->footer(implode(' ' . $theme->dot() . ' ', $fragments));
   }

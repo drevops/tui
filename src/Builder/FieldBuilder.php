@@ -114,8 +114,7 @@ final class FieldBuilder {
   protected FilePickerMode $pickerMode = FilePickerMode::Any;
 
   /**
-   * File picker only: the directory the browser opens at and cannot ascend
-   * above.
+   * File picker only: the start directory and the floor it cannot ascend above.
    */
   protected string $pickerStart = '';
 

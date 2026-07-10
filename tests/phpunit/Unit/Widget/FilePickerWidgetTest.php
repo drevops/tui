@@ -411,7 +411,7 @@ final class FilePickerWidgetTest extends TestCase {
 
     // With no start the browser roots at the current working directory, so the
     // breadcrumb is its basename.
-    $this->assertStringContainsString((string) basename((string) getcwd()), $this->render($widget));
+    $this->assertStringContainsString(basename((string) getcwd()), $this->render($widget));
   }
 
   /**
