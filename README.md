@@ -164,6 +164,15 @@ Text input rendered as a mask - in the editor, on the panel row and in the summa
 $p->password('api_key', 'API key');
 ```
 
+Two opt-in options, both off by default so the behaviour above is unchanged:
+
+- `revealable()` adds a reveal toggle. Press Tab in the editor to cycle the display between hidden (nothing shown), masked and plaintext. This only changes what is drawn - the stored value is never affected, and the panel row and summary stay masked.
+- `confirm()` prompts for the value a second time and rejects a mismatch with a clear message before accepting.
+
+```php
+$p->password('api_key', 'API key')->revealable()->confirm();
+```
+
 <table>
   <tr>
     <td></td>

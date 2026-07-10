@@ -76,6 +76,16 @@ final class FieldBuilder {
   protected int $weight = 0;
 
   /**
+   * Whether a password editor offers a reveal/hide toggle.
+   */
+  protected bool $revealable = FALSE;
+
+  /**
+   * Whether a password editor prompts for the value twice.
+   */
+  protected bool $confirm = FALSE;
+
+  /**
    * Construct a field builder.
    *
    * @param string $id
@@ -146,6 +156,36 @@ final class FieldBuilder {
    */
   public function weight(int $weight): self {
     $this->weight = $weight;
+
+    return $this;
+  }
+
+  /**
+   * Offer a reveal/hide toggle in a password editor.
+   *
+   * @param bool $revealable
+   *   Whether the toggle is enabled.
+   *
+   * @return $this
+   *   The builder.
+   */
+  public function revealable(bool $revealable = TRUE): self {
+    $this->revealable = $revealable;
+
+    return $this;
+  }
+
+  /**
+   * Prompt for a password twice and reject a mismatch before accepting.
+   *
+   * @param bool $confirm
+   *   Whether confirmation mode is enabled.
+   *
+   * @return $this
+   *   The builder.
+   */
+  public function confirm(bool $confirm = TRUE): self {
+    $this->confirm = $confirm;
 
     return $this;
   }
@@ -285,6 +325,8 @@ final class FieldBuilder {
       $this->validate,
       $this->transform,
       $this->weight,
+      $this->revealable,
+      $this->confirm,
     );
   }
 

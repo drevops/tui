@@ -37,7 +37,7 @@ class WidgetFactory {
       FieldType::Search => new SearchWidget($labels, is_string($current) ? $current : ''),
       FieldType::Number => new NumberWidget(is_int($current) || is_float($current) ? (string) (int) $current : ''),
       FieldType::Textarea => new TextareaWidget(is_string($current) ? $current : ''),
-      FieldType::Password => new PasswordWidget(is_string($current) ? $current : ''),
+      FieldType::Password => new PasswordWidget(is_string($current) ? $current : '', revealable: $field->revealable, confirm: $field->confirm),
       FieldType::Pause => new PauseWidget(),
       default => new TextWidget(is_string($current) ? $current : ''),
     };
