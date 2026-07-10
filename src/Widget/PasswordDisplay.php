@@ -13,19 +13,13 @@ namespace DrevOps\Tui\Widget;
  */
 enum PasswordDisplay {
 
-  /**
-   * No glyphs, caret only - conceals both the value and its length.
-   */
+  // No glyphs, caret only - conceals both the value and its length.
   case Hidden;
 
-  /**
-   * One mask glyph per character - conceals the value but reveals its length.
-   */
+  // One mask glyph per character - conceals the value but reveals its length.
   case Masked;
 
-  /**
-   * The literal characters.
-   */
+  // The literal characters.
   case Plaintext;
 
   /**

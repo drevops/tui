@@ -143,8 +143,8 @@ final class FormTest extends TestCase {
     $this->assertSame('', $config->field('ta')?->default);
     $this->assertSame('', $config->field('pw')?->default);
     // The password options are opt-in, so they default off.
-    $this->assertFalse($config->field('pw')?->revealable);
-    $this->assertFalse($config->field('pw')?->confirm);
+    $this->assertFalse($config->field('pw')->revealable);
+    $this->assertFalse($config->field('pw')->confirm);
     $this->assertSame('', $config->field('se')?->default);
     $this->assertSame([], $config->field('ms')?->default);
     // A pause defaults to acknowledged so headless runs never block on it.
