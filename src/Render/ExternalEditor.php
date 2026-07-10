@@ -76,7 +76,9 @@ class ExternalEditor {
     }
 
     try {
-      file_put_contents($file, $initial);
+      if (!$this->seed($file, $initial)) {
+        return NULL;
+      }
 
       $terminal?->restore();
 
@@ -117,6 +119,21 @@ class ExternalEditor {
    */
   protected function normalize(string $content): string {
     return (string) preg_replace('/\r?\n\z/', '', $content);
+  }
+
+  /**
+   * Write the initial buffer to the exchange file.
+   *
+   * @param string $file
+   *   The temp file path.
+   * @param string $initial
+   *   The buffer to seed.
+   *
+   * @return bool
+   *   TRUE when the write succeeded.
+   */
+  protected function seed(string $file, string $initial): bool {
+    return file_put_contents($file, $initial) !== FALSE;
   }
 
   /**

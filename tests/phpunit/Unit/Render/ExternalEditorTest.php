@@ -95,6 +95,26 @@ final class ExternalEditorTest extends TestCase {
     $this->assertNull($editor->edit('seed'));
   }
 
+  public function testEditReturnsNullWhenSeedWriteFails(): void {
+    $this->putEnv('EDITOR', 'vi');
+
+    $editor = new class extends ExternalEditor {
+
+      #[\Override]
+      protected function seed(string $file, string $initial): bool {
+        return FALSE;
+      }
+
+      #[\Override]
+      protected function spawn(string $command, string $file): int {
+        throw new \RuntimeException('the editor must not launch when the seed write fails');
+      }
+
+    };
+
+    $this->assertNull($editor->edit('seed'));
+  }
+
   public function testEditCapturesSavedBufferAndRestoresTerminal(): void {
     $this->putEnv('EDITOR', 'vi');
 
