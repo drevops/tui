@@ -178,9 +178,9 @@ class MultiSelectWidget extends AbstractWidget {
    *   The matching option rows.
    */
   protected function filterOptions(string $needle): array {
-    $lower = strtolower($needle);
+    $lower = mb_strtolower($needle);
 
-    return array_values(array_filter($this->options, static fn(Option $option): bool => $option->kind === OptionKind::Option && str_contains(strtolower($option->label), $lower)));
+    return array_values(array_filter($this->options, static fn(Option $option): bool => $option->kind === OptionKind::Option && str_contains(mb_strtolower($option->label), $lower)));
   }
 
   /**

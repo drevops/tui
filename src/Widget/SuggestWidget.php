@@ -139,8 +139,7 @@ class SuggestWidget extends AbstractWidget {
     foreach (array_slice($matches, $viewport->offset, $this->pageSize) as $slot => $value) {
       $index = $viewport->offset + $slot;
       $current = $index === $this->highlight;
-      $positions = $this->buffer === '' ? [] : $this->matcher()->positions($value, $this->buffer);
-      $lines[] = $theme->marker($current) . ' ' . $this->renderMatchedLabel($theme, $value, $positions, $current);
+      $lines[] = $theme->marker($current) . ' ' . $this->renderMatchedLabel($theme, $value, $this->positionsFor($value), $current);
     }
 
     if ($viewport->has_below) {
@@ -148,6 +147,19 @@ class SuggestWidget extends AbstractWidget {
     }
 
     return implode("\n", $lines);
+  }
+
+  /**
+   * The matched-character positions in a suggestion under the current buffer.
+   *
+   * @param string $value
+   *   The suggestion value.
+   *
+   * @return list<int>
+   *   The matched indices, or an empty list when not filtering.
+   */
+  protected function positionsFor(string $value): array {
+    return $this->buffer === '' ? [] : $this->matcher()->positions($value, $this->buffer);
   }
 
 }

@@ -128,4 +128,16 @@ final class MultiSearchWidgetTest extends TestCase {
     $this->assertStringContainsString('▼', $view);
   }
 
+  public function testPagingFollowsCursorDownTheList(): void {
+    $widget = new MultiSearchWidget(['a' => 'Apple', 'b' => 'Banana', 'c' => 'Cherry', 'd' => 'Date'], pageSize: 2);
+
+    $widget->handle(Key::named(KeyName::Down));
+    $widget->handle(Key::named(KeyName::Down));
+    $view = Ansi::strip($widget->view(new DefaultTheme()));
+
+    $this->assertStringContainsString('Cherry', $view);
+    $this->assertStringContainsString('▲', $view);
+    $this->assertStringNotContainsString('Apple', $view);
+  }
+
 }
