@@ -390,6 +390,64 @@ $p->multiFilePicker('assets', 'Asset files')->start(getcwd())->extensions(['png'
   </tr>
 </table>
 
+### Option groups, separators and disabled options
+
+`select`, `multiselect`, `search` and `multisearch` accept more than a flat list. Alongside the `->options(['value' => 'Label'])` map shorthand, `->option()` declares one option at a time and can mark it disabled, and `->heading()` and `->separator()` add non-selectable structure:
+
+```php
+$p->select('profile', 'Install profile')
+  ->heading('Recommended')
+  ->option('standard', 'Standard')
+  ->option('minimal', 'Minimal')
+  ->separator()
+  ->heading('Advanced')
+  ->option('demo_umami', 'Demo Umami', disabled: TRUE, disabled_reason: 'requires PHP 8.4');
+```
+
+Headings, separators and disabled options are **visual only**: navigation skips them, so the cursor lands only on selectable options, and they can never be highlighted or selected. A disabled option shows its reason beside the label, dimmed. Every kind is theme-driven - override `heading()`, `divider()` or `disabled()` on a theme to restyle it.
+
+Non-selectable rows never leak into the answer: a disabled value is dropped from a `multiselect` default, absent from the collected value, and excluded from the JSON schema (`Tui::schema()` lists selectable options only). Supplying a disabled - or otherwise unknown - option value non-interactively (via `--prompts` JSON or an environment override) fails collection with a clear error naming the value.
+
+A single-choice `select` with a group heading, a separator and a disabled option (its reason shown beside the dimmed label):
+
+<table>
+  <tr>
+    <td></td>
+    <td align="center"><strong>ANSI</strong></td>
+    <td align="center"><strong>No ANSI</strong></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>Unicode</strong></td>
+    <td><img src="docs/assets/widget-select-groups.svg" alt="Select with groups: Unicode + ANSI"></td>
+    <td><img src="docs/assets/widget-select-groups-no-ansi.svg" alt="Select with groups: Unicode + No ANSI"></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>ASCII</strong></td>
+    <td><img src="docs/assets/widget-select-groups-ascii.svg" alt="Select with groups: ASCII + ANSI"></td>
+    <td><img src="docs/assets/widget-select-groups-ascii-no-ansi.svg" alt="Select with groups: ASCII + No ANSI"></td>
+  </tr>
+</table>
+
+A `multiselect` where the cursor and Space skip the separator and the disabled option, which can never be checked:
+
+<table>
+  <tr>
+    <td></td>
+    <td align="center"><strong>ANSI</strong></td>
+    <td align="center"><strong>No ANSI</strong></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>Unicode</strong></td>
+    <td><img src="docs/assets/widget-multiselect-groups.svg" alt="MultiSelect with groups: Unicode + ANSI"></td>
+    <td><img src="docs/assets/widget-multiselect-groups-no-ansi.svg" alt="MultiSelect with groups: Unicode + No ANSI"></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>ASCII</strong></td>
+    <td><img src="docs/assets/widget-multiselect-groups-ascii.svg" alt="MultiSelect with groups: ASCII + ANSI"></td>
+    <td><img src="docs/assets/widget-multiselect-groups-ascii-no-ansi.svg" alt="MultiSelect with groups: ASCII + No ANSI"></td>
+  </tr>
+</table>
+
 ### Confirm
 
 Yes/No toggle. Arrows or Space switch, `y`/`n` set the choice directly, Enter accepts.
@@ -550,7 +608,7 @@ $form = Form::create('My form')
   });
 ```
 
-Each field builder chains `->description()`, `->default()`, `->required()`, `->weight()`, `->options()` / `->option()` (with per-option descriptions), `->when(new Condition(...))`, `->derive(new Derive(...))`, `->discover(...)`, `->validate(...)` and `->transform(...)`.
+Each field builder chains `->description()`, `->default()`, `->required()`, `->weight()`, `->options()` / `->option()` (with per-option descriptions and optional `disabled` state), `->heading()` / `->separator()` (non-selectable option-list structure), `->when(new Condition(...))`, `->derive(new Derive(...))`, `->discover(...)`, `->validate(...)` and `->transform(...)`.
 
 Form-level methods tune the interactive TUI: `->theme()` names a theme, auto-detected from the terminal background when unset (see [Themes](#themes)), `->banner()` sets a start banner, `->buttons()` controls the submit/cancel buttons, `->clearOnExit()` keeps or clears the final frame, and `->color()` / `->unicode()` force a [display mode](#display-modes).
 

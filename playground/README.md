@@ -55,6 +55,8 @@ composer install
   `widget-multisearch.php`, `widget-filepicker.php`,
   `widget-multifilepicker.php`, `widget-confirm.php`, `widget-toggle.php`,
   `widget-pause.php`.
+  The `widget-select-groups.php` and `widget-multiselect-groups.php` demos show
+  group headings, separators and disabled options.
 
 - **[`4-nested-panels/`](4-nested-panels)** - a hub with drill-in sub-panels
   (nested to any depth), per-option descriptions, custom button labels

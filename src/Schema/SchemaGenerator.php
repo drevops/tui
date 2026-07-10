@@ -67,12 +67,17 @@ class SchemaGenerator {
    *   The field.
    *
    * @return array<int,array<string,string>>
-   *   The options as a list of {value, label, description}.
+   *   The selectable options as a list of {value, label, description};
+   *   separators, headings and disabled options are excluded.
    */
   protected function options(Field $field): array {
     $out = [];
 
     foreach ($field->options as $option) {
+      if (!$option->selectable()) {
+        continue;
+      }
+
       $out[] = [
         'value' => $option->value,
         'label' => $option->label,

@@ -8,7 +8,9 @@ use DrevOps\Tui\Input\ArrayKeyStream;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Render\Ansi;
+use DrevOps\Tui\Tests\Traits\MixedOptionsTrait;
 use DrevOps\Tui\Theme\DefaultTheme;
+use DrevOps\Tui\Widget\ChoiceListTrait;
 use DrevOps\Tui\Widget\MultiSearchWidget;
 use DrevOps\Tui\Widget\WidgetRunner;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -19,8 +21,11 @@ use PHPUnit\Framework\TestCase;
  * Tests the multi-search widget.
  */
 #[CoversClass(MultiSearchWidget::class)]
+#[CoversClass(ChoiceListTrait::class)]
 #[Group('widget')]
 final class MultiSearchWidgetTest extends TestCase {
+
+  use MixedOptionsTrait;
 
   /**
    * The options used across the tests.
@@ -62,6 +67,30 @@ final class MultiSearchWidgetTest extends TestCase {
     $view = Ansi::strip($widget->view(new DefaultTheme()));
 
     $this->assertStringContainsString('space select · ↑/↓ move · ←/→ none/all · ↵ accept · esc cancel', $view);
+  }
+
+  public function testSkipsNonSelectableWhenToggling(): void {
+    $widget = new MultiSearchWidget($this->mixedOptions());
+
+    $value = WidgetRunner::run($widget, ArrayKeyStream::of(
+      Key::named(KeyName::Space),
+      Key::named(KeyName::Down),
+      Key::named(KeyName::Space),
+      Key::named(KeyName::Down),
+      Key::named(KeyName::Space),
+      Key::named(KeyName::Enter),
+    ));
+
+    $this->assertSame(['a', 'b', 'd'], $value);
+  }
+
+  public function testRendersKindsBelowQueryLine(): void {
+    $view = Ansi::strip((new MultiSearchWidget($this->mixedOptions()))->view(new DefaultTheme()));
+
+    $this->assertStringContainsString("█\n", $view);
+    $this->assertStringContainsString('Fruits', $view);
+    $this->assertStringContainsString('Cherry (out of stock)', $view);
+    $this->assertStringContainsString('──', $view);
   }
 
 }

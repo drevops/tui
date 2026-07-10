@@ -16,6 +16,13 @@ use DrevOps\Tui\Discovery\DiscoverInterface;
 final readonly class Field {
 
   /**
+   * The option rows for choice-based fields, in display order.
+   *
+   * @var list<\DrevOps\Tui\Config\Option>
+   */
+  public array $options;
+
+  /**
    * Construct a field.
    *
    * @param string $id
@@ -29,8 +36,10 @@ final readonly class Field {
    * @param mixed $default
    *   The declared default value, or a `fn (Context): mixed` closure computing
    *   a dynamic default from the run context.
-   * @param array<string,\DrevOps\Tui\Config\Option> $options
-   *   Options for choice-based fields, keyed by option value.
+   * @param array<int|string,\DrevOps\Tui\Config\Option|string> $options
+   *   Option rows for choice-based fields, in display order - a list of
+   *   {@see Option} rows or the value => label shorthand map (normalized via
+   *   {@see Option::list()}).
    * @param bool $required
    *   Whether a value is required.
    * @param \DrevOps\Tui\Condition\ConditionInterface|null $when
@@ -79,7 +88,7 @@ final readonly class Field {
     public string $description,
     public FieldType $type,
     public mixed $default,
-    public array $options = [],
+    array $options = [],
     public bool $required = FALSE,
     public ?ConditionInterface $when = NULL,
     public ?Derive $derive = NULL,
@@ -96,13 +105,107 @@ final readonly class Field {
     public array $pickerExtensions = [],
     public bool $pickerShowHidden = FALSE,
   ) {
+    $this->options = Option::list($options);
   }
 
   /**
-   * Get an option by its value.
+   * Get a selectable-or-disabled option by its value.
+   *
+   * Structural rows (separators, headings) carry no value and are never
+   * returned.
    */
   public function option(string $value): ?Option {
-    return $this->options[$value] ?? NULL;
+    foreach ($this->options as $option) {
+      if ($option->kind === OptionKind::Option && $option->value === $value) {
+        return $option;
+      }
+    }
+
+    return NULL;
+  }
+
+  /**
+   * The values of the selectable options, in display order.
+   *
+   * @return list<string>
+   *   The selectable option values (excludes separators, headings and disabled
+   *   options).
+   */
+  public function selectableValues(): array {
+    $out = [];
+
+    foreach ($this->options as $option) {
+      if ($option->selectable()) {
+        $out[] = $option->value;
+      }
+    }
+
+    return $out;
+  }
+
+  /**
+   * Validate a supplied value against the field's selectable options.
+   *
+   * Handles both a single-choice scalar and a multi-choice list, returning the
+   * first offending item. The message is a caller-agnostic fragment so the
+   * engine and the schema validator can each frame it their own way.
+   *
+   * @param mixed $value
+   *   The candidate value - a scalar for single-choice, a list for multi.
+   *
+   * @return string|null
+   *   An error fragment when an item is not a selectable option, or NULL when
+   *   the field is unconstrained or every item is allowed.
+   */
+  public function optionError(mixed $value): ?string {
+    if (!$this->type->constrainsToOptions() || $this->options === []) {
+      return NULL;
+    }
+
+    if ($this->type->isMulti()) {
+      if (!is_array($value)) {
+        return 'value must be a list';
+      }
+
+      $items = $value;
+    }
+    else {
+      $items = [$value];
+    }
+
+    foreach ($items as $item) {
+      $error = $this->scalarOptionError(is_scalar($item) ? (string) $item : '');
+      if ($error !== NULL) {
+        return $error;
+      }
+    }
+
+    return NULL;
+  }
+
+  /**
+   * Classify a single scalar value against the selectable options.
+   *
+   * @param string $value
+   *   The candidate value.
+   *
+   * @return string|null
+   *   A fragment naming the value when it is disabled or unknown, or NULL when
+   *   it is a selectable option.
+   */
+  protected function scalarOptionError(string $value): ?string {
+    if (in_array($value, $this->selectableValues(), TRUE)) {
+      return NULL;
+    }
+
+    $option = $this->option($value);
+    if ($option instanceof Option && $option->disabled) {
+      return $option->disabledReason !== ''
+        ? sprintf('option "%s" is disabled: %s', $value, $option->disabledReason)
+        : sprintf('option "%s" is disabled', $value);
+    }
+
+    return sprintf('value "%s" is not one of: %s', $value, implode(', ', $this->selectableValues()));
   }
 
 }

@@ -338,6 +338,27 @@ class DefaultTheme implements ThemeInterface {
   /**
    * {@inheritdoc}
    */
+  public function heading(string $text): string {
+    return $this->paint('1;90', $text);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function divider(): string {
+    return $this->footer(str_repeat($this->unicode ? '─' : '-', max(1, $this->width)));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function disabled(string $text): string {
+    return $this->paint('90', $text);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function error(string $text): string {
     return $this->paint('31', $text);
   }

@@ -89,6 +89,43 @@ final class SchemaGeneratorTest extends TestCase {
     $this->assertSame($expected, (new SchemaGenerator($config))->generate());
   }
 
+  public function testExcludesNonSelectableOptions(): void {
+    $config = Form::create('T')
+      ->panel('p', 'p', function (PanelBuilder $p): void {
+        $p->select('profile', 'Profile')
+          ->heading('Recommended')
+          ->option('standard', 'Standard')
+          ->separator()
+          ->option('demo', 'Demo', disabled: TRUE, disabled_reason: 'nope');
+      })
+      ->build();
+
+    $expected = [
+      'prompts' => [
+        [
+          'id' => 'profile',
+          'type' => 'select',
+          'label' => 'Profile',
+          'description' => '',
+          'options' => [
+            ['value' => 'standard', 'label' => 'Standard', 'description' => ''],
+          ],
+          'default' => '',
+          'required' => FALSE,
+          'min' => NULL,
+          'max' => NULL,
+          'step' => NULL,
+          'when' => NULL,
+          'derive' => NULL,
+          'discover' => NULL,
+          'depends_on' => [],
+        ],
+      ],
+    ];
+
+    $this->assertSame($expected, (new SchemaGenerator($config))->generate());
+  }
+
   public function testDependsOnCollectsNestedFieldRefs(): void {
     $config = Form::create('T')
       ->panel('p', 'p', function (PanelBuilder $p): void {

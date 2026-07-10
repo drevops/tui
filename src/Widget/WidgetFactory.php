@@ -46,16 +46,14 @@ class WidgetFactory {
    *   The widget.
    */
   public function create(Field $field, mixed $current): WidgetInterface {
-    $labels = $this->labels($field);
-
     $widget = match ($field->type) {
       FieldType::Confirm => new ConfirmWidget((bool) $current),
-      FieldType::Toggle => new ToggleWidget($labels, is_string($current) ? $current : ''),
-      FieldType::Select => new SelectWidget($labels, is_string($current) ? $current : ''),
-      FieldType::MultiSelect => new MultiSelectWidget($labels, $this->toList($current)),
-      FieldType::MultiSearch => new MultiSearchWidget($labels, $this->toList($current)),
-      FieldType::Suggest => new SuggestWidget(array_keys($labels), is_string($current) ? $current : ''),
-      FieldType::Search => new SearchWidget($labels, is_string($current) ? $current : ''),
+      FieldType::Toggle => new ToggleWidget($this->labels($field), is_string($current) ? $current : ''),
+      FieldType::Select => new SelectWidget($field->options, is_string($current) ? $current : ''),
+      FieldType::MultiSelect => new MultiSelectWidget($field->options, $this->toList($current)),
+      FieldType::MultiSearch => new MultiSearchWidget($field->options, $this->toList($current)),
+      FieldType::Suggest => new SuggestWidget($field->selectableValues(), is_string($current) ? $current : ''),
+      FieldType::Search => new SearchWidget($field->options, is_string($current) ? $current : ''),
       FieldType::FilePicker => new FilePickerWidget($field->pickerStart, is_string($current) ? $current : '', $field->pickerMode, $field->pickerExtensions, $field->pickerShowHidden),
       FieldType::MultiFilePicker => new FilePickerWidget($field->pickerStart, $this->toList($current), $field->pickerMode, $field->pickerExtensions, $field->pickerShowHidden, multiple: TRUE),
       FieldType::Number => new NumberWidget(is_int($current) || is_float($current) ? (string) (int) $current : '', bounds: $field->bounds),
@@ -69,19 +67,21 @@ class WidgetFactory {
   }
 
   /**
-   * The option value => label map for a field.
+   * The selectable value => label map for a field's options.
    *
    * @param \DrevOps\Tui\Config\Field $field
    *   The field.
    *
    * @return array<string,string>
-   *   The labels keyed by value.
+   *   The labels keyed by value, for widgets that take a flat option map.
    */
   protected function labels(Field $field): array {
     $out = [];
 
     foreach ($field->options as $option) {
-      $out[$option->value] = $option->label;
+      if ($option->selectable()) {
+        $out[$option->value] = $option->label;
+      }
     }
 
     return $out;

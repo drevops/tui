@@ -128,6 +128,21 @@ interface ThemeInterface {
   public function highlight(string $text): string;
 
   /**
+   * A non-selectable group heading in an option list.
+   */
+  public function heading(string $text): string;
+
+  /**
+   * A non-selectable separator line between options in an option list.
+   */
+  public function divider(): string;
+
+  /**
+   * A disabled (non-selectable) option's label and reason, dimmed.
+   */
+  public function disabled(string $text): string;
+
+  /**
    * A validation error message.
    */
   public function error(string $text): string;

@@ -116,6 +116,11 @@ class Engine {
       if ($error !== NULL) {
         throw new EngineException(sprintf('Invalid value for field "%s": %s', $field->id, $error));
       }
+
+      $option_error = $field->optionError($values[$field->id]);
+      if ($option_error !== NULL) {
+        throw new EngineException(sprintf('Invalid value for field "%s": %s', $field->id, $option_error));
+      }
     }
 
     $this->lastProvenance = $this->provenanceFor($fields, $sources, $active);

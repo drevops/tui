@@ -558,6 +558,28 @@ EXPECT,
     }
   }
 
+  // Option-kind demos: a select and a multiselect showing group headings,
+  // separators and disabled options, each in all four display modes. The
+  // static frame holds the initial grouped list before the widget accepts.
+  $group_demos = [
+    'select-groups' => ['gate' => 'Select with groups', 'rows' => 10],
+    'multiselect-groups' => ['gate' => 'MultiSelect with groups', 'rows' => 13],
+  ];
+
+  foreach ($group_demos as $demo => $meta) {
+    $interact = sprintf("# Grouped options: hold the initial frame, then accept.\nexpect \"%s\" {\n    pause 1000\n    wait_and_enter\n}", $meta['gate']);
+
+    foreach ($flag_variants as $suffix => $flags) {
+      $jobs['widget-' . $demo . $suffix] = [
+        'command' => 'php ' . $project_dir . '/playground/3-widgets/widget-' . $demo . '.php' . $flags,
+        'interact' => $interact,
+        'rows' => $meta['rows'],
+        'cols' => 44,
+        'at_needle' => $meta['gate'],
+      ];
+    }
+  }
+
   return $jobs;
 }
 

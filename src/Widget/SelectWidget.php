@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Widget;
 
+use DrevOps\Tui\Config\OptionKind;
 use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Theme\ThemeInterface;
@@ -15,12 +16,7 @@ use DrevOps\Tui\Theme\ThemeInterface;
  */
 class SelectWidget extends AbstractWidget {
 
-  /**
-   * The option values in display order.
-   *
-   * @var list<string>
-   */
-  protected array $values;
+  use ChoiceListTrait;
 
   /**
    * The highlighted option index.
@@ -30,8 +26,9 @@ class SelectWidget extends AbstractWidget {
   /**
    * Construct a select widget.
    *
-   * @param array<string,string> $labels
-   *   Options as value => label, in display order.
+   * @param array<int|string,\DrevOps\Tui\Config\Option|string> $options
+   *   Option rows in display order - a list of options or the value => label
+   *   shorthand map.
    * @param string $default
    *   The initially highlighted value.
    * @param \Closure|null $validate
@@ -39,11 +36,10 @@ class SelectWidget extends AbstractWidget {
    * @param \Closure|null $transform
    *   Optional transformer (see AbstractWidget).
    */
-  public function __construct(protected array $labels, string $default = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL) {
+  public function __construct(array $options, string $default = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL) {
     parent::__construct($validate, $transform);
-    $this->values = array_keys($this->labels);
-    $index = array_search($default, $this->values, TRUE);
-    $this->cursor = $index === FALSE ? 0 : $index;
+    $this->initOptions($options);
+    $this->cursor = $this->cursorForDefault($this->options, $default);
   }
 
   /**
@@ -57,27 +53,37 @@ class SelectWidget extends AbstractWidget {
     }
 
     if ($keys->matches($key, Action::MoveUp)) {
-      $this->cursor = max(0, $this->cursor - 1);
+      $this->cursor = $this->stepCursor($this->options, $this->cursor, -1);
 
       return;
     }
 
     if ($keys->matches($key, Action::MoveDown)) {
-      $this->cursor = min(count($this->values) - 1, $this->cursor + 1);
+      $this->cursor = $this->stepCursor($this->options, $this->cursor, 1);
 
       return;
     }
 
-    if ($keys->matches($key, Action::Accept)) {
+    if ($keys->matches($key, Action::Accept) && $this->currentSelectable()) {
       $this->accept($this->liveValue());
     }
+  }
+
+  /**
+   * Whether the highlighted row is a selectable option.
+   *
+   * @return bool
+   *   TRUE when the cursor rests on a selectable option.
+   */
+  protected function currentSelectable(): bool {
+    return ($this->options[$this->cursor] ?? NULL)?->selectable() ?? FALSE;
   }
 
   /**
    * {@inheritdoc}
    */
   protected function liveValue(): mixed {
-    return $this->values[$this->cursor] ?? '';
+    return $this->currentSelectable() ? $this->options[$this->cursor]->value : '';
   }
 
   /**
@@ -86,8 +92,26 @@ class SelectWidget extends AbstractWidget {
   public function view(ThemeInterface $theme): string {
     $lines = [];
 
-    foreach ($this->values as $index => $value) {
-      $lines[] = $this->renderRadioRow($theme, $this->labels[$value] ?? $value, $index === $this->cursor);
+    foreach ($this->options as $index => $option) {
+      if ($option->kind === OptionKind::Heading) {
+        $lines[] = $this->renderHeadingRow($theme, $option);
+
+        continue;
+      }
+
+      if ($option->kind === OptionKind::Separator) {
+        $lines[] = $this->renderSeparatorRow($theme);
+
+        continue;
+      }
+
+      if ($option->disabled) {
+        $lines[] = $theme->radio(FALSE) . ' ' . $this->renderDisabledLabel($theme, $option);
+
+        continue;
+      }
+
+      $lines[] = $this->renderRadioRow($theme, $option->label, $index === $this->cursor);
     }
 
     return implode("\n", $lines);

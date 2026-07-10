@@ -14,6 +14,7 @@ use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\FilePickerMode;
 use DrevOps\Tui\Config\Fixup;
 use DrevOps\Tui\Config\NumberBounds;
+use DrevOps\Tui\Config\OptionKind;
 use DrevOps\Tui\Derive\Derive;
 use DrevOps\Tui\Discovery\Dotenv;
 use DrevOps\Tui\Input\Action;
@@ -278,6 +279,48 @@ final class FormTest extends TestCase {
     $this->assertInstanceOf(Field::class, $assets);
     $this->assertSame(FieldType::MultiFilePicker, $assets->type);
     $this->assertSame(FilePickerMode::Directory, $assets->pickerMode);
+  }
+
+  public function testOptionKindsAndDisabled(): void {
+    $config = Form::create('T')
+      ->panel('p', 'P', function (PanelBuilder $p): void {
+        $p->select('profile')
+          ->heading('Recommended')
+          ->option('standard', 'Standard')
+          ->separator()
+          ->option('demo', 'Demo', 'A demo', disabled: TRUE, disabled_reason: 'requires PHP 8.4');
+      })
+      ->build();
+
+    $profile = $config->field('profile');
+    $this->assertInstanceOf(Field::class, $profile);
+
+    $options = $profile->options;
+    $this->assertCount(4, $options);
+    $this->assertSame(OptionKind::Heading, $options[0]->kind);
+    $this->assertSame('Recommended', $options[0]->label);
+    $this->assertSame(OptionKind::Option, $options[1]->kind);
+    $this->assertSame(OptionKind::Separator, $options[2]->kind);
+    $this->assertTrue($options[3]->disabled);
+    $this->assertSame('requires PHP 8.4', $options[3]->disabledReason);
+
+    $this->assertSame(['standard'], $profile->selectableValues());
+  }
+
+  public function testRepeatedOptionValueOverridesInPlace(): void {
+    $config = Form::create('T')
+      ->panel('p', 'P', function (PanelBuilder $p): void {
+        $p->select('s')->option('a', 'First')->separator()->option('a', 'Second');
+      })
+      ->build();
+
+    $field = $config->field('s');
+    $this->assertInstanceOf(Field::class, $field);
+
+    // The second declaration overrides the first in place; the separator stays.
+    $this->assertCount(2, $field->options);
+    $this->assertSame('Second', $field->option('a')?->label);
+    $this->assertSame(['a'], $field->selectableValues());
   }
 
   public function testDuplicateFieldIdThrows(): void {

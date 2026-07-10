@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Widget;
 
+use DrevOps\Tui\Config\Option;
+use DrevOps\Tui\Config\OptionKind;
 use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Theme\ThemeInterface;
@@ -15,12 +17,7 @@ use DrevOps\Tui\Theme\ThemeInterface;
  */
 class SearchWidget extends AbstractWidget {
 
-  /**
-   * The option values in display order.
-   *
-   * @var list<string>
-   */
-  protected array $values;
+  use ChoiceListTrait;
 
   /**
    * The current type-to-filter text.
@@ -35,8 +32,9 @@ class SearchWidget extends AbstractWidget {
   /**
    * Construct a search widget.
    *
-   * @param array<string,string> $labels
-   *   Options as value => label, in display order.
+   * @param array<int|string,\DrevOps\Tui\Config\Option|string> $options
+   *   Option rows in display order - a list of options or the value => label
+   *   shorthand map.
    * @param string $default
    *   The initially highlighted value.
    * @param \Closure|null $validate
@@ -44,11 +42,10 @@ class SearchWidget extends AbstractWidget {
    * @param \Closure|null $transform
    *   Optional transformer (see AbstractWidget).
    */
-  public function __construct(protected array $labels, string $default = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL) {
+  public function __construct(array $options, string $default = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL) {
     parent::__construct($validate, $transform);
-    $this->values = array_keys($this->labels);
-    $index = array_search($default, $this->values, TRUE);
-    $this->cursor = $index === FALSE ? 0 : $index;
+    $this->initOptions($options);
+    $this->cursor = $this->cursorForDefault($this->options, $default);
   }
 
   /**
@@ -62,7 +59,7 @@ class SearchWidget extends AbstractWidget {
     }
 
     if ($keys->matches($key, Action::Accept)) {
-      if ($this->visible() !== []) {
+      if ($this->currentSelectable()) {
         $this->accept($this->liveValue());
       }
 
@@ -70,60 +67,72 @@ class SearchWidget extends AbstractWidget {
     }
 
     if ($keys->matches($key, Action::MoveUp)) {
-      $this->cursor = max(0, $this->cursor - 1);
+      $this->cursor = $this->stepCursor($this->visible(), $this->cursor, -1);
 
       return;
     }
 
     if ($keys->matches($key, Action::MoveDown)) {
-      $this->cursor = min(count($this->visible()) - 1, $this->cursor + 1);
+      $this->cursor = $this->stepCursor($this->visible(), $this->cursor, 1);
 
       return;
     }
 
     if ($keys->matches($key, Action::DeleteBack)) {
       $this->filter = substr($this->filter, 0, -1);
-      $this->cursor = 0;
+      $this->cursor = $this->firstSelectable($this->visible());
 
       return;
     }
 
     if ($keys->matches($key, Action::InsertSpace)) {
       $this->filter .= ' ';
-      $this->cursor = 0;
+      $this->cursor = $this->firstSelectable($this->visible());
 
       return;
     }
 
     if ($key->isChar()) {
       $this->filter .= $key->char ?? '';
-      $this->cursor = 0;
+      $this->cursor = $this->firstSelectable($this->visible());
     }
   }
 
   /**
-   * The options currently visible under the filter.
+   * The rows currently visible under the filter.
    *
-   * @return list<string>
-   *   The visible option values.
+   * With no filter every row shows in declared order; once filtering, only
+   * matching options show - structural headings and separators drop away so the
+   * result reads as a flat relevance list.
+   *
+   * @return list<\DrevOps\Tui\Config\Option>
+   *   The visible rows.
    */
   protected function visible(): array {
     if ($this->filter === '') {
-      return $this->values;
+      return $this->options;
     }
 
     $needle = strtolower($this->filter);
 
-    return array_values(array_filter($this->values, fn(string $value): bool => str_contains(strtolower($this->labels[$value] ?? $value), $needle)));
+    return array_values(array_filter($this->options, fn(Option $option): bool => $option->kind === OptionKind::Option && str_contains(strtolower($option->label), $needle)));
+  }
+
+  /**
+   * Whether the highlighted visible row is a selectable option.
+   *
+   * @return bool
+   *   TRUE when the cursor rests on a selectable option.
+   */
+  protected function currentSelectable(): bool {
+    return ($this->visible()[$this->cursor] ?? NULL)?->selectable() ?? FALSE;
   }
 
   /**
    * {@inheritdoc}
    */
   protected function liveValue(): mixed {
-    $visible = $this->visible();
-
-    return $visible[$this->cursor] ?? '';
+    return $this->currentSelectable() ? $this->visible()[$this->cursor]->value : '';
   }
 
   /**
@@ -132,8 +141,26 @@ class SearchWidget extends AbstractWidget {
   public function view(ThemeInterface $theme): string {
     $lines = [$this->filter . $theme->caret()];
 
-    foreach ($this->visible() as $index => $value) {
-      $lines[] = $this->renderRadioRow($theme, $this->labels[$value] ?? $value, $index === $this->cursor);
+    foreach ($this->visible() as $index => $option) {
+      if ($option->kind === OptionKind::Heading) {
+        $lines[] = $this->renderHeadingRow($theme, $option);
+
+        continue;
+      }
+
+      if ($option->kind === OptionKind::Separator) {
+        $lines[] = $this->renderSeparatorRow($theme);
+
+        continue;
+      }
+
+      if ($option->disabled) {
+        $lines[] = $theme->radio(FALSE) . ' ' . $this->renderDisabledLabel($theme, $option);
+
+        continue;
+      }
+
+      $lines[] = $this->renderRadioRow($theme, $option->label, $index === $this->cursor);
     }
 
     return implode("\n", $lines);

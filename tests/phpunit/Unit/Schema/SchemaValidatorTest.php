@@ -53,13 +53,25 @@ final class SchemaValidatorTest extends TestCase {
   public function testInvalidSelectOption(): void {
     $errors = (new SchemaValidator($this->config()))->validate(['name' => 'Acme', 'profile' => 'bogus']);
 
-    $this->assertContains('Question "profile" must be one of: standard, minimal.', $errors);
+    $this->assertContains('Question "profile": value "bogus" is not one of: standard, minimal.', $errors);
+  }
+
+  public function testDisabledSelectOptionRejected(): void {
+    $errors = (new SchemaValidator($this->config()))->validate(['name' => 'Acme', 'profile' => 'demo']);
+
+    $this->assertContains('Question "profile": option "demo" is disabled: unavailable.', $errors);
   }
 
   public function testInvalidMultiselectOption(): void {
     $errors = (new SchemaValidator($this->config()))->validate(['name' => 'Acme', 'mods' => ['a', 'z']]);
 
-    $this->assertContains('Question "mods" contains an invalid option "z".', $errors);
+    $this->assertContains('Question "mods": value "z" is not one of: a, b.', $errors);
+  }
+
+  public function testDisabledMultiselectOptionRejected(): void {
+    $errors = (new SchemaValidator($this->config()))->validate(['name' => 'Acme', 'mods' => ['a', 'c']]);
+
+    $this->assertContains('Question "mods": option "c" is disabled.', $errors);
   }
 
   public function testMultiselectWrongType(): void {
@@ -106,21 +118,21 @@ final class SchemaValidatorTest extends TestCase {
     $validator = new SchemaValidator($this->config());
 
     $this->assertSame([], $validator->validate(['name' => 'Acme', 'engine' => 'solr']));
-    $this->assertContains('Question "engine" must be one of: solr, none.', $validator->validate(['name' => 'Acme', 'engine' => 'bogus']));
+    $this->assertContains('Question "engine": value "bogus" is not one of: solr, none.', $validator->validate(['name' => 'Acme', 'engine' => 'bogus']));
   }
 
   public function testMultisearchOptionMembership(): void {
     $validator = new SchemaValidator($this->config());
 
     $this->assertSame([], $validator->validate(['name' => 'Acme', 'tags' => ['a']]));
-    $this->assertContains('Question "tags" contains an invalid option "z".', $validator->validate(['name' => 'Acme', 'tags' => ['z']]));
+    $this->assertContains('Question "tags": value "z" is not one of: a, b.', $validator->validate(['name' => 'Acme', 'tags' => ['z']]));
   }
 
   public function testToggleOptionMembership(): void {
     $validator = new SchemaValidator($this->config());
 
     $this->assertSame([], $validator->validate(['name' => 'Acme', 'visibility' => 'private']));
-    $this->assertContains('Question "visibility" must be one of: public, private.', $validator->validate(['name' => 'Acme', 'visibility' => 'bogus']));
+    $this->assertContains('Question "visibility": value "bogus" is not one of: public, private.', $validator->validate(['name' => 'Acme', 'visibility' => 'bogus']));
   }
 
   public function testNumericStringOptionMembership(): void {
@@ -131,7 +143,7 @@ final class SchemaValidatorTest extends TestCase {
 
     // A numeric-string value stays valid: values are compared as strings.
     $this->assertSame([], $validator->validate(['flag' => '1']));
-    $this->assertContains('Question "flag" must be one of: 0, 1.', $validator->validate(['flag' => '2']));
+    $this->assertContains('Question "flag": value "2" is not one of: 0, 1.', $validator->validate(['flag' => '2']));
   }
 
   public function testFilePickerAcceptsString(): void {
@@ -155,9 +167,9 @@ final class SchemaValidatorTest extends TestCase {
     return Form::create('T')
       ->panel('p', 'p', function (PanelBuilder $p): void {
         $p->text('name')->required();
-        $p->select('profile')->option('standard')->option('minimal');
+        $p->select('profile')->option('standard')->option('minimal')->option('demo', 'Demo', disabled: TRUE, disabled_reason: 'unavailable');
         $p->confirm('agree');
-        $p->multiselect('mods')->option('a')->option('b');
+        $p->multiselect('mods')->option('a')->option('b')->option('c', 'C', disabled: TRUE);
         $p->text('custom')->required()->when(new Condition('profile', eq: 'custom'));
         $p->number('port')->min(1)->max(65535);
         $p->pause('ack');

@@ -8,7 +8,9 @@ use DrevOps\Tui\Input\ArrayKeyStream;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Render\Ansi;
+use DrevOps\Tui\Tests\Traits\MixedOptionsTrait;
 use DrevOps\Tui\Theme\DefaultTheme;
+use DrevOps\Tui\Widget\ChoiceListTrait;
 use DrevOps\Tui\Widget\SearchWidget;
 use DrevOps\Tui\Widget\WidgetRunner;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -19,8 +21,11 @@ use PHPUnit\Framework\TestCase;
  * Tests the search widget.
  */
 #[CoversClass(SearchWidget::class)]
+#[CoversClass(ChoiceListTrait::class)]
 #[Group('widget')]
 final class SearchWidgetTest extends TestCase {
+
+  use MixedOptionsTrait;
 
   /**
    * The options used across the tests.
@@ -96,6 +101,74 @@ final class SearchWidgetTest extends TestCase {
 
     $this->assertTrue($widget->isCancelled());
     $this->assertNull($value);
+  }
+
+  public function testNavigationSkipsNonSelectable(): void {
+    $widget = new SearchWidget($this->mixedOptions());
+
+    $value = WidgetRunner::run($widget, ArrayKeyStream::of(
+      Key::named(KeyName::Down),
+      Key::named(KeyName::Down),
+      Key::named(KeyName::Enter),
+    ));
+
+    $this->assertSame('d', $value);
+  }
+
+  public function testUpSkipsBackOverNonSelectable(): void {
+    $widget = new SearchWidget($this->mixedOptions());
+
+    $value = WidgetRunner::run($widget, ArrayKeyStream::of(
+      Key::named(KeyName::Down),
+      Key::named(KeyName::Down),
+      Key::named(KeyName::Up),
+      Key::named(KeyName::Enter),
+    ));
+
+    $this->assertSame('b', $value);
+  }
+
+  public function testDefaultOnDisabledFallsBackToFirstSelectable(): void {
+    $widget = new SearchWidget($this->mixedOptions(), 'c');
+
+    $value = WidgetRunner::run($widget, ArrayKeyStream::of(Key::named(KeyName::Enter)));
+
+    $this->assertSame('a', $value);
+  }
+
+  public function testFilterDropsHeadingsAndSeparators(): void {
+    $widget = new SearchWidget($this->mixedOptions());
+
+    $widget->handle(Key::char('b'));
+    $widget->handle(Key::char('a'));
+    $widget->handle(Key::char('n'));
+    $view = Ansi::strip($widget->view(new DefaultTheme()));
+
+    $this->assertStringContainsString('Banana', $view);
+    $this->assertStringNotContainsString('Fruits', $view);
+    $this->assertStringNotContainsString('Apple', $view);
+    $this->assertStringNotContainsString('──', $view);
+  }
+
+  public function testDisabledMatchingFilterNotAccepted(): void {
+    $widget = new SearchWidget($this->mixedOptions());
+
+    $widget->handle(Key::char('e'));
+    $widget->handle(Key::char('r'));
+    $widget->handle(Key::char('r'));
+    $this->assertStringContainsString('Cherry (out of stock)', Ansi::strip($widget->view(new DefaultTheme())));
+
+    $widget->handle(Key::named(KeyName::Enter));
+
+    $this->assertFalse($widget->isComplete());
+  }
+
+  public function testRendersHeadingSeparatorAndDisabled(): void {
+    $view = Ansi::strip((new SearchWidget($this->mixedOptions()))->view(new DefaultTheme()));
+
+    $this->assertStringContainsString('Fruits', $view);
+    $this->assertStringContainsString('Cherry (out of stock)', $view);
+    $this->assertStringContainsString('──', $view);
   }
 
 }
