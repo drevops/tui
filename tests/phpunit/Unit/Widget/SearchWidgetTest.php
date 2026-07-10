@@ -87,9 +87,9 @@ final class SearchWidgetTest extends TestCase {
     $widget = new SearchWidget($this->labels);
 
     $widget->handle(Key::char('c'));
-    $view = $widget->view(new DefaultTheme());
+    $view = Ansi::strip($widget->view(new DefaultTheme()));
 
-    $this->assertStringContainsString('c█', Ansi::strip($view));
+    $this->assertStringContainsString('c█', $view);
     $this->assertStringContainsString('CircleCI', $view);
     $this->assertStringNotContainsString('None', $view);
   }
@@ -169,6 +169,59 @@ final class SearchWidgetTest extends TestCase {
     $this->assertStringContainsString('Fruits', $view);
     $this->assertStringContainsString('Cherry (out of stock)', $view);
     $this->assertStringContainsString('──', $view);
+  }
+
+  public function testFuzzyMatchesNonContiguousSubsequence(): void {
+    $widget = new SearchWidget(['gha' => 'GitHub Actions', 'gitlab' => 'GitLab CI', 'circle' => 'CircleCI']);
+
+    $value = WidgetRunner::run($widget, ArrayKeyStream::of('gha', Key::named(KeyName::Enter)));
+
+    $this->assertSame('gha', $value);
+  }
+
+  public function testRanksPrefixAheadOfLooserSubsequence(): void {
+    $widget = new SearchWidget(['alpha' => 'Alpha', 'beta' => 'Beta', 'palace' => 'Palace']);
+
+    // "pa" prefixes Palace but only scatters through Alpha, so Palace ranks
+    // first and the cursor lands on it even though Alpha is declared earlier.
+    $value = WidgetRunner::run($widget, ArrayKeyStream::of('pa', Key::named(KeyName::Enter)));
+
+    $this->assertSame('palace', $value);
+  }
+
+  public function testHighlightsMatchedCharacters(): void {
+    $theme = new DefaultTheme();
+    $widget = new SearchWidget(['palace' => 'Palace', 'alpha' => 'Alpha']);
+
+    $widget->handle(Key::char('p'));
+    $widget->handle(Key::char('a'));
+    $view = $widget->view($theme);
+
+    $this->assertStringContainsString($theme->highlightMatch('Pa'), $view);
+    $this->assertStringContainsString('Palace', Ansi::strip($view));
+  }
+
+  public function testPagesLongOptionList(): void {
+    $widget = new SearchWidget(['a' => 'Apple', 'b' => 'Banana', 'c' => 'Cherry', 'd' => 'Date'], pageSize: 2);
+
+    $view = Ansi::strip($widget->view(new DefaultTheme()));
+
+    $this->assertStringContainsString('Apple', $view);
+    $this->assertStringContainsString('Banana', $view);
+    $this->assertStringNotContainsString('Cherry', $view);
+    $this->assertStringContainsString('▼', $view);
+  }
+
+  public function testPagingFollowsCursorDownTheList(): void {
+    $widget = new SearchWidget(['a' => 'Apple', 'b' => 'Banana', 'c' => 'Cherry', 'd' => 'Date'], pageSize: 2);
+
+    $widget->handle(Key::named(KeyName::Down));
+    $widget->handle(Key::named(KeyName::Down));
+    $view = Ansi::strip($widget->view(new DefaultTheme()));
+
+    $this->assertStringContainsString('Cherry', $view);
+    $this->assertStringContainsString('▲', $view);
+    $this->assertStringNotContainsString('Apple', $view);
   }
 
 }

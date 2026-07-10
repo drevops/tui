@@ -210,7 +210,7 @@ With `revealable()` on, pressing Tab in the editor reveals the value and the hin
 
 ### Select
 
-Single choice from a list. Up/Down move, Enter accepts the highlighted option. Pass `default` (an option key) to start on an option other than the first.
+Single choice from a list. Up/Down move, Enter accepts the highlighted option. Pass `default` (an option key) to start on an option other than the first. Long lists page around the cursor - set the window with `->pageSize()`.
 
 ```php
 $p->select('profile', 'Install profile')->default('minimal')->options(['standard' => 'Standard', 'minimal' => 'Minimal', 'demo_umami' => 'Demo Umami']);
@@ -236,7 +236,7 @@ $p->select('profile', 'Install profile')->default('minimal')->options(['standard
 
 ### MultiSelect
 
-Multiple choice from a checkbox list. Space toggles the highlighted option, typing narrows the list, Right selects and Left deselects everything visible, Enter accepts. Pass `default` (a list of option keys) to pre-check options - ideal for opt-out lists.
+Multiple choice from a checkbox list. Space toggles the highlighted option, typing narrows the list by substring, Right selects and Left deselects everything visible, Enter accepts. Pass `default` (a list of option keys) to pre-check options - ideal for opt-out lists. Long lists page around the cursor - set the window with `->pageSize()`.
 
 ```php
 $p->multiselect('services', 'Services')->default(['redis'])->options(['redis' => 'Redis', 'solr' => 'Solr', 'clamav' => 'ClamAV']);
@@ -262,7 +262,7 @@ $p->multiselect('services', 'Services')->default(['redis'])->options(['redis' =>
 
 ### Suggest
 
-Free text with autocomplete over a fixed option set: type anything, Up/Down highlight a matching suggestion, Enter accepts the highlighted suggestion or the typed text as-is.
+Free text with autocomplete over a fixed option set: as you type, the suggestions are fuzzy-matched and ranked by relevance with the matched characters highlighted; Up/Down highlight a suggestion, Enter accepts the highlighted suggestion or the typed text as-is. Long lists page around the cursor - set the window with `->pageSize()`.
 
 ```php
 $p->suggest('php_version', 'PHP version')->default('8.4')->options(['8.1' => '8.1', '8.2' => '8.2', '8.3' => '8.3', '8.4' => '8.4']);
@@ -288,10 +288,10 @@ $p->suggest('php_version', 'PHP version')->default('8.4')->options(['8.1' => '8.
 
 ### Search
 
-Single choice with a visible type-to-filter line above the options: typing narrows the labels, Up/Down move, Enter accepts the highlighted option's key.
+Single choice with a visible filter line above the options: typing fuzzy-matches and ranks the labels - exact and prefix matches lead, looser subsequence matches follow - and highlights the matched characters; Up/Down move, Enter accepts the highlighted option's key. Long lists page around the cursor - set the window with `->pageSize()`.
 
 ```php
-$p->search('timezone', 'Timezone')->default('london')->options(['utc' => 'UTC', 'london' => 'Europe/London', 'paris' => 'Europe/Paris', 'sydney' => 'Australia/Sydney']);
+$p->search('timezone', 'Timezone')->default('london')->pageSize(8)->options(['utc' => 'UTC', 'london' => 'Europe/London', 'paris' => 'Europe/Paris', 'sydney' => 'Australia/Sydney']);
 ```
 
 <table>
@@ -314,7 +314,7 @@ $p->search('timezone', 'Timezone')->default('london')->options(['utc' => 'UTC', 
 
 ### MultiSearch
 
-A multi-select whose type-to-filter query is shown as a search line: type to narrow, Space toggles, Enter accepts the checked set.
+A multi-select whose filter query is shown as a search line: typing fuzzy-matches and ranks the options with the matched characters highlighted, Space toggles, Enter accepts the checked set. Long lists page around the cursor - set the window with `->pageSize()`.
 
 ```php
 $p->multisearch('services', 'Services')->default(['redis'])->options(['redis' => 'Redis', 'solr' => 'Solr', 'clamav' => 'ClamAV', 'memcached' => 'Memcached']);

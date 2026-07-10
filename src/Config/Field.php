@@ -81,6 +81,10 @@ final readonly class Field {
    *   (dot-less, case-insensitive); empty allows every extension.
    * @param bool $pickerShowHidden
    *   File picker only: whether dot-entries are shown when the browser opens.
+   * @param int|null $pageSize
+   *   Choice widgets only: how many option rows show at once before the list
+   *   pages; NULL uses the widget default. A purely visual bound - it does not
+   *   constrain a headless value, so it is absent from the machine schema.
    */
   public function __construct(
     public string $id,
@@ -104,6 +108,7 @@ final readonly class Field {
     public string $pickerStart = '',
     public array $pickerExtensions = [],
     public bool $pickerShowHidden = FALSE,
+    public ?int $pageSize = NULL,
   ) {
     $this->options = Option::list($options);
   }

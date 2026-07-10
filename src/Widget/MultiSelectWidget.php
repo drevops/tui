@@ -53,10 +53,14 @@ class MultiSelectWidget extends AbstractWidget {
    *   Optional validator (see AbstractWidget).
    * @param \Closure|null $transform
    *   Optional transformer (see AbstractWidget).
+   * @param int|null $pageSize
+   *   The number of option rows shown at once before the list pages; NULL uses
+   *   the default.
    */
-  public function __construct(array $options, array $default = [], ?\Closure $validate = NULL, ?\Closure $transform = NULL) {
+  public function __construct(array $options, array $default = [], ?\Closure $validate = NULL, ?\Closure $transform = NULL, ?int $pageSize = NULL) {
     parent::__construct($validate, $transform);
     $this->initOptions($options);
+    $this->pageSize = $pageSize ?? self::DEFAULT_PAGE_SIZE;
 
     $selectable = array_fill_keys($this->selectableValues(), TRUE);
     foreach ($default as $value) {
@@ -124,15 +128,23 @@ class MultiSelectWidget extends AbstractWidget {
 
     if ($keys->matches($key, Action::DeleteBack)) {
       $this->filter = substr($this->filter, 0, -1);
-      $this->cursor = $this->firstSelectable($this->visible());
+      $this->resetFilterCursor();
 
       return;
     }
 
     if ($key->isChar()) {
       $this->filter .= $key->char ?? '';
-      $this->cursor = $this->firstSelectable($this->visible());
+      $this->resetFilterCursor();
     }
+  }
+
+  /**
+   * Land the cursor on the first match and rewind paging when the query changes.
+   */
+  protected function resetFilterCursor(): void {
+    $this->cursor = $this->firstSelectable($this->visible());
+    $this->offset = 0;
   }
 
   /**
@@ -140,7 +152,7 @@ class MultiSelectWidget extends AbstractWidget {
    *
    * With no filter every row shows in declared order; once filtering, only
    * matching options show - structural headings and separators drop away so the
-   * result reads as a flat relevance list.
+   * result reads as a flat list.
    *
    * @return list<\DrevOps\Tui\Config\Option>
    *   The visible rows.
@@ -150,9 +162,41 @@ class MultiSelectWidget extends AbstractWidget {
       return $this->options;
     }
 
-    $needle = strtolower($this->filter);
+    return $this->filterOptions($this->filter);
+  }
 
-    return array_values(array_filter($this->options, fn(Option $option): bool => $option->kind === OptionKind::Option && str_contains(strtolower($option->label), $needle)));
+  /**
+   * Filter the options to those matching the query.
+   *
+   * The base checkbox list narrows by case-insensitive substring; the search
+   * variant overrides this to rank by fuzzy relevance.
+   *
+   * @param string $needle
+   *   The query.
+   *
+   * @return list<\DrevOps\Tui\Config\Option>
+   *   The matching option rows.
+   */
+  protected function filterOptions(string $needle): array {
+    $lower = strtolower($needle);
+
+    return array_values(array_filter($this->options, static fn(Option $option): bool => $option->kind === OptionKind::Option && str_contains(strtolower($option->label), $lower)));
+  }
+
+  /**
+   * The matched-character positions in a label, for highlighting.
+   *
+   * The base checkbox list does not highlight matches; the search variant
+   * overrides this to point at the fuzzy-matched characters.
+   *
+   * @param string $label
+   *   The option label.
+   *
+   * @return list<int>
+   *   The matched indices (none by default).
+   */
+  protected function matchPositions(string $label): array {
+    return [];
   }
 
   /**
@@ -233,7 +277,16 @@ class MultiSelectWidget extends AbstractWidget {
   public function view(ThemeInterface $theme): string {
     $lines = [];
 
-    foreach ($this->visible() as $index => $option) {
+    $visible = $this->visible();
+    $viewport = $this->pageViewport(count($visible), $this->cursor);
+
+    if ($viewport->has_above) {
+      $lines[] = $theme->indicator('  ' . $theme->indicatorUp());
+    }
+
+    foreach (array_slice($visible, $viewport->offset, $this->pageSize) as $slot => $option) {
+      $index = $viewport->offset + $slot;
+
       if ($option->kind === OptionKind::Heading) {
         $lines[] = $this->renderHeadingRow($theme, $option);
 
@@ -253,7 +306,11 @@ class MultiSelectWidget extends AbstractWidget {
       }
 
       $current = $index === $this->cursor;
-      $lines[] = $theme->marker($current) . ' ' . $theme->check(isset($this->selected[$option->value])) . ' ' . $this->highlightLabel($theme, $option->label, $current);
+      $lines[] = $theme->marker($current) . ' ' . $theme->check(isset($this->selected[$option->value])) . ' ' . $this->renderMatchedLabel($theme, $option->label, $this->matchPositions($option->label), $current);
+    }
+
+    if ($viewport->has_below) {
+      $lines[] = $theme->indicator('  ' . $theme->indicatorDown());
     }
 
     $lines[] = $this->hint($theme);

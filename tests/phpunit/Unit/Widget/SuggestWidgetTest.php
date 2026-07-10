@@ -7,6 +7,7 @@ namespace DrevOps\Tui\Tests\Unit\Widget;
 use DrevOps\Tui\Input\ArrayKeyStream;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
+use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\AbstractWidget;
 use DrevOps\Tui\Widget\SuggestWidget;
@@ -37,8 +38,8 @@ final class SuggestWidgetTest extends TestCase {
     $widget->handle(Key::char('l'));
     $widget->handle(Key::char('o'));
     $widget->handle(Key::char('n'));
-    $this->assertStringContainsString('Europe/London', $widget->view(new DefaultTheme()));
-    $this->assertStringNotContainsString('Australia/Sydney', $widget->view(new DefaultTheme()));
+    $this->assertStringContainsString('Europe/London', Ansi::strip($widget->view(new DefaultTheme())));
+    $this->assertStringNotContainsString('Australia/Sydney', Ansi::strip($widget->view(new DefaultTheme())));
 
     $value = WidgetRunner::run($widget, ArrayKeyStream::of(Key::named(KeyName::Down), Key::named(KeyName::Enter)));
 
@@ -83,6 +84,67 @@ final class SuggestWidgetTest extends TestCase {
     $widget->handle(Key::named(KeyName::Space));
 
     $this->assertSame('a ', $widget->value());
+  }
+
+  public function testFuzzyMatchesNonContiguousSubsequence(): void {
+    $widget = new SuggestWidget(['GitHub Actions', 'GitLab CI', 'CircleCI']);
+
+    $value = WidgetRunner::run($widget, ArrayKeyStream::of('gha', Key::named(KeyName::Down), Key::named(KeyName::Enter)));
+
+    $this->assertSame('GitHub Actions', $value);
+  }
+
+  public function testRanksPrefixAheadOfLooserSubsequence(): void {
+    $widget = new SuggestWidget(['Alpha', 'Beta', 'Palace']);
+
+    // "pa" is a prefix of Palace but only a scattered subsequence of Alpha, so
+    // Palace ranks first and the first Down lands on it.
+    $widget->handle(Key::char('p'));
+    $widget->handle(Key::char('a'));
+    $widget->handle(Key::named(KeyName::Down));
+
+    $this->assertSame('Palace', $widget->value());
+  }
+
+  public function testHighlightsMatchedCharacters(): void {
+    $theme = new DefaultTheme();
+    $widget = new SuggestWidget(['Alpha', 'Beta', 'Palace']);
+
+    $widget->handle(Key::char('p'));
+    $widget->handle(Key::char('a'));
+    $view = $widget->view($theme);
+
+    // The matched "Pa" prefix is themed as a match run; the label is intact once
+    // the styling is stripped.
+    $this->assertStringContainsString($theme->highlightMatch('Pa'), $view);
+    $this->assertStringContainsString('Palace', Ansi::strip($view));
+  }
+
+  public function testPagesLongSuggestionList(): void {
+    $widget = new SuggestWidget(['one', 'two', 'three', 'four', 'five'], pageSize: 2);
+
+    $view = Ansi::strip($widget->view(new DefaultTheme()));
+
+    $this->assertStringContainsString('one', $view);
+    $this->assertStringContainsString('two', $view);
+    $this->assertStringNotContainsString('three', $view);
+    $this->assertStringContainsString('▼', $view);
+  }
+
+  public function testPagingFollowsHighlightDownTheList(): void {
+    $widget = new SuggestWidget(['one', 'two', 'three', 'four', 'five'], pageSize: 2);
+
+    $widget->handle(Key::named(KeyName::Down));
+    $widget->handle(Key::named(KeyName::Down));
+    $widget->handle(Key::named(KeyName::Down));
+    $view = Ansi::strip($widget->view(new DefaultTheme()));
+
+    // The window has scrolled to keep the third item ("three") in view and
+    // shows both scroll indicators.
+    $this->assertStringContainsString('three', $view);
+    $this->assertStringContainsString('▲', $view);
+    $this->assertStringContainsString('▼', $view);
+    $this->assertStringNotContainsString('one', $view);
   }
 
 }

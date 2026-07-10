@@ -132,6 +132,11 @@ final class FieldBuilder {
   protected bool $pickerShowHidden = FALSE;
 
   /**
+   * Choice widgets only: the visible page size, when declared.
+   */
+  protected ?int $pageSize = NULL;
+
+  /**
    * Construct a field builder.
    *
    * @param string $id
@@ -376,6 +381,32 @@ final class FieldBuilder {
   }
 
   /**
+   * Choice widgets only: bound the visible option list to a page size.
+   *
+   * Longer lists page around the cursor rather than overflowing the viewport.
+   * Honoured by the select, multiselect, suggest, search and multisearch
+   * widgets; ignored by other types.
+   *
+   * @param int $size
+   *   The number of option rows shown at once; must be positive.
+   *
+   * @return $this
+   *   The builder.
+   *
+   * @throws \DrevOps\Tui\Config\ConfigException
+   *   When the size is not positive.
+   */
+  public function pageSize(int $size): self {
+    if ($size < 1) {
+      throw new ConfigException(sprintf('Field "%s" declares a non-positive page size %d.', $this->id, $size));
+    }
+
+    $this->pageSize = $size;
+
+    return $this;
+  }
+
+  /**
    * Set the conditional-visibility rule.
    *
    * @param \DrevOps\Tui\Condition\ConditionInterface $condition
@@ -562,6 +593,7 @@ final class FieldBuilder {
       $this->pickerStart,
       $this->pickerExtensions,
       $this->pickerShowHidden,
+      $this->pageSize,
     );
   }
 

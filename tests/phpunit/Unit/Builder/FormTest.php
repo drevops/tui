@@ -259,6 +259,29 @@ final class FormTest extends TestCase {
       ->build();
   }
 
+  public function testPageSizeAssembled(): void {
+    $config = Form::create('T')
+      ->panel('p', 'P', function (PanelBuilder $panel): void {
+        $panel->search('paged', 'Paged')->options(['a' => 'A'])->pageSize(5);
+        $panel->search('plain', 'Plain')->options(['a' => 'A']);
+      })
+      ->build();
+
+    $this->assertSame(5, $config->field('paged')?->pageSize);
+
+    // A field with nothing declared carries no page size and uses the default.
+    $this->assertNull($config->field('plain')?->pageSize);
+  }
+
+  public function testNonPositivePageSizeThrows(): void {
+    $this->expectException(ConfigException::class);
+    $this->expectExceptionMessage('Field "n" declares a non-positive page size 0.');
+
+    Form::create('T')
+      ->panel('p', 'P', fn(PanelBuilder $p): FieldBuilder => $p->search('n')->pageSize(0))
+      ->build();
+  }
+
   public function testFilePickerOptions(): void {
     $config = Form::create('T')
       ->panel('p', 'P', function (PanelBuilder $panel): void {

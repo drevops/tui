@@ -9,6 +9,8 @@ use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyMapManager;
 use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Input\ScopedKeyMap;
+use DrevOps\Tui\Render\Scroller;
+use DrevOps\Tui\Render\Viewport;
 use DrevOps\Tui\Theme\ThemeInterface;
 
 /**
@@ -19,12 +21,32 @@ use DrevOps\Tui\Theme\ThemeInterface;
 abstract class AbstractWidget implements WidgetInterface {
 
   /**
+   * The page size applied when a field declares none.
+   */
+  public const int DEFAULT_PAGE_SIZE = 10;
+
+  /**
    * The resolved key bindings for this widget's scope.
    *
    * Injected by the widget factory; when a widget is constructed directly (for
    * a test or a one-off), it falls back to the default preset for its scope.
    */
   protected ?ScopedKeyMap $scoped = NULL;
+
+  /**
+   * The number of option rows shown at once before the list pages.
+   */
+  protected int $pageSize = self::DEFAULT_PAGE_SIZE;
+
+  /**
+   * The index of the first visible option row under paging.
+   */
+  protected int $offset = 0;
+
+  /**
+   * The fuzzy matcher, created on first use.
+   */
+  protected ?Matcher $matcher = NULL;
 
   /**
    * Whether a valid value has been accepted.
@@ -187,6 +209,102 @@ abstract class AbstractWidget implements WidgetInterface {
    */
   protected function renderRadioRow(ThemeInterface $theme, string $label, bool $current): string {
     return $theme->radio($current) . ' ' . $this->highlightLabel($theme, $label, $current);
+  }
+
+  /**
+   * The shared fuzzy matcher.
+   *
+   * @return \DrevOps\Tui\Widget\Matcher
+   *   The matcher.
+   */
+  protected function matcher(): Matcher {
+    return $this->matcher ??= new Matcher();
+  }
+
+  /**
+   * Compute the paging window that keeps the cursor visible, storing its offset.
+   *
+   * @param int $total
+   *   The total number of option rows.
+   * @param int $cursor
+   *   The cursor row index (a negative cursor pins the window to the top).
+   *
+   * @return \DrevOps\Tui\Render\Viewport
+   *   The window: its offset and whether rows are scrolled off above or below.
+   */
+  protected function pageViewport(int $total, int $cursor): Viewport {
+    $viewport = (new Scroller())->compute($total, $this->pageSize, max(0, $cursor), $this->offset);
+    $this->offset = $viewport->offset;
+
+    return $viewport;
+  }
+
+  /**
+   * Style an option label, emphasising the query-matched characters.
+   *
+   * The label is split into runs of matched and unmatched characters, each run
+   * styled on its own so no SGR code nests inside another: matched runs get the
+   * match colour, and on the cursor row the rest keeps the highlight colour.
+   * With no matched positions this is exactly {@see highlightLabel()}.
+   *
+   * @param \DrevOps\Tui\Theme\ThemeInterface $theme
+   *   The theme.
+   * @param string $label
+   *   The option label.
+   * @param list<int> $positions
+   *   The zero-based indices of the matched characters.
+   * @param bool $current
+   *   Whether the option's row holds the cursor.
+   *
+   * @return string
+   *   The styled label.
+   */
+  protected function renderMatchedLabel(ThemeInterface $theme, string $label, array $positions, bool $current): string {
+    if ($positions === []) {
+      return $this->highlightLabel($theme, $label, $current);
+    }
+
+    $matched = array_fill_keys($positions, TRUE);
+    $out = '';
+    $run = '';
+    $run_matched = FALSE;
+
+    foreach (mb_str_split($label) as $index => $char) {
+      $is_matched = isset($matched[$index]);
+
+      if ($run !== '' && $is_matched !== $run_matched) {
+        $out .= $this->styleRun($theme, $run, $run_matched, $current);
+        $run = '';
+      }
+
+      $run .= $char;
+      $run_matched = $is_matched;
+    }
+
+    return $out . $this->styleRun($theme, $run, $run_matched, $current);
+  }
+
+  /**
+   * Style one run of same-kind characters for {@see renderMatchedLabel()}.
+   *
+   * @param \DrevOps\Tui\Theme\ThemeInterface $theme
+   *   The theme.
+   * @param string $run
+   *   The run of characters.
+   * @param bool $matched
+   *   Whether the run's characters matched the query.
+   * @param bool $current
+   *   Whether the option's row holds the cursor.
+   *
+   * @return string
+   *   The styled run.
+   */
+  protected function styleRun(ThemeInterface $theme, string $run, bool $matched, bool $current): string {
+    if ($matched) {
+      return $theme->highlightMatch($run);
+    }
+
+    return $current ? $theme->highlight($run) : $run;
   }
 
   /**
