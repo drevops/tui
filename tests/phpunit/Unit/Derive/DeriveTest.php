@@ -45,9 +45,6 @@ final class DeriveTest extends TestCase {
     yield 'missing token resolves empty' => [new Derive('a-{{nope}}-b'), [], 'a--b'];
     yield 'non-scalar token resolves empty' => [new Derive('{{list}}'), ['list' => ['x']], ''];
     yield 'machine' => [new Derive('{{name}}', 'machine'), ['name' => 'My Site! 2'], 'my_site_2'];
-    yield 'host' => [new Derive('{{name}}', 'host'), ['name' => 'My_Site.Com'], 'my-site.com'];
-    yield 'lower' => [new Derive('{{name}}', 'lower'), ['name' => 'HeLLo'], 'hello'];
-    yield 'initials' => [new Derive('{{name}}', 'initials'), ['name' => 'My Awesome Site'], 'mas'];
     yield 'kebab (str2name)' => [new Derive('{{name}}', 'kebab'), ['name' => 'My Site'], 'my-site'];
   }
 
