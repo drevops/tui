@@ -164,6 +164,16 @@ interface ThemeInterface {
   public function arrowDown(): string;
 
   /**
+   * The "move left" key hint symbol.
+   */
+  public function arrowLeft(): string;
+
+  /**
+   * The "move right" key hint symbol.
+   */
+  public function arrowRight(): string;
+
+  /**
    * The enter/accept key hint symbol.
    */
   public function enter(): string;

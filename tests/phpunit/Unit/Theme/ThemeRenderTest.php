@@ -188,6 +188,16 @@ final class ThemeRenderTest extends TestCase {
     $this->assertStringContainsString('↑/↓ move', Ansi::strip($line));
   }
 
+  public function testHorizontalArrowGlyphs(): void {
+    $unicode = new DefaultTheme();
+    $this->assertSame('←', $unicode->arrowLeft());
+    $this->assertSame('→', $unicode->arrowRight());
+
+    $ascii = new DefaultTheme(76, ['unicode' => FALSE]);
+    $this->assertSame('<', $ascii->arrowLeft());
+    $this->assertSame('>', $ascii->arrowRight());
+  }
+
   public function testHintLineJoinsWithDotGlyph(): void {
     $line = (new DefaultTheme())->renderHintLine('enter accept', 'esc cancel');
 
