@@ -26,12 +26,18 @@ final readonly class DateBounds {
    *   The inclusive latest date, or NULL for an open upper bound.
    * @param \DrevOps\Tui\Config\Weekday $weekStart
    *   The day the calendar week begins on.
+   *
+   * @throws \DrevOps\Tui\Config\ConfigException
+   *   When both bounds are declared and the minimum falls after the maximum.
    */
   public function __construct(
     public ?\DateTimeImmutable $min = NULL,
     public ?\DateTimeImmutable $max = NULL,
     public Weekday $weekStart = Weekday::Monday,
   ) {
+    if ($this->min instanceof \DateTimeImmutable && $this->max instanceof \DateTimeImmutable && $this->min > $this->max) {
+      throw new ConfigException(sprintf('Date bounds declare a minimum of %s after the maximum of %s.', $this->min->format('Y-m-d'), $this->max->format('Y-m-d')));
+    }
   }
 
   /**

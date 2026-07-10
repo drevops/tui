@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Tests\Unit\Widget;
 
 use DrevOps\Tui\Config\DateBounds;
+use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\Weekday;
 use DrevOps\Tui\Input\ArrayKeyStream;
 use DrevOps\Tui\Input\Key;
+use DrevOps\Tui\Input\KeyMapManager;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Theme\DefaultTheme;
@@ -57,14 +59,28 @@ final class DateWidgetTest extends TestCase {
     yield 'right is next day' => [Key::named(KeyName::Right), '2026-07-16'];
     yield 'up is previous week' => [Key::named(KeyName::Up), '2026-07-08'];
     yield 'down is next week' => [Key::named(KeyName::Down), '2026-07-22'];
-    yield 'vim h is previous day' => [Key::char('h'), '2026-07-14'];
-    yield 'vim l is next day' => [Key::char('l'), '2026-07-16'];
-    yield 'vim k is previous week' => [Key::char('k'), '2026-07-08'];
-    yield 'vim j is next week' => [Key::char('j'), '2026-07-22'];
     yield 'page up is previous month' => [Key::named(KeyName::PageUp), '2026-06-15'];
     yield 'page down is next month' => [Key::named(KeyName::PageDown), '2026-08-15'];
     yield 'home is first of month' => [Key::named(KeyName::Home), '2026-07-01'];
     yield 'end is last of month' => [Key::named(KeyName::End), '2026-07-31'];
+  }
+
+  #[DataProvider('dataProviderVimNavigation')]
+  public function testVimNavigation(Key $key, string $expected): void {
+    // Injecting the vim scope map proves day and week movement resolve through
+    // the key bindings: the vim preset reaches the same moves via h/j/k/l.
+    $widget = (new DateWidget('2026-07-15'))->setKeys(KeyMapManager::create('vim')->forField(FieldType::Date));
+
+    $widget->handle($key);
+
+    $this->assertSame($expected, $widget->value());
+  }
+
+  public static function dataProviderVimNavigation(): \Iterator {
+    yield 'h is previous day' => [Key::char('h'), '2026-07-14'];
+    yield 'l is next day' => [Key::char('l'), '2026-07-16'];
+    yield 'k is previous week' => [Key::char('k'), '2026-07-08'];
+    yield 'j is next week' => [Key::char('j'), '2026-07-22'];
   }
 
   #[DataProvider('dataProviderPageMonthClampsToShortMonth')]
@@ -209,6 +225,17 @@ final class DateWidgetTest extends TestCase {
     $this->assertStringContainsString($theme->description(sprintf(' %2d ', 5)), $view);
     // The cursor day stays bracketed and highlighted.
     $this->assertStringContainsString($theme->highlight('[15]'), $view);
+  }
+
+  public function testDimsDaysPastMaximum(): void {
+    $bounds = new DateBounds(max: new \DateTimeImmutable('2026-07-20'));
+    $widget = new DateWidget('2026-07-15', bounds: $bounds);
+    $theme = new DefaultTheme();
+
+    $view = $widget->view($theme);
+
+    // A day after the maximum is dimmed too, guarding the upper bound.
+    $this->assertStringContainsString($theme->description(sprintf(' %2d ', 25)), $view);
   }
 
 }

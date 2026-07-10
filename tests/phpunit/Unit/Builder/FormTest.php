@@ -290,7 +290,7 @@ final class FormTest extends TestCase {
 
   public function testDateInvalidBoundThrows(): void {
     $this->expectException(ConfigException::class);
-    $this->expectExceptionMessage('Field "d" declares an invalid min date "2026-13-01".');
+    $this->expectExceptionMessage('Field "d" declares an invalid date "2026-13-01".');
 
     Form::create('T')
       ->panel('p', 'P', fn(PanelBuilder $p): FieldBuilder => $p->date('d')->minDate('2026-13-01'))

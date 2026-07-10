@@ -5,19 +5,24 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Widget;
 
 use DrevOps\Tui\Config\DateBounds;
+use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\Weekday;
+use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
+use DrevOps\Tui\Input\Scope;
+use DrevOps\Tui\Input\ScopedKeyMap;
 use DrevOps\Tui\Theme\ThemeInterface;
 
 /**
  * A month-calendar date picker returning a normalized ISO `Y-m-d` string.
  *
- * Arrow keys - and the vim keys h/j/k/l - move the cursor by day and by week,
- * the page keys change month, and Home/End jump to the first/last day of the
- * visible month. Every motion is clamped to the declared min/max range, so the
- * cursor never settles on an out-of-range day; days outside the range stay
- * visible but dimmed.
+ * The move actions - bound to the arrow keys by default, and to h/j/k/l too
+ * under the vim preset - move the cursor by day and by week; the page keys
+ * change month, and Home/End jump to the first/last day of the visible month.
+ * Every motion is clamped to the declared min/max range, so the cursor never
+ * settles on an out-of-range day; days outside the range stay visible but
+ * dimmed.
  *
  * @package DrevOps\Tui\Widget
  */
@@ -66,18 +71,28 @@ class DateWidget extends AbstractWidget {
   /**
    * {@inheritdoc}
    */
+  #[\Override]
+  protected function keyScope(): Scope {
+    return Scope::field(FieldType::Date);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function handle(Key $key): void {
+    $keys = $this->keys();
+
     if ($this->handleCancel($key)) {
       return;
     }
 
-    if ($key->is(KeyName::Enter)) {
+    if ($keys->matches($key, Action::Accept)) {
       $this->accept($this->liveValue());
 
       return;
     }
 
-    $moved = $this->move($key);
+    $moved = $this->move($key, $keys);
     if ($moved instanceof \DateTimeImmutable) {
       $this->cursor = $this->bounds->clamp($moved);
     }
@@ -86,39 +101,30 @@ class DateWidget extends AbstractWidget {
   /**
    * The date a navigation key moves to before clamping, or NULL for no move.
    *
+   * Day and week movement resolve through the injected key bindings, so the
+   * arrow keys, the vim preset and any consumer remap all reach them; the month
+   * and month-edge jumps have no action of their own and stay on their keys.
+   *
    * @param \DrevOps\Tui\Input\Key $key
    *   The key to interpret.
+   * @param \DrevOps\Tui\Input\ScopedKeyMap $keys
+   *   The resolved bindings for this widget's scope.
    *
    * @return \DateTimeImmutable|null
    *   The unclamped target date, or NULL when the key does not navigate.
    */
-  protected function move(Key $key): ?\DateTimeImmutable {
+  protected function move(Key $key, ScopedKeyMap $keys): ?\DateTimeImmutable {
     return match (TRUE) {
-      $key->is(KeyName::Left), $this->isChar($key, 'h') => $this->cursor->modify('-1 day'),
-      $key->is(KeyName::Right), $this->isChar($key, 'l') => $this->cursor->modify('+1 day'),
-      $key->is(KeyName::Up), $this->isChar($key, 'k') => $this->cursor->modify('-7 days'),
-      $key->is(KeyName::Down), $this->isChar($key, 'j') => $this->cursor->modify('+7 days'),
+      $keys->matches($key, Action::MoveLeft) => $this->cursor->modify('-1 day'),
+      $keys->matches($key, Action::MoveRight) => $this->cursor->modify('+1 day'),
+      $keys->matches($key, Action::MoveUp) => $this->cursor->modify('-7 days'),
+      $keys->matches($key, Action::MoveDown) => $this->cursor->modify('+7 days'),
       $key->is(KeyName::PageUp) => $this->shiftMonths(-1),
       $key->is(KeyName::PageDown) => $this->shiftMonths(1),
       $key->is(KeyName::Home) => $this->cursor->modify('first day of this month'),
       $key->is(KeyName::End) => $this->cursor->modify('last day of this month'),
       default => NULL,
     };
-  }
-
-  /**
-   * Whether the key is a specific printable character.
-   *
-   * @param \DrevOps\Tui\Input\Key $key
-   *   The key.
-   * @param string $char
-   *   The character to match.
-   *
-   * @return bool
-   *   TRUE when the key is that character.
-   */
-  protected function isChar(Key $key, string $char): bool {
-    return $key->isChar() && $key->char === $char;
   }
 
   /**

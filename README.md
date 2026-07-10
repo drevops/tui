@@ -149,7 +149,7 @@ $p->number('port', 'HTTP port')->min(1)->max(65535)->step(1)->default(8080);
 
 ### Date
 
-A month calendar that returns a normalized ISO `YYYY-MM-DD` date. Left/Right (or vim `h`/`l`) move by day, Up/Down (or `k`/`j`) move by week, PageUp/PageDown change month, Home/End jump to the first/last day of the month, and Enter accepts. Pass `default` (a `YYYY-MM-DD` string) to open on a specific date; with none the calendar opens on today.
+A month calendar that returns a normalized ISO `YYYY-MM-DD` date. Left/Right move by day and Up/Down by week (the vim preset binds `h`/`l` and `k`/`j` to the same moves), PageUp/PageDown change month, Home/End jump to the first/last day of the month, and Enter accepts. Pass `default` (a `YYYY-MM-DD` string) to open on a specific date; with none the calendar opens on today. The move keys are configurable through the key map, like every other widget.
 
 ```php
 $p->date('release', 'Release date')->default('2026-07-15');
@@ -158,6 +158,8 @@ $p->date('release', 'Release date')->default('2026-07-15');
 Declare optional `minDate`, `maxDate` and `weekStart` to bound the range and set the first column of the week. Navigation is clamped to the range - the cursor never leaves it - and days outside it render dimmed. The bounds are enforced headlessly too - a `--prompts` or environment value outside the range is rejected - and are reflected in the JSON schema as `min_date`, `max_date` and `week_start` on the prompt.
 
 ```php
+use DrevOps\Tui\Config\Weekday;
+
 $p->date('release', 'Release date')->minDate('2026-01-01')->maxDate('2026-12-31')->weekStart(Weekday::Sunday);
 ```
 

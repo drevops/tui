@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Tests\Unit\Config;
 
+use DrevOps\Tui\Config\ConfigException;
 use DrevOps\Tui\Config\DateBounds;
 use DrevOps\Tui\Config\Weekday;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -97,6 +98,13 @@ final class DateBoundsTest extends TestCase {
   public function testWeekStartDefaultsToMonday(): void {
     $this->assertSame(Weekday::Monday, (new DateBounds())->weekStart);
     $this->assertSame(Weekday::Sunday, (new DateBounds(weekStart: Weekday::Sunday))->weekStart);
+  }
+
+  public function testConstructorRejectsReversedBounds(): void {
+    $this->expectException(ConfigException::class);
+    $this->expectExceptionMessage('Date bounds declare a minimum of 2026-12-31 after the maximum of 2026-01-01.');
+
+    new DateBounds(new \DateTimeImmutable('2026-12-31'), new \DateTimeImmutable('2026-01-01'));
   }
 
   /**

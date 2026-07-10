@@ -749,8 +749,8 @@ final class FieldBuilder {
       return NULL;
     }
 
-    $min = $this->parseBoundDate($this->minDate, 'min');
-    $max = $this->parseBoundDate($this->maxDate, 'max');
+    $min = $this->parseBoundDate($this->minDate);
+    $max = $this->parseBoundDate($this->maxDate);
 
     if ($min instanceof \DateTimeImmutable && $max instanceof \DateTimeImmutable && $min > $max) {
       throw new ConfigException(sprintf('Field "%s" declares min date %s after max date %s.', $this->id, $min->format('Y-m-d'), $max->format('Y-m-d')));
@@ -764,8 +764,6 @@ final class FieldBuilder {
    *
    * @param string|null $value
    *   The declared date string, or NULL when the bound is open.
-   * @param string $which
-   *   The bound name ("min" or "max"), used in the error message.
    *
    * @return \DateTimeImmutable|null
    *   The parsed date, or NULL when none was declared.
@@ -773,14 +771,14 @@ final class FieldBuilder {
    * @throws \DrevOps\Tui\Config\ConfigException
    *   When the value is not a valid `Y-m-d` date.
    */
-  protected function parseBoundDate(?string $value, string $which): ?\DateTimeImmutable {
+  protected function parseBoundDate(?string $value): ?\DateTimeImmutable {
     if ($value === NULL) {
       return NULL;
     }
 
     $date = DateBounds::parse($value);
     if (!$date instanceof \DateTimeImmutable) {
-      throw new ConfigException(sprintf('Field "%s" declares an invalid %s date "%s".', $this->id, $which, $value));
+      throw new ConfigException(sprintf('Field "%s" declares an invalid date "%s".', $this->id, $value));
     }
 
     return $date;
