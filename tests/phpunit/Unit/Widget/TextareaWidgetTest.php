@@ -89,4 +89,61 @@ final class TextareaWidgetTest extends TestCase {
     $this->assertTrue((new TextareaWidget('x'))->rendersHint());
   }
 
+  public function testEditorKeyRequestsHandoffWhenEnabled(): void {
+    $widget = new TextareaWidget('draft', externalEdit: TRUE);
+
+    $widget->handle(Key::char("\x05"));
+
+    $this->assertTrue($widget->wantsExternalEdit());
+    // The buffer is untouched until the captured value is applied.
+    $this->assertSame('draft', $widget->value());
+    $this->assertFalse($widget->isComplete());
+  }
+
+  public function testEditorKeySwallowedWhenDisabled(): void {
+    $widget = new TextareaWidget('draft');
+
+    $widget->handle(Key::char("\x05"));
+
+    $this->assertFalse($widget->wantsExternalEdit());
+    // The control key is swallowed, never inserted as a raw byte.
+    $this->assertSame('draft', $widget->value());
+  }
+
+  public function testApplyExternalEditReplacesBufferAndAccepts(): void {
+    $widget = new TextareaWidget('old', externalEdit: TRUE);
+    $widget->handle(Key::char("\x05"));
+
+    $widget->applyExternalEdit("new\ntext");
+
+    $this->assertSame("new\ntext", $widget->value());
+    $this->assertTrue($widget->isComplete());
+    $this->assertFalse($widget->wantsExternalEdit());
+  }
+
+  public function testApplyExternalEditNullKeepsBufferAndStaysEditing(): void {
+    $widget = new TextareaWidget('keep', externalEdit: TRUE);
+    $widget->handle(Key::char("\x05"));
+
+    $widget->applyExternalEdit(NULL);
+
+    $this->assertSame('keep', $widget->value());
+    $this->assertFalse($widget->isComplete());
+    $this->assertFalse($widget->wantsExternalEdit());
+  }
+
+  public function testApplyExternalEditRunsValidator(): void {
+    $widget = new TextareaWidget('x', validate: fn(mixed $value): string => 'Nope.', externalEdit: TRUE);
+
+    $widget->applyExternalEdit('bad');
+
+    $this->assertFalse($widget->isComplete());
+    $this->assertStringContainsString('Nope.', $widget->view(new DefaultTheme()));
+  }
+
+  public function testViewShowsEditorHintOnlyWhenEnabled(): void {
+    $this->assertStringContainsString('ctrl-e editor', (new TextareaWidget('x', externalEdit: TRUE))->view(new DefaultTheme()));
+    $this->assertStringNotContainsString('ctrl-e editor', (new TextareaWidget('x'))->view(new DefaultTheme()));
+  }
+
 }

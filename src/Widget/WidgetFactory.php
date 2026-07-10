@@ -15,6 +15,16 @@ use DrevOps\Tui\Config\FieldType;
 class WidgetFactory {
 
   /**
+   * Construct a widget factory.
+   *
+   * @param bool $externalEditorAvailable
+   *   Whether an external editor is launchable here. A textarea field opts in
+   *   per-field; the handoff shows only when one is also available.
+   */
+  public function __construct(protected bool $externalEditorAvailable = FALSE) {
+  }
+
+  /**
    * Create a widget for a field.
    *
    * @param \DrevOps\Tui\Config\Field $field
@@ -36,7 +46,7 @@ class WidgetFactory {
       FieldType::Suggest => new SuggestWidget(array_keys($labels), is_string($current) ? $current : ''),
       FieldType::Search => new SearchWidget($labels, is_string($current) ? $current : ''),
       FieldType::Number => new NumberWidget(is_int($current) || is_float($current) ? (string) (int) $current : ''),
-      FieldType::Textarea => new TextareaWidget(is_string($current) ? $current : ''),
+      FieldType::Textarea => new TextareaWidget(is_string($current) ? $current : '', externalEdit: $field->externalEditor && $this->externalEditorAvailable),
       FieldType::Password => new PasswordWidget(is_string($current) ? $current : '', revealable: $field->revealable, confirm: $field->confirm),
       FieldType::Pause => new PauseWidget(),
       default => new TextWidget(is_string($current) ? $current : ''),

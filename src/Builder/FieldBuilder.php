@@ -86,6 +86,11 @@ final class FieldBuilder {
   protected bool $confirm = FALSE;
 
   /**
+   * Whether the field may hand off to the user's $EDITOR.
+   */
+  protected bool $externalEditor = FALSE;
+
+  /**
    * Construct a field builder.
    *
    * @param string $id
@@ -186,6 +191,24 @@ final class FieldBuilder {
    */
   public function confirm(bool $confirm = TRUE): self {
     $this->confirm = $confirm;
+
+    return $this;
+  }
+
+  /**
+   * Allow the field to hand off to the user's $EDITOR.
+   *
+   * Honoured by the textarea widget: an available $EDITOR (or $VISUAL) can be
+   * launched to compose the value, falling back to inline editing otherwise.
+   *
+   * @param bool $enabled
+   *   Whether the external-editor handoff is offered.
+   *
+   * @return $this
+   *   The builder.
+   */
+  public function externalEditor(bool $enabled = TRUE): self {
+    $this->externalEditor = $enabled;
 
     return $this;
   }
@@ -327,6 +350,7 @@ final class FieldBuilder {
       $this->weight,
       $this->revealable,
       $this->confirm,
+      $this->externalEditor,
     );
   }
 

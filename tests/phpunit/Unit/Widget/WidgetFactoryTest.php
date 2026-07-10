@@ -85,6 +85,34 @@ final class WidgetFactoryTest extends TestCase {
     $this->assertSame([], $widget->value());
   }
 
+  public function testTextareaExternalEditorOfferedWhenOptedInAndAvailable(): void {
+    $field = new Field('f', 'F', '', FieldType::Textarea, '', externalEditor: TRUE);
+
+    $widget = (new WidgetFactory(TRUE))->create($field, 'x');
+    $this->assertInstanceOf(TextareaWidget::class, $widget);
+
+    $widget->handle(Key::char("\x05"));
+    $this->assertTrue($widget->wantsExternalEdit());
+  }
+
+  public function testTextareaExternalEditorNotOfferedWhenUnavailable(): void {
+    $field = new Field('f', 'F', '', FieldType::Textarea, '', externalEditor: TRUE);
+
+    $widget = (new WidgetFactory(FALSE))->create($field, 'x');
+    $this->assertInstanceOf(TextareaWidget::class, $widget);
+
+    $widget->handle(Key::char("\x05"));
+    $this->assertFalse($widget->wantsExternalEdit());
+  }
+
+  public function testTextareaExternalEditorNotOfferedWhenNotOptedIn(): void {
+    $widget = (new WidgetFactory(TRUE))->create($this->field(FieldType::Textarea), 'x');
+    $this->assertInstanceOf(TextareaWidget::class, $widget);
+
+    $widget->handle(Key::char("\x05"));
+    $this->assertFalse($widget->wantsExternalEdit());
+  }
+
   /**
    * A field of the given type.
    *

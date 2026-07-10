@@ -55,6 +55,9 @@ final readonly class Field {
    * @param bool $confirm
    *   Password only: whether the editor prompts for the value twice and rejects
    *   a mismatch before accepting.
+   * @param bool $externalEditor
+   *   Whether the field may hand off to the user's $EDITOR for composing its
+   *   value. Honoured by the textarea widget; ignored by other types.
    */
   public function __construct(
     public string $id,
@@ -72,6 +75,7 @@ final readonly class Field {
     public int $weight = 0,
     public bool $revealable = FALSE,
     public bool $confirm = FALSE,
+    public bool $externalEditor = FALSE,
   ) {
   }
 

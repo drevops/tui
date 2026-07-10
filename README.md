@@ -138,6 +138,12 @@ Multi-line text input: Enter inserts a newline, Up/Down move between lines keepi
 $p->textarea('notes', 'Provisioning notes')->default("Redis for cache\nSolr for search");
 ```
 
+Call `->externalEditor()` to let the field hand off to the user's `$EDITOR` (or `$VISUAL`) for composing long or structured text. Pressing `Ctrl-E` while editing suspends the TUI, opens the editor seeded with the current value, and captures the saved buffer on return - saving and exiting commits it as the field value, while an aborted edit (a non-zero editor exit) keeps the inline value. When no editor is available the option is silently ignored and the field behaves as a plain inline textarea.
+
+```php
+$p->textarea('notes', 'Provisioning notes')->externalEditor();
+```
+
 <table>
   <tr>
     <td></td>

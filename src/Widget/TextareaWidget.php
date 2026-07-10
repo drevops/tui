@@ -16,10 +16,46 @@ use DrevOps\Tui\Theme\ThemeInterface;
 class TextareaWidget extends TextWidget {
 
   /**
+   * The key that requests the external-editor handoff (Ctrl-E).
+   */
+  protected const string EDITOR_KEY = "\x05";
+
+  /**
+   * Whether the external-editor handoff has been requested.
+   */
+  protected bool $externalEditRequested = FALSE;
+
+  /**
+   * Construct a textarea widget.
+   *
+   * @param string $buffer
+   *   The initial value (and live input buffer).
+   * @param \Closure|null $validate
+   *   Optional validator (see AbstractWidget).
+   * @param \Closure|null $transform
+   *   Optional transformer (see AbstractWidget).
+   * @param bool $externalEdit
+   *   Whether the external-editor handoff is offered (an available $EDITOR).
+   */
+  public function __construct(string $buffer = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL, protected bool $externalEdit = FALSE) {
+    parent::__construct($buffer, $validate, $transform);
+  }
+
+  /**
    * {@inheritdoc}
    */
   #[\Override]
   public function handle(Key $key): void {
+    if ($key->isChar() && $key->char === self::EDITOR_KEY) {
+      // Only act when the handoff is offered; otherwise swallow the control key
+      // rather than inserting a raw byte into the buffer.
+      if ($this->externalEdit) {
+        $this->externalEditRequested = TRUE;
+      }
+
+      return;
+    }
+
     if ($key->is(KeyName::Enter)) {
       $this->insert("\n");
 
@@ -85,14 +121,53 @@ class TextareaWidget extends TextWidget {
   }
 
   /**
+   * Whether the widget has requested the external-editor handoff.
+   *
+   * The driver reads this after handling a key and, when TRUE, launches the
+   * editor and feeds the result back through applyExternalEdit().
+   *
+   * @return bool
+   *   TRUE when a handoff was requested.
+   */
+  public function wantsExternalEdit(): bool {
+    return $this->externalEditRequested;
+  }
+
+  /**
+   * Apply the buffer captured from the external editor.
+   *
+   * Clears the pending request. A non-NULL buffer replaces the value and is
+   * accepted, so saving and exiting the editor commits the field. A NULL buffer
+   * (the edit was aborted or unavailable) leaves the inline value untouched.
+   *
+   * @param string|null $content
+   *   The captured buffer, or NULL when the edit was aborted.
+   */
+  public function applyExternalEdit(?string $content): void {
+    $this->externalEditRequested = FALSE;
+
+    if ($content === NULL) {
+      return;
+    }
+
+    $this->buffer = $content;
+    $this->cursor = strlen($content);
+    $this->accept($content);
+  }
+
+  /**
    * {@inheritdoc}
    */
   #[\Override]
   public function view(ThemeInterface $theme): string {
     $text = substr($this->buffer, 0, $this->cursor) . $theme->caret() . substr($this->buffer, $this->cursor);
-    $hint = $theme->footer('enter newline ' . $theme->dot() . ' tab accept');
 
-    $out = $text . "\n" . $hint;
+    $hint_text = 'enter newline ' . $theme->dot() . ' tab accept';
+    if ($this->externalEdit) {
+      $hint_text .= ' ' . $theme->dot() . ' ctrl-e editor';
+    }
+
+    $out = $text . "\n" . $theme->footer($hint_text);
 
     return $this->error === NULL ? $out : $out . "\n" . $theme->error($this->error);
   }
