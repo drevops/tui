@@ -205,4 +205,13 @@ final class FormTest extends TestCase {
       ->build();
   }
 
+  public function testToggleDefaultNotAnOptionThrows(): void {
+    $this->expectException(ConfigException::class);
+    $this->expectExceptionMessage('Toggle field "t" default "c" is not one of its options.');
+
+    Form::create('T')
+      ->panel('p', 'P', fn(PanelBuilder $p): FieldBuilder => $p->toggle('t')->option('a')->option('b')->default('c'))
+      ->build();
+  }
+
 }

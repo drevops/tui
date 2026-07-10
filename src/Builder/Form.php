@@ -320,8 +320,18 @@ final class Form {
    */
   protected function assertToggleOptions(Config $config): void {
     foreach ($config->fields() as $field) {
-      if ($field->type === FieldType::Toggle && count($field->options) !== 2) {
+      if ($field->type !== FieldType::Toggle) {
+        continue;
+      }
+
+      if (count($field->options) !== 2) {
         throw new ConfigException(sprintf('Toggle field "%s" must have exactly two options, %d given.', $field->id, count($field->options)));
+      }
+
+      // A dynamic default is a closure resolved at runtime, so only a literal
+      // default can be checked against the options here.
+      if (is_string($field->default) && !array_key_exists($field->default, $field->options)) {
+        throw new ConfigException(sprintf('Toggle field "%s" default "%s" is not one of its options.', $field->id, $field->default));
       }
     }
   }
