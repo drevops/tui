@@ -12,7 +12,8 @@ namespace DrevOps\Tui\Theme;
  * consumer registers its own under a short name with {@see register()}, and
  * {@see create()} also accepts a fully-qualified theme class name directly, so
  * a one-off theme needs no registration at all. Terminal-capability detection
- * (colour, Unicode, dark/light background) lives on {@see \DrevOps\Tui\Render\Terminal}.
+ * (colour, Unicode, dark/light background) lives on
+ * {@see \DrevOps\Tui\Render\Terminal}.
  *
  * @package DrevOps\Tui\Theme
  */

@@ -106,14 +106,14 @@ final class TuiTest extends TestCase {
     yield 'auto config is default' => ['auto', '', 'default'];
   }
 
-  #[DataProvider('dataProviderResolveMode')]
+  #[DataProvider('dataProviderResolveThemeOptionsDetectsMode')]
   public function testResolveThemeOptionsDetectsMode(bool $color, ?string $osc, string $expected_mode): void {
     $restore = getenv('COLORFGBG');
     putenv('COLORFGBG');
 
     try {
       $tui = $this->colouredTui($color);
-      $options = (new \ReflectionMethod($tui, 'resolveThemeOptions'))->invoke($tui, $this->terminalReturning($osc));
+      $options = (array) (new \ReflectionMethod($tui, 'resolveThemeOptions'))->invoke($tui, $this->terminalReturning($osc));
 
       $this->assertSame($color, $options['color']);
       $this->assertTrue($options['unicode']);
@@ -124,7 +124,7 @@ final class TuiTest extends TestCase {
     }
   }
 
-  public static function dataProviderResolveMode(): \Iterator {
+  public static function dataProviderResolveThemeOptionsDetectsMode(): \Iterator {
     // With colour on, the mode follows the terminal background.
     yield 'colour on detects light' => [TRUE, "\033]11;rgb:ffff/ffff/ffff\007", 'light'];
     yield 'colour on detects dark' => [TRUE, "\033]11;rgb:0000/0000/0000\007", 'dark'];
@@ -142,7 +142,7 @@ final class TuiTest extends TestCase {
     $tui = new Tui($form);
 
     // A consumer's explicit options win over detection.
-    $options = (new \ReflectionMethod($tui, 'resolveThemeOptions'))->invoke($tui, $this->terminalReturning("\033]11;rgb:0000/0000/0000\007"));
+    $options = (array) (new \ReflectionMethod($tui, 'resolveThemeOptions'))->invoke($tui, $this->terminalReturning("\033]11;rgb:0000/0000/0000\007"));
 
     $this->assertSame('light', $options['mode']);
     $this->assertFalse($options['color']);

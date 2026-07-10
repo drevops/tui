@@ -90,7 +90,7 @@ class TextareaWidget extends TextWidget {
   #[\Override]
   public function view(ThemeInterface $theme): string {
     $text = substr($this->buffer, 0, $this->cursor) . $theme->caret() . substr($this->buffer, $this->cursor);
-    $hint = $theme->footer('enter newline' . ' ' . $theme->dot() . ' ' . 'tab accept');
+    $hint = $theme->footer('enter newline ' . $theme->dot() . ' tab accept');
 
     $out = $text . "\n" . $hint;
 

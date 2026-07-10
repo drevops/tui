@@ -13,8 +13,7 @@ use DrevOps\Tui\Theme\DefaultTheme;
 /**
  * A custom theme that overrides as much as it sensibly can.
  *
- * It demonstrates three kinds of override, all shown below:
- *  - the constructor - to change the defaults (here, a narrower 72-col frame);
+ * It demonstrates two kinds of override, both shown below:
  *  - the appearance atoms - one method per colour and glyph (title(), value(),
  *    marker(), arrow()…), each overridden on its own;
  *  - any render*() and summarizePanel() method - to change how an element is
@@ -27,18 +26,6 @@ use DrevOps\Tui\Theme\DefaultTheme;
  * ThemeManager::register('ocean', OceanTheme::class).
  */
 class OceanTheme extends DefaultTheme {
-
-  /**
-   * Override the constructor to default to a narrower 72-column frame.
-   *
-   * @param int $width
-   *   The frame width.
-   * @param array<string,mixed> $options
-   *   The theme display options.
-   */
-  public function __construct(int $width = 72, array $options = []) {
-    parent::__construct($width, $options);
-  }
 
   /**
    * {@inheritdoc}

@@ -28,17 +28,19 @@ final class Box {
    *   (horizontal), v (vertical).
    */
   public static function chars(string $style, bool $unicode): array {
-    if (!$unicode) {
-      $fill = $style === 'double' ? '=' : '-';
+    $keys = ['tl', 'tr', 'bl', 'br', 'ml', 'mr', 'h', 'v'];
 
-      return ['tl' => '+', 'tr' => '+', 'bl' => '+', 'br' => '+', 'ml' => '+', 'mr' => '+', 'h' => $fill, 'v' => '|'];
+    if (!$unicode) {
+      return array_combine($keys, mb_str_split($style === 'double' ? '++++++=|' : '++++++-|'));
     }
 
-    return match ($style) {
-      'rounded' => ['tl' => '╭', 'tr' => '╮', 'bl' => '╰', 'br' => '╯', 'ml' => '├', 'mr' => '┤', 'h' => '─', 'v' => '│'],
-      'double' => ['tl' => '╔', 'tr' => '╗', 'bl' => '╚', 'br' => '╝', 'ml' => '╠', 'mr' => '╣', 'h' => '═', 'v' => '║'],
-      default => ['tl' => '┌', 'tr' => '┐', 'bl' => '└', 'br' => '┘', 'ml' => '├', 'mr' => '┤', 'h' => '─', 'v' => '│'],
+    $set = match ($style) {
+      'rounded' => '╭╮╰╯├┤─│',
+      'double' => '╔╗╚╝╠╣═║',
+      default => '┌┐└┘├┤─│',
     };
+
+    return array_combine($keys, mb_str_split($set));
   }
 
   /**

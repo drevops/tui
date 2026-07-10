@@ -10,6 +10,7 @@ use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\Panel;
 use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Render\Viewport;
+use DrevOps\Tui\Tests\Fixtures\Theme\AccentOptionTheme;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Theme\ThemeInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -59,7 +60,7 @@ final class ThemeOptionsTest extends TestCase {
     $this->assertStringContainsString('B', Ansi::strip($lines[2]));
   }
 
-  #[DataProvider('dataProviderBorder')]
+  #[DataProvider('dataProviderBorderDrawsBox')]
   public function testBorderDrawsBox(bool $unicode, string $border, string $expected): void {
     $theme = new DefaultTheme(24, ['color' => FALSE, 'unicode' => $unicode, 'border' => $border]);
     $frame = $theme->renderFrame(['HEAD'], ['body'], ['FOOT'], new Viewport(0, FALSE, FALSE), 1);
@@ -70,7 +71,7 @@ final class ThemeOptionsTest extends TestCase {
     $this->assertStringContainsString('FOOT', Ansi::strip($frame));
   }
 
-  public static function dataProviderBorder(): \Iterator {
+  public static function dataProviderBorderDrawsBox(): \Iterator {
     yield 'line' => [TRUE, ThemeInterface::BORDER_LINE, '┌'];
     yield 'rounded' => [TRUE, ThemeInterface::BORDER_ROUNDED, '╭'];
     yield 'double' => [TRUE, ThemeInterface::BORDER_DOUBLE, '╔'];
@@ -166,7 +167,7 @@ final class ThemeOptionsTest extends TestCase {
   }
 
   public function testNonStringOptionFallsBackToDefault(): void {
-    // The "color" option is a bool, so reading it as a string yields the default.
+    // "color" is a bool, so reading it as a string yields the default.
     $theme = new class(40, ['color' => FALSE]) extends DefaultTheme {
 
       public function colorAsString(): string {
@@ -184,31 +185,11 @@ final class ThemeOptionsTest extends TestCase {
    * @param array<string,mixed> $options
    *   The theme options.
    *
-   * @return \DrevOps\Tui\Theme\DefaultTheme
-   *   The theme, exposing accent() reading the custom option.
+   * @return \DrevOps\Tui\Tests\Fixtures\Theme\AccentOptionTheme
+   *   The theme.
    */
-  protected function accentTheme(array $options): DefaultTheme {
-    return new class($options) extends DefaultTheme {
-
-      /**
-       * Construct with options only, at a fixed width.
-       *
-       * @param array<string,mixed> $options
-       *   The theme options.
-       */
-      public function __construct(array $options = []) {
-        parent::__construct(40, $options);
-      }
-
-      protected function optionSchema(): array {
-        return ['accent' => ['cool', 'warm', 'mono']] + parent::optionSchema();
-      }
-
-      public function accent(): string {
-        return $this->option('accent', 'cool');
-      }
-
-    };
+  protected function accentTheme(array $options): AccentOptionTheme {
+    return new AccentOptionTheme($options);
   }
 
 }
