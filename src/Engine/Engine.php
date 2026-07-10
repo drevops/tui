@@ -9,7 +9,6 @@ use DrevOps\Tui\Answers\Provenance;
 use DrevOps\Tui\Condition\ConditionInterface;
 use DrevOps\Tui\Config\Config;
 use DrevOps\Tui\Config\Field;
-use DrevOps\Tui\Config\NumberBounds;
 use DrevOps\Tui\Derive\Deriver;
 use DrevOps\Tui\Discovery\DiscoverInterface;
 use DrevOps\Tui\Handler\Context;
@@ -189,8 +188,9 @@ class Engine {
    *   An error message, or NULL when the value is valid.
    */
   protected function validateValue(Field $field, mixed $value): ?string {
-    if ($field->bounds instanceof NumberBounds && is_int($value) && !$field->bounds->contains($value)) {
-      return sprintf('must be %s.', $field->bounds->describe());
+    $violation = $field->bounds?->violation($value);
+    if ($violation !== NULL) {
+      return sprintf('must be %s.', $violation);
     }
 
     $validator = $field->validate ?? $this->handlers->validator($field->id);

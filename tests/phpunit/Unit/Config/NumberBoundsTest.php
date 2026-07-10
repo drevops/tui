@@ -18,7 +18,7 @@ use PHPUnit\Framework\TestCase;
 final class NumberBoundsTest extends TestCase {
 
   #[DataProvider('dataProviderContains')]
-  public function testContains(?int $min, ?int $max, int $value, bool $expected): void {
+  public function testContains(?int $min, ?int $max, int|float $value, bool $expected): void {
     $this->assertSame($expected, (new NumberBounds($min, $max))->contains($value));
   }
 
@@ -34,6 +34,27 @@ final class NumberBoundsTest extends TestCase {
       'above open min' => [NULL, 10, 11, FALSE],
       'below open min' => [NULL, 10, -5, TRUE],
       'unbounded' => [NULL, NULL, 999, TRUE],
+      'float within' => [1, 10, 5.5, TRUE],
+      'float above' => [1, 10, 10.5, FALSE],
+      'float below' => [1, 10, 0.5, FALSE],
+    ];
+  }
+
+  #[DataProvider('dataProviderViolation')]
+  public function testViolation(?int $min, ?int $max, mixed $value, ?string $expected): void {
+    $this->assertSame($expected, (new NumberBounds($min, $max))->violation($value));
+  }
+
+  public static function dataProviderViolation(): array {
+    return [
+      'int in range' => [1, 10, 5, NULL],
+      'int out of range' => [1, 10, 50, 'between 1 and 10'],
+      'float in range' => [1, 10, 5.5, NULL],
+      'float out of range' => [1, 10, 50.5, 'between 1 and 10'],
+      'min only violated' => [5, NULL, 1, 'at least 5'],
+      'max only violated' => [NULL, 5, 9, 'at most 5'],
+      'non-numeric string ignored' => [1, 10, 'oops', NULL],
+      'non-numeric bool ignored' => [1, 10, TRUE, NULL],
     ];
   }
 

@@ -88,8 +88,9 @@ class NumberWidget extends TextWidget {
    */
   #[\Override]
   protected function accept(mixed $value): bool {
-    if ($this->bounds instanceof NumberBounds && !$this->bounds->contains((int) $value)) {
-      $this->error = sprintf('Enter a number %s.', $this->bounds->describe());
+    $violation = $this->bounds?->violation($value);
+    if ($violation !== NULL) {
+      $this->error = sprintf('Enter a number %s.', $violation);
 
       return FALSE;
     }

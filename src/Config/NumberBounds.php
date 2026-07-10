@@ -36,18 +36,39 @@ final readonly class NumberBounds {
   /**
    * Whether a value is within the bounds.
    *
-   * @param int $value
+   * @param int|float $value
    *   The value.
    *
    * @return bool
    *   TRUE when the value is within both declared bounds.
    */
-  public function contains(int $value): bool {
+  public function contains(int|float $value): bool {
     if ($this->min !== NULL && $value < $this->min) {
       return FALSE;
     }
 
     return !($this->max !== NULL && $value > $this->max);
+  }
+
+  /**
+   * The range phrase for a value that violates the bounds, else NULL.
+   *
+   * The shared primitive behind every enforcement surface: it narrows the value
+   * to a number (a non-numeric value is not this object's concern and passes),
+   * then returns the human range phrase when the value falls outside the range.
+   *
+   * @param mixed $value
+   *   The value to test.
+   *
+   * @return string|null
+   *   The range phrase (e.g. "between 1 and 10") when out of range, else NULL.
+   */
+  public function violation(mixed $value): ?string {
+    if (!is_int($value) && !is_float($value)) {
+      return NULL;
+    }
+
+    return $this->contains($value) ? NULL : $this->describe();
   }
 
   /**

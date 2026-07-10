@@ -7,7 +7,6 @@ namespace DrevOps\Tui\Schema;
 use DrevOps\Tui\Config\Config;
 use DrevOps\Tui\Config\Field;
 use DrevOps\Tui\Config\FieldType;
-use DrevOps\Tui\Config\NumberBounds;
 use DrevOps\Tui\Config\Option;
 
 /**
@@ -110,11 +109,9 @@ class SchemaValidator {
    *   An error, or NULL when in range (or when the field declares no bounds).
    */
   protected function checkBounds(Field $field, mixed $value): ?string {
-    if (!$field->bounds instanceof NumberBounds || !is_int($value) || $field->bounds->contains($value)) {
-      return NULL;
-    }
+    $violation = $field->bounds?->violation($value);
 
-    return sprintf('Question "%s" must be %s.', $field->id, $field->bounds->describe());
+    return $violation === NULL ? NULL : sprintf('Question "%s" must be %s.', $field->id, $violation);
   }
 
   /**
