@@ -162,7 +162,16 @@ final readonly class Field {
       return NULL;
     }
 
-    $items = $this->type->isMulti() ? (is_array($value) ? $value : []) : [$value];
+    if ($this->type->isMulti()) {
+      if (!is_array($value)) {
+        return 'value must be a list';
+      }
+
+      $items = $value;
+    }
+    else {
+      $items = [$value];
+    }
 
     foreach ($items as $item) {
       $error = $this->scalarOptionError(is_scalar($item) ? (string) $item : '');

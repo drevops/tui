@@ -114,6 +114,16 @@ final class EngineTest extends TestCase {
     $this->assertSame(['x'], $answers['tags']);
   }
 
+  public function testCollectRejectsNonArrayMultiValue(): void {
+    $engine = $this->engine(function (PanelBuilder $p): void {
+      $p->multiselect('mods')->option('a')->option('b');
+    });
+
+    $this->expectException(EngineException::class);
+    $this->expectExceptionMessage('Invalid value for field "mods": value must be a list');
+    $engine->collect(['mods' => 'notalist'], new Context('project'));
+  }
+
   /**
    * Add a shared standard/minimal/disabled option set to a choice builder.
    *

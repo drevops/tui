@@ -133,7 +133,7 @@ final class OptionTest extends TestCase {
     yield 'no options' => [FieldType::Select, [], 'bogus', NULL];
     yield 'multi valid' => [FieldType::MultiSelect, $options, ['standard', 'minimal'], NULL];
     yield 'multi disabled item' => [FieldType::MultiSelect, $options, ['standard', 'demo'], 'option "demo" is disabled: unavailable'];
-    yield 'multi non-array' => [FieldType::MultiSelect, $options, 'standard', NULL];
+    yield 'multi non-array' => [FieldType::MultiSelect, $options, 'standard', 'value must be a list'];
   }
 
   /**
