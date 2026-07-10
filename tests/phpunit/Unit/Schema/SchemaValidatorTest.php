@@ -132,7 +132,7 @@ final class SchemaValidatorTest extends TestCase {
     $validator = new SchemaValidator($this->config());
 
     $this->assertSame([], $validator->validate(['name' => 'Acme', 'visibility' => 'private']));
-    $this->assertContains('Question "visibility" must be one of: public, private.', $validator->validate(['name' => 'Acme', 'visibility' => 'bogus']));
+    $this->assertContains('Question "visibility": value "bogus" is not one of: public, private.', $validator->validate(['name' => 'Acme', 'visibility' => 'bogus']));
   }
 
   public function testNumericStringOptionMembership(): void {
@@ -143,7 +143,7 @@ final class SchemaValidatorTest extends TestCase {
 
     // A numeric-string value stays valid: values are compared as strings.
     $this->assertSame([], $validator->validate(['flag' => '1']));
-    $this->assertContains('Question "flag" must be one of: 0, 1.', $validator->validate(['flag' => '2']));
+    $this->assertContains('Question "flag": value "2" is not one of: 0, 1.', $validator->validate(['flag' => '2']));
   }
 
   public function testFilePickerAcceptsString(): void {
