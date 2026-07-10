@@ -833,8 +833,8 @@ class DefaultTheme implements ThemeInterface {
     if (!$name instanceof KeyName) {
       $char = (string) $key->char;
 
-      // Render a control character (e.g. Ctrl-E) in caret notation.
-      return $char !== '' && ord($char) < 0x20 ? '^' . chr(ord($char) + 0x40) : $char;
+      // Render a control character (e.g. Ctrl-E) as "ctrl-e".
+      return $char !== '' && ord($char) < 0x20 ? 'ctrl-' . strtolower(chr(ord($char) + 0x40)) : $char;
     }
 
     return match ($name) {

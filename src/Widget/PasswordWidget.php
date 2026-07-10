@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Widget;
 
+use DrevOps\Tui\Config\FieldType;
+use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Key;
-use DrevOps\Tui\Input\KeyName;
+use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Theme\ThemeInterface;
 
 /**
@@ -52,14 +54,24 @@ class PasswordWidget extends TextWidget {
    * {@inheritdoc}
    */
   #[\Override]
+  protected function keyScope(): Scope {
+    return Scope::field(FieldType::Password);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
   public function handle(Key $key): void {
-    if ($this->revealable && $key->is(KeyName::Tab)) {
+    $keys = $this->keys();
+
+    if ($this->revealable && $keys->matches($key, Action::Reveal)) {
       $this->display = $this->display->next();
 
       return;
     }
 
-    if ($this->confirm && $key->is(KeyName::Enter)) {
+    if ($this->confirm && $keys->matches($key, Action::Accept)) {
       $this->submit();
 
       return;
@@ -118,7 +130,11 @@ class PasswordWidget extends TextWidget {
     }
 
     if ($this->revealable) {
-      $rows[] = $theme->footer($theme->enter() . ' accept ' . $theme->dot() . ' tab reveal ' . $theme->dot() . ' esc cancel');
+      $rows[] = $theme->footer(implode(' ' . $theme->dot() . ' ', array_filter([
+        $theme->keysHint($this->keys(), 'accept', Action::Accept),
+        $theme->keysHint($this->keys(), 'reveal', Action::Reveal),
+        $theme->keysHint($this->keys(), 'cancel', Action::Cancel),
+      ])));
     }
 
     if ($this->error !== NULL) {

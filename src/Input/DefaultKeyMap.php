@@ -55,6 +55,8 @@ class DefaultKeyMap {
       new Binding(Scope::field(FieldType::Confirm), Action::Yes, 'y', 'Y'),
       new Binding(Scope::field(FieldType::Confirm), Action::No, 'n', 'N'),
 
+      new Binding(Scope::field(FieldType::Toggle), Action::Toggle, KeyName::Left, KeyName::Right, KeyName::Space, KeyName::Up, KeyName::Down),
+
       // The password reveal toggle cycles the display mode on Tab.
       new Binding(Scope::field(FieldType::Password), Action::Reveal, KeyName::Tab),
 

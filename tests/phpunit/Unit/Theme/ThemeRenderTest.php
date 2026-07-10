@@ -217,7 +217,7 @@ final class ThemeRenderTest extends TestCase {
     yield 'wheel up' => [Key::named(KeyName::MouseWheelUp), '↑', '^'];
     yield 'wheel down' => [Key::named(KeyName::MouseWheelDown), '↓', 'v'];
     yield 'character' => [Key::char('j'), 'j', 'j'];
-    yield 'control character in caret notation' => [Key::char("\x05"), '^E', '^E'];
+    yield 'control character spelled out' => [Key::char("\x05"), 'ctrl-e', 'ctrl-e'];
   }
 
   public function testKeysHintDropsUnboundActions(): void {

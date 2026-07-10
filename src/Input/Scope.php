@@ -36,6 +36,7 @@ final readonly class Scope {
     FieldType::Suggest,
     FieldType::MultiSelect,
     FieldType::MultiSearch,
+    FieldType::Toggle,
   ];
 
   /**

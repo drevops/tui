@@ -309,7 +309,7 @@ final class KeyMap {
 
     $char = (string) $key->char;
 
-    return $this->isControl($char) ? '^' . chr(ord($char) + 0x40) : $char;
+    return $this->isControl($char) ? 'ctrl-' . strtolower(chr(ord($char) + 0x40)) : $char;
   }
 
 }

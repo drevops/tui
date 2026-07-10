@@ -66,6 +66,9 @@ final class KeyMapTest extends TestCase {
     yield 'confirm y is yes' => [Scope::field(FieldType::Confirm), Key::char('y'), Action::Yes, TRUE];
     yield 'confirm uppercase y is yes' => [Scope::field(FieldType::Confirm), Key::char('Y'), Action::Yes, TRUE];
     yield 'confirm enter accepts' => [Scope::field(FieldType::Confirm), Key::named(KeyName::Enter), Action::Accept, TRUE];
+    // Toggle switch.
+    yield 'toggle space flips' => [Scope::field(FieldType::Toggle), Key::named(KeyName::Space), Action::Toggle, TRUE];
+    yield 'toggle enter accepts' => [Scope::field(FieldType::Toggle), Key::named(KeyName::Enter), Action::Accept, TRUE];
     // Multi-select.
     yield 'multiselect space toggles' => [Scope::field(FieldType::MultiSelect), Key::named(KeyName::Space), Action::Toggle, TRUE];
     yield 'multiselect right selects all' => [Scope::field(FieldType::MultiSelect), Key::named(KeyName::Right), Action::SelectAll, TRUE];
