@@ -65,7 +65,7 @@ final class TextareaWidgetTest extends TestCase {
   }
 
   public function testViewShowsHintAndError(): void {
-    $widget = new TextareaWidget('x', FALSE, fn(mixed $value): string => 'Nope.');
+    $widget = new TextareaWidget('x', fn(mixed $value): string => 'Nope.');
 
     $view = $widget->view(new DefaultTheme());
     $this->assertStringContainsString('tab accept', $view);
@@ -90,7 +90,7 @@ final class TextareaWidgetTest extends TestCase {
   }
 
   public function testCtrlERequestsExternalEditWhenEnabled(): void {
-    $widget = new TextareaWidget('draft', TRUE);
+    $widget = new TextareaWidget('draft', externalEdit: TRUE);
 
     $widget->handle(Key::char("\x05"));
 
@@ -111,7 +111,7 @@ final class TextareaWidgetTest extends TestCase {
   }
 
   public function testApplyExternalEditReplacesBufferAndAccepts(): void {
-    $widget = new TextareaWidget('old', TRUE);
+    $widget = new TextareaWidget('old', externalEdit: TRUE);
     $widget->handle(Key::char("\x05"));
 
     $widget->applyExternalEdit("new\ntext");
@@ -122,7 +122,7 @@ final class TextareaWidgetTest extends TestCase {
   }
 
   public function testApplyExternalEditNullKeepsBufferAndStaysEditing(): void {
-    $widget = new TextareaWidget('keep', TRUE);
+    $widget = new TextareaWidget('keep', externalEdit: TRUE);
     $widget->handle(Key::char("\x05"));
 
     $widget->applyExternalEdit(NULL);
@@ -133,7 +133,7 @@ final class TextareaWidgetTest extends TestCase {
   }
 
   public function testApplyExternalEditRunsValidator(): void {
-    $widget = new TextareaWidget('x', TRUE, fn(mixed $value): string => 'Nope.');
+    $widget = new TextareaWidget('x', externalEdit: TRUE, validate: fn(mixed $value): string => 'Nope.');
 
     $widget->applyExternalEdit('bad');
 
@@ -142,7 +142,7 @@ final class TextareaWidgetTest extends TestCase {
   }
 
   public function testViewShowsEditorHintOnlyWhenEnabled(): void {
-    $this->assertStringContainsString('ctrl-e editor', (new TextareaWidget('x', TRUE))->view(new DefaultTheme()));
+    $this->assertStringContainsString('ctrl-e editor', (new TextareaWidget('x', externalEdit: TRUE))->view(new DefaultTheme()));
     $this->assertStringNotContainsString('ctrl-e editor', (new TextareaWidget('x'))->view(new DefaultTheme()));
   }
 

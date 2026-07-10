@@ -29,7 +29,7 @@ $theme = new DefaultTheme(76, ['color' => !isset($opts['no-ansi']), 'unicode' =>
 
 // The handoff is offered only when an editor is actually available.
 $external_editor = new ExternalEditor();
-$widget = new TextareaWidget("Redis for cache\nSolr for search", $external_editor->isAvailable());
+$widget = new TextareaWidget("Redis for cache\nSolr for search", externalEdit: $external_editor->isAvailable());
 
 $terminal = new Terminal();
 $parser = new KeyParser();
