@@ -11,6 +11,7 @@ use DrevOps\Tui\Condition\Condition;
 use DrevOps\Tui\Config\ConfigException;
 use DrevOps\Tui\Config\Field;
 use DrevOps\Tui\Config\FieldType;
+use DrevOps\Tui\Config\FilePickerMode;
 use DrevOps\Tui\Config\Fixup;
 use DrevOps\Tui\Config\NumberBounds;
 use DrevOps\Tui\Derive\Derive;
@@ -145,6 +146,8 @@ final class FormTest extends TestCase {
         $panel->search('se')->option('a');
         $panel->multisearch('ms')->option('a');
         $panel->toggle('tg')->option('on', 'On')->option('off', 'Off');
+        $panel->filePicker('fp');
+        $panel->multiFilePicker('mfp');
         $panel->pause('pa');
       })
       ->build();
@@ -165,6 +168,14 @@ final class FormTest extends TestCase {
     $this->assertSame([], $config->field('ms')?->default);
     // A toggle defaults to its first option, since it always holds a value.
     $this->assertSame('on', $config->field('tg')?->default);
+    // A single picker defaults to an empty path; a multiple picker to no paths.
+    $this->assertSame('', $config->field('fp')?->default);
+    $this->assertSame([], $config->field('mfp')?->default);
+    // The picker options are opt-in, so they default off.
+    $this->assertSame(FilePickerMode::Any, $config->field('fp')->pickerMode);
+    $this->assertSame('', $config->field('fp')->pickerStart);
+    $this->assertSame([], $config->field('fp')->pickerExtensions);
+    $this->assertFalse($config->field('fp')->pickerShowHidden);
     // A pause defaults to acknowledged so headless runs never block on it.
     $this->assertTrue($config->field('pa')?->default);
 
@@ -245,6 +256,28 @@ final class FormTest extends TestCase {
     Form::create('T')
       ->panel('p', 'P', fn(PanelBuilder $p): FieldBuilder => $p->number('n')->step(0))
       ->build();
+  }
+
+  public function testFilePickerOptions(): void {
+    $config = Form::create('T')
+      ->panel('p', 'P', function (PanelBuilder $panel): void {
+        $panel->filePicker('config', 'Config')->start('/opt')->filesOnly()->extensions(['yml', 'yaml'])->showHidden();
+        $panel->multiFilePicker('assets', 'Assets')->directoriesOnly();
+      })
+      ->build();
+
+    $config_field = $config->field('config');
+    $this->assertInstanceOf(Field::class, $config_field);
+    $this->assertSame(FieldType::FilePicker, $config_field->type);
+    $this->assertSame(FilePickerMode::File, $config_field->pickerMode);
+    $this->assertSame('/opt', $config_field->pickerStart);
+    $this->assertSame(['yml', 'yaml'], $config_field->pickerExtensions);
+    $this->assertTrue($config_field->pickerShowHidden);
+
+    $assets = $config->field('assets');
+    $this->assertInstanceOf(Field::class, $assets);
+    $this->assertSame(FieldType::MultiFilePicker, $assets->type);
+    $this->assertSame(FilePickerMode::Directory, $assets->pickerMode);
   }
 
   public function testDuplicateFieldIdThrows(): void {

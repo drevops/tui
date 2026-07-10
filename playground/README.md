@@ -52,7 +52,9 @@ composer install
   Per-widget files: `widget-text.php`, `widget-number.php`,
   `widget-textarea.php`, `widget-password.php`, `widget-select.php`,
   `widget-multiselect.php`, `widget-suggest.php`, `widget-search.php`,
-  `widget-multisearch.php`, `widget-confirm.php`, `widget-pause.php`.
+  `widget-multisearch.php`, `widget-filepicker.php`,
+  `widget-multifilepicker.php`, `widget-confirm.php`, `widget-toggle.php`,
+  `widget-pause.php`.
 
 - **[`4-nested-panels/`](4-nested-panels)** - a hub with drill-in sub-panels
   (nested to any depth), per-option descriptions, custom button labels

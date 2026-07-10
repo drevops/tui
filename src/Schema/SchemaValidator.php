@@ -128,7 +128,7 @@ class SchemaValidator {
   protected function isType(FieldType $type, mixed $value): bool {
     return match ($type) {
       FieldType::Confirm, FieldType::Pause => is_bool($value),
-      FieldType::MultiSelect, FieldType::MultiSearch => is_array($value),
+      FieldType::MultiSelect, FieldType::MultiSearch, FieldType::MultiFilePicker => is_array($value),
       FieldType::Number => is_int($value) || is_float($value),
       default => is_string($value),
     };
@@ -146,7 +146,7 @@ class SchemaValidator {
   protected function typeName(FieldType $type): string {
     return match ($type) {
       FieldType::Confirm, FieldType::Pause => 'a boolean',
-      FieldType::MultiSelect, FieldType::MultiSearch => 'a list',
+      FieldType::MultiSelect, FieldType::MultiSearch, FieldType::MultiFilePicker => 'a list',
       FieldType::Number => 'a number',
       default => 'a string',
     };

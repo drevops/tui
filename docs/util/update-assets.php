@@ -518,6 +518,46 @@ EXPECT,
     }
   }
 
+  // The file pickers browse a fixture tree, so they stand apart from the
+  // single-screen widget montage; each is still shown in all display modes.
+  $picker_rows = ['filepicker' => 8, 'multifilepicker' => 10];
+  $picker_interactions = [
+    'filepicker' => <<<'EXPECT'
+# File picker: descend into the config directory, select the first YAML file.
+expect "File picker widget" {
+    pause 1000
+    safe_send "\r"
+    pause 1000
+    wait_and_enter
+}
+EXPECT,
+    'multifilepicker' => <<<'EXPECT'
+# Multi file picker: toggle two entries, accept.
+expect "Multi file picker widget" {
+    pause 1000
+    toggle_space
+    arrow_down
+    toggle_space
+    wait_and_enter
+}
+EXPECT,
+  ];
+
+  foreach ($picker_interactions as $widget => $interact) {
+    preg_match('/expect "([^"]+)"/', $interact, $matches);
+    $gate = $matches[1] ?? '';
+
+    foreach ($flag_variants as $suffix => $flags) {
+      $jobs['widget-' . $widget . $suffix] = [
+        'command' => 'php ' . $project_dir . '/playground/3-widgets/widget-' . $widget . '.php' . $flags,
+        'interact' => $interact,
+        'rows' => $picker_rows[$widget],
+        'cols' => 60,
+        'at_needle' => $gate,
+      ];
+    }
+  }
+
   return $jobs;
 }
 
