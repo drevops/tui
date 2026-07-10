@@ -12,6 +12,7 @@ use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyMapManager;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Render\Ansi;
+use DrevOps\Tui\Tests\Traits\MixedOptionsTrait;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\AbstractWidget;
 use DrevOps\Tui\Widget\ChoiceList;
@@ -29,6 +30,8 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(ChoiceList::class)]
 #[Group('widget')]
 final class SelectWidgetTest extends TestCase {
+
+  use MixedOptionsTrait;
 
   public function testNavigatesAndSelects(): void {
     $widget = new SelectWidget(['a' => 'Apple', 'b' => 'Banana', 'c' => 'Cherry'], 'a');
@@ -132,23 +135,6 @@ final class SelectWidgetTest extends TestCase {
 
     $this->assertFalse($widget->isComplete());
     $this->assertSame('', $widget->value());
-  }
-
-  /**
-   * A list mixing selectable options with a heading, separator and disabled.
-   *
-   * @return list<\DrevOps\Tui\Config\Option>
-   *   The option rows.
-   */
-  protected function mixedOptions(): array {
-    return [
-      new Option('a', 'Apple'),
-      new Option('', 'Fruits', '', OptionKind::Heading),
-      new Option('b', 'Banana'),
-      new Option('', '', '', OptionKind::Separator),
-      new Option('c', 'Cherry', '', OptionKind::Option, TRUE, 'out of stock'),
-      new Option('d', 'Date'),
-    ];
   }
 
 }

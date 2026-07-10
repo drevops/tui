@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Tests\Unit\Widget;
 
-use DrevOps\Tui\Config\Option;
-use DrevOps\Tui\Config\OptionKind;
 use DrevOps\Tui\Input\ArrayKeyStream;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Render\Ansi;
+use DrevOps\Tui\Tests\Traits\MixedOptionsTrait;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\AbstractWidget;
 use DrevOps\Tui\Widget\ChoiceList;
@@ -27,6 +26,8 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(ChoiceList::class)]
 #[Group('widget')]
 final class MultiSelectWidgetTest extends TestCase {
+
+  use MixedOptionsTrait;
 
   public function testToggleAndAccept(): void {
     $widget = new MultiSelectWidget(['a' => 'Apple', 'b' => 'Banana', 'c' => 'Cherry']);
@@ -215,23 +216,6 @@ final class MultiSelectWidgetTest extends TestCase {
     $this->assertStringContainsString('Fruits', $view);
     $this->assertStringContainsString('Cherry (out of stock)', $view);
     $this->assertStringContainsString('──', $view);
-  }
-
-  /**
-   * A list mixing selectable options with a heading, separator and disabled.
-   *
-   * @return list<\DrevOps\Tui\Config\Option>
-   *   The option rows.
-   */
-  protected function mixedOptions(): array {
-    return [
-      new Option('a', 'Apple'),
-      new Option('', 'Fruits', '', OptionKind::Heading),
-      new Option('b', 'Banana'),
-      new Option('', '', '', OptionKind::Separator),
-      new Option('c', 'Cherry', '', OptionKind::Option, TRUE, 'out of stock'),
-      new Option('d', 'Date'),
-    ];
   }
 
 }
