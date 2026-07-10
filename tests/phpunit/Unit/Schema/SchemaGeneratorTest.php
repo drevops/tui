@@ -100,11 +100,27 @@ final class SchemaGeneratorTest extends TestCase {
       })
       ->build();
 
-    $schema = (new SchemaGenerator($config))->generate();
+    $expected = [
+      'prompts' => [
+        [
+          'id' => 'profile',
+          'type' => 'select',
+          'label' => 'Profile',
+          'description' => '',
+          'options' => [
+            ['value' => 'standard', 'label' => 'Standard', 'description' => ''],
+          ],
+          'default' => '',
+          'required' => FALSE,
+          'when' => NULL,
+          'derive' => NULL,
+          'discover' => NULL,
+          'depends_on' => [],
+        ],
+      ],
+    ];
 
-    $this->assertSame([
-      ['value' => 'standard', 'label' => 'Standard', 'description' => ''],
-    ], $schema['prompts'][0]['options']);
+    $this->assertSame($expected, (new SchemaGenerator($config))->generate());
   }
 
   public function testDependsOnCollectsNestedFieldRefs(): void {

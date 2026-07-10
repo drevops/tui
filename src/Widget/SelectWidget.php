@@ -16,7 +16,7 @@ use DrevOps\Tui\Theme\ThemeInterface;
  */
 class SelectWidget extends AbstractWidget {
 
-  use ChoiceList;
+  use ChoiceListTrait;
 
   /**
    * The highlighted option index.

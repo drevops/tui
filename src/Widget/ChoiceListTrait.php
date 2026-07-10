@@ -17,7 +17,7 @@ use DrevOps\Tui\Theme\ThemeInterface;
  *
  * @package DrevOps\Tui\Widget
  */
-trait ChoiceList {
+trait ChoiceListTrait {
 
   /**
    * The option rows in display order.

@@ -78,7 +78,7 @@ final class EngineTest extends TestCase {
     $this->assertSame('acme', $answers['machine_name']);
   }
 
-  #[DataProvider('dataProviderRejectsNonSelectableOption')]
+  #[DataProvider('dataProviderCollectRejectsNonSelectableOption')]
   public function testCollectRejectsNonSelectableOption(\Closure $build, mixed $value, string $message): void {
     $engine = $this->engine($build);
 
@@ -87,17 +87,15 @@ final class EngineTest extends TestCase {
     $engine->collect(['choice' => $value], new Context('project'));
   }
 
-  public static function dataProviderRejectsNonSelectableOption(): array {
-    return [
-      'select disabled' => [static fn(PanelBuilder $p): FieldBuilder => self::choiceOptions($p->select('choice')), 'demo', 'Invalid value for field "choice": option "demo" is disabled: unavailable'],
-      'select unknown' => [static fn(PanelBuilder $p): FieldBuilder => self::choiceOptions($p->select('choice')), 'bogus', 'Invalid value for field "choice": value "bogus" is not one of: standard, minimal'],
-      'search disabled' => [static fn(PanelBuilder $p): FieldBuilder => self::choiceOptions($p->search('choice')), 'demo', 'Invalid value for field "choice": option "demo" is disabled: unavailable'],
-      'search unknown' => [static fn(PanelBuilder $p): FieldBuilder => self::choiceOptions($p->search('choice')), 'bogus', 'Invalid value for field "choice": value "bogus" is not one of: standard, minimal'],
-      'multiselect disabled' => [static fn(PanelBuilder $p): FieldBuilder => self::choiceOptions($p->multiselect('choice')), ['demo'], 'Invalid value for field "choice": option "demo" is disabled: unavailable'],
-      'multiselect unknown' => [static fn(PanelBuilder $p): FieldBuilder => self::choiceOptions($p->multiselect('choice')), ['bogus'], 'Invalid value for field "choice": value "bogus" is not one of: standard, minimal'],
-      'multisearch disabled' => [static fn(PanelBuilder $p): FieldBuilder => self::choiceOptions($p->multisearch('choice')), ['demo'], 'Invalid value for field "choice": option "demo" is disabled: unavailable'],
-      'multisearch unknown' => [static fn(PanelBuilder $p): FieldBuilder => self::choiceOptions($p->multisearch('choice')), ['bogus'], 'Invalid value for field "choice": value "bogus" is not one of: standard, minimal'],
-    ];
+  public static function dataProviderCollectRejectsNonSelectableOption(): \Iterator {
+    yield 'select disabled' => [static fn(PanelBuilder $p): FieldBuilder => self::choiceOptions($p->select('choice')), 'demo', 'Invalid value for field "choice": option "demo" is disabled: unavailable'];
+    yield 'select unknown' => [static fn(PanelBuilder $p): FieldBuilder => self::choiceOptions($p->select('choice')), 'bogus', 'Invalid value for field "choice": value "bogus" is not one of: standard, minimal'];
+    yield 'search disabled' => [static fn(PanelBuilder $p): FieldBuilder => self::choiceOptions($p->search('choice')), 'demo', 'Invalid value for field "choice": option "demo" is disabled: unavailable'];
+    yield 'search unknown' => [static fn(PanelBuilder $p): FieldBuilder => self::choiceOptions($p->search('choice')), 'bogus', 'Invalid value for field "choice": value "bogus" is not one of: standard, minimal'];
+    yield 'multiselect disabled' => [static fn(PanelBuilder $p): FieldBuilder => self::choiceOptions($p->multiselect('choice')), ['demo'], 'Invalid value for field "choice": option "demo" is disabled: unavailable'];
+    yield 'multiselect unknown' => [static fn(PanelBuilder $p): FieldBuilder => self::choiceOptions($p->multiselect('choice')), ['bogus'], 'Invalid value for field "choice": value "bogus" is not one of: standard, minimal'];
+    yield 'multisearch disabled' => [static fn(PanelBuilder $p): FieldBuilder => self::choiceOptions($p->multisearch('choice')), ['demo'], 'Invalid value for field "choice": option "demo" is disabled: unavailable'];
+    yield 'multisearch unknown' => [static fn(PanelBuilder $p): FieldBuilder => self::choiceOptions($p->multisearch('choice')), ['bogus'], 'Invalid value for field "choice": value "bogus" is not one of: standard, minimal'];
   }
 
   public function testCollectAcceptsSelectableOptions(): void {

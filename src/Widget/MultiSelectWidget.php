@@ -22,7 +22,7 @@ use DrevOps\Tui\Theme\ThemeInterface;
  */
 class MultiSelectWidget extends AbstractWidget {
 
-  use ChoiceList;
+  use ChoiceListTrait;
 
   /**
    * The selected values as a set (value => TRUE).

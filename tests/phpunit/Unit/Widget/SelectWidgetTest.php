@@ -15,7 +15,7 @@ use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Tests\Traits\MixedOptionsTrait;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\AbstractWidget;
-use DrevOps\Tui\Widget\ChoiceList;
+use DrevOps\Tui\Widget\ChoiceListTrait;
 use DrevOps\Tui\Widget\SelectWidget;
 use DrevOps\Tui\Widget\WidgetRunner;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -27,7 +27,7 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass(SelectWidget::class)]
 #[CoversClass(AbstractWidget::class)]
-#[CoversClass(ChoiceList::class)]
+#[CoversClass(ChoiceListTrait::class)]
 #[Group('widget')]
 final class SelectWidgetTest extends TestCase {
 

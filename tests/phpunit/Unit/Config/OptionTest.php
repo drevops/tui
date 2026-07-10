@@ -60,13 +60,11 @@ final class OptionTest extends TestCase {
     $this->assertSame($expected, $option->selectable());
   }
 
-  public static function dataProviderSelectable(): array {
-    return [
-      'plain option' => [new Option('a', 'A'), TRUE],
-      'disabled option' => [new Option('a', 'A', '', OptionKind::Option, TRUE), FALSE],
-      'separator' => [new Option('', '', '', OptionKind::Separator), FALSE],
-      'heading' => [new Option('', 'Group', '', OptionKind::Heading), FALSE],
-    ];
+  public static function dataProviderSelectable(): \Iterator {
+    yield 'plain option' => [new Option('a', 'A'), TRUE];
+    yield 'disabled option' => [new Option('a', 'A', '', OptionKind::Option, TRUE), FALSE];
+    yield 'separator' => [new Option('', '', '', OptionKind::Separator), FALSE];
+    yield 'heading' => [new Option('', 'Group', '', OptionKind::Heading), FALSE];
   }
 
   #[DataProvider('dataProviderConstrainsToOptions')]
@@ -74,16 +72,14 @@ final class OptionTest extends TestCase {
     $this->assertSame($expected, $type->constrainsToOptions());
   }
 
-  public static function dataProviderConstrainsToOptions(): array {
-    return [
-      [FieldType::Select, TRUE],
-      [FieldType::Search, TRUE],
-      [FieldType::MultiSelect, TRUE],
-      [FieldType::MultiSearch, TRUE],
-      [FieldType::Suggest, FALSE],
-      [FieldType::Text, FALSE],
-      [FieldType::Confirm, FALSE],
-    ];
+  public static function dataProviderConstrainsToOptions(): \Iterator {
+    yield [FieldType::Select, TRUE];
+    yield [FieldType::Search, TRUE];
+    yield [FieldType::MultiSelect, TRUE];
+    yield [FieldType::MultiSearch, TRUE];
+    yield [FieldType::Suggest, FALSE];
+    yield [FieldType::Text, FALSE];
+    yield [FieldType::Confirm, FALSE];
   }
 
   #[DataProvider('dataProviderIsMulti')]
@@ -91,14 +87,12 @@ final class OptionTest extends TestCase {
     $this->assertSame($expected, $type->isMulti());
   }
 
-  public static function dataProviderIsMulti(): array {
-    return [
-      [FieldType::MultiSelect, TRUE],
-      [FieldType::MultiSearch, TRUE],
-      [FieldType::Select, FALSE],
-      [FieldType::Search, FALSE],
-      [FieldType::Text, FALSE],
-    ];
+  public static function dataProviderIsMulti(): \Iterator {
+    yield [FieldType::MultiSelect, TRUE];
+    yield [FieldType::MultiSearch, TRUE];
+    yield [FieldType::Select, FALSE];
+    yield [FieldType::Search, FALSE];
+    yield [FieldType::Text, FALSE];
   }
 
   public function testFieldOptionScan(): void {
@@ -108,8 +102,8 @@ final class OptionTest extends TestCase {
     // A disabled option is still found by value.
     $this->assertTrue($field->option('demo')?->disabled);
     // Missing values and structural rows are not returned.
-    $this->assertNull($field->option('missing'));
-    $this->assertNull($field->option(''));
+    $this->assertNotInstanceOf(Option::class, $field->option('missing'));
+    $this->assertNotInstanceOf(Option::class, $field->option(''));
   }
 
   public function testSelectableValues(): void {
@@ -123,7 +117,7 @@ final class OptionTest extends TestCase {
     $this->assertSame($expected, $field->optionError($value));
   }
 
-  public static function dataProviderOptionError(): array {
+  public static function dataProviderOptionError(): \Iterator {
     $options = [
       new Option('standard', 'Standard'),
       new Option('minimal', 'Minimal'),
@@ -131,18 +125,15 @@ final class OptionTest extends TestCase {
       new Option('legacy', 'Legacy', '', OptionKind::Option, TRUE),
       new Option('', '', '', OptionKind::Separator),
     ];
-
-    return [
-      'selectable value' => [FieldType::Select, $options, 'standard', NULL],
-      'disabled with reason' => [FieldType::Select, $options, 'demo', 'option "demo" is disabled: unavailable'],
-      'disabled without reason' => [FieldType::Select, $options, 'legacy', 'option "legacy" is disabled'],
-      'unknown value' => [FieldType::Select, $options, 'bogus', 'value "bogus" is not one of: standard, minimal'],
-      'unconstrained type' => [FieldType::Suggest, $options, 'bogus', NULL],
-      'no options' => [FieldType::Select, [], 'bogus', NULL],
-      'multi valid' => [FieldType::MultiSelect, $options, ['standard', 'minimal'], NULL],
-      'multi disabled item' => [FieldType::MultiSelect, $options, ['standard', 'demo'], 'option "demo" is disabled: unavailable'],
-      'multi non-array' => [FieldType::MultiSelect, $options, 'standard', NULL],
-    ];
+    yield 'selectable value' => [FieldType::Select, $options, 'standard', NULL];
+    yield 'disabled with reason' => [FieldType::Select, $options, 'demo', 'option "demo" is disabled: unavailable'];
+    yield 'disabled without reason' => [FieldType::Select, $options, 'legacy', 'option "legacy" is disabled'];
+    yield 'unknown value' => [FieldType::Select, $options, 'bogus', 'value "bogus" is not one of: standard, minimal'];
+    yield 'unconstrained type' => [FieldType::Suggest, $options, 'bogus', NULL];
+    yield 'no options' => [FieldType::Select, [], 'bogus', NULL];
+    yield 'multi valid' => [FieldType::MultiSelect, $options, ['standard', 'minimal'], NULL];
+    yield 'multi disabled item' => [FieldType::MultiSelect, $options, ['standard', 'demo'], 'option "demo" is disabled: unavailable'];
+    yield 'multi non-array' => [FieldType::MultiSelect, $options, 'standard', NULL];
   }
 
   /**

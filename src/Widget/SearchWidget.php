@@ -17,7 +17,7 @@ use DrevOps\Tui\Theme\ThemeInterface;
  */
 class SearchWidget extends AbstractWidget {
 
-  use ChoiceList;
+  use ChoiceListTrait;
 
   /**
    * The current type-to-filter text.

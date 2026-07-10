@@ -10,7 +10,7 @@ use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Tests\Traits\MixedOptionsTrait;
 use DrevOps\Tui\Theme\DefaultTheme;
-use DrevOps\Tui\Widget\ChoiceList;
+use DrevOps\Tui\Widget\ChoiceListTrait;
 use DrevOps\Tui\Widget\SearchWidget;
 use DrevOps\Tui\Widget\WidgetRunner;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -21,7 +21,7 @@ use PHPUnit\Framework\TestCase;
  * Tests the search widget.
  */
 #[CoversClass(SearchWidget::class)]
-#[CoversClass(ChoiceList::class)]
+#[CoversClass(ChoiceListTrait::class)]
 #[Group('widget')]
 final class SearchWidgetTest extends TestCase {
 
