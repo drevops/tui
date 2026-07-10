@@ -67,7 +67,7 @@ final class DateWidgetTest extends TestCase {
     yield 'end is last of month' => [Key::named(KeyName::End), '2026-07-31'];
   }
 
-  #[DataProvider('dataProviderMonthClamp')]
+  #[DataProvider('dataProviderPageMonthClampsToShortMonth')]
   public function testPageMonthClampsToShortMonth(string $seed, Key $key, string $expected): void {
     $widget = new DateWidget($seed);
 
@@ -76,8 +76,9 @@ final class DateWidgetTest extends TestCase {
     $this->assertSame($expected, $widget->value());
   }
 
-  public static function dataProviderMonthClamp(): \Iterator {
-    // Jan 31 has no counterpart in the shorter month, so the day caps to its end.
+  public static function dataProviderPageMonthClampsToShortMonth(): \Iterator {
+    // Jan 31 has no counterpart in the shorter month, so the day caps to
+    // that month's end.
     yield 'jan 31 to non-leap feb' => ['2026-01-31', Key::named(KeyName::PageDown), '2026-02-28'];
     yield 'jan 31 to leap feb' => ['2024-01-31', Key::named(KeyName::PageDown), '2024-02-29'];
     yield 'mar 31 back to feb' => ['2026-03-31', Key::named(KeyName::PageUp), '2026-02-28'];
@@ -87,7 +88,8 @@ final class DateWidgetTest extends TestCase {
   public function testUnhandledKeysAreNoOps(): void {
     $widget = new DateWidget('2026-07-15');
 
-    // An unmapped character and an unmapped named key both leave the cursor put.
+    // An unmapped character and an unmapped named key both leave the cursor
+    // in place.
     $widget->handle(Key::char('z'));
     $widget->handle(Key::named(KeyName::Tab));
 
@@ -136,7 +138,7 @@ final class DateWidgetTest extends TestCase {
   }
 
   public function testValidatorErrorIsShown(): void {
-    $widget = new DateWidget('2026-07-15', validate: static fn(mixed $value): ?string => 'No dates allowed.');
+    $widget = new DateWidget('2026-07-15', validate: static fn(mixed $value): string => 'No dates allowed.');
 
     $widget->handle(Key::named(KeyName::Enter));
 
@@ -175,10 +177,11 @@ final class DateWidgetTest extends TestCase {
     // A Sunday-first week reorders the weekday header.
     $this->assertMatchesRegularExpression('/Su\s+Mo\s+Tu\s+We\s+Th\s+Fr\s+Sa/', $sunday);
 
-    // July 1, 2026 is a Wednesday. Starting the week on Sunday shifts the month
-    // one column right, so the first row holds only days 1-4 (through Saturday)
-    // and day 5 (Sunday) starts the next row. The default Monday-first week fits
-    // days 1-5 in the first row. The first grid row is the third rendered line.
+    // July 1, 2026 is a Wednesday. Starting the week on Sunday shifts the
+    // month one column right, so the first row holds only days 1-4 (through
+    // Saturday) and day 5 (Sunday) starts the next row. The default
+    // Monday-first week fits days 1-5 in the first row. The first grid row is
+    // the third rendered line.
     $monday = Ansi::strip((new DateWidget('2026-07-15'))->view(new DefaultTheme()));
     $this->assertStringContainsString('5', explode("\n", $monday)[2]);
     $this->assertStringNotContainsString('5', explode("\n", $sunday)[2]);

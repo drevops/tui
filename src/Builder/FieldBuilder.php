@@ -752,7 +752,7 @@ final class FieldBuilder {
     $min = $this->parseBoundDate($this->minDate, 'min');
     $max = $this->parseBoundDate($this->maxDate, 'max');
 
-    if ($min !== NULL && $max !== NULL && $min > $max) {
+    if ($min instanceof \DateTimeImmutable && $max instanceof \DateTimeImmutable && $min > $max) {
       throw new ConfigException(sprintf('Field "%s" declares min date %s after max date %s.', $this->id, $min->format('Y-m-d'), $max->format('Y-m-d')));
     }
 

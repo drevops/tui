@@ -283,8 +283,8 @@ final class FormTest extends TestCase {
     // Monday-first, open range.
     $plain = $config->field('plain');
     $this->assertInstanceOf(DateBounds::class, $plain?->dateBounds);
-    $this->assertNull($plain->dateBounds->min);
-    $this->assertNull($plain->dateBounds->max);
+    $this->assertNotInstanceOf(\DateTimeImmutable::class, $plain->dateBounds->min);
+    $this->assertNotInstanceOf(\DateTimeImmutable::class, $plain->dateBounds->max);
     $this->assertSame(Weekday::Monday, $plain->dateBounds->weekStart);
   }
 
@@ -312,7 +312,7 @@ final class FormTest extends TestCase {
       ->build();
 
     // The date setters are inert on a non-date field: no bounds are attached.
-    $this->assertNull($config->field('t')?->dateBounds);
+    $this->assertNotInstanceOf(DateBounds::class, $config->field('t')?->dateBounds);
   }
 
   public function testNumberMinGreaterThanMaxThrows(): void {

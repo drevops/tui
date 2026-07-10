@@ -164,6 +164,7 @@ class DateWidget extends AbstractWidget {
   /**
    * {@inheritdoc}
    */
+  #[\Override]
   public function rendersHint(): bool {
     return TRUE;
   }

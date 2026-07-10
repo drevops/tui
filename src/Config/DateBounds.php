@@ -64,11 +64,11 @@ final readonly class DateBounds {
    *   TRUE when the date is within both declared bounds.
    */
   public function contains(\DateTimeInterface $value): bool {
-    if ($this->min !== NULL && $value < $this->min) {
+    if ($this->min instanceof \DateTimeImmutable && $value < $this->min) {
       return FALSE;
     }
 
-    return $this->max === NULL || $value <= $this->max;
+    return !$this->max instanceof \DateTimeImmutable || $value <= $this->max;
   }
 
   /**
@@ -104,15 +104,15 @@ final readonly class DateBounds {
    *   The phrase, or an empty string when neither bound is declared.
    */
   public function describe(): string {
-    if ($this->min !== NULL && $this->max !== NULL) {
+    if ($this->min instanceof \DateTimeImmutable && $this->max instanceof \DateTimeImmutable) {
       return sprintf('between %s and %s', $this->min->format('Y-m-d'), $this->max->format('Y-m-d'));
     }
 
-    if ($this->min !== NULL) {
+    if ($this->min instanceof \DateTimeImmutable) {
       return sprintf('on or after %s', $this->min->format('Y-m-d'));
     }
 
-    if ($this->max !== NULL) {
+    if ($this->max instanceof \DateTimeImmutable) {
       return sprintf('on or before %s', $this->max->format('Y-m-d'));
     }
 
@@ -129,11 +129,11 @@ final readonly class DateBounds {
    *   The date, moved onto the nearest bound it exceeds.
    */
   public function clamp(\DateTimeImmutable $value): \DateTimeImmutable {
-    if ($this->min !== NULL && $value < $this->min) {
+    if ($this->min instanceof \DateTimeImmutable && $value < $this->min) {
       return $this->min;
     }
 
-    if ($this->max !== NULL && $value > $this->max) {
+    if ($this->max instanceof \DateTimeImmutable && $value > $this->max) {
       return $this->max;
     }
 
