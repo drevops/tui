@@ -36,14 +36,6 @@ through the `Tui` facade.
 
 ## Commands
 
-**HARD RULE**: Always run tasks through the Composer scripts below. Never
-invoke the underlying tool binaries directly (`vendor/bin/phpcs`,
-`vendor/bin/phpcbf`, `vendor/bin/phpstan`, `vendor/bin/rector`,
-`vendor/bin/phpunit`, and the like). The Composer scripts set the correct
-arguments, configuration and environment, so calling a binary directly can
-silently diverge from CI. To pass extra arguments to a script, append them
-after `--` (for example, `composer test -- --filter testMethodName`).
-
 ### Code Quality
 
 ```bash
@@ -52,6 +44,12 @@ composer lint
 
 # Auto-fix code style issues
 composer lint-fix
+
+# Individual tools
+./vendor/bin/phpcs # Check coding standards
+./vendor/bin/phpcbf # Fix coding standards
+./vendor/bin/phpstan # Static analysis (level 9)
+./vendor/bin/rector --dry-run # Check Rector suggestions
 ```
 
 ### Testing
@@ -64,11 +62,11 @@ composer test
 composer test-coverage
 # Coverage reports: .logs/.coverage-html/index.html, .logs/cobertura.xml
 
-# Run specific test file (pass extra args after --)
-composer test -- tests/phpunit/Unit/TuiTest.php
+# Run specific test file
+./vendor/bin/phpunit tests/phpunit/Unit/TuiTest.php
 
 # Run specific test method
-composer test -- --filter testMethodName
+./vendor/bin/phpunit --filter testMethodName
 ```
 
 
@@ -118,8 +116,9 @@ composer install
 
 ### PHPUnit Structure
 
-- `tests/phpunit/Unit/` - Unit tests, no real TTY I/O
-- `tests/phpunit/Fixtures/` - Fixture handler classes used by the tests
+- `tests/phpunit/Unit/` - Unit tests with mocks, no I/O
+- `tests/phpunit/Functional/` - Integration tests, real file system
+- `tests/phpunit/Traits/` - Shared test utilities
 
 ### Writing Tests
 
