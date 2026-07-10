@@ -56,4 +56,12 @@ final class MultiSearchWidgetTest extends TestCase {
     $this->assertStringNotContainsString('ClamAV', $view);
   }
 
+  public function testViewShowsInheritedKeyHint(): void {
+    $widget = new MultiSearchWidget($this->labels);
+
+    $view = Ansi::strip($widget->view(new DefaultTheme()));
+
+    $this->assertStringContainsString('space select · ↑/↓ move · ←/→ none/all · ↵ accept · esc cancel', $view);
+  }
+
 }

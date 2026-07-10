@@ -390,6 +390,20 @@ class DefaultTheme implements ThemeInterface {
   /**
    * {@inheritdoc}
    */
+  public function arrowLeft(): string {
+    return $this->unicode ? '←' : '<';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function arrowRight(): string {
+    return $this->unicode ? '→' : '>';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function enter(): string {
     return $this->unicode ? '↵' : '<';
   }

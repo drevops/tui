@@ -7,6 +7,7 @@ namespace DrevOps\Tui\Tests\Unit\Widget;
 use DrevOps\Tui\Input\ArrayKeyStream;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
+use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\AbstractWidget;
 use DrevOps\Tui\Widget\MultiSelectWidget;
@@ -122,6 +123,23 @@ final class MultiSelectWidgetTest extends TestCase {
     ));
 
     $this->assertSame([], $value);
+  }
+
+  public function testViewShowsKeyHint(): void {
+    $widget = new MultiSelectWidget(['a' => 'Apple', 'b' => 'Banana']);
+
+    $unicode = Ansi::strip($widget->view(new DefaultTheme()));
+    $this->assertStringContainsString('space select · ↑/↓ move · ←/→ none/all · ↵ accept · esc cancel', $unicode);
+
+    // The glyphs degrade with the theme's Unicode mode.
+    $ascii = Ansi::strip($widget->view(new DefaultTheme(76, ['unicode' => FALSE])));
+    $this->assertStringContainsString('</> none/all', $ascii);
+  }
+
+  public function testRendersOwnHint(): void {
+    // The view carries its own hint line, so the editor chrome must not add the
+    // generic "enter accept" hint on top.
+    $this->assertTrue((new MultiSelectWidget(['a' => 'A']))->rendersHint());
   }
 
 }

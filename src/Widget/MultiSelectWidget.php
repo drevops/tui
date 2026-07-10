@@ -192,7 +192,41 @@ class MultiSelectWidget extends AbstractWidget {
       $lines[] = $marker . ' ' . $box . ' ' . $this->highlightLabel($theme, $this->labels[$value] ?? $value, $current);
     }
 
+    $lines[] = $this->hint($theme);
+
     return implode("\n", $lines);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  public function rendersHint(): bool {
+    return TRUE;
+  }
+
+  /**
+   * Build the key-hint line shown beneath the option list.
+   *
+   * Space is the non-obvious key here - nothing else signals that it toggles
+   * the highlighted option - so it leads, followed by the remaining bindings.
+   *
+   * @param \DrevOps\Tui\Theme\ThemeInterface $theme
+   *   The theme.
+   *
+   * @return string
+   *   The themed, dot-joined hint line.
+   */
+  protected function hint(ThemeInterface $theme): string {
+    $fragments = [
+      'space select',
+      $theme->arrowUp() . '/' . $theme->arrowDown() . ' move',
+      $theme->arrowLeft() . '/' . $theme->arrowRight() . ' none/all',
+      $theme->enter() . ' accept',
+      'esc cancel',
+    ];
+
+    return $theme->footer(implode(' ' . $theme->dot() . ' ', $fragments));
   }
 
 }
