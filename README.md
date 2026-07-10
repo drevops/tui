@@ -338,7 +338,7 @@ $p->multisearch('services', 'Services')->default(['redis'])->options(['redis' =>
   </tr>
 </table>
 
-### File picker
+### FilePicker
 
 Browse the filesystem for a single path. Arrows move, `→` enters the highlighted directory and `←` returns to its parent (never above the start directory), typing filters the current directory and `Tab` reveals hidden entries; `Enter` selects the highlighted entry. Restrict what may be chosen with `filesOnly()` or `directoriesOnly()`, limit files with `extensions()`, and choose where browsing starts with `start()`. It collects the chosen path.
 
@@ -364,7 +364,7 @@ $p->filePicker('config', 'Config file')->start(getcwd())->filesOnly()->extension
   </tr>
 </table>
 
-### Multi file picker
+### MultiFilePicker
 
 Like the file picker, but several paths can be chosen: `Space` toggles the highlighted entry and selections accumulate as you browse between directories, `Enter` accepts them all. It collects the list of chosen paths.
 

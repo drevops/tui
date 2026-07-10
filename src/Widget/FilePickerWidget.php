@@ -191,7 +191,7 @@ class FilePickerWidget extends AbstractWidget {
    */
   protected function liveValue(): mixed {
     if ($this->multiple) {
-      return array_values(array_keys($this->selected));
+      return array_keys($this->selected);
     }
 
     $name = $this->currentName();

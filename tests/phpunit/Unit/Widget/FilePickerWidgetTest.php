@@ -396,7 +396,7 @@ final class FilePickerWidgetTest extends TestCase {
     $widget = new FilePickerWidget($this->root);
 
     // Before acceptance the value tracks the highlighted entry.
-    $this->assertSame($this->root . '/docs', Ansi::strip((string) $widget->value()));
+    $this->assertSame($this->root . '/docs', $widget->value());
 
     $widget->handle(Key::named(KeyName::Down));
     $this->assertSame($this->root . '/empty', $widget->value());
