@@ -7,6 +7,7 @@ namespace DrevOps\Tui\Tests\Unit\Schema;
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Builder\PanelBuilder;
 use DrevOps\Tui\Condition\Condition;
+use DrevOps\Tui\Config\Weekday;
 use DrevOps\Tui\Derive\Derive;
 use DrevOps\Tui\Schema\SchemaGenerator;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -27,6 +28,7 @@ final class SchemaGeneratorTest extends TestCase {
         $profile->option('standard', 'Standard', 'Std')->option('minimal', 'Minimal');
         $p->text('theme')->derive(new Derive('{{profile}}'))->when(new Condition('profile', eq: 'standard'));
         $p->number('port', 'Port')->min(1)->max(65535)->step(5);
+        $p->date('release', 'Release date')->minDate('2000-01-01')->maxDate('2030-12-31')->weekStart(Weekday::Sunday);
       })
       ->build();
 
@@ -46,6 +48,9 @@ final class SchemaGeneratorTest extends TestCase {
           'min' => NULL,
           'max' => NULL,
           'step' => NULL,
+          'min_date' => NULL,
+          'max_date' => NULL,
+          'week_start' => NULL,
           'when' => NULL,
           'derive' => NULL,
           'discover' => NULL,
@@ -62,6 +67,9 @@ final class SchemaGeneratorTest extends TestCase {
           'min' => NULL,
           'max' => NULL,
           'step' => NULL,
+          'min_date' => NULL,
+          'max_date' => NULL,
+          'week_start' => NULL,
           'when' => ['field' => 'profile', 'eq' => 'standard'],
           'derive' => ['template' => '{{profile}}'],
           'discover' => NULL,
@@ -78,6 +86,28 @@ final class SchemaGeneratorTest extends TestCase {
           'min' => 1,
           'max' => 65535,
           'step' => 5,
+          'min_date' => NULL,
+          'max_date' => NULL,
+          'week_start' => NULL,
+          'when' => NULL,
+          'derive' => NULL,
+          'discover' => NULL,
+          'depends_on' => [],
+        ],
+        [
+          'id' => 'release',
+          'type' => 'date',
+          'label' => 'Release date',
+          'description' => '',
+          'options' => [],
+          'default' => '',
+          'required' => FALSE,
+          'min' => NULL,
+          'max' => NULL,
+          'step' => NULL,
+          'min_date' => '2000-01-01',
+          'max_date' => '2030-12-31',
+          'week_start' => 'Sunday',
           'when' => NULL,
           'derive' => NULL,
           'discover' => NULL,

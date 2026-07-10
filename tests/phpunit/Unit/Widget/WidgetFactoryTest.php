@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Tests\Unit\Widget;
 
+use DrevOps\Tui\Config\DateBounds;
 use DrevOps\Tui\Config\Field;
 use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\NumberBounds;
@@ -15,6 +16,7 @@ use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\ConfirmWidget;
+use DrevOps\Tui\Widget\DateWidget;
 use DrevOps\Tui\Widget\FilePickerWidget;
 use DrevOps\Tui\Widget\MultiSearchWidget;
 use DrevOps\Tui\Widget\MultiSelectWidget;
@@ -49,6 +51,7 @@ final class WidgetFactoryTest extends TestCase {
     $this->assertInstanceOf(MultiSelectWidget::class, $factory->create($this->fieldWithOptions(FieldType::MultiSelect), ['a']));
     $this->assertInstanceOf(SuggestWidget::class, $factory->create($this->fieldWithOptions(FieldType::Suggest), 'a'));
     $this->assertInstanceOf(NumberWidget::class, $factory->create($this->field(FieldType::Number), 42));
+    $this->assertInstanceOf(DateWidget::class, $factory->create($this->field(FieldType::Date), '2026-07-15'));
     $this->assertInstanceOf(TextareaWidget::class, $factory->create($this->field(FieldType::Textarea), 'x'));
     $this->assertInstanceOf(PasswordWidget::class, $factory->create($this->field(FieldType::Password), 'x'));
     $this->assertInstanceOf(SearchWidget::class, $factory->create($this->fieldWithOptions(FieldType::Search), 'a'));
@@ -105,6 +108,21 @@ final class WidgetFactoryTest extends TestCase {
     $this->assertTrue($widget->rendersHint());
     $widget->handle(Key::named(KeyName::Up));
     $this->assertSame(6, $widget->value());
+  }
+
+  public function testDateBoundsPassedThrough(): void {
+    $field = new Field('f', 'F', '', FieldType::Date, '', dateBounds: new DateBounds(new \DateTimeImmutable('2026-07-10'), new \DateTimeImmutable('2026-07-20')));
+
+    $widget = (new WidgetFactory())->create($field, '2026-07-01');
+
+    // The seed is clamped into the field's declared range.
+    $this->assertSame('2026-07-10', $widget->value());
+  }
+
+  public function testDateWithNonStringCurrentOpensOnToday(): void {
+    $widget = (new WidgetFactory())->create($this->field(FieldType::Date), 42);
+
+    $this->assertSame((new \DateTimeImmutable('today'))->format('Y-m-d'), $widget->value());
   }
 
   public function testSeedsCurrentValue(): void {

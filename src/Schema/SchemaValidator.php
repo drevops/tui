@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Schema;
 
 use DrevOps\Tui\Config\Config;
+use DrevOps\Tui\Config\DateBounds;
 use DrevOps\Tui\Config\Field;
 use DrevOps\Tui\Config\FieldType;
 
@@ -93,6 +94,11 @@ class SchemaValidator {
       return $bounds_error;
     }
 
+    $date_error = $this->checkDateBounds($field, $value);
+    if ($date_error !== NULL) {
+      return $date_error;
+    }
+
     return $this->checkOptions($field, $value);
   }
 
@@ -114,6 +120,23 @@ class SchemaValidator {
   }
 
   /**
+   * Check a date value against its declared range.
+   *
+   * @param \DrevOps\Tui\Config\Field $field
+   *   The field.
+   * @param mixed $value
+   *   The value.
+   *
+   * @return string|null
+   *   An error, or NULL when in range (or when the field declares no range).
+   */
+  protected function checkDateBounds(Field $field, mixed $value): ?string {
+    $violation = $field->dateBounds?->violation($value);
+
+    return $violation === NULL ? NULL : sprintf('Question "%s" must be %s.', $field->id, $violation);
+  }
+
+  /**
    * Whether the value matches the field type.
    *
    * @param \DrevOps\Tui\Config\FieldType $type
@@ -129,6 +152,9 @@ class SchemaValidator {
       FieldType::Confirm, FieldType::Pause => is_bool($value),
       FieldType::MultiSelect, FieldType::MultiSearch, FieldType::MultiFilePicker => is_array($value),
       FieldType::Number => is_int($value) || is_float($value),
+      // An empty string is an unset date, left to the required check; any other
+      // value must be a strict `Y-m-d` calendar date.
+      FieldType::Date => is_string($value) && ($value === '' || DateBounds::parse($value) instanceof \DateTimeImmutable),
       default => is_string($value),
     };
   }
@@ -147,6 +173,7 @@ class SchemaValidator {
       FieldType::Confirm, FieldType::Pause => 'a boolean',
       FieldType::MultiSelect, FieldType::MultiSearch, FieldType::MultiFilePicker => 'a list',
       FieldType::Number => 'a number',
+      FieldType::Date => 'a date (YYYY-MM-DD)',
       default => 'a string',
     };
   }

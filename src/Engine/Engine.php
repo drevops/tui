@@ -193,7 +193,7 @@ class Engine {
    *   An error message, or NULL when the value is valid.
    */
   protected function validateValue(Field $field, mixed $value): ?string {
-    $violation = $field->bounds?->violation($value);
+    $violation = $field->bounds?->violation($value) ?? $field->dateBounds?->violation($value);
     if ($violation !== NULL) {
       return sprintf('must be %s.', $violation);
     }

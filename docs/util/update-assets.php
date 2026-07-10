@@ -80,6 +80,14 @@ expect "Number widget" {
     wait_and_enter
 }
 EXPECT,
+    'date' => <<<'EXPECT'
+# Date: move down a week, accept.
+expect "Date widget" {
+    pause 1000
+    arrow_down
+    wait_and_enter
+}
+EXPECT,
     'textarea' => <<<'EXPECT'
 # Textarea: Enter adds a line, type, Tab accepts.
 expect "Textarea widget" {
@@ -489,6 +497,7 @@ EXPECT,
   $widget_rows = [
     'text' => 6,
     'number' => 6,
+    'date' => 14,
     'textarea' => 8,
     'password' => 6,
     'select' => 8,

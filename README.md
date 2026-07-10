@@ -29,7 +29,7 @@ It powers the [Vortex](https://www.vortextemplate.com) project installer, but kn
 ## Features
 
 - 🧭 [**Panel TUI**](#panels-and-navigation) - a full-screen, scrollable, keyboard-driven form: panels hold fields, sub-panels drill in to any depth
-- 🧩 [**Widgets**](#widgets) - `text`, `number`, `textarea`, `password`, `select`, `multiselect`, `suggest`, `search`, `multisearch`, `filepicker`, `multifilepicker`, `confirm`, `toggle`, `pause`
+- 🧩 [**Widgets**](#widgets) - `text`, `number`, `date`, `textarea`, `password`, `select`, `multiselect`, `suggest`, `search`, `multisearch`, `filepicker`, `multifilepicker`, `confirm`, `toggle`, `pause`
 - 🏗️ [**Builder-driven**](#configuration) - panels and fields are declared in PHP with a fluent builder; the common cases need no code
 - 🤖 [**Interactive or headless**](#headless-collection) - drive the panel TUI by keyboard, or collect answers non-interactively from a JSON payload and environment variables (and emit a JSON schema for agents and forms)
 - 🔗 [**Derived values**](#derived-values) - compute one field from others with [str2name](https://github.com/AlexSkrypnyk/str2name) transforms; chains settle to a fixpoint
@@ -73,7 +73,7 @@ It also exposes `schema()`, `agentHelp()` and `validate()`, and - when you want 
 
 ## Widgets
 
-Fourteen widget types cover text entry, choices, filesystem browsing and gates. Every field of the form opens its widget in an editor; the same widgets also run standalone (see [`playground/3-widgets/`](playground/3-widgets)). Widgets pull their glyphs and colours from the theme, so each one below is shown in all four display modes.
+Fifteen widget types cover text entry, choices, filesystem browsing and gates. Every field of the form opens its widget in an editor; the same widgets also run standalone (see [`playground/3-widgets/`](playground/3-widgets)). Widgets pull their glyphs and colours from the theme, so each one below is shown in all four display modes.
 
 <p align="center">
   <img src="docs/assets/widgets.svg" width="100%" alt="All widgets, one after another">
@@ -146,6 +146,38 @@ Declare optional `min`, `max` and `step` to bound the value and enable keyboard 
 ```php
 $p->number('port', 'HTTP port')->min(1)->max(65535)->step(1)->default(8080);
 ```
+
+### Date
+
+A month calendar that returns a normalized ISO `YYYY-MM-DD` date. Left/Right (or vim `h`/`l`) move by day, Up/Down (or `k`/`j`) move by week, PageUp/PageDown change month, Home/End jump to the first/last day of the month, and Enter accepts. Pass `default` (a `YYYY-MM-DD` string) to open on a specific date; with none the calendar opens on today.
+
+```php
+$p->date('release', 'Release date')->default('2026-07-15');
+```
+
+Declare optional `minDate`, `maxDate` and `weekStart` to bound the range and set the first column of the week. Navigation is clamped to the range - the cursor never leaves it - and days outside it render dimmed. The bounds are enforced headlessly too - a `--prompts` or environment value outside the range is rejected - and are reflected in the JSON schema as `min_date`, `max_date` and `week_start` on the prompt.
+
+```php
+$p->date('release', 'Release date')->minDate('2026-01-01')->maxDate('2026-12-31')->weekStart(Weekday::Sunday);
+```
+
+<table>
+  <tr>
+    <td></td>
+    <td align="center"><strong>ANSI</strong></td>
+    <td align="center"><strong>No ANSI</strong></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>Unicode</strong></td>
+    <td><img src="docs/assets/widget-date.svg" alt="Date: Unicode + ANSI"></td>
+    <td><img src="docs/assets/widget-date-no-ansi.svg" alt="Date: Unicode + No ANSI"></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>ASCII</strong></td>
+    <td><img src="docs/assets/widget-date-ascii.svg" alt="Date: ASCII + ANSI"></td>
+    <td><img src="docs/assets/widget-date-ascii-no-ansi.svg" alt="Date: ASCII + No ANSI"></td>
+  </tr>
+</table>
 
 ### Textarea
 

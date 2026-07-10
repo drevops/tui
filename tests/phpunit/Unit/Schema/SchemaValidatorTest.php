@@ -107,6 +107,20 @@ final class SchemaValidatorTest extends TestCase {
     $this->assertContains('Question "port" must be between 1 and 65535.', $validator->validate(['name' => 'Acme', 'port' => 99999]));
   }
 
+  public function testDateAcceptsValidRejectsMalformed(): void {
+    $validator = new SchemaValidator($this->config());
+
+    $this->assertSame([], $validator->validate(['name' => 'Acme', 'due' => '2026-07-15']));
+    $this->assertContains('Question "due" must be a date (YYYY-MM-DD).', $validator->validate(['name' => 'Acme', 'due' => '2026-7-5']));
+  }
+
+  public function testDateBoundsRejectOutOfRange(): void {
+    $validator = new SchemaValidator($this->config());
+
+    $this->assertSame([], $validator->validate(['name' => 'Acme', 'due' => '2026-06-15']));
+    $this->assertContains('Question "due" must be between 2026-01-01 and 2026-12-31.', $validator->validate(['name' => 'Acme', 'due' => '2027-01-01']));
+  }
+
   public function testPauseAcceptsBoolRejectsString(): void {
     $validator = new SchemaValidator($this->config());
 
@@ -172,6 +186,7 @@ final class SchemaValidatorTest extends TestCase {
         $p->multiselect('mods')->option('a')->option('b')->option('c', 'C', disabled: TRUE);
         $p->text('custom')->required()->when(new Condition('profile', eq: 'custom'));
         $p->number('port')->min(1)->max(65535);
+        $p->date('due')->minDate('2026-01-01')->maxDate('2026-12-31');
         $p->pause('ack');
         $p->search('engine')->option('solr')->option('none');
         $p->multisearch('tags')->option('a')->option('b');
