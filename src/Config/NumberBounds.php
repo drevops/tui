@@ -47,7 +47,7 @@ final readonly class NumberBounds {
       return FALSE;
     }
 
-    return !($this->max !== NULL && $value > $this->max);
+    return $this->max === NULL || $value <= $this->max;
   }
 
   /**
@@ -72,7 +72,7 @@ final readonly class NumberBounds {
   }
 
   /**
-   * The human range phrase, e.g. "between 1 and 10", "at least 1", "at most 10".
+   * The human range phrase, e.g. "between 1 and 10" or "at least 1".
    *
    * @return string
    *   The phrase, or an empty string when neither bound is declared.
@@ -120,7 +120,7 @@ final readonly class NumberBounds {
    * @param int $value
    *   The current value.
    * @param int $direction
-   *   1 to increment, -1 to decrement.
+   *   Either 1 to increment or -1 to decrement.
    *
    * @return int
    *   The stepped, clamped value.

@@ -104,7 +104,7 @@ class NumberWidget extends TextWidget {
    * @param \DrevOps\Tui\Config\NumberBounds $bounds
    *   The bounds driving the step and clamp.
    * @param int $direction
-   *   1 to increment, -1 to decrement.
+   *   Either 1 to increment or -1 to decrement.
    */
   protected function adjust(NumberBounds $bounds, int $direction): void {
     $this->buffer = (string) $bounds->step((int) $this->buffer, $direction);

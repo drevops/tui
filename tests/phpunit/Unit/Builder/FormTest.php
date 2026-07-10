@@ -220,7 +220,7 @@ final class FormTest extends TestCase {
     $this->assertSame(5, $port->bounds->step);
 
     // A number with nothing declared carries no bounds - behaviour unchanged.
-    $this->assertNull($config->field('plain')?->bounds);
+    $this->assertNotInstanceOf(NumberBounds::class, $config->field('plain')?->bounds);
   }
 
   public function testNumberMinGreaterThanMaxThrows(): void {
