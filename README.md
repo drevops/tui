@@ -408,6 +408,46 @@ Headings, separators and disabled options are **visual only**: navigation skips 
 
 Non-selectable rows never leak into the answer: a disabled value is dropped from a `multiselect` default, absent from the collected value, and excluded from the JSON schema (`Tui::schema()` lists selectable options only). Supplying a disabled - or otherwise unknown - option value non-interactively (via `--prompts` JSON or an environment override) fails collection with a clear error naming the value.
 
+A single-choice `select` with a group heading, a separator and a disabled option (its reason shown beside the dimmed label):
+
+<table>
+  <tr>
+    <td></td>
+    <td align="center"><strong>ANSI</strong></td>
+    <td align="center"><strong>No ANSI</strong></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>Unicode</strong></td>
+    <td><img src="docs/assets/widget-select-groups.svg" alt="Select with groups: Unicode + ANSI"></td>
+    <td><img src="docs/assets/widget-select-groups-no-ansi.svg" alt="Select with groups: Unicode + No ANSI"></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>ASCII</strong></td>
+    <td><img src="docs/assets/widget-select-groups-ascii.svg" alt="Select with groups: ASCII + ANSI"></td>
+    <td><img src="docs/assets/widget-select-groups-ascii-no-ansi.svg" alt="Select with groups: ASCII + No ANSI"></td>
+  </tr>
+</table>
+
+A `multiselect` where the cursor and Space skip the separator and the disabled option, which can never be checked:
+
+<table>
+  <tr>
+    <td></td>
+    <td align="center"><strong>ANSI</strong></td>
+    <td align="center"><strong>No ANSI</strong></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>Unicode</strong></td>
+    <td><img src="docs/assets/widget-multiselect-groups.svg" alt="MultiSelect with groups: Unicode + ANSI"></td>
+    <td><img src="docs/assets/widget-multiselect-groups-no-ansi.svg" alt="MultiSelect with groups: Unicode + No ANSI"></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>ASCII</strong></td>
+    <td><img src="docs/assets/widget-multiselect-groups-ascii.svg" alt="MultiSelect with groups: ASCII + ANSI"></td>
+    <td><img src="docs/assets/widget-multiselect-groups-ascii-no-ansi.svg" alt="MultiSelect with groups: ASCII + No ANSI"></td>
+  </tr>
+</table>
+
 ### Confirm
 
 Yes/No toggle. Arrows or Space switch, `y`/`n` set the choice directly, Enter accepts.
