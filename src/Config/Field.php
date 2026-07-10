@@ -50,6 +50,11 @@ final readonly class Field {
    *   The processing weight: lower runs earlier. Fields of equal weight process
    *   in reverse declaration order, so specific replacements run before generic
    *   ones without any weights at all.
+   * @param bool $revealable
+   *   Password only: whether the editor offers a reveal/hide toggle.
+   * @param bool $confirm
+   *   Password only: whether the editor prompts for the value twice and rejects
+   *   a mismatch before accepting.
    */
   public function __construct(
     public string $id,
@@ -65,6 +70,8 @@ final readonly class Field {
     public ?\Closure $validate = NULL,
     public ?\Closure $transform = NULL,
     public int $weight = 0,
+    public bool $revealable = FALSE,
+    public bool $confirm = FALSE,
   ) {
   }
 

@@ -46,6 +46,7 @@ final class FormTest extends TestCase {
         $p->select('profile', 'Profile')->options(['standard' => 'Standard', 'minimal' => 'Minimal'])->default('standard');
         $p->multiselect('services', 'Services')->option('solr', 'Solr', 'Search')->option('redis', 'Redis');
         $p->confirm('docs', 'Keep docs?')->default(TRUE)->when(new Condition('profile', eq: 'standard'));
+        $p->password('secret', 'Secret')->revealable()->confirm();
         $p->suggest('timezone', 'Timezone')->discover(new Dotenv('TZ'));
         $p->panel('advanced', 'Advanced', function (PanelBuilder $sp): void {
           $sp->text('webroot', 'Web root')->default('web');
@@ -97,6 +98,12 @@ final class FormTest extends TestCase {
     $this->assertTrue($docs->default);
     $this->assertSame(['field' => 'profile', 'eq' => 'standard'], $docs->when?->toArray());
 
+    $secret = $config->field('secret');
+    $this->assertInstanceOf(Field::class, $secret);
+    $this->assertSame(FieldType::Password, $secret->type);
+    $this->assertTrue($secret->revealable);
+    $this->assertTrue($secret->confirm);
+
     $timezone = $config->field('timezone');
     $this->assertInstanceOf(Field::class, $timezone);
     $this->assertSame(FieldType::Suggest, $timezone->type);
@@ -135,6 +142,9 @@ final class FormTest extends TestCase {
     $this->assertSame(0, $config->field('n')?->default);
     $this->assertSame('', $config->field('ta')?->default);
     $this->assertSame('', $config->field('pw')?->default);
+    // The password options are opt-in, so they default off.
+    $this->assertFalse($config->field('pw')->revealable);
+    $this->assertFalse($config->field('pw')->confirm);
     $this->assertSame('', $config->field('se')?->default);
     $this->assertSame([], $config->field('ms')?->default);
     // A pause defaults to acknowledged so headless runs never block on it.

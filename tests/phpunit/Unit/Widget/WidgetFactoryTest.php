@@ -7,6 +7,8 @@ namespace DrevOps\Tui\Tests\Unit\Widget;
 use DrevOps\Tui\Config\Field;
 use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\Option;
+use DrevOps\Tui\Input\Key;
+use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Widget\ConfirmWidget;
 use DrevOps\Tui\Widget\MultiSearchWidget;
 use DrevOps\Tui\Widget\MultiSelectWidget;
@@ -44,6 +46,19 @@ final class WidgetFactoryTest extends TestCase {
     $this->assertInstanceOf(SearchWidget::class, $factory->create($this->fieldWithOptions(FieldType::Search), 'a'));
     $this->assertInstanceOf(MultiSearchWidget::class, $factory->create($this->fieldWithOptions(FieldType::MultiSearch), ['a']));
     $this->assertInstanceOf(PauseWidget::class, $factory->create($this->field(FieldType::Pause), TRUE));
+  }
+
+  public function testPasswordFlagsPassedThrough(): void {
+    $field = new Field('f', 'F', '', FieldType::Password, '', revealable: TRUE, confirm: TRUE);
+
+    $widget = (new WidgetFactory())->create($field, 'secret');
+
+    // Revealable shows through the widget owning its own hint line.
+    $this->assertTrue($widget->rendersHint());
+
+    // Confirm shows through the two-step flow: the first Enter does not accept.
+    $widget->handle(Key::named(KeyName::Enter));
+    $this->assertFalse($widget->isComplete());
   }
 
   public function testNumberSeededFromIntCurrent(): void {
