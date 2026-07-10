@@ -4,25 +4,25 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Theme;
 
-use DrevOps\Tui\Answers\Answers;
-use DrevOps\Tui\Config\Field;
-use DrevOps\Tui\Config\Panel;
-use DrevOps\Tui\Render\Navigator;
-use DrevOps\Tui\Render\Viewport;
-
 /**
- * A theme's rendering contract: the elements a theme composes, and how.
+ * A theme's look: one method per themeable element.
  *
- * Every method here renders one part of the TUI - a field row, a description, a
- * sub-panel summary, the frame, the editor, the buttons. That is the whole
- * extension surface: to change how any element looks, a theme overrides just
- * that one method (see {@see AbstractTheme}, which implements the lot). The
- * option constants below (MODE_*, SPACING_*, BORDER_*) are the values a consumer
- * passes in the theme options array.
+ * Every method here is a single knob. The stylers take text and return it in
+ * that element's colour (already resolved for the theme's dark/light mode); the
+ * symbol methods return a glyph for the theme's Unicode mode. To restyle an
+ * element, a theme overrides just that one method - see {@see DefaultTheme} for
+ * the dark/light palette that ships with the library.
  *
- * The low-level helpers a render method uses - style() to colour text by role,
- * glyph() to fetch a named symbol - are not part of this contract; they live on
- * {@see AbstractTheme}.
+ * @code
+ * class OceanTheme extends DefaultTheme {
+ *   public function title(string $text): string { return $this->paint('1;96', $text); }
+ *   public function marker(bool $selected): string { return $selected ? '~ ' : '  '; }
+ * }
+ * @endcode
+ *
+ * The option constants (MODE_*, SPACING_*, BORDER_*) are the values a consumer
+ * passes in the theme options array. How the styled pieces are arranged into
+ * rows and frames is the render*() layer on {@see DefaultTheme}.
  *
  * @package DrevOps\Tui\Theme
  */
@@ -74,195 +74,133 @@ interface ThemeInterface {
   public const string BORDER_DOUBLE = 'double';
 
   /**
-   * The number of navigable items in a panel (fields plus sub-panels).
-   *
-   * @param \DrevOps\Tui\Config\Panel $panel
-   *   The panel.
-   *
-   * @return int
-   *   The item count.
+   * A heading or an editor label.
    */
-  public function itemCount(Panel $panel): int;
+  public function title(string $text): string;
 
   /**
-   * Build the body lines and the line index of the selected item.
-   *
-   * @param \DrevOps\Tui\Config\Panel $panel
-   *   The panel.
-   * @param \DrevOps\Tui\Answers\Answers $answers
-   *   The current answers.
-   * @param int $cursor
-   *   The selected item index.
-   *
-   * @return array{list<string>,int}
-   *   The body lines and the selected item's first line index.
+   * A field label; bold when its row is selected.
    */
-  public function renderBody(Panel $panel, Answers $answers, int $cursor): array;
+  public function label(string $text, bool $selected = FALSE): string;
 
   /**
-   * Render a field row.
-   *
-   * @param \DrevOps\Tui\Config\Field $field
-   *   The field.
-   * @param \DrevOps\Tui\Answers\Answers $answers
-   *   The current answers.
-   * @param bool $selected
-   *   Whether the row is selected.
-   *
-   * @return string
-   *   The row.
+   * A field value; bold when its row is selected.
    */
-  public function renderFieldLine(Field $field, Answers $answers, bool $selected): string;
+  public function value(string $text, bool $selected = FALSE): string;
 
   /**
-   * Render a sub-panel row.
-   *
-   * @param \DrevOps\Tui\Config\Panel $panel
-   *   The sub-panel.
-   * @param bool $selected
-   *   Whether the row is selected.
-   *
-   * @return string
-   *   The row.
+   * A help/description line; bold when its row is selected.
    */
-  public function renderPanelLine(Panel $panel, bool $selected): string;
+  public function description(string $text, bool $selected = FALSE): string;
 
   /**
-   * Render a description row.
-   *
-   * @param string $description
-   *   The description.
-   * @param bool $selected
-   *   Whether the row's item is selected.
-   *
-   * @return string
-   *   The row.
+   * A provenance badge (e.g. "edited"); bold when its row is selected.
    */
-  public function renderDescriptionLine(string $description, bool $selected): string;
+  public function badge(string $text, bool $selected = FALSE): string;
 
   /**
-   * Summarize a sub-panel's active field values into one line, for the hub.
-   *
-   * @param \DrevOps\Tui\Config\Panel $panel
-   *   The sub-panel.
-   * @param \DrevOps\Tui\Answers\Answers $answers
-   *   The current answers.
-   *
-   * @return string
-   *   The summary, or an empty string when the panel has no active fields.
+   * The active (focused) button.
    */
-  public function summarizePanel(Panel $panel, Answers $answers): string;
+  public function cursor(string $text): string;
 
   /**
-   * Render a sub-panel value-summary row.
-   *
-   * @param string $summary
-   *   The summary text.
-   * @param bool $selected
-   *   Whether the row's item is selected.
-   *
-   * @return string
-   *   The row.
+   * A footer: the status and hint lines.
    */
-  public function renderSummaryLine(string $summary, bool $selected): string;
+  public function footer(string $text): string;
 
   /**
-   * Render a breadcrumb line for the navigator.
-   *
-   * @param \DrevOps\Tui\Render\Navigator $navigator
-   *   The navigator.
-   *
-   * @return string
-   *   The breadcrumb line.
+   * The navigator breadcrumb.
    */
-  public function renderBreadcrumbLine(Navigator $navigator): string;
+  public function breadcrumb(string $text): string;
 
   /**
-   * Compose a frame: pinned header, scrolled body with indicators, footer.
-   *
-   * @param list<string> $header
-   *   The header lines.
-   * @param list<string> $body
-   *   The body lines.
-   * @param list<string> $footer
-   *   The footer lines.
-   * @param \DrevOps\Tui\Render\Viewport $viewport
-   *   The viewport.
-   * @param int $height
-   *   The body viewport height.
-   *
-   * @return string
-   *   The composed frame.
+   * A scroll indicator (the up/down arrows).
    */
-  public function renderFrame(array $header, array $body, array $footer, Viewport $viewport, int $height): string;
+  public function indicator(string $text): string;
 
   /**
-   * Compose a start banner: the logo above an optional version line.
-   *
-   * @param string $logo
-   *   The banner logo (may be multi-line).
-   * @param string $version
-   *   The version string, shown dimmed below the logo when non-empty.
-   *
-   * @return string
-   *   The composed banner.
+   * The highlighted (cursor) row in a list widget.
    */
-  public function renderBanner(string $logo, string $version): string;
+  public function highlight(string $text): string;
 
   /**
-   * Render the status line shown at the foot of a panel.
-   *
-   * @return string
-   *   The themed status line.
+   * A validation error message.
    */
-  public function renderStatusLine(): string;
+  public function error(string $text): string;
 
   /**
-   * Render a dimmed line of key hints, joined with the dot glyph.
-   *
-   * @param string ...$hints
-   *   The hint fragments (e.g. "enter accept", "esc cancel").
-   *
-   * @return string
-   *   The themed hint line.
+   * The editor-header underline.
    */
-  public function renderHintLine(string ...$hints): string;
+  public function rule(string $text): string;
 
   /**
-   * Render the header shown above a field's editor: its label, underlined.
-   *
-   * @param string $label
-   *   The field label.
-   *
-   * @return string
-   *   The two-line themed header.
+   * The frame box, when a border is on.
    */
-  public function renderEditorHeader(string $label): string;
+  public function border(string $text): string;
 
   /**
-   * Compose a field's editor screen: the label, the widget view and hints.
-   *
-   * @param string $label
-   *   The field label.
-   * @param string $view
-   *   The widget's rendered view.
-   *
-   * @return string
-   *   The editor screen - boxed when the theme has a border, else plain.
+   * The selection cursor for a row: the marker glyph when selected, else a gap.
    */
-  public function renderEditor(string $label, string $view): string;
+  public function marker(bool $selected): string;
 
   /**
-   * Render a row of inline submit/cancel buttons.
-   *
-   * @param list<string> $labels
-   *   The button labels.
-   * @param int $selected
-   *   The selected button index, or -1 for none.
-   *
-   * @return string
-   *   The button row.
+   * The drill-in / breadcrumb arrow symbol.
    */
-  public function renderButtonBar(array $labels, int $selected): string;
+  public function arrow(): string;
+
+  /**
+   * The breadcrumb separator symbol.
+   */
+  public function separator(): string;
+
+  /**
+   * The "move up" key hint symbol.
+   */
+  public function arrowUp(): string;
+
+  /**
+   * The "move down" key hint symbol.
+   */
+  public function arrowDown(): string;
+
+  /**
+   * The enter/accept key hint symbol.
+   */
+  public function enter(): string;
+
+  /**
+   * The dot that joins hint and summary fragments.
+   */
+  public function dot(): string;
+
+  /**
+   * The "more above" scroll-indicator symbol.
+   */
+  public function indicatorUp(): string;
+
+  /**
+   * The "more below" scroll-indicator symbol.
+   */
+  public function indicatorDown(): string;
+
+  /**
+   * A radio symbol: filled in the cursor colour when on, empty when off.
+   */
+  public function radio(bool $on): string;
+
+  /**
+   * A checkbox symbol: filled in the value colour when checked, empty when off.
+   */
+  public function check(bool $on): string;
+
+  /**
+   * The text-input caret, in the cursor colour.
+   */
+  public function caret(): string;
+
+  /**
+   * The masked-character symbol for secret values.
+   */
+  public function mask(): string;
 
 }

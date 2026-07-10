@@ -10,10 +10,9 @@ use DrevOps\Tui\Config\Field;
 use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\Panel;
 use DrevOps\Tui\Render\Ansi;
-use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Render\Navigator;
-use DrevOps\Tui\Theme\AbstractTheme;
 use DrevOps\Tui\Render\Viewport;
+use DrevOps\Tui\Theme\DefaultTheme;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -21,7 +20,7 @@ use PHPUnit\Framework\TestCase;
 /**
  * Tests the theme's rendering via headless frame probes.
  */
-#[CoversClass(AbstractTheme::class)]
+#[CoversClass(DefaultTheme::class)]
 #[Group('tui')]
 final class ThemeRenderTest extends TestCase {
 

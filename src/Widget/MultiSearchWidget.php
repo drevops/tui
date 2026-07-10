@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Widget;
 
-use DrevOps\Tui\Theme\AbstractTheme;
+use DrevOps\Tui\Theme\ThemeInterface;
 
 /**
  * A multi-select whose type-to-filter query is shown as a search line.
@@ -17,8 +17,8 @@ class MultiSearchWidget extends MultiSelectWidget {
    * {@inheritdoc}
    */
   #[\Override]
-  public function view(AbstractTheme $theme): string {
-    return $this->filter . $theme->style('marker', $theme->glyph('caret')) . "\n" . parent::view($theme);
+  public function view(ThemeInterface $theme): string {
+    return $this->filter . $theme->caret() . "\n" . parent::view($theme);
   }
 
 }

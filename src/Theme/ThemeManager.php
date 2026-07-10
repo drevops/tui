@@ -21,7 +21,7 @@ final class ThemeManager {
   /**
    * The name => theme-class registry.
    *
-   * @var array<string,class-string<\DrevOps\Tui\Theme\AbstractTheme>>
+   * @var array<string,class-string<\DrevOps\Tui\Theme\DefaultTheme>>
    */
   protected static array $registry = [
     'default' => DefaultTheme::class,
@@ -36,12 +36,12 @@ final class ThemeManager {
    *   The theme class name.
    *
    * @throws \InvalidArgumentException
-   *   When the class is not an AbstractTheme subclass - registration fails
+   *   When the class is not a DefaultTheme (or a subclass) - registration fails
    *   early rather than at the later create() call.
    */
   public static function register(string $name, string $class): void {
-    if (!is_subclass_of($class, AbstractTheme::class)) {
-      throw new \InvalidArgumentException(sprintf('Theme class "%s" must extend %s.', $class, AbstractTheme::class));
+    if (!is_a($class, DefaultTheme::class, TRUE)) {
+      throw new \InvalidArgumentException(sprintf('Theme class "%s" must extend %s.', $class, DefaultTheme::class));
     }
 
     self::$registry[$name] = $class;
@@ -65,19 +65,19 @@ final class ThemeManager {
    *   Display options passed to the theme (e.g. "mode", "color", "unicode",
    *   "spacing", "border").
    *
-   * @return \DrevOps\Tui\Theme\AbstractTheme
+   * @return \DrevOps\Tui\Theme\DefaultTheme
    *   The theme instance.
    *
    * @throws \InvalidArgumentException
    *   When the name is neither registered nor a theme class name.
    */
-  public static function create(string $name = 'default', int $width = 76, array $options = []): AbstractTheme {
+  public static function create(string $name = 'default', int $width = 76, array $options = []): DefaultTheme {
     $name = $name === '' ? 'default' : $name;
 
-    $class = self::$registry[$name] ?? (is_subclass_of($name, AbstractTheme::class) ? $name : NULL);
+    $class = self::$registry[$name] ?? (is_a($name, DefaultTheme::class, TRUE) ? $name : NULL);
 
     if ($class === NULL) {
-      throw new \InvalidArgumentException(sprintf('Unknown theme "%s". Use a registered name (%s), register one with ThemeManager::register(), or pass an AbstractTheme subclass name.', $name, implode(', ', array_keys(self::$registry))));
+      throw new \InvalidArgumentException(sprintf('Unknown theme "%s". Use a registered name (%s), register one with ThemeManager::register(), or pass a DefaultTheme subclass name.', $name, implode(', ', array_keys(self::$registry))));
     }
 
     return new $class($width, $options);

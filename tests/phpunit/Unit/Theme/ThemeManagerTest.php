@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Tests\Unit\Theme;
 
+use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Theme\ThemeInterface;
 use DrevOps\Tui\Theme\ThemeManager;
@@ -20,19 +21,19 @@ use PHPUnit\Framework\TestCase;
 final class ThemeManagerTest extends TestCase {
 
   #[DataProvider('dataProviderCreate')]
-  public function testCreate(string $name, array $options, string $role, string $expected): void {
+  public function testCreate(string $name, array $options, \Closure $styled, string $code): void {
     $theme = ThemeManager::create($name, 76, $options);
 
     $this->assertInstanceOf(DefaultTheme::class, $theme);
-    $this->assertSame($expected, $theme->styleCodes($role));
+    $this->assertSame(Ansi::style('X', $code), $styled($theme));
   }
 
   public static function dataProviderCreate(): \Iterator {
-    yield 'default is dark' => ['default', [], 'title', '1;36'];
-    yield 'empty is dark' => ['', [], 'title', '1;36'];
-    // The dark/light palette is now a mode option, not a separate theme.
-    yield 'light mode' => ['default', ['mode' => ThemeInterface::MODE_LIGHT], 'title', '1;34'];
-    yield 'light mode indicator' => ['default', ['mode' => ThemeInterface::MODE_LIGHT], 'indicator', '35'];
+    yield 'default is dark' => ['default', [], static fn(DefaultTheme $t): string => $t->title('X'), '1;36'];
+    yield 'empty is dark' => ['', [], static fn(DefaultTheme $t): string => $t->title('X'), '1;36'];
+    // The dark/light palette is a mode option, not a separate theme.
+    yield 'light mode' => ['default', ['mode' => ThemeInterface::MODE_LIGHT], static fn(DefaultTheme $t): string => $t->title('X'), '1;34'];
+    yield 'light mode indicator' => ['default', ['mode' => ThemeInterface::MODE_LIGHT], static fn(DefaultTheme $t): string => $t->indicator('X'), '35'];
   }
 
   public function testCreateUnknownThrows(): void {

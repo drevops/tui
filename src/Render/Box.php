@@ -1,0 +1,87 @@
+<?php
+
+declare(strict_types=1);
+
+namespace DrevOps\Tui\Render;
+
+/**
+ * Pure box-drawing geometry: character sets and line/rule fitting.
+ *
+ * Theme-agnostic, like {@see Ansi} and {@see Scroller} - it knows nothing about
+ * colours. A theme picks a border style and colours the result; this returns
+ * the raw characters and does the width maths.
+ *
+ * @package DrevOps\Tui\Render
+ */
+final class Box {
+
+  /**
+   * The corner, junction, horizontal and vertical glyphs for a border style.
+   *
+   * @param string $style
+   *   A ThemeInterface BORDER_* value ("line", "rounded", "double").
+   * @param bool $unicode
+   *   Whether Unicode glyphs are used; FALSE returns the ASCII fallback set.
+   *
+   * @return array<string,string>
+   *   Keyed by position: tl, tr, bl, br (corners), ml, mr (junctions), h
+   *   (horizontal), v (vertical).
+   */
+  public static function chars(string $style, bool $unicode): array {
+    if (!$unicode) {
+      $fill = $style === 'double' ? '=' : '-';
+
+      return ['tl' => '+', 'tr' => '+', 'bl' => '+', 'br' => '+', 'ml' => '+', 'mr' => '+', 'h' => $fill, 'v' => '|'];
+    }
+
+    return match ($style) {
+      'rounded' => ['tl' => '╭', 'tr' => '╮', 'bl' => '╰', 'br' => '╯', 'ml' => '├', 'mr' => '┤', 'h' => '─', 'v' => '│'],
+      'double' => ['tl' => '╔', 'tr' => '╗', 'bl' => '╚', 'br' => '╝', 'ml' => '╠', 'mr' => '╣', 'h' => '═', 'v' => '║'],
+      default => ['tl' => '┌', 'tr' => '┐', 'bl' => '└', 'br' => '┘', 'ml' => '├', 'mr' => '┤', 'h' => '─', 'v' => '│'],
+    };
+  }
+
+  /**
+   * A horizontal rule spanning the outer width: left + fill + right.
+   *
+   * @param string $left
+   *   The left corner or junction glyph.
+   * @param string $right
+   *   The right corner or junction glyph.
+   * @param string $fill
+   *   The horizontal fill glyph.
+   * @param int $outer_width
+   *   The total width the rule spans.
+   *
+   * @return string
+   *   The rule (unstyled).
+   */
+  public static function rule(string $left, string $right, string $fill, int $outer_width): string {
+    return $left . str_repeat($fill, max(0, $outer_width - 2)) . $right;
+  }
+
+  /**
+   * Fit content to an exact visible width: clip if too wide, pad if too short.
+   *
+   * ANSI-aware - the visible width ignores escape codes; a clip drops styling.
+   *
+   * @param string $content
+   *   The content (may carry ANSI codes).
+   * @param int $inner_width
+   *   The target visible width.
+   *
+   * @return string
+   *   The content padded (or clipped) to exactly the inner width.
+   */
+  public static function fit(string $content, int $inner_width): string {
+    $width = Ansi::width($content);
+
+    if ($width > $inner_width) {
+      $content = mb_substr(Ansi::strip($content), 0, $inner_width);
+      $width = Ansi::width($content);
+    }
+
+    return $content . str_repeat(' ', max(0, $inner_width - $width));
+  }
+
+}

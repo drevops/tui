@@ -12,7 +12,7 @@ use DrevOps\Tui\Config\Panel;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Input\KeyParser;
-use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\WidgetFactory;
 use DrevOps\Tui\Widget\WidgetInterface;
 
@@ -84,7 +84,7 @@ class PanelController {
    *
    * @param \DrevOps\Tui\Config\Config $config
    *   The configuration.
-   * @param \DrevOps\Tui\Theme\ThemeInterface $theme
+   * @param \DrevOps\Tui\Theme\DefaultTheme $theme
    *   The theme (the visual authority for rendering).
    * @param array<string,mixed> $values
    *   The initial answer values (typically the engine's resolved answers).
@@ -97,7 +97,7 @@ class PanelController {
    */
   public function __construct(
     protected Config $config,
-    protected ThemeInterface $theme,
+    protected DefaultTheme $theme,
     protected array $values = [],
     protected array $provenance = [],
     protected string $banner = '',

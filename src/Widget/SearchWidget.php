@@ -6,7 +6,7 @@ namespace DrevOps\Tui\Widget;
 
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
-use DrevOps\Tui\Theme\AbstractTheme;
+use DrevOps\Tui\Theme\ThemeInterface;
 
 /**
  * A single-choice list with type-to-filter over the option labels.
@@ -127,8 +127,8 @@ class SearchWidget extends AbstractWidget {
   /**
    * {@inheritdoc}
    */
-  public function view(AbstractTheme $theme): string {
-    $lines = [$this->filter . $theme->style('marker', $theme->glyph('caret'))];
+  public function view(ThemeInterface $theme): string {
+    $lines = [$this->filter . $theme->caret()];
 
     foreach ($this->visible() as $index => $value) {
       $lines[] = $this->renderRadioRow($theme, $this->labels[$value] ?? $value, $index === $this->cursor);

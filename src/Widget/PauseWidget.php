@@ -6,7 +6,7 @@ namespace DrevOps\Tui\Widget;
 
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
-use DrevOps\Tui\Theme\AbstractTheme;
+use DrevOps\Tui\Theme\ThemeInterface;
 
 /**
  * An acknowledgement gate: Enter (or Space) accepts TRUE.
@@ -38,8 +38,8 @@ class PauseWidget extends AbstractWidget {
   /**
    * {@inheritdoc}
    */
-  public function view(AbstractTheme $theme): string {
-    return $theme->style('marker', $theme->glyph('enter')) . ' Press Enter to continue';
+  public function view(ThemeInterface $theme): string {
+    return $theme->highlight($theme->enter()) . ' Press Enter to continue';
   }
 
 }

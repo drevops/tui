@@ -6,7 +6,7 @@ namespace DrevOps\Tui\Widget;
 
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
-use DrevOps\Tui\Theme\AbstractTheme;
+use DrevOps\Tui\Theme\ThemeInterface;
 
 /**
  * Shared widget behaviour: accept/cancel, validation and transformation.
@@ -108,7 +108,7 @@ abstract class AbstractWidget implements WidgetInterface {
   /**
    * Style an option label, highlighted when its row holds the cursor.
    *
-   * @param \DrevOps\Tui\Theme\AbstractTheme $theme
+   * @param \DrevOps\Tui\Theme\ThemeInterface $theme
    *   The theme.
    * @param string $label
    *   The option label.
@@ -118,14 +118,14 @@ abstract class AbstractWidget implements WidgetInterface {
    * @return string
    *   The label, highlight-styled when current.
    */
-  protected function highlightLabel(AbstractTheme $theme, string $label, bool $current): string {
-    return $current ? $theme->style('highlight', $label) : $label;
+  protected function highlightLabel(ThemeInterface $theme, string $label, bool $current): string {
+    return $current ? $theme->highlight($label) : $label;
   }
 
   /**
    * Render a radio option row: the radio glyph plus the highlighted label.
    *
-   * @param \DrevOps\Tui\Theme\AbstractTheme $theme
+   * @param \DrevOps\Tui\Theme\ThemeInterface $theme
    *   The theme.
    * @param string $label
    *   The option label.
@@ -135,10 +135,8 @@ abstract class AbstractWidget implements WidgetInterface {
    * @return string
    *   The rendered row.
    */
-  protected function renderRadioRow(AbstractTheme $theme, string $label, bool $current): string {
-    $marker = $current ? $theme->style('marker', $theme->glyph('radio_on')) : $theme->glyph('radio_off');
-
-    return $marker . ' ' . $this->highlightLabel($theme, $label, $current);
+  protected function renderRadioRow(ThemeInterface $theme, string $label, bool $current): string {
+    return $theme->radio($current) . ' ' . $this->highlightLabel($theme, $label, $current);
   }
 
   /**

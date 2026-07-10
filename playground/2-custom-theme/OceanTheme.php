@@ -7,24 +7,24 @@ namespace Playground\CustomTheme;
 use DrevOps\Tui\Answers\Answers;
 use DrevOps\Tui\Config\Field;
 use DrevOps\Tui\Config\Panel;
-use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Render\Navigator;
+use DrevOps\Tui\Theme\DefaultTheme;
 
 /**
  * A custom theme that overrides as much as it sensibly can.
  *
  * It demonstrates three kinds of override, all shown below:
  *  - the constructor - to change the defaults (here, a narrower 72-col frame);
- *  - defineStyles() and defineGlyphs() - override the roles and glyph pairs
- *    that differ, and merge the rest with `+ parent::defineStyles()`;
+ *  - the appearance atoms - one method per colour and glyph (title(), value(),
+ *    marker(), arrow()…), each overridden on its own;
  *  - any render*() and summarizePanel() method - to change how an element is
- *    laid out.
+ *    laid out from those atoms.
  *
  * It extends DefaultTheme, so anything left un-overridden (e.g. renderBody(),
  * renderFrame()) falls back to the default theme, including its dark/light
- * mode. Extend AbstractTheme instead to start from the neutral base. Select it
- * from a config with `theme: '\Playground\CustomTheme\OceanTheme'`, or register
- * a short name with ThemeManager::register('ocean', OceanTheme::class).
+ * mode. Select it from a config with its class name
+ * (`\Playground\CustomTheme\OceanTheme`), or register a short name with
+ * ThemeManager::register('ocean', OceanTheme::class).
  */
 class OceanTheme extends DefaultTheme {
 
@@ -44,40 +44,152 @@ class OceanTheme extends DefaultTheme {
    * {@inheritdoc}
    */
   #[\Override]
-  protected function defineStyles(): array {
-    return [
-      'title' => '1;96',
-      'breadcrumb' => '36',
-      'value' => '96',
-      'description' => '34',
-      'marker' => '1;96',
-      'badge' => '7;36',
-      'cursor' => '1;7;96',
-      'footer' => '36',
-      'indicator' => '1;96',
-      'highlight' => '1;96',
-    ] + parent::defineStyles();
+  public function title(string $text): string {
+    return $this->paint('1;96', $text);
   }
 
   /**
    * {@inheritdoc}
    */
   #[\Override]
-  protected function defineGlyphs(): array {
-    return [
-      'marker' => ['➤', '>'],
-      'indicator_up' => ['▴', '^'],
-      'indicator_down' => ['▾', 'v'],
-      'separator' => ['/', '/'],
-      'arrow' => ['»', '>'],
-      'enter' => ['⏎', '<'],
-      'dot' => ['•', '*'],
-      'radio_on' => ['◉', '(o)'],
-      'radio_off' => ['◯', '( )'],
-      'check_on' => ['▣', '[x]'],
-      'check_off' => ['▢', '[ ]'],
-      'caret' => ['▎', '|'],
-    ] + parent::defineGlyphs();
+  public function value(string $text, bool $selected = FALSE): string {
+    return $this->paint($this->emphasize('96', $selected), $text);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  public function description(string $text, bool $selected = FALSE): string {
+    return $this->paint($this->emphasize('34', $selected), $text);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  public function badge(string $text, bool $selected = FALSE): string {
+    return $this->paint($this->emphasize('7;36', $selected), $text);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  public function breadcrumb(string $text): string {
+    return $this->paint('36', $text);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  public function footer(string $text): string {
+    return $this->paint('36', $text);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  public function cursor(string $text): string {
+    return $this->paint('1;7;96', $text);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  public function indicator(string $text): string {
+    return $this->paint('1;96', $text);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  public function highlight(string $text): string {
+    return $this->paint('1;96', $text);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  public function marker(bool $selected): string {
+    return $selected ? $this->paint('1;96', $this->hasUnicode() ? '➤' : '>') : ' ';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  public function arrow(): string {
+    return $this->hasUnicode() ? '»' : '>';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  public function separator(): string {
+    return '/';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  public function enter(): string {
+    return $this->hasUnicode() ? '⏎' : '<';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  public function dot(): string {
+    return $this->hasUnicode() ? '•' : '*';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  public function indicatorUp(): string {
+    return $this->hasUnicode() ? '▴' : '^';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  public function indicatorDown(): string {
+    return $this->hasUnicode() ? '▾' : 'v';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  public function radio(bool $on): string {
+    return $on ? $this->paint('1;96', $this->hasUnicode() ? '◉' : '(o)') : ($this->hasUnicode() ? '◯' : '( )');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  public function check(bool $on): string {
+    return $on ? $this->value($this->hasUnicode() ? '▣' : '[x]') : ($this->hasUnicode() ? '▢' : '[ ]');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  public function caret(): string {
+    return $this->paint('1;96', $this->hasUnicode() ? '▎' : '|');
   }
 
   /**
@@ -85,7 +197,7 @@ class OceanTheme extends DefaultTheme {
    */
   #[\Override]
   public function renderFieldLine(Field $field, Answers $answers, bool $selected): string {
-    return $this->marker($selected) . ' ' . $this->style('label', $field->label) . ': ' . $this->style('value', $this->renderValue($answers->value($field->id)));
+    return $this->marker($selected) . ' ' . $this->label($field->label) . ': ' . $this->value($this->renderFieldValue($field, $answers->value($field->id)));
   }
 
   /**
@@ -95,7 +207,7 @@ class OceanTheme extends DefaultTheme {
   public function renderPanelLine(Panel $panel, bool $selected): string {
     $count = count($panel->fields) + count($panel->panels);
 
-    return $this->marker($selected) . ' ' . $this->style('title', $panel->title) . '  ' . $this->style('description', $this->glyph('arrow') . ' ' . $count . ' item' . ($count === 1 ? '' : 's'));
+    return $this->marker($selected) . ' ' . $this->title($panel->title) . '  ' . $this->description($this->arrow() . ' ' . $count . ' item' . ($count === 1 ? '' : 's'));
   }
 
   /**
@@ -103,7 +215,7 @@ class OceanTheme extends DefaultTheme {
    */
   #[\Override]
   public function renderDescriptionLine(string $description, bool $selected): string {
-    return '    ' . $this->styleSelected('description', $this->glyph('dot') . ' ' . $description, $selected);
+    return '    ' . $this->description($this->dot() . ' ' . $description, $selected);
   }
 
   /**
@@ -112,13 +224,14 @@ class OceanTheme extends DefaultTheme {
   #[\Override]
   public function summarizePanel(Panel $panel, Answers $answers): string {
     $parts = [];
+
     foreach ($panel->fields as $field) {
       if ($answers->has($field->id)) {
-        $parts[] = $this->renderValue($answers->value($field->id));
+        $parts[] = $this->renderFieldValue($field, $answers->value($field->id));
       }
     }
 
-    return implode(' ' . $this->glyph('separator') . ' ', array_slice($parts, 0, 3));
+    return implode(' ' . $this->separator() . ' ', array_slice($parts, 0, 3));
   }
 
   /**
@@ -126,7 +239,7 @@ class OceanTheme extends DefaultTheme {
    */
   #[\Override]
   public function renderSummaryLine(string $summary, bool $selected): string {
-    return '    ' . $this->styleSelected('description', $this->glyph('arrow') . ' ' . $summary, $selected);
+    return '    ' . $this->description($this->arrow() . ' ' . $summary, $selected);
   }
 
   /**
@@ -134,7 +247,7 @@ class OceanTheme extends DefaultTheme {
    */
   #[\Override]
   public function renderBreadcrumbLine(Navigator $navigator): string {
-    return $this->style('breadcrumb', '≈ ' . implode(' ' . $this->glyph('separator') . ' ', $navigator->breadcrumb()));
+    return $this->breadcrumb('≈ ' . implode(' ' . $this->separator() . ' ', $navigator->breadcrumb()));
   }
 
   /**
@@ -142,9 +255,9 @@ class OceanTheme extends DefaultTheme {
    */
   #[\Override]
   public function renderStatusLine(): string {
-    $sep = '  ' . $this->glyph('dot') . '  ';
+    $sep = '  ' . $this->dot() . '  ';
 
-    return $this->style('footer', $this->glyph('arrow_up') . $this->glyph('arrow_down') . ' move' . $sep . $this->glyph('enter') . ' choose' . $sep . 'esc back');
+    return $this->footer($this->arrowUp() . $this->arrowDown() . ' move' . $sep . $this->enter() . ' choose' . $sep . 'esc back');
   }
 
   /**
@@ -153,9 +266,10 @@ class OceanTheme extends DefaultTheme {
   #[\Override]
   public function renderButtonBar(array $labels, int $selected): string {
     $buttons = [];
+
     foreach ($labels as $index => $label) {
       $text = '« ' . $label . ' »';
-      $buttons[] = $index === $selected ? $this->style('cursor', $text) : $this->style('label', $text);
+      $buttons[] = $index === $selected ? $this->cursor($text) : $this->label($text);
     }
 
     return '  ' . implode('   ', $buttons);
@@ -167,13 +281,14 @@ class OceanTheme extends DefaultTheme {
   #[\Override]
   public function renderBanner(string $logo, string $version): string {
     $lines = [];
+
     foreach (explode("\n", $logo) as $line) {
-      $lines[] = $this->style('title', $line);
+      $lines[] = $this->title($line);
     }
 
     if ($version !== '') {
       $lines[] = '';
-      $lines[] = $this->style('footer', '≈ ' . $version . ' ≈');
+      $lines[] = $this->footer('≈ ' . $version . ' ≈');
     }
 
     return implode("\n", $lines);

@@ -6,7 +6,7 @@ namespace DrevOps\Tui\Widget;
 
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
-use DrevOps\Tui\Theme\AbstractTheme;
+use DrevOps\Tui\Theme\ThemeInterface;
 
 /**
  * Single-line text input with a movable cursor.
@@ -109,10 +109,10 @@ class TextWidget extends AbstractWidget {
   /**
    * {@inheritdoc}
    */
-  public function view(AbstractTheme $theme): string {
-    $line = substr($this->buffer, 0, $this->cursor) . $theme->style('marker', $theme->glyph('caret')) . substr($this->buffer, $this->cursor);
+  public function view(ThemeInterface $theme): string {
+    $line = substr($this->buffer, 0, $this->cursor) . $theme->caret() . substr($this->buffer, $this->cursor);
 
-    return $this->error === NULL ? $line : $line . "\n" . $theme->style('error', $this->error);
+    return $this->error === NULL ? $line : $line . "\n" . $theme->error($this->error);
   }
 
 }

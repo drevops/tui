@@ -10,7 +10,6 @@ use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\Panel;
 use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Render\Viewport;
-use DrevOps\Tui\Theme\AbstractTheme;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Theme\ThemeInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -21,7 +20,7 @@ use PHPUnit\Framework\TestCase;
 /**
  * Tests the theme spacing, border and custom display options.
  */
-#[CoversClass(AbstractTheme::class)]
+#[CoversClass(DefaultTheme::class)]
 #[Group('tui')]
 final class ThemeOptionsTest extends TestCase {
 

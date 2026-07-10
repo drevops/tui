@@ -28,16 +28,12 @@ class AccentTheme extends DefaultTheme {
    * {@inheritdoc}
    */
   #[\Override]
-  protected function defineStyles(): array {
-    $styles = parent::defineStyles();
-
-    $styles['value'] = match ($this->option('accent', 'cool')) {
-      'warm' => '33',
-      'mono' => '90',
-      default => $styles['value'],
+  public function value(string $text, bool $selected = FALSE): string {
+    return match ($this->option('accent', 'cool')) {
+      'warm' => $this->paint($this->emphasize('33', $selected), $text),
+      'mono' => $this->paint($this->emphasize('90', $selected), $text),
+      default => parent::value($text, $selected),
     };
-
-    return $styles;
   }
 
 }

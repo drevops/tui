@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Tests\Unit\Theme;
 
-use DrevOps\Tui\Theme\AbstractTheme;
+use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Theme\ThemeInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -13,99 +13,109 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Tests the theme base and the default theme's colour modes.
+ * Tests the theme's semantic styler and symbol methods.
  */
-#[CoversClass(AbstractTheme::class)]
 #[CoversClass(DefaultTheme::class)]
 #[Group('tui')]
 final class ThemeTest extends TestCase {
 
-  #[DataProvider('dataProviderPalette')]
-  public function testPalette(AbstractTheme $theme, string $role, string $expected): void {
-    $this->assertSame($expected, $theme->styleCodes($role));
+  #[DataProvider('dataProviderStyler')]
+  public function testStyler(\Closure $styled, string $code): void {
+    $this->assertSame(Ansi::style('X', $code), $styled());
   }
 
-  public static function dataProviderPalette(): \Iterator {
-    yield 'dark value' => [new DefaultTheme(), 'value', '32'];
-    yield 'dark title' => [new DefaultTheme(), 'title', '1;36'];
-    // Light mode keeps green for values, like dark mode; its accents differ
-    // (blue title, magenta indicator).
-    yield 'light value' => [self::light(), 'value', '32'];
-    yield 'light title' => [self::light(), 'title', '1;34'];
-    yield 'light indicator' => [self::light(), 'indicator', '35'];
-    // The border has its own role, coloured per mode (cyan dark, blue light).
-    yield 'dark border' => [new DefaultTheme(), 'border', '36'];
-    yield 'light border' => [self::light(), 'border', '34'];
-    // Roles the default theme does not override come from the base palette.
-    yield 'dark footer inherited' => [new DefaultTheme(), 'footer', '90'];
-    yield 'light breadcrumb inherited' => [self::light(), 'breadcrumb', '90'];
-    yield 'dark error inherited' => [new DefaultTheme(), 'error', '31'];
-    yield 'light rule inherited' => [self::light(), 'rule', '90'];
+  public static function dataProviderStyler(): \Iterator {
+    // The default theme colours these per mode.
+    yield 'dark title' => [static fn(): string => (new DefaultTheme())->title('X'), '1;36'];
+    yield 'dark value' => [static fn(): string => (new DefaultTheme())->value('X'), '32'];
+    yield 'dark indicator' => [static fn(): string => (new DefaultTheme())->indicator('X'), '1;33'];
+    yield 'dark border' => [static fn(): string => (new DefaultTheme())->border('X'), '36'];
+    yield 'light title' => [static fn(): string => self::light()->title('X'), '1;34'];
+    yield 'light indicator' => [static fn(): string => self::light()->indicator('X'), '35'];
+    yield 'light border' => [static fn(): string => self::light()->border('X'), '34'];
+    // These roles are mode-independent: dimmed chrome and the red error.
+    yield 'description' => [static fn(): string => (new DefaultTheme())->description('X'), '90'];
+    yield 'error' => [static fn(): string => (new DefaultTheme())->error('X'), '31'];
+    yield 'breadcrumb' => [static fn(): string => self::light()->breadcrumb('X'), '90'];
   }
 
-  public function testCustomSubclassMergesOverBase(): void {
-    $theme = new class() extends AbstractTheme {
+  public function testSelectedRowIsBold(): void {
+    $theme = new DefaultTheme();
 
-      protected function defineStyles(): array {
-        return ['title' => '95'] + parent::defineStyles();
-      }
+    // A row styler bolds its text when selected.
+    $this->assertSame(Ansi::style('X', '1;32'), $theme->value('X', TRUE));
+    $this->assertStringContainsString("\033[1", $theme->label('X', TRUE));
+    $this->assertStringNotContainsString("\033[1", $theme->label('X', FALSE));
+  }
 
-      protected function defineGlyphs(): array {
-        return ['marker' => ['»', '>']] + parent::defineGlyphs();
+  public function testColourOffLeavesTextPlain(): void {
+    $theme = new DefaultTheme(76, ['color' => FALSE]);
+
+    $this->assertSame('Setup', $theme->title('Setup'));
+    $this->assertSame('X', $theme->value('X', TRUE));
+    $this->assertFalse($theme->hasColor());
+  }
+
+  #[DataProvider('dataProviderGlyph')]
+  public function testGlyph(bool $unicode, \Closure $glyph, string $expected): void {
+    $theme = new DefaultTheme(76, ['unicode' => $unicode, 'color' => FALSE]);
+
+    $this->assertSame($expected, $glyph($theme));
+  }
+
+  public static function dataProviderGlyph(): \Iterator {
+    yield 'unicode arrow' => [TRUE, static fn(DefaultTheme $t): string => $t->arrow(), '›'];
+    yield 'ascii arrow' => [FALSE, static fn(DefaultTheme $t): string => $t->arrow(), '>'];
+    yield 'unicode enter' => [TRUE, static fn(DefaultTheme $t): string => $t->enter(), '↵'];
+    yield 'unicode dot' => [TRUE, static fn(DefaultTheme $t): string => $t->dot(), '·'];
+    yield 'unicode caret' => [TRUE, static fn(DefaultTheme $t): string => $t->caret(), '█'];
+    yield 'ascii caret' => [FALSE, static fn(DefaultTheme $t): string => $t->caret(), '|'];
+    yield 'unicode mask' => [TRUE, static fn(DefaultTheme $t): string => $t->mask(), '•'];
+    yield 'unicode indicator up' => [TRUE, static fn(DefaultTheme $t): string => $t->indicatorUp(), '▲'];
+  }
+
+  public function testMarkerRadioCheck(): void {
+    $theme = new DefaultTheme(76, ['color' => FALSE]);
+
+    $this->assertSame('❯', $theme->marker(TRUE));
+    $this->assertSame(' ', $theme->marker(FALSE));
+    $this->assertSame('●', $theme->radio(TRUE));
+    $this->assertSame('○', $theme->radio(FALSE));
+    $this->assertSame('◼', $theme->check(TRUE));
+    $this->assertSame('◻', $theme->check(FALSE));
+
+    $ascii = new DefaultTheme(76, ['unicode' => FALSE, 'color' => FALSE]);
+    $this->assertSame('>', $ascii->marker(TRUE));
+    $this->assertSame('(*)', $ascii->radio(TRUE));
+    $this->assertSame('[ ]', $ascii->check(FALSE));
+  }
+
+  public function testCursorAccentIsShared(): void {
+    // The marker, caret and radio all carry the cursor accent, per mode.
+    $this->assertStringContainsString("\033[1;36m", (new DefaultTheme())->marker(TRUE));
+    $this->assertStringContainsString("\033[1;36m", (new DefaultTheme())->caret());
+    $this->assertStringContainsString("\033[1;36m", (new DefaultTheme())->radio(TRUE));
+    $this->assertStringContainsString("\033[1;34m", self::light()->marker(TRUE));
+  }
+
+  public function testCustomThemeOverridesOneElement(): void {
+    $theme = new class() extends DefaultTheme {
+
+      #[\Override]
+      public function title(string $text): string {
+        return $this->paint('1;95', $text);
       }
 
     };
 
-    // The overridden role and glyph apply; everything else inherits.
-    $this->assertSame('95', $theme->styleCodes('title'));
-    $this->assertSame('»', $theme->glyph('marker'));
-    $this->assertSame('90', $theme->styleCodes('footer'));
-    $this->assertSame('●', $theme->glyph('radio_on'));
+    // The overridden element changes; everything else stays the default.
+    $this->assertSame(Ansi::style('X', '1;95'), $theme->title('X'));
+    $this->assertSame(Ansi::style('X', '32'), $theme->value('X'));
   }
 
-  public function testGlyphs(): void {
-    $theme = new DefaultTheme();
-
-    $this->assertSame('❯', $theme->glyph('marker'));
-    $this->assertSame('▲', $theme->glyph('indicator_up'));
-    $this->assertSame('─', $theme->glyph('rule'));
-    $this->assertSame('', $theme->glyph('nope'));
-  }
-
-  public function testStyleAndColor(): void {
-    $theme = new DefaultTheme();
-
-    $this->assertSame("\033[1;36mT\033[0m", $theme->style('title', 'T'));
-    $this->assertTrue($theme->hasColor());
-    $this->assertSame('', $theme->styleCodes('nope'));
-  }
-
-  public function testNoColor(): void {
-    $theme = new DefaultTheme(76, ['color' => FALSE]);
-
-    $this->assertSame('', $theme->styleCodes('title'));
-    $this->assertSame('T', $theme->style('title', 'T'));
-    $this->assertFalse($theme->hasColor());
-  }
-
-  public function testUnicodeGlyphs(): void {
-    $theme = new DefaultTheme();
-
-    $this->assertTrue($theme->hasUnicode());
-    $this->assertSame('●', $theme->glyph('radio_on'));
-    $this->assertSame('◼', $theme->glyph('check_on'));
-    $this->assertSame('█', $theme->glyph('caret'));
-  }
-
-  public function testAsciiGlyphs(): void {
-    $theme = new DefaultTheme(76, ['unicode' => FALSE]);
-
-    $this->assertFalse($theme->hasUnicode());
-    $this->assertSame('>', $theme->glyph('marker'));
-    $this->assertSame('(*)', $theme->glyph('radio_on'));
-    $this->assertSame('[ ]', $theme->glyph('check_off'));
-    $this->assertSame('|', $theme->glyph('caret'));
-    $this->assertSame('-', $theme->glyph('rule'));
+  public function testHasUnicode(): void {
+    $this->assertTrue((new DefaultTheme())->hasUnicode());
+    $this->assertFalse((new DefaultTheme(76, ['unicode' => FALSE]))->hasUnicode());
   }
 
   /**
