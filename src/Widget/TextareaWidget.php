@@ -174,7 +174,7 @@ class TextareaWidget extends TextWidget {
    */
   #[\Override]
   public function hints(): array {
-    $hints = [new Hint('newline', Action::NewLine), new Hint('accept', Action::Accept), new Hint('cancel', Action::Cancel)];
+    $hints = [new Hint('newline', Action::NewLine), ...parent::hints()];
 
     if ($this->externalEdit) {
       $hints[] = new Hint('editor', Action::ExternalEdit);

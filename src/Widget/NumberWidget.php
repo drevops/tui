@@ -138,7 +138,7 @@ class NumberWidget extends TextWidget {
       return parent::hints();
     }
 
-    return [new Hint('adjust', Action::Increment, Action::Decrement), new Hint('accept', Action::Accept), new Hint('cancel', Action::Cancel)];
+    return [new Hint('adjust', Action::Increment, Action::Decrement), ...parent::hints()];
   }
 
 }

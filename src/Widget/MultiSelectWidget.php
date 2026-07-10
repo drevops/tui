@@ -329,8 +329,7 @@ class MultiSelectWidget extends AbstractWidget {
       new Hint('select', Action::Toggle),
       new Hint('move', Action::MoveUp, Action::MoveDown),
       new Hint('none/all', Action::SelectNone, Action::SelectAll),
-      new Hint('accept', Action::Accept),
-      new Hint('cancel', Action::Cancel),
+      ...parent::hints(),
     ];
   }
 

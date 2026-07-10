@@ -97,7 +97,7 @@ class ConfirmWidget extends AbstractWidget {
    */
   #[\Override]
   public function hints(): array {
-    return [new Hint('yes/no', Action::Yes, Action::No), new Hint('toggle', Action::Toggle), new Hint('accept', Action::Accept), new Hint('cancel', Action::Cancel)];
+    return [new Hint('yes/no', Action::Yes, Action::No), new Hint('toggle', Action::Toggle), ...parent::hints()];
   }
 
 }

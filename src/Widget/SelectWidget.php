@@ -139,7 +139,7 @@ class SelectWidget extends AbstractWidget {
    */
   #[\Override]
   public function hints(): array {
-    return [new Hint('move', Action::MoveUp, Action::MoveDown), new Hint('accept', Action::Accept), new Hint('cancel', Action::Cancel)];
+    return [new Hint('move', Action::MoveUp, Action::MoveDown), ...parent::hints()];
   }
 
 }
