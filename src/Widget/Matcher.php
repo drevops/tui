@@ -45,37 +45,20 @@ final class Matcher {
       return new MatchResult(0, []);
     }
 
-    $lower_haystack = mb_strtolower($haystack);
-    $lower_needle = mb_strtolower($needle);
-    $haystack_chars = mb_str_split($lower_haystack);
-    $needle_chars = mb_str_split($lower_needle);
-    $needle_count = count($needle_chars);
+    // Fold each code point on its own, so a matched index maps straight back to
+    // the original string even when lowercasing changes a character's length.
+    $chars = mb_str_split($haystack);
+    $folded = array_map(static fn(string $char): string => mb_strtolower($char), $chars);
+    $needle_folded = array_map(static fn(string $char): string => mb_strtolower($char), mb_str_split($needle));
 
-    $positions = [];
-    $needle_index = 0;
-    foreach ($haystack_chars as $index => $char) {
-      if ($needle_index < $needle_count && $char === $needle_chars[$needle_index]) {
-        $positions[] = $index;
-        $needle_index++;
-      }
-    }
-
-    if ($needle_index < $needle_count) {
+    $best = $this->bestSubsequence($folded, $needle_folded, $chars);
+    if ($best === NULL) {
       return NULL;
     }
 
-    $tier = $this->tier($lower_haystack, $lower_needle);
+    [$positions, $refinement] = $best;
 
-    // A prefix, substring or exact hit is one contiguous run, so highlight that
-    // run rather than the greedily-collected subsequence indices.
-    if ($tier >= 2) {
-      $start = mb_strpos($lower_haystack, $lower_needle);
-      if ($start !== FALSE) {
-        $positions = range($start, $start + $needle_count - 1);
-      }
-    }
-
-    return new MatchResult($tier * self::TIER_WEIGHT + $this->refine($positions, $haystack_chars), $positions);
+    return new MatchResult($this->tier(mb_strtolower($haystack), mb_strtolower($needle)) * self::TIER_WEIGHT + $refinement, $positions);
   }
 
   /**
@@ -189,26 +172,91 @@ final class Matcher {
   }
 
   /**
-   * The within-tier refinement, bounded below the tier weight.
+   * The best-scoring ordered embedding of the needle in the candidate.
    *
-   * Rewards a match that starts early, sits at a word boundary and runs
-   * contiguously, so the more intuitive hit ranks first among same-tier peers.
+   * Every ordered way the needle's characters appear in the candidate is an
+   * embedding; this returns the one the refinement rates highest - the tightest,
+   * earliest, most word-boundary-aligned - so the score and the highlighted
+   * characters always agree. The refinement rewards an early, word-boundary
+   * start and penalises gaps between matched characters; because that penalty is
+   * additive over consecutive characters, a short dynamic program finds the best
+   * embedding in O(candidate * needle) time.
    *
-   * @param list<int> $positions
-   *   The matched indices, ascending.
-   * @param list<string> $haystack_chars
-   *   The lowercased candidate characters.
+   * @param list<string> $haystack
+   *   The per-character-folded candidate.
+   * @param list<string> $needle
+   *   The per-character-folded query (non-empty).
+   * @param list<string> $original
+   *   The original candidate characters, for word-boundary tests.
    *
-   * @return int
-   *   A refinement in the range 0..TIER_WEIGHT-1.
+   * @return array{list<int>, int}|null
+   *   The matched indices and the bounded refinement, or NULL when the needle is
+   *   not a subsequence of the candidate.
    */
-  protected function refine(array $positions, array $haystack_chars): int {
-    $first = $positions[0];
-    $span = $positions[count($positions) - 1] - $first;
-    $gaps = $span - (count($positions) - 1);
-    $boundary = $this->isWordStart($first, $haystack_chars) ? 50 : 0;
+  protected function bestSubsequence(array $haystack, array $needle, array $original): ?array {
+    $count = count($haystack);
+    $depth = count($needle);
 
-    return max(0, min(self::TIER_WEIGHT - 1, 500 - $first * 10 - $gaps * 20 + $boundary));
+    // score[i] is the best path score placing the current needle character at
+    // candidate index i; NULL marks an unreachable placement. back[j][i] holds
+    // the predecessor index chosen there, for recovering the winning indices.
+    $score = array_fill(0, $count, NULL);
+    $back = [array_fill(0, $count, -1)];
+
+    for ($i = 0; $i < $count; $i++) {
+      if ($haystack[$i] === $needle[0]) {
+        $score[$i] = ($this->isWordStart($i, $original) ? 50 : 0) - 10 * $i;
+      }
+    }
+
+    for ($j = 1; $j < $depth; $j++) {
+      $next = array_fill(0, $count, NULL);
+      $step_back = array_fill(0, $count, -1);
+      $running = NULL;
+      $running_index = -1;
+
+      for ($i = 0; $i < $count; $i++) {
+        // Fold every predecessor p < i into a running best of score[p] + 20*p,
+        // so the gap penalty -20*(i - p - 1) reduces to that running maximum.
+        if ($i > 0 && $score[$i - 1] !== NULL) {
+          $candidate = $score[$i - 1] + 20 * ($i - 1);
+          if ($running === NULL || $candidate > $running) {
+            $running = $candidate;
+            $running_index = $i - 1;
+          }
+        }
+
+        if ($running !== NULL && $haystack[$i] === $needle[$j]) {
+          $next[$i] = 20 - 20 * $i + $running;
+          $step_back[$i] = $running_index;
+        }
+      }
+
+      $score = $next;
+      $back[$j] = $step_back;
+    }
+
+    $best = NULL;
+    $end = -1;
+    foreach ($score as $index => $value) {
+      if ($value !== NULL && ($best === NULL || $value > $best)) {
+        $best = $value;
+        $end = $index;
+      }
+    }
+
+    if ($best === NULL) {
+      return NULL;
+    }
+
+    $positions = [];
+    $index = $end;
+    for ($j = $depth - 1; $j >= 0; $j--) {
+      $positions[] = $index;
+      $index = $back[$j][$index];
+    }
+
+    return [array_reverse($positions), max(0, min(self::TIER_WEIGHT - 1, 500 + $best))];
   }
 
   /**
@@ -217,7 +265,7 @@ final class Matcher {
    * @param int $index
    *   The index into the candidate.
    * @param list<string> $haystack_chars
-   *   The lowercased candidate characters.
+   *   The candidate characters.
    *
    * @return bool
    *   TRUE when the index starts a word.

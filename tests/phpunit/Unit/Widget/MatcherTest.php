@@ -58,6 +58,7 @@ final class MatcherTest extends TestCase {
     yield 'substring over subsequence' => ['lon', 'ceylon', 'lemon'];
     yield 'earlier substring over later' => ['red', 'reddit', 'shredded'];
     yield 'contiguous over scattered' => ['abc', 'zabc', 'aXbXc'];
+    yield 'tighter but later over looser but earlier' => ['ab', 'xxxxxab', 'axxxxxxb'];
   }
 
   #[DataProvider('dataProviderPositions')]
@@ -74,6 +75,11 @@ final class MatcherTest extends TestCase {
     yield 'scattered subsequence indices' => ['GitHub Actions', 'gha', [0, 3, 7]];
     yield 'multibyte substring boundary' => ['Zürich', 'ür', [1, 2]];
     yield 'multibyte trailing character' => ['Café', 'é', [3]];
+    // The tight "abc" cluster at the end beats the greedy leftmost a-b-c.
+    yield 'tightest embedding not the greedy one' => ['axxxxxxxabyc', 'abc', [8, 9, 11]];
+    // Lowercasing "İ" expands to two code points; positions must still index the
+    // original string, so "sum" lands on the original indices 2, 3 and 4.
+    yield 'length-changing fold keeps original offsets' => ['İpsum', 'sum', [2, 3, 4]];
   }
 
   public function testRankValuesOrdersMatchesAndDropsMisses(): void {
