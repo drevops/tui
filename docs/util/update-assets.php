@@ -149,6 +149,14 @@ expect "Confirm widget" {
     wait_and_enter
 }
 EXPECT,
+    'toggle' => <<<'EXPECT'
+# Toggle: select the second value by its first letter, accept.
+expect "Toggle widget" {
+    pause 1000
+    type_text "d"
+    wait_and_enter
+}
+EXPECT,
     'pause' => <<<'EXPECT'
 # Pause: acknowledge.
 expect "Pause widget" {
@@ -489,6 +497,7 @@ EXPECT,
     'search' => 10,
     'multisearch' => 10,
     'confirm' => 6,
+    'toggle' => 6,
     'pause' => 6,
   ];
 
