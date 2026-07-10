@@ -6,6 +6,7 @@ namespace DrevOps\Tui\Builder;
 
 use DrevOps\Tui\Config\Config;
 use DrevOps\Tui\Config\ConfigException;
+use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\Fixup;
 use DrevOps\Tui\Config\Panel;
 
@@ -288,6 +289,7 @@ final class Form {
     );
 
     $this->assertUniqueFieldIds($config);
+    $this->assertToggleOptions($config);
 
     return $config;
   }
@@ -307,6 +309,20 @@ final class Form {
       }
 
       $seen[$field->id] = TRUE;
+    }
+  }
+
+  /**
+   * Assert that every toggle field declares exactly two options.
+   *
+   * @param \DrevOps\Tui\Config\Config $config
+   *   The built config.
+   */
+  protected function assertToggleOptions(Config $config): void {
+    foreach ($config->fields() as $field) {
+      if ($field->type === FieldType::Toggle && count($field->options) !== 2) {
+        throw new ConfigException(sprintf('Toggle field "%s" must have exactly two options, %d given.', $field->id, count($field->options)));
+      }
     }
   }
 

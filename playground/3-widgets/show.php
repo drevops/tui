@@ -28,6 +28,7 @@ use DrevOps\Tui\Widget\SelectWidget;
 use DrevOps\Tui\Widget\SuggestWidget;
 use DrevOps\Tui\Widget\TextareaWidget;
 use DrevOps\Tui\Widget\TextWidget;
+use DrevOps\Tui\Widget\ToggleWidget;
 use DrevOps\Tui\Widget\WidgetInterface;
 
 require __DIR__ . '/../../vendor/autoload.php';
@@ -75,6 +76,10 @@ $widgets = [
     'memcached' => 'Memcached',
   ], ['redis']),
   'Confirm' => static fn(): WidgetInterface => new ConfirmWidget(TRUE),
+  'Toggle' => static fn(): WidgetInterface => new ToggleWidget([
+    'enabled' => 'Enabled',
+    'disabled' => 'Disabled',
+  ], 'enabled'),
   'Pause' => static fn(): WidgetInterface => new PauseWidget(),
 ];
 

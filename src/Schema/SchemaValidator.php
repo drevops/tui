@@ -160,7 +160,7 @@ class SchemaValidator {
 
     $valid = array_keys($field->options);
 
-    if (in_array($field->type, [FieldType::Select, FieldType::Search], TRUE) && is_string($value) && !in_array($value, $valid, TRUE)) {
+    if (in_array($field->type, [FieldType::Select, FieldType::Search, FieldType::Toggle], TRUE) && is_string($value) && !in_array($value, $valid, TRUE)) {
       return sprintf('Question "%s" must be one of: %s.', $field->id, implode(', ', $valid));
     }
 

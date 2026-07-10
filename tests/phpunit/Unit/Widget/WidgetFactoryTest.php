@@ -20,6 +20,7 @@ use DrevOps\Tui\Widget\SelectWidget;
 use DrevOps\Tui\Widget\SuggestWidget;
 use DrevOps\Tui\Widget\TextareaWidget;
 use DrevOps\Tui\Widget\TextWidget;
+use DrevOps\Tui\Widget\ToggleWidget;
 use DrevOps\Tui\Widget\WidgetFactory;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
@@ -37,6 +38,7 @@ final class WidgetFactoryTest extends TestCase {
 
     $this->assertInstanceOf(TextWidget::class, $factory->create($this->field(FieldType::Text), 'x'));
     $this->assertInstanceOf(ConfirmWidget::class, $factory->create($this->field(FieldType::Confirm), TRUE));
+    $this->assertInstanceOf(ToggleWidget::class, $factory->create($this->fieldWithOptions(FieldType::Toggle), 'a'));
     $this->assertInstanceOf(SelectWidget::class, $factory->create($this->fieldWithOptions(FieldType::Select), 'a'));
     $this->assertInstanceOf(MultiSelectWidget::class, $factory->create($this->fieldWithOptions(FieldType::MultiSelect), ['a']));
     $this->assertInstanceOf(SuggestWidget::class, $factory->create($this->fieldWithOptions(FieldType::Suggest), 'a'));

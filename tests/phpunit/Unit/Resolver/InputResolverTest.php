@@ -37,6 +37,12 @@ final class InputResolverTest extends TestCase {
     $this->assertFalse($inputs['agree']);
   }
 
+  public function testToggleCoercion(): void {
+    $inputs = (new InputResolver('VORTEX_'))->resolve($this->fields(), '', ['VORTEX_VIS' => 'private']);
+
+    $this->assertSame('private', $inputs['vis']);
+  }
+
   public function testEmptyMultiselect(): void {
     $inputs = (new InputResolver('VORTEX_'))->resolve($this->fields(), '', ['VORTEX_MODS' => '']);
 
@@ -101,6 +107,7 @@ final class InputResolverTest extends TestCase {
       new Field('port', 'Port', '', FieldType::Number, 0),
       new Field('ack', 'Ack', '', FieldType::Pause, TRUE),
       new Field('tags', 'Tags', '', FieldType::MultiSearch, []),
+      new Field('vis', 'Visibility', '', FieldType::Toggle, 'public'),
     ];
   }
 

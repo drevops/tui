@@ -121,6 +121,21 @@ final class PanelBuilder {
   }
 
   /**
+   * Add a toggle field (an inline switch between two labeled values).
+   *
+   * @param string $id
+   *   The field id.
+   * @param string $label
+   *   The label (defaults to the id).
+   *
+   * @return \DrevOps\Tui\Builder\FieldBuilder
+   *   The field builder.
+   */
+  public function toggle(string $id, string $label = ''): FieldBuilder {
+    return $this->field($id, $label, FieldType::Toggle);
+  }
+
+  /**
    * Add a suggest field.
    *
    * @param string $id

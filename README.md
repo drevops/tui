@@ -29,7 +29,7 @@ It powers the [Vortex](https://www.vortextemplate.com) project installer, but kn
 ## Features
 
 - 🧭 [**Panel TUI**](#panels-and-navigation) - a full-screen, scrollable, keyboard-driven form: panels hold fields, sub-panels drill in to any depth
-- 🧩 [**Widgets**](#widgets) - `text`, `number`, `textarea`, `password`, `select`, `multiselect`, `suggest`, `search`, `multisearch`, `confirm`, `pause`
+- 🧩 [**Widgets**](#widgets) - `text`, `number`, `textarea`, `password`, `select`, `multiselect`, `suggest`, `search`, `multisearch`, `confirm`, `toggle`, `pause`
 - 🏗️ [**Builder-driven**](#configuration) - panels and fields are declared in PHP with a fluent builder; the common cases need no code
 - 🤖 [**Interactive or headless**](#headless-collection) - drive the panel TUI by keyboard, or collect answers non-interactively from a JSON payload and environment variables (and emit a JSON schema for agents and forms)
 - 🔗 [**Derived values**](#derived-values) - compute one field from others with [str2name](https://github.com/AlexSkrypnyk/str2name) transforms; chains settle to a fixpoint
@@ -72,7 +72,7 @@ It also exposes `schema()`, `agentHelp()` and `validate()`, and - when you want 
 
 ## Widgets
 
-Eleven widget types cover text entry, choices and gates. Every field of the form opens its widget in an editor; the same widgets also run standalone (see [`playground/3-widgets/`](playground/3-widgets)). Widgets pull their glyphs and colours from the theme, so each one below is shown in all four display modes.
+Twelve widget types cover text entry, choices and gates. Every field of the form opens its widget in an editor; the same widgets also run standalone (see [`playground/3-widgets/`](playground/3-widgets)). Widgets pull their glyphs and colours from the theme, so each one below is shown in all four display modes.
 
 <p align="center">
   <img src="docs/assets/widgets.svg" width="100%" alt="All widgets, one after another">
@@ -354,6 +354,32 @@ $p->confirm('cdn', 'Serve via CDN?')->default(TRUE);
     <td align="right"><strong>ASCII</strong></td>
     <td><img src="docs/assets/widget-confirm-ascii.svg" alt="Confirm: ASCII + ANSI"></td>
     <td><img src="docs/assets/widget-confirm-ascii-no-ansi.svg" alt="Confirm: ASCII + No ANSI"></td>
+  </tr>
+</table>
+
+### Toggle
+
+An inline switch between two labeled values. Arrows or Space flip, the first letter of each label sets the choice directly, Enter accepts. Pass `default` (an option value) to start on the other value.
+
+```php
+$p->toggle('telemetry', 'Telemetry')->options(['enabled' => 'Enabled', 'disabled' => 'Disabled'])->default('enabled');
+```
+
+<table>
+  <tr>
+    <td></td>
+    <td align="center"><strong>ANSI</strong></td>
+    <td align="center"><strong>No ANSI</strong></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>Unicode</strong></td>
+    <td><img src="docs/assets/widget-toggle.svg" alt="Toggle: Unicode + ANSI"></td>
+    <td><img src="docs/assets/widget-toggle-no-ansi.svg" alt="Toggle: Unicode + No ANSI"></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>ASCII</strong></td>
+    <td><img src="docs/assets/widget-toggle-ascii.svg" alt="Toggle: ASCII + ANSI"></td>
+    <td><img src="docs/assets/widget-toggle-ascii-no-ansi.svg" alt="Toggle: ASCII + No ANSI"></td>
   </tr>
 </table>
 

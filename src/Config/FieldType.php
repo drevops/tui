@@ -15,6 +15,7 @@ enum FieldType: string {
   case Select = 'select';
   case MultiSelect = 'multiselect';
   case Confirm = 'confirm';
+  case Toggle = 'toggle';
   case Suggest = 'suggest';
   case Number = 'number';
   case Textarea = 'textarea';

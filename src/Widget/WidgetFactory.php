@@ -40,6 +40,7 @@ class WidgetFactory {
 
     return match ($field->type) {
       FieldType::Confirm => new ConfirmWidget((bool) $current),
+      FieldType::Toggle => new ToggleWidget($labels, is_string($current) ? $current : ''),
       FieldType::Select => new SelectWidget($labels, is_string($current) ? $current : ''),
       FieldType::MultiSelect => new MultiSelectWidget($labels, $this->toList($current)),
       FieldType::MultiSearch => new MultiSearchWidget($labels, $this->toList($current)),

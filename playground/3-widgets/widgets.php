@@ -26,6 +26,7 @@ use DrevOps\Tui\Widget\SelectWidget;
 use DrevOps\Tui\Widget\SuggestWidget;
 use DrevOps\Tui\Widget\TextareaWidget;
 use DrevOps\Tui\Widget\TextWidget;
+use DrevOps\Tui\Widget\ToggleWidget;
 use DrevOps\Tui\Widget\WidgetInterface;
 
 require __DIR__ . '/../../vendor/autoload.php';
@@ -79,4 +80,5 @@ $interact(new SearchWidget([
 ], 'london'), 'Search');
 $interact(new MultiSearchWidget(['redis' => 'Redis', 'solr' => 'Solr', 'clamav' => 'ClamAV', 'memcached' => 'Memcached'], ['redis']), 'MultiSearch');
 $interact(new ConfirmWidget(TRUE), 'Confirm');
+$interact(new ToggleWidget(['enabled' => 'Enabled', 'disabled' => 'Disabled'], 'enabled'), 'Toggle');
 $interact(new PauseWidget(), 'Pause', ['Enter continue', 'Esc cancel']);

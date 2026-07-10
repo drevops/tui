@@ -46,6 +46,7 @@ final class FormTest extends TestCase {
         $p->select('profile', 'Profile')->options(['standard' => 'Standard', 'minimal' => 'Minimal'])->default('standard');
         $p->multiselect('services', 'Services')->option('solr', 'Solr', 'Search')->option('redis', 'Redis');
         $p->confirm('docs', 'Keep docs?')->default(TRUE)->when(new Condition('profile', eq: 'standard'));
+        $p->toggle('visibility', 'Visibility')->options(['public' => 'Public', 'private' => 'Private'])->default('private');
         $p->password('secret', 'Secret')->revealable()->confirm();
         $p->suggest('timezone', 'Timezone')->discover(new Dotenv('TZ'));
         $p->panel('advanced', 'Advanced', function (PanelBuilder $sp): void {
@@ -98,6 +99,12 @@ final class FormTest extends TestCase {
     $this->assertTrue($docs->default);
     $this->assertSame(['field' => 'profile', 'eq' => 'standard'], $docs->when?->toArray());
 
+    $visibility = $config->field('visibility');
+    $this->assertInstanceOf(Field::class, $visibility);
+    $this->assertSame(FieldType::Toggle, $visibility->type);
+    $this->assertSame('private', $visibility->default);
+    $this->assertSame('Public', $visibility->option('public')?->label);
+
     $secret = $config->field('secret');
     $this->assertInstanceOf(Field::class, $secret);
     $this->assertSame(FieldType::Password, $secret->type);
@@ -129,6 +136,7 @@ final class FormTest extends TestCase {
         $panel->password('pw');
         $panel->search('se')->option('a');
         $panel->multisearch('ms')->option('a');
+        $panel->toggle('tg')->option('on', 'On')->option('off', 'Off');
         $panel->pause('pa');
       })
       ->build();
@@ -147,6 +155,8 @@ final class FormTest extends TestCase {
     $this->assertFalse($config->field('pw')->confirm);
     $this->assertSame('', $config->field('se')?->default);
     $this->assertSame([], $config->field('ms')?->default);
+    // A toggle defaults to its first option, since it always holds a value.
+    $this->assertSame('on', $config->field('tg')?->default);
     // A pause defaults to acknowledged so headless runs never block on it.
     $this->assertTrue($config->field('pa')?->default);
 
@@ -183,6 +193,15 @@ final class FormTest extends TestCase {
     Form::create('T')
       ->panel('a', 'A', fn(PanelBuilder $p): FieldBuilder => $p->text('x'))
       ->panel('b', 'B', fn(PanelBuilder $p): FieldBuilder => $p->text('x'))
+      ->build();
+  }
+
+  public function testToggleWithoutTwoOptionsThrows(): void {
+    $this->expectException(ConfigException::class);
+    $this->expectExceptionMessage('Toggle field "t" must have exactly two options, 1 given.');
+
+    Form::create('T')
+      ->panel('p', 'P', fn(PanelBuilder $p): FieldBuilder => $p->toggle('t')->option('only'))
       ->build();
   }
 

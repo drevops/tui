@@ -339,7 +339,7 @@ final class FieldBuilder {
       $this->label,
       $this->description,
       $this->fieldType,
-      $this->hasDefault ? $this->default : $this->defaultFor($this->fieldType),
+      $this->resolveDefault(),
       $this->options,
       $this->required,
       $this->when,
@@ -352,6 +352,26 @@ final class FieldBuilder {
       $this->confirm,
       $this->externalEditor,
     );
+  }
+
+  /**
+   * The effective default: the declared one, or the type's implicit default.
+   *
+   * @return mixed
+   *   The default value.
+   */
+  protected function resolveDefault(): mixed {
+    if ($this->hasDefault) {
+      return $this->default;
+    }
+
+    // A toggle is always in one of its two states, so it defaults to the first
+    // option rather than an empty value that would not match either.
+    if ($this->fieldType === FieldType::Toggle && $this->options !== []) {
+      return array_key_first($this->options);
+    }
+
+    return $this->defaultFor($this->fieldType);
   }
 
   /**

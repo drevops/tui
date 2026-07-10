@@ -80,6 +80,20 @@ final class SchemaGeneratorTest extends TestCase {
     $this->assertStringContainsString('"depends_on":["a","b"]', $json);
   }
 
+  public function testToggleDescribesBothValues(): void {
+    $config = Form::create('T')
+      ->panel('p', 'p', function (PanelBuilder $p): void {
+        $p->toggle('visibility', 'Visibility')->options(['public' => 'Public', 'private' => 'Private'])->default('public');
+      })
+      ->build();
+
+    $json = (string) json_encode((new SchemaGenerator($config))->generate());
+
+    $this->assertStringContainsString('"type":"toggle"', $json);
+    $this->assertStringContainsString('"value":"public"', $json);
+    $this->assertStringContainsString('"value":"private"', $json);
+  }
+
   public function testRoundTripsThroughJson(): void {
     $config = Form::create('T')
       ->panel('p', 'p', function (PanelBuilder $p): void {

@@ -108,6 +108,13 @@ final class SchemaValidatorTest extends TestCase {
     $this->assertContains('Question "tags" contains an invalid option "z".', $validator->validate(['name' => 'Acme', 'tags' => ['z']]));
   }
 
+  public function testToggleOptionMembership(): void {
+    $validator = new SchemaValidator($this->config());
+
+    $this->assertSame([], $validator->validate(['name' => 'Acme', 'visibility' => 'private']));
+    $this->assertContains('Question "visibility" must be one of: public, private.', $validator->validate(['name' => 'Acme', 'visibility' => 'bogus']));
+  }
+
   /**
    * Build a config exercising every validation branch.
    */
@@ -123,6 +130,7 @@ final class SchemaValidatorTest extends TestCase {
         $p->pause('ack');
         $p->search('engine')->option('solr')->option('none');
         $p->multisearch('tags')->option('a')->option('b');
+        $p->toggle('visibility')->option('public')->option('private');
       })
       ->build();
   }
