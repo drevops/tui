@@ -170,12 +170,18 @@ final class DateWidgetTest extends TestCase {
   }
 
   public function testWeekStartRotatesHeaderAndLayout(): void {
-    $widget = new DateWidget('2026-07-15', bounds: new DateBounds(weekStart: Weekday::Sunday));
-
-    $view = Ansi::strip($widget->view(new DefaultTheme()));
+    $sunday = Ansi::strip((new DateWidget('2026-07-15', bounds: new DateBounds(weekStart: Weekday::Sunday)))->view(new DefaultTheme()));
 
     // A Sunday-first week reorders the weekday header.
-    $this->assertMatchesRegularExpression('/Su\s+Mo\s+Tu\s+We\s+Th\s+Fr\s+Sa/', $view);
+    $this->assertMatchesRegularExpression('/Su\s+Mo\s+Tu\s+We\s+Th\s+Fr\s+Sa/', $sunday);
+
+    // July 1, 2026 is a Wednesday. Starting the week on Sunday shifts the month
+    // one column right, so the first row holds only days 1-4 (through Saturday)
+    // and day 5 (Sunday) starts the next row. The default Monday-first week fits
+    // days 1-5 in the first row. The first grid row is the third rendered line.
+    $monday = Ansi::strip((new DateWidget('2026-07-15'))->view(new DefaultTheme()));
+    $this->assertStringContainsString('5', explode("\n", $monday)[2]);
+    $this->assertStringNotContainsString('5', explode("\n", $sunday)[2]);
   }
 
   public function testAsciiRendering(): void {

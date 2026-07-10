@@ -109,16 +109,23 @@ final class SchemaValidatorTest extends TestCase {
 
   public function testDateAcceptsValidRejectsMalformed(): void {
     $validator = new SchemaValidator($this->config());
+    $error = 'Question "due" must be a date (YYYY-MM-DD).';
 
     $this->assertSame([], $validator->validate(['name' => 'Acme', 'due' => '2026-07-15']));
-    $this->assertContains('Question "due" must be a date (YYYY-MM-DD).', $validator->validate(['name' => 'Acme', 'due' => '2026-7-5']));
+    // A wrongly-padded value and an impossible calendar date are both rejected.
+    $this->assertContains($error, $validator->validate(['name' => 'Acme', 'due' => '2026-7-5']));
+    $this->assertContains($error, $validator->validate(['name' => 'Acme', 'due' => '2026-02-30']));
   }
 
   public function testDateBoundsRejectOutOfRange(): void {
     $validator = new SchemaValidator($this->config());
+    $error = 'Question "due" must be between 2026-01-01 and 2026-12-31.';
 
-    $this->assertSame([], $validator->validate(['name' => 'Acme', 'due' => '2026-06-15']));
-    $this->assertContains('Question "due" must be between 2026-01-01 and 2026-12-31.', $validator->validate(['name' => 'Acme', 'due' => '2027-01-01']));
+    // The inclusive endpoints are accepted; a date on either side is rejected.
+    $this->assertSame([], $validator->validate(['name' => 'Acme', 'due' => '2026-01-01']));
+    $this->assertSame([], $validator->validate(['name' => 'Acme', 'due' => '2026-12-31']));
+    $this->assertContains($error, $validator->validate(['name' => 'Acme', 'due' => '2025-12-31']));
+    $this->assertContains($error, $validator->validate(['name' => 'Acme', 'due' => '2027-01-01']));
   }
 
   public function testPauseAcceptsBoolRejectsString(): void {
