@@ -7,6 +7,7 @@ namespace DrevOps\Tui\Widget;
 use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\FilePickerMode;
 use DrevOps\Tui\Input\Action;
+use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Render\Ansi;
@@ -244,17 +245,26 @@ class FilePickerWidget extends AbstractWidget {
       $lines[] = $theme->indicator('  ' . $theme->indicatorDown());
     }
 
-    $lines[] = $this->hint($theme);
-
     return implode("\n", $lines);
   }
 
   /**
    * {@inheritdoc}
+   *
+   * The Toggle fragment resolves only in multiple mode, where Space is bound to
+   * it; Accept reads "select" for a single pick and "accept" for multiple.
    */
   #[\Override]
-  public function rendersHint(): bool {
-    return TRUE;
+  public function hints(): array {
+    return [
+      new Hint('select', Action::Toggle),
+      new Hint('move', Action::MoveUp, Action::MoveDown),
+      new Hint('open', Action::MoveRight),
+      new Hint('up', Action::MoveLeft),
+      new Hint($this->multiple ? 'accept' : 'select', Action::Accept),
+      new Hint('hidden', Action::Reveal),
+      new Hint('cancel', Action::Cancel),
+    ];
   }
 
   /**
@@ -593,36 +603,6 @@ class FilePickerWidget extends AbstractWidget {
     }
 
     return $base . substr($this->cwd, strlen($this->root));
-  }
-
-  /**
-   * Build the key-hint line shown beneath the entry list.
-   *
-   * Every glyph is drawn from the live bindings, so the line stays truthful
-   * when the keys are remapped. The Toggle fragment only appears in multiple
-   * mode, where Space is bound to it; Accept reads "select" for a single pick
-   * and "accept" for a multiple one.
-   *
-   * @param \DrevOps\Tui\Theme\ThemeInterface $theme
-   *   The theme.
-   *
-   * @return string
-   *   The themed, dot-joined hint line.
-   */
-  protected function hint(ThemeInterface $theme): string {
-    $keys = $this->keys();
-
-    $fragments = array_filter([
-      $theme->keysHint($keys, 'select', Action::Toggle),
-      $theme->keysHint($keys, 'move', Action::MoveUp, Action::MoveDown),
-      $theme->keysHint($keys, 'open', Action::MoveRight),
-      $theme->keysHint($keys, 'up', Action::MoveLeft),
-      $theme->keysHint($keys, $this->multiple ? 'accept' : 'select', Action::Accept),
-      $theme->keysHint($keys, 'hidden', Action::Reveal),
-      $theme->keysHint($keys, 'cancel', Action::Cancel),
-    ]);
-
-    return $theme->footer(implode(' ' . $theme->dot() . ' ', $fragments));
   }
 
   /**
