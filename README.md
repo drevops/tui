@@ -191,6 +191,10 @@ $p->password('api_key', 'API key')->revealable()->confirm();
   </tr>
 </table>
 
+With `revealable()` on, pressing Tab in the editor reveals the value and the hint line shows the toggle:
+
+<img src="docs/assets/widget-password-reveal.svg" alt="Password reveal toggle: the value shown as plaintext with a tab reveal hint">
+
 ### Select
 
 Single choice from a list. Up/Down move, Enter accepts the highlighted option. Pass `default` (an option key) to start on an option other than the first.

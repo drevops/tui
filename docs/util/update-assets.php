@@ -457,6 +457,26 @@ function getJobs(string $project_dir): array {
     'at_needle' => 'Project name',
   ];
 
+  // The password reveal toggle: a static frame of the revealed plaintext with
+  // the reveal hint, anchored to the moment Tab flips the display to plaintext.
+  // The masked value hides "hunter2", so the plaintext only appears once
+  // revealed - anchoring on it captures the revealed frame, not the initial one.
+  $jobs['widget-password-reveal'] = [
+    'command' => 'php ' . $project_dir . '/playground/3-widgets/widget-password-reveal.php',
+    'interact' => <<<'EXPECT'
+# Reveal the value with Tab, hold the plaintext frame, then accept.
+expect "Password widget" {
+    pause 1000
+    press_tab
+    pause 1000
+    wait_and_enter
+}
+EXPECT,
+    'rows' => 6,
+    'cols' => 44,
+    'at_needle' => 'hunter2',
+  ];
+
   // Static per-widget screenshots: a single frame of the initial state.
   $widget_rows = [
     'text' => 6,
