@@ -14,6 +14,12 @@ use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\Fixup;
 use DrevOps\Tui\Derive\Derive;
 use DrevOps\Tui\Discovery\Dotenv;
+use DrevOps\Tui\Input\Action;
+use DrevOps\Tui\Input\Binding;
+use DrevOps\Tui\Input\Key;
+use DrevOps\Tui\Input\KeyMap;
+use DrevOps\Tui\Input\KeyName;
+use DrevOps\Tui\Input\Scope;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
@@ -237,6 +243,36 @@ final class FormTest extends TestCase {
     // The implicit default is the first option's value "0" as a string, not a
     // numeric-string coerced to int by the array key.
     $this->assertSame('0', $config->field('flag')?->default);
+  }
+
+  public function testDefaultKeymapWhenUnset(): void {
+    $config = Form::create('T')
+      ->panel('a', 'A', fn(PanelBuilder $p): FieldBuilder => $p->text('x'))
+      ->build();
+
+    $this->assertInstanceOf(KeyMap::class, $config->keymap);
+    $this->assertTrue($config->keymap->navigation()->matches(Key::named(KeyName::Up), Action::MoveUp));
+  }
+
+  public function testKeysAppliesPresetAndOverrides(): void {
+    $config = Form::create('T')
+      ->keys('vim', [new Binding(Scope::navigation(), Action::Quit, 'x')])
+      ->panel('a', 'A', fn(PanelBuilder $p): FieldBuilder => $p->text('x'))
+      ->build();
+
+    $this->assertInstanceOf(KeyMap::class, $config->keymap);
+    $nav = $config->keymap->navigation();
+    $this->assertTrue($nav->matches(Key::char('j'), Action::MoveDown));
+    $this->assertTrue($nav->matches(Key::char('x'), Action::Quit));
+  }
+
+  public function testInvalidKeyBindingThrowsAtBuild(): void {
+    $this->expectException(\InvalidArgumentException::class);
+
+    Form::create('T')
+      ->keys('default', [new Binding(Scope::navigation(), Action::Quit, KeyName::Enter)])
+      ->panel('a', 'A', fn(PanelBuilder $p): FieldBuilder => $p->text('x'))
+      ->build();
   }
 
 }

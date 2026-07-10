@@ -9,6 +9,10 @@ use DrevOps\Tui\Answers\Provenance;
 use DrevOps\Tui\Config\Field;
 use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\Panel;
+use DrevOps\Tui\Input\Action;
+use DrevOps\Tui\Input\Key;
+use DrevOps\Tui\Input\KeyName;
+use DrevOps\Tui\Input\ScopedKeyMap;
 use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Render\Box;
 use DrevOps\Tui\Render\Navigator;
@@ -821,26 +825,82 @@ class DefaultTheme implements ThemeInterface {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function keyHint(Key $key): string {
+    $name = $key->name;
+
+    if (!$name instanceof KeyName) {
+      $char = (string) $key->char;
+
+      // Render a control character (e.g. Ctrl-E) in caret notation.
+      return $char !== '' && ord($char) < 0x20 ? '^' . chr(ord($char) + 0x40) : $char;
+    }
+
+    return match ($name) {
+      KeyName::Up, KeyName::MouseWheelUp => $this->arrowUp(),
+      KeyName::Down, KeyName::MouseWheelDown => $this->arrowDown(),
+      KeyName::Left => $this->arrowLeft(),
+      KeyName::Right => $this->arrowRight(),
+      KeyName::Enter => $this->enter(),
+      KeyName::Escape => 'esc',
+      KeyName::Tab => 'tab',
+      KeyName::Space => 'space',
+      KeyName::Backspace => $this->unicode ? '⌫' : 'bksp',
+      KeyName::Delete => 'del',
+      KeyName::Home => 'home',
+      KeyName::End => 'end',
+      KeyName::PageUp => 'pgup',
+      KeyName::PageDown => 'pgdn',
+    };
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function keysHint(ScopedKeyMap $keys, string $label, Action ...$actions): string {
+    $glyphs = [];
+
+    foreach ($actions as $action) {
+      $key = $keys->primary($action);
+
+      if ($key instanceof Key) {
+        $glyphs[] = $this->keyHint($key);
+      }
+    }
+
+    return $glyphs === [] ? '' : implode('/', $glyphs) . ' ' . $label;
+  }
+
+  /**
    * Render the status line shown at the foot of a panel.
+   *
+   * @param \DrevOps\Tui\Input\ScopedKeyMap $nav
+   *   The navigation-scope bindings, so the hint reflects the active keys.
    *
    * @return string
    *   The themed status line (hint text and arrow glyphs).
    */
-  public function renderStatusLine(): string {
-    return $this->renderHintLine($this->arrowUp() . '/' . $this->arrowDown() . ' move', $this->enter() . ' select', 'esc back');
+  public function renderStatusLine(ScopedKeyMap $nav): string {
+    return $this->renderHintLine(
+      $this->keysHint($nav, 'move', Action::MoveUp, Action::MoveDown),
+      $this->keysHint($nav, 'select', Action::Activate),
+      $this->keysHint($nav, 'back', Action::Back),
+    );
   }
 
   /**
    * Render a dimmed line of key hints, joined with the dot glyph.
    *
    * @param string ...$hints
-   *   The hint fragments (e.g. "enter accept", "esc cancel").
+   *   The hint fragments (e.g. "enter accept", "esc cancel"). Empty fragments -
+   *   an unbound action - are dropped so the line has no dangling separators.
    *
    * @return string
    *   The themed hint line.
    */
   public function renderHintLine(string ...$hints): string {
-    return $this->footer(implode(' ' . $this->dot() . ' ', $hints));
+    return $this->footer(implode(' ' . $this->dot() . ' ', array_filter($hints)));
   }
 
   /**
@@ -868,12 +928,17 @@ class DefaultTheme implements ThemeInterface {
    * @param bool $renders_hint
    *   Whether the view already carries its own key-hint line, in which case the
    *   generic accept/cancel hint is omitted so the two cannot contradict.
+   * @param \DrevOps\Tui\Input\ScopedKeyMap|null $keys
+   *   The editor's scope bindings, so the accept/cancel hint reflects the
+   *   active keys; NULL uses the default accept/cancel glyphs.
    *
    * @return string
    *   The editor screen - boxed when the theme has a border, else plain.
    */
-  public function renderEditor(string $label, string $view, bool $renders_hint = FALSE): string {
-    $hint = $this->renderHintLine($this->enter() . ' accept', 'esc cancel');
+  public function renderEditor(string $label, string $view, bool $renders_hint = FALSE, ?ScopedKeyMap $keys = NULL): string {
+    $hint = $keys instanceof ScopedKeyMap
+      ? $this->renderHintLine($this->keysHint($keys, 'accept', Action::Accept), $this->keysHint($keys, 'cancel', Action::Cancel))
+      : $this->renderHintLine($this->enter() . ' accept', 'esc cancel');
     $footer = $renders_hint ? [] : [$hint];
 
     if ($this->borderStyle() !== self::BORDER_NONE) {

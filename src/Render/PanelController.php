@@ -9,9 +9,12 @@ use DrevOps\Tui\Answers\Provenance;
 use DrevOps\Tui\Config\Config;
 use DrevOps\Tui\Config\Field;
 use DrevOps\Tui\Config\Panel;
+use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Key;
-use DrevOps\Tui\Input\KeyName;
+use DrevOps\Tui\Input\KeyMap;
+use DrevOps\Tui\Input\KeyMapManager;
 use DrevOps\Tui\Input\KeyParser;
+use DrevOps\Tui\Input\ScopedKeyMap;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\TextareaWidget;
 use DrevOps\Tui\Widget\WidgetFactory;
@@ -76,6 +79,16 @@ class PanelController {
   protected ?Terminal $terminal = NULL;
 
   /**
+   * The resolved key bindings.
+   */
+  protected KeyMap $keymap;
+
+  /**
+   * The navigation-scope key bindings.
+   */
+  protected ScopedKeyMap $nav;
+
+  /**
    * The scroller.
    */
   protected Scroller $scroller;
@@ -118,8 +131,10 @@ class PanelController {
     protected string $version = '',
     ?ExternalEditor $external_editor = NULL,
   ) {
+    $this->keymap = $config->keymap ?? KeyMapManager::create();
     $this->externalEditor = $external_editor ?? new ExternalEditor();
-    $this->widgets = new WidgetFactory($this->externalEditor->isAvailable());
+    $this->widgets = new WidgetFactory($this->keymap, $this->externalEditor->isAvailable());
+    $this->nav = $this->keymap->navigation();
     $this->scroller = new Scroller();
     $this->navigator = new Navigator(new Panel('hub', $config->title, '', [], $config->panels));
   }
@@ -253,8 +268,9 @@ class PanelController {
   public function frame(int $height = 12): string {
     if ($this->editor instanceof WidgetInterface) {
       $label = $this->editing instanceof Field ? $this->editing->label : '';
+      $keys = $this->editing instanceof Field ? $this->keymap->forField($this->editing->type) : $this->nav;
 
-      return $this->theme->renderEditor($label, $this->editor->view($this->theme), $this->editor->rendersHint());
+      return $this->theme->renderEditor($label, $this->editor->view($this->theme), $this->editor->rendersHint(), $keys);
     }
 
     $panel = $this->navigator->current();
@@ -286,7 +302,7 @@ class PanelController {
 
     $this->offset = $viewport->offset;
     $header = [$this->theme->renderBreadcrumbLine($this->navigator)];
-    $footer = [$this->theme->renderStatusLine()];
+    $footer = [$this->theme->renderStatusLine($this->nav)];
 
     return $this->theme->renderFrame($header, $body, $footer, $viewport, $height);
   }
@@ -329,20 +345,20 @@ class PanelController {
    *   The key.
    */
   protected function handleNavigation(Key $key): void {
-    if ($key->isChar() && $key->char === 'q') {
+    if ($this->nav->matches($key, Action::Quit)) {
       $this->done = TRUE;
 
       return;
     }
 
-    if ($key->is(KeyName::MouseWheelUp)) {
+    if ($this->nav->matches($key, Action::ScrollUp)) {
       $this->offset = max(0, $this->offset - 1);
       $this->followCursor = FALSE;
 
       return;
     }
 
-    if ($key->is(KeyName::MouseWheelDown)) {
+    if ($this->nav->matches($key, Action::ScrollDown)) {
       $this->offset++;
       $this->followCursor = FALSE;
 
@@ -352,25 +368,25 @@ class PanelController {
     $this->followCursor = TRUE;
     $count = $this->theme->itemCount($this->navigator->current()) + ($this->buttonsVisible() ? 2 : 0);
 
-    if ($key->is(KeyName::Up)) {
+    if ($this->nav->matches($key, Action::MoveUp)) {
       $this->cursor = max(0, $this->cursor - 1);
     }
-    elseif ($key->is(KeyName::Down)) {
+    elseif ($this->nav->matches($key, Action::MoveDown)) {
       $this->cursor = min(max(0, $count - 1), $this->cursor + 1);
     }
-    elseif ($key->is(KeyName::Left) || $key->is(KeyName::Right)) {
+    elseif ($this->nav->matches($key, Action::MoveLeft) || $this->nav->matches($key, Action::MoveRight)) {
       // The submit/cancel buttons are inline, so Left/Right moves between them.
       $base = $this->theme->itemCount($this->navigator->current());
       if ($this->buttonsVisible() && $this->cursor >= $base) {
-        $this->cursor = max($base, min($count - 1, $this->cursor + ($key->is(KeyName::Right) ? 1 : -1)));
+        $this->cursor = max($base, min($count - 1, $this->cursor + ($this->nav->matches($key, Action::MoveRight) ? 1 : -1)));
       }
     }
-    elseif ($key->is(KeyName::Escape)) {
+    elseif ($this->nav->matches($key, Action::Back)) {
       if ($this->navigator->pop()) {
         $this->cursor = 0;
       }
     }
-    elseif ($key->is(KeyName::Enter)) {
+    elseif ($this->nav->matches($key, Action::Activate)) {
       $this->activate();
     }
   }

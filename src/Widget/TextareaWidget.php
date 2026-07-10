@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Widget;
 
+use DrevOps\Tui\Config\FieldType;
+use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Key;
-use DrevOps\Tui\Input\KeyName;
+use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Theme\ThemeInterface;
 
 /**
@@ -14,11 +16,6 @@ use DrevOps\Tui\Theme\ThemeInterface;
  * @package DrevOps\Tui\Widget
  */
 class TextareaWidget extends TextWidget {
-
-  /**
-   * The key that requests the external-editor handoff (Ctrl-E).
-   */
-  protected const string EDITOR_KEY = "\x05";
 
   /**
    * Whether the external-editor handoff has been requested.
@@ -45,10 +42,20 @@ class TextareaWidget extends TextWidget {
    * {@inheritdoc}
    */
   #[\Override]
+  protected function keyScope(): Scope {
+    return Scope::field(FieldType::Textarea);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
   public function handle(Key $key): void {
-    if ($key->isChar() && $key->char === self::EDITOR_KEY) {
-      // Only act when the handoff is offered; otherwise swallow the control key
-      // rather than inserting a raw byte into the buffer.
+    $keys = $this->keys();
+
+    if ($keys->matches($key, Action::ExternalEdit)) {
+      // Only act when the handoff is offered; either way the bound key is
+      // swallowed rather than inserting a raw control byte into the buffer.
       if ($this->externalEdit) {
         $this->externalEditRequested = TRUE;
       }
@@ -56,30 +63,26 @@ class TextareaWidget extends TextWidget {
       return;
     }
 
-    if ($key->is(KeyName::Enter)) {
+    if ($keys->matches($key, Action::NewLine)) {
       $this->insert("\n");
 
       return;
     }
 
-    if ($key->is(KeyName::Tab)) {
-      $this->accept($this->liveValue());
-
-      return;
-    }
-
-    if ($key->is(KeyName::Up)) {
+    if ($keys->matches($key, Action::MoveUp)) {
       $this->moveLine(-1);
 
       return;
     }
 
-    if ($key->is(KeyName::Down)) {
+    if ($keys->matches($key, Action::MoveDown)) {
       $this->moveLine(1);
 
       return;
     }
 
+    // The parent handles the rest, including Accept, which this scope binds to
+    // Tab rather than Enter.
     parent::handle($key);
   }
 
@@ -162,12 +165,19 @@ class TextareaWidget extends TextWidget {
   public function view(ThemeInterface $theme): string {
     $text = substr($this->buffer, 0, $this->cursor) . $theme->caret() . substr($this->buffer, $this->cursor);
 
-    $hint_text = 'enter newline ' . $theme->dot() . ' tab accept';
+    $fragments = [
+      $theme->keysHint($this->keys(), 'newline', Action::NewLine),
+      $theme->keysHint($this->keys(), 'accept', Action::Accept),
+      $theme->keysHint($this->keys(), 'cancel', Action::Cancel),
+    ];
+
     if ($this->externalEdit) {
-      $hint_text .= ' ' . $theme->dot() . ' ctrl-e editor';
+      $fragments[] = $theme->keysHint($this->keys(), 'editor', Action::ExternalEdit);
     }
 
-    $out = $text . "\n" . $theme->footer($hint_text);
+    $hint = $theme->footer(implode(' ' . $theme->dot() . ' ', array_filter($fragments)));
+
+    $out = $text . "\n" . $hint;
 
     return $this->error === NULL ? $out : $out . "\n" . $theme->error($this->error);
   }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Config;
 
+use DrevOps\Tui\Input\KeyMap;
+
 /**
  * The root configuration model: title, subject and a tree of panels.
  *
@@ -45,6 +47,9 @@ final readonly class Config {
    * @param array<string,mixed> $themeOptions
    *   Display options passed to the interactive theme, keyed by name (e.g.
    *   "spacing" and "border"; see ThemeInterface constants).
+   * @param \DrevOps\Tui\Input\KeyMap|null $keymap
+   *   The resolved key bindings for the interactive TUI; NULL uses the default
+   *   preset. The Form builder resolves and validates this at build time.
    */
   public function __construct(
     public string $title,
@@ -61,6 +66,7 @@ final readonly class Config {
     public ?bool $unicode = NULL,
     public string $envPrefix = '',
     public array $themeOptions = [],
+    public ?KeyMap $keymap = NULL,
   ) {
   }
 

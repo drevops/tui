@@ -9,11 +9,16 @@ use DrevOps\Tui\Answers\Provenance;
 use DrevOps\Tui\Config\Field;
 use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\Panel;
+use DrevOps\Tui\Input\Action;
+use DrevOps\Tui\Input\Key;
+use DrevOps\Tui\Input\KeyMapManager;
+use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Render\Navigator;
 use DrevOps\Tui\Render\Viewport;
 use DrevOps\Tui\Theme\DefaultTheme;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
@@ -181,11 +186,56 @@ final class ThemeRenderTest extends TestCase {
   }
 
   public function testStatusLineIsThemed(): void {
-    $line = (new DefaultTheme())->renderStatusLine();
+    $line = (new DefaultTheme())->renderStatusLine(KeyMapManager::create()->navigation());
 
     // Themed with the footer role (dim gray) and composed from arrow glyphs.
     $this->assertStringContainsString("\033[90m", $line);
     $this->assertStringContainsString('↑/↓ move', Ansi::strip($line));
+  }
+
+  #[DataProvider('dataProviderKeyHint')]
+  public function testKeyHint(Key $key, string $unicode, string $ascii): void {
+    $this->assertSame($unicode, (new DefaultTheme())->keyHint($key));
+    $this->assertSame($ascii, (new DefaultTheme(76, ['color' => FALSE, 'unicode' => FALSE]))->keyHint($key));
+  }
+
+  public static function dataProviderKeyHint(): \Iterator {
+    yield 'up' => [Key::named(KeyName::Up), '↑', '^'];
+    yield 'down' => [Key::named(KeyName::Down), '↓', 'v'];
+    yield 'left' => [Key::named(KeyName::Left), '←', '<'];
+    yield 'right' => [Key::named(KeyName::Right), '→', '>'];
+    yield 'enter' => [Key::named(KeyName::Enter), '↵', '<'];
+    yield 'escape' => [Key::named(KeyName::Escape), 'esc', 'esc'];
+    yield 'tab' => [Key::named(KeyName::Tab), 'tab', 'tab'];
+    yield 'space' => [Key::named(KeyName::Space), 'space', 'space'];
+    yield 'backspace' => [Key::named(KeyName::Backspace), '⌫', 'bksp'];
+    yield 'delete' => [Key::named(KeyName::Delete), 'del', 'del'];
+    yield 'home' => [Key::named(KeyName::Home), 'home', 'home'];
+    yield 'end' => [Key::named(KeyName::End), 'end', 'end'];
+    yield 'page up' => [Key::named(KeyName::PageUp), 'pgup', 'pgup'];
+    yield 'page down' => [Key::named(KeyName::PageDown), 'pgdn', 'pgdn'];
+    yield 'wheel up' => [Key::named(KeyName::MouseWheelUp), '↑', '^'];
+    yield 'wheel down' => [Key::named(KeyName::MouseWheelDown), '↓', 'v'];
+    yield 'character' => [Key::char('j'), 'j', 'j'];
+    yield 'control character in caret notation' => [Key::char("\x05"), '^E', '^E'];
+  }
+
+  public function testKeysHintDropsUnboundActions(): void {
+    $nav = KeyMapManager::create()->navigation();
+    $theme = new DefaultTheme();
+
+    $this->assertSame('↑/↓ move', $theme->keysHint($nav, 'move', Action::MoveUp, Action::MoveDown));
+    // Newline is not bound in the navigation scope, so the fragment is empty.
+    $this->assertSame('', $theme->keysHint($nav, 'newline', Action::NewLine));
+  }
+
+  public function testRenderEditorDerivesHintFromKeys(): void {
+    $keys = KeyMapManager::create()->forField(FieldType::Text);
+    $editor = Ansi::strip((new DefaultTheme())->renderEditor('Name', 'value', FALSE, $keys));
+
+    // The generic accept/cancel hint reflects the active bindings.
+    $this->assertStringContainsString('↵ accept', $editor);
+    $this->assertStringContainsString('esc cancel', $editor);
   }
 
   public function testHorizontalArrowGlyphs(): void {

@@ -6,6 +6,8 @@ namespace DrevOps\Tui\Widget;
 
 use DrevOps\Tui\Config\Field;
 use DrevOps\Tui\Config\FieldType;
+use DrevOps\Tui\Input\KeyMap;
+use DrevOps\Tui\Input\KeyMapManager;
 
 /**
  * Builds the widget for a field, seeded with the field's current value.
@@ -15,17 +17,25 @@ use DrevOps\Tui\Config\FieldType;
 class WidgetFactory {
 
   /**
+   * The resolved key bindings to inject into each widget.
+   */
+  protected KeyMap $keymap;
+
+  /**
    * Construct a widget factory.
    *
+   * @param \DrevOps\Tui\Input\KeyMap|null $keymap
+   *   The resolved key bindings; NULL uses the default preset.
    * @param bool $externalEditorAvailable
    *   Whether an external editor is launchable here. A textarea field opts in
    *   per-field; the handoff shows only when one is also available.
    */
-  public function __construct(protected bool $externalEditorAvailable = FALSE) {
+  public function __construct(?KeyMap $keymap = NULL, protected bool $externalEditorAvailable = FALSE) {
+    $this->keymap = $keymap ?? KeyMapManager::create();
   }
 
   /**
-   * Create a widget for a field.
+   * Create a widget for a field, wired with its scope's key bindings.
    *
    * @param \DrevOps\Tui\Config\Field $field
    *   The field.
@@ -38,7 +48,7 @@ class WidgetFactory {
   public function create(Field $field, mixed $current): WidgetInterface {
     $labels = $this->labels($field);
 
-    return match ($field->type) {
+    $widget = match ($field->type) {
       FieldType::Confirm => new ConfirmWidget((bool) $current),
       FieldType::Toggle => new ToggleWidget($labels, is_string($current) ? $current : ''),
       FieldType::Select => new SelectWidget($labels, is_string($current) ? $current : ''),
@@ -52,6 +62,8 @@ class WidgetFactory {
       FieldType::Pause => new PauseWidget(),
       default => new TextWidget(is_string($current) ? $current : ''),
     };
+
+    return $widget->setKeys($this->keymap->forField($field->type));
   }
 
   /**

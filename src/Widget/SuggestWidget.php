@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Widget;
 
+use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Key;
-use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Theme\ThemeInterface;
 
 /**
@@ -40,36 +40,38 @@ class SuggestWidget extends AbstractWidget {
    * {@inheritdoc}
    */
   public function handle(Key $key): void {
+    $keys = $this->keys();
+
     if ($this->handleCancel($key)) {
       return;
     }
 
-    if ($key->is(KeyName::Enter)) {
+    if ($keys->matches($key, Action::Accept)) {
       $this->accept($this->liveValue());
 
       return;
     }
 
-    if ($key->is(KeyName::Down)) {
+    if ($keys->matches($key, Action::MoveDown)) {
       $this->highlight = min(count($this->matches()) - 1, $this->highlight + 1);
 
       return;
     }
 
-    if ($key->is(KeyName::Up)) {
+    if ($keys->matches($key, Action::MoveUp)) {
       $this->highlight = max(-1, $this->highlight - 1);
 
       return;
     }
 
-    if ($key->is(KeyName::Backspace)) {
+    if ($keys->matches($key, Action::DeleteBack)) {
       $this->buffer = substr($this->buffer, 0, -1);
       $this->highlight = -1;
 
       return;
     }
 
-    if ($key->is(KeyName::Space)) {
+    if ($keys->matches($key, Action::InsertSpace)) {
       $this->buffer .= ' ';
       $this->highlight = -1;
 

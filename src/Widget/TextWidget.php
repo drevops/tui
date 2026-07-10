@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Widget;
 
+use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Key;
-use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Theme\ThemeInterface;
 
 /**
@@ -39,35 +39,37 @@ class TextWidget extends AbstractWidget {
    * {@inheritdoc}
    */
   public function handle(Key $key): void {
+    $keys = $this->keys();
+
     if ($this->handleCancel($key)) {
       return;
     }
 
-    if ($key->is(KeyName::Enter)) {
+    if ($keys->matches($key, Action::Accept)) {
       $this->accept($this->liveValue());
 
       return;
     }
 
-    if ($key->is(KeyName::Backspace)) {
+    if ($keys->matches($key, Action::DeleteBack)) {
       $this->backspace();
 
       return;
     }
 
-    if ($key->is(KeyName::Left)) {
+    if ($keys->matches($key, Action::MoveLeft)) {
       $this->cursor = max(0, $this->cursor - 1);
 
       return;
     }
 
-    if ($key->is(KeyName::Right)) {
+    if ($keys->matches($key, Action::MoveRight)) {
       $this->cursor = min(strlen($this->buffer), $this->cursor + 1);
 
       return;
     }
 
-    if ($key->is(KeyName::Space)) {
+    if ($keys->matches($key, Action::InsertSpace)) {
       $this->insert(' ');
 
       return;

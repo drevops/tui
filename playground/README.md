@@ -87,6 +87,25 @@ composer install
   php playground/6-theme-detect/run.php --theme=light   # force light
   ```
 
+- **[`7-theme-options/`](7-theme-options)** - the display options (`spacing`,
+  `border`) and a custom `accent` option declared by a registered theme, all set
+  as plain strings in one array. Each value is validated, so a typo throws.
+
+  ```bash
+  php playground/7-theme-options/run.php
+  ```
+
+- **[`8-key-bindings/`](8-key-bindings)** - the same form driven with three key
+  maps, selected with `--keys`: the default bindings, the built-in `vim` preset
+  (h/j/k/l), and a custom per-widget-type override. The panel and editor hints
+  follow whatever is bound.
+
+  ```bash
+  php playground/8-key-bindings/run.php              # default (arrow keys)
+  php playground/8-key-bindings/run.php --keys=vim   # h/j/k/l navigation
+  php playground/8-key-bindings/run.php --keys=custom
+  ```
+
 ## How a form picks a theme
 
 Set it on the builder with `->theme(...)`, lowest friction first:
@@ -100,3 +119,21 @@ Set it on the builder with `->theme(...)`, lowest friction first:
    picks `dark` or `light` from the terminal background (an OSC 11 query, then
    `COLORFGBG`, then a dark default). Forcing a built-in opts out. This is what
    `6-theme-detect` demonstrates.
+
+## How a form sets key bindings
+
+Set them on the builder with `->keys(...)`, mirroring `->theme(...)`:
+
+1. **A preset name** - `->keys('vim')` for the built-in vim navigation, or a name
+   registered with `KeyMapManager::register('name', MyKeyMap::class)`.
+2. **A preset class** - `->keys('\Your\KeyMapClass')`, instantiated directly with
+   no registration.
+3. **Overrides** - `->keys('default', [new Binding(Scope::field(FieldType::Select), Action::Accept, KeyName::Tab)])`
+   retunes individual bindings on top of a preset. A binding names a scope (the
+   base, navigation, or a widget type), an action and its keys.
+4. **Defaults** - leave it unset for the built-in bindings. This is what most
+   examples do.
+
+Conflicting or un-typeable bindings throw when the form is built, so a bad key map
+is caught at declaration time, not mid-session. This is what `8-key-bindings`
+demonstrates.
