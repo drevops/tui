@@ -471,7 +471,20 @@ final class FieldBuilder {
    *   The builder.
    */
   public function option(string $value, string $label = '', string $description = '', bool $disabled = FALSE, string $disabled_reason = ''): self {
-    $this->options[] = new Option($value, $label === '' ? $value : $label, $description, OptionKind::Option, $disabled, $disabled_reason);
+    $option = new Option($value, $label === '' ? $value : $label, $description, OptionKind::Option, $disabled, $disabled_reason);
+
+    // Re-declaring a value replaces the earlier option in place, so the option
+    // set stays unique; separators and headings carry no value and always
+    // append.
+    foreach ($this->options as $index => $existing) {
+      if ($existing->kind === OptionKind::Option && $existing->value === $value) {
+        $this->options[$index] = $option;
+
+        return $this;
+      }
+    }
+
+    $this->options[] = $option;
 
     return $this;
   }

@@ -307,6 +307,22 @@ final class FormTest extends TestCase {
     $this->assertSame(['standard'], $profile->selectableValues());
   }
 
+  public function testRepeatedOptionValueOverridesInPlace(): void {
+    $config = Form::create('T')
+      ->panel('p', 'P', function (PanelBuilder $p): void {
+        $p->select('s')->option('a', 'First')->separator()->option('a', 'Second');
+      })
+      ->build();
+
+    $field = $config->field('s');
+    $this->assertInstanceOf(Field::class, $field);
+
+    // The second declaration overrides the first in place; the separator stays.
+    $this->assertCount(2, $field->options);
+    $this->assertSame('Second', $field->option('a')?->label);
+    $this->assertSame(['a'], $field->selectableValues());
+  }
+
   public function testDuplicateFieldIdThrows(): void {
     $this->expectException(ConfigException::class);
     $this->expectExceptionMessage('Duplicate field id "x".');
