@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Tests\Unit\Schema;
 
+use DrevOps\Tui\Builder\FieldBuilder;
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Builder\PanelBuilder;
 use DrevOps\Tui\Condition\Condition;
@@ -113,6 +114,17 @@ final class SchemaValidatorTest extends TestCase {
 
     $this->assertSame([], $validator->validate(['name' => 'Acme', 'visibility' => 'private']));
     $this->assertContains('Question "visibility" must be one of: public, private.', $validator->validate(['name' => 'Acme', 'visibility' => 'bogus']));
+  }
+
+  public function testNumericStringOptionMembership(): void {
+    $config = Form::create('T')
+      ->panel('p', 'p', fn(PanelBuilder $p): FieldBuilder => $p->toggle('flag')->option('0', 'Off')->option('1', 'On'))
+      ->build();
+    $validator = new SchemaValidator($config);
+
+    // A numeric-string value stays valid: values are compared as strings.
+    $this->assertSame([], $validator->validate(['flag' => '1']));
+    $this->assertContains('Question "flag" must be one of: 0, 1.', $validator->validate(['flag' => '2']));
   }
 
   /**

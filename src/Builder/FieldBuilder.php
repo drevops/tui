@@ -366,9 +366,11 @@ final class FieldBuilder {
     }
 
     // A toggle is always in one of its two states, so it defaults to the first
-    // option rather than an empty value that would not match either.
+    // option's value rather than an empty value that would not match either.
+    // The value is read off the option, not its array key, so a numeric-string
+    // value like "0" is not coerced to an int.
     if ($this->fieldType === FieldType::Toggle && $this->options !== []) {
-      return array_key_first($this->options);
+      return reset($this->options)->value;
     }
 
     return $this->defaultFor($this->fieldType);

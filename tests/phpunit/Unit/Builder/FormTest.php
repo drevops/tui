@@ -15,6 +15,7 @@ use DrevOps\Tui\Config\Fixup;
 use DrevOps\Tui\Derive\Derive;
 use DrevOps\Tui\Discovery\Dotenv;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
@@ -205,13 +206,37 @@ final class FormTest extends TestCase {
       ->build();
   }
 
-  public function testToggleDefaultNotAnOptionThrows(): void {
+  #[DataProvider('dataProviderToggleInvalidDefaultThrows')]
+  public function testToggleInvalidDefaultThrows(mixed $default): void {
     $this->expectException(ConfigException::class);
-    $this->expectExceptionMessage('Toggle field "t" default "c" is not one of its options.');
+    $this->expectExceptionMessage('Toggle field "t" default must be one of: a, b.');
 
     Form::create('T')
-      ->panel('p', 'P', fn(PanelBuilder $p): FieldBuilder => $p->toggle('t')->option('a')->option('b')->default('c'))
+      ->panel('p', 'P', fn(PanelBuilder $p): FieldBuilder => $p->toggle('t')->option('a')->option('b')->default($default))
       ->build();
+  }
+
+  /**
+   * Data provider for testToggleInvalidDefaultThrows().
+   *
+   * @return \Iterator<string, array{mixed}>
+   *   A default value that is not one of the toggle's option values.
+   */
+  public static function dataProviderToggleInvalidDefaultThrows(): \Iterator {
+    yield 'unknown string' => ['c'];
+    yield 'boolean' => [TRUE];
+    yield 'integer' => [123];
+    yield 'null' => [NULL];
+  }
+
+  public function testToggleNumericStringOptionsDefaultToFirstValue(): void {
+    $config = Form::create('T')
+      ->panel('p', 'P', fn(PanelBuilder $p): FieldBuilder => $p->toggle('flag')->option('0', 'Off')->option('1', 'On'))
+      ->build();
+
+    // The implicit default is the first option's value "0" as a string, not a
+    // numeric-string coerced to int by the array key.
+    $this->assertSame('0', $config->field('flag')?->default);
   }
 
 }
