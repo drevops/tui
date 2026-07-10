@@ -143,11 +143,13 @@ class TextWidget extends AbstractWidget {
       return NULL;
     }
 
-    $needle = strtolower($this->buffer);
-    $length = strlen($this->buffer);
+    // Fold and measure by character, not byte, so non-ASCII candidates match
+    // case-insensitively and the suffix never splits mid-character.
+    $needle = mb_strtolower($this->buffer);
+    $length = mb_strlen($this->buffer);
 
     foreach ($this->completions as $candidate) {
-      if (strlen($candidate) > $length && str_starts_with(strtolower($candidate), $needle)) {
+      if (mb_strlen($candidate) > $length && str_starts_with(mb_strtolower($candidate), $needle)) {
         return $candidate;
       }
     }
@@ -164,7 +166,7 @@ class TextWidget extends AbstractWidget {
   protected function ghostSuffix(): string {
     $match = $this->bestMatch();
 
-    return $match === NULL ? '' : substr($match, strlen($this->buffer));
+    return $match === NULL ? '' : mb_substr($match, mb_strlen($this->buffer));
   }
 
   /**

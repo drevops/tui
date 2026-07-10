@@ -149,6 +149,18 @@ final class TextWidgetTest extends TestCase {
     $this->assertSame('GitHub', $widget->value());
   }
 
+  public function testGhostTextIsUnicodeAware(): void {
+    // strtolower() folds only ASCII, so a non-ASCII prefix must fold with
+    // mbstring; the multibyte suffix must also render whole, not split mid-byte.
+    $widget = new TextWidget('', NULL, NULL, ['Éclair']);
+
+    $widget->handle(Key::char('é'));
+    $this->assertStringContainsString('clair', $widget->view(new DefaultTheme()));
+
+    $widget->handle(Key::named(KeyName::Tab));
+    $this->assertSame('Éclair', $widget->value());
+  }
+
   public function testNoMatchLeavesPlainField(): void {
     $widget = new TextWidget('', NULL, NULL, ['acme-site']);
 
