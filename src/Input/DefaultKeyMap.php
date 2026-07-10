@@ -46,6 +46,9 @@ class DefaultKeyMap {
       new Binding(Scope::navigation(), Action::ScrollUp, KeyName::MouseWheelUp),
       new Binding(Scope::navigation(), Action::ScrollDown, KeyName::MouseWheelDown),
 
+      // The text field accepts its inline ghost-text completion on Tab.
+      new Binding(Scope::field(FieldType::Text), Action::Complete, KeyName::Tab),
+
       new Binding(Scope::field(FieldType::Textarea), Action::NewLine, KeyName::Enter),
       new Binding(Scope::field(FieldType::Textarea), Action::Accept, KeyName::Tab),
       // The textarea hands off to the user's $EDITOR on Ctrl-E.

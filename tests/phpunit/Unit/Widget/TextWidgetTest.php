@@ -95,4 +95,102 @@ final class TextWidgetTest extends TestCase {
     $this->assertFalse((new TextWidget())->rendersHint());
   }
 
+  public function testGhostTextRendersDimmedSuffix(): void {
+    // The first candidate is skipped (no prefix match); the second completes.
+    $widget = new TextWidget('', NULL, NULL, ['other', 'acme-site']);
+
+    $widget->handle(Key::char('a'));
+    $widget->handle(Key::char('c'));
+
+    // The typed prefix stays put and the remaining suffix is dimmed (SGR 90).
+    $view = $widget->view(new DefaultTheme());
+    $this->assertStringContainsString('me-site', $view);
+    $this->assertStringContainsString("\033[90m", $view);
+
+    // The ghost is a preview only: the value stays the typed text until accepted.
+    $this->assertSame('ac', $widget->value());
+  }
+
+  public function testTabAcceptsCompletion(): void {
+    $widget = new TextWidget('', NULL, NULL, ['acme-site']);
+
+    $value = WidgetRunner::run($widget, ArrayKeyStream::of(Key::char('a'), Key::named(KeyName::Tab), Key::named(KeyName::Enter)));
+
+    $this->assertSame('acme-site', $value);
+  }
+
+  public function testRightAtEndAcceptsCompletion(): void {
+    $widget = new TextWidget('', NULL, NULL, ['acme-site']);
+
+    $value = WidgetRunner::run($widget, ArrayKeyStream::of(Key::char('a'), Key::named(KeyName::Right), Key::named(KeyName::Enter)));
+
+    $this->assertSame('acme-site', $value);
+  }
+
+  public function testRightMidBufferMovesCaretWithoutCompleting(): void {
+    $widget = new TextWidget('ab', NULL, NULL, ['abcdef']);
+
+    // With the caret off the end there is no ghost, so Right advances the caret
+    // rather than accepting a completion.
+    $widget->handle(Key::named(KeyName::Left));
+    $widget->handle(Key::named(KeyName::Right));
+
+    $this->assertSame('ab', $widget->value());
+  }
+
+  public function testCaseInsensitiveMatchCanonicalisesOnAccept(): void {
+    $widget = new TextWidget('', NULL, NULL, ['GitHub']);
+
+    $widget->handle(Key::char('g'));
+    $widget->handle(Key::char('i'));
+    $widget->handle(Key::named(KeyName::Tab));
+
+    // A lower-case prefix matches and accepting adopts the candidate's case.
+    $this->assertSame('GitHub', $widget->value());
+  }
+
+  public function testNoMatchLeavesPlainField(): void {
+    $widget = new TextWidget('', NULL, NULL, ['acme-site']);
+
+    $widget->handle(Key::char('z'));
+
+    // No candidate starts with "z": no dimmed ghost, and Tab is inert.
+    $view = $widget->view(new DefaultTheme());
+    $this->assertStringNotContainsString("\033[90m", $view);
+
+    $widget->handle(Key::named(KeyName::Tab));
+    $this->assertSame('z', $widget->value());
+  }
+
+  public function testFullyTypedCandidateHasNoGhost(): void {
+    $widget = new TextWidget('', NULL, NULL, ['php']);
+
+    $widget->handle(Key::char('p'));
+    $widget->handle(Key::char('h'));
+    $widget->handle(Key::char('p'));
+
+    // The buffer already equals the only candidate, so nothing is left to ghost.
+    $this->assertStringNotContainsString("\033[90m", $widget->view(new DefaultTheme()));
+  }
+
+  public function testEmptyBufferShowsNoGhost(): void {
+    // With nothing typed there is no prefix to complete, so no ghost renders.
+    $widget = new TextWidget('', NULL, NULL, ['acme-site']);
+
+    $this->assertStringNotContainsString("\033[90m", $widget->view(new DefaultTheme()));
+  }
+
+  public function testGhostSuppressedInNoAnsiMode(): void {
+    $widget = new TextWidget('', NULL, NULL, ['acme-site']);
+
+    $widget->handle(Key::char('a'));
+    $widget->handle(Key::char('c'));
+
+    // Without colour the ghost cannot be dimmed, so it is suppressed entirely and
+    // no escape sequences leak into the plain-text line.
+    $view = $widget->view(new DefaultTheme(76, ['color' => FALSE]));
+    $this->assertStringNotContainsString('me-site', $view);
+    $this->assertStringNotContainsString("\033", $view);
+  }
+
 }

@@ -233,6 +233,18 @@ interface ThemeInterface {
   public function caret(): string;
 
   /**
+   * Inline ghost-text: a dimmed completion suffix, empty without colour.
+   *
+   * @param string $text
+   *   The completion suffix shown after the caret.
+   *
+   * @return string
+   *   The dimmed suffix, or an empty string in no-colour mode - without ANSI it
+   *   cannot be told apart from typed text, so it is suppressed.
+   */
+  public function ghost(string $text): string;
+
+  /**
    * The masked-character symbol for secret values.
    */
   public function mask(): string;

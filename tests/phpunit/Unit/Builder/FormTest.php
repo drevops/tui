@@ -222,6 +222,24 @@ final class FormTest extends TestCase {
     $this->assertSame($transformer, $field->transform);
   }
 
+  public function testCompletionSourceStored(): void {
+    $list = ['acme-site', 'acme-app'];
+    $closure = fn (array $answers): array => [];
+
+    $config = Form::create('T')
+      ->panel('p', 'P', function (PanelBuilder $panel) use ($list, $closure): void {
+        $panel->text('name', 'Name')->complete($list);
+        $panel->text('repo', 'Repo')->complete($closure);
+        $panel->text('plain', 'Plain');
+      })
+      ->build();
+
+    $this->assertSame($list, $config->field('name')?->completion);
+    $this->assertSame($closure, $config->field('repo')?->completion);
+    // A field with no completion source defaults to an empty list.
+    $this->assertSame([], $config->field('plain')?->completion);
+  }
+
   public function testNumberBoundsAssembled(): void {
     $config = Form::create('T')
       ->panel('p', 'P', function (PanelBuilder $panel): void {

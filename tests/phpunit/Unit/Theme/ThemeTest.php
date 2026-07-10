@@ -42,6 +42,15 @@ final class ThemeTest extends TestCase {
     // Option-list roles: a bold-gray heading and a gray disabled option.
     yield 'heading' => [static fn(): string => (new DefaultTheme())->heading('X'), '1;90'];
     yield 'disabled' => [static fn(): string => (new DefaultTheme())->disabled('X'), '90'];
+    // Inline ghost-text is dimmed gray, the same as the other dimmed chrome.
+    yield 'ghost' => [static fn(): string => (new DefaultTheme())->ghost('X'), '90'];
+  }
+
+  public function testGhostSuppressedWithoutColour(): void {
+    // Ghost-text cannot be dimmed without ANSI, so it is suppressed entirely
+    // rather than rendered as indistinguishable plain text.
+    $this->assertSame('', (new DefaultTheme(76, ['color' => FALSE]))->ghost('X'));
+    $this->assertStringContainsString("\033[90m", (new DefaultTheme())->ghost('X'));
   }
 
   public function testDivider(): void {

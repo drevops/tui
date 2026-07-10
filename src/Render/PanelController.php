@@ -449,7 +449,7 @@ class PanelController {
    */
   protected function openEditor(Field $field): void {
     $this->editing = $field;
-    $this->editor = $this->widgets->create($field, $this->values[$field->id] ?? $field->default);
+    $this->editor = $this->widgets->create($field, $this->values[$field->id] ?? $field->default, $this->values);
   }
 
   /**

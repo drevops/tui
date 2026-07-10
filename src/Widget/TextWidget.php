@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Widget;
 
+use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Key;
+use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Theme\ThemeInterface;
 
 /**
- * Single-line text input with a movable cursor.
+ * Single-line text input with a movable cursor and optional ghost-text.
  *
  * @package DrevOps\Tui\Widget
  */
@@ -29,10 +31,21 @@ class TextWidget extends AbstractWidget {
    *   Optional validator (see AbstractWidget).
    * @param \Closure|null $transform
    *   Optional transformer (see AbstractWidget).
+   * @param list<string> $completions
+   *   Inline ghost-text candidates: the buffer is completed to the first
+   *   candidate it is a prefix of. Empty leaves a plain text field.
    */
-  public function __construct(protected string $buffer = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL) {
+  public function __construct(protected string $buffer = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL, protected array $completions = []) {
     parent::__construct($validate, $transform);
     $this->cursor = strlen($this->buffer);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  protected function keyScope(): Scope {
+    return Scope::field(FieldType::Text);
   }
 
   /**
@@ -51,6 +64,12 @@ class TextWidget extends AbstractWidget {
       return;
     }
 
+    if ($keys->matches($key, Action::Complete)) {
+      $this->applyCompletion();
+
+      return;
+    }
+
     if ($keys->matches($key, Action::DeleteBack)) {
       $this->backspace();
 
@@ -64,7 +83,14 @@ class TextWidget extends AbstractWidget {
     }
 
     if ($keys->matches($key, Action::MoveRight)) {
-      $this->cursor = min(strlen($this->buffer), $this->cursor + 1);
+      // At the end of a completable line Right accepts the ghost-text, mirroring
+      // Tab; anywhere else it just advances the caret.
+      if ($this->bestMatch() !== NULL) {
+        $this->applyCompletion();
+      }
+      else {
+        $this->cursor = min(strlen($this->buffer), $this->cursor + 1);
+      }
 
       return;
     }
@@ -102,6 +128,58 @@ class TextWidget extends AbstractWidget {
   }
 
   /**
+   * The best completion candidate for the current buffer, if any.
+   *
+   * A candidate qualifies only when the caret sits at the end of a non-empty
+   * buffer and the buffer is a case-insensitive prefix of a strictly longer
+   * candidate; the first such candidate in declared order wins. Returns NULL
+   * when nothing completes, so the field behaves as a plain text input.
+   *
+   * @return string|null
+   *   The full candidate string, or NULL.
+   */
+  protected function bestMatch(): ?string {
+    if ($this->buffer === '' || $this->cursor !== strlen($this->buffer)) {
+      return NULL;
+    }
+
+    $needle = strtolower($this->buffer);
+    $length = strlen($this->buffer);
+
+    foreach ($this->completions as $candidate) {
+      if (strlen($candidate) > $length && str_starts_with(strtolower($candidate), $needle)) {
+        return $candidate;
+      }
+    }
+
+    return NULL;
+  }
+
+  /**
+   * The ghost-text suffix shown after the caret, or an empty string when none.
+   *
+   * @return string
+   *   The suffix of the best candidate beyond the typed buffer.
+   */
+  protected function ghostSuffix(): string {
+    $match = $this->bestMatch();
+
+    return $match === NULL ? '' : substr($match, strlen($this->buffer));
+  }
+
+  /**
+   * Fill the buffer with the current completion candidate, when one applies.
+   */
+  protected function applyCompletion(): void {
+    $match = $this->bestMatch();
+
+    if ($match !== NULL) {
+      $this->buffer = $match;
+      $this->cursor = strlen($match);
+    }
+  }
+
+  /**
    * {@inheritdoc}
    */
   protected function liveValue(): mixed {
@@ -118,16 +196,19 @@ class TextWidget extends AbstractWidget {
   }
 
   /**
-   * Render the input line with the caret at the cursor position.
+   * Render the input line with the caret and any inline ghost-text.
    *
    * @param \DrevOps\Tui\Theme\ThemeInterface $theme
-   *   The theme supplying the caret glyph.
+   *   The theme supplying the caret glyph and the ghost styling.
    *
    * @return string
    *   The input line.
    */
   protected function caretLine(ThemeInterface $theme): string {
-    return substr($this->buffer, 0, $this->cursor) . $theme->caret() . substr($this->buffer, $this->cursor);
+    $suffix = $this->ghostSuffix();
+    $ghost = $suffix === '' ? '' : $theme->ghost($suffix);
+
+    return substr($this->buffer, 0, $this->cursor) . $theme->caret() . substr($this->buffer, $this->cursor) . $ghost;
   }
 
 }

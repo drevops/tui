@@ -485,6 +485,13 @@ class DefaultTheme implements ThemeInterface {
   /**
    * {@inheritdoc}
    */
+  public function ghost(string $text): string {
+    return $this->color ? $this->paint('90', $text) : '';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function mask(): string {
     return $this->unicode ? '•' : '*';
   }
