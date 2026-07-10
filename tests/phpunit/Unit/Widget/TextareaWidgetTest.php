@@ -89,7 +89,7 @@ final class TextareaWidgetTest extends TestCase {
     $this->assertTrue((new TextareaWidget('x'))->rendersHint());
   }
 
-  public function testCtrlERequestsExternalEditWhenEnabled(): void {
+  public function testEditorKeyRequestsHandoffWhenEnabled(): void {
     $widget = new TextareaWidget('draft', externalEdit: TRUE);
 
     $widget->handle(Key::char("\x05"));
@@ -100,7 +100,7 @@ final class TextareaWidgetTest extends TestCase {
     $this->assertFalse($widget->isComplete());
   }
 
-  public function testCtrlESwallowedWhenDisabled(): void {
+  public function testEditorKeySwallowedWhenDisabled(): void {
     $widget = new TextareaWidget('draft');
 
     $widget->handle(Key::char("\x05"));
@@ -133,7 +133,7 @@ final class TextareaWidgetTest extends TestCase {
   }
 
   public function testApplyExternalEditRunsValidator(): void {
-    $widget = new TextareaWidget('x', externalEdit: TRUE, validate: fn(mixed $value): string => 'Nope.');
+    $widget = new TextareaWidget('x', validate: fn(mixed $value): string => 'Nope.', externalEdit: TRUE);
 
     $widget->applyExternalEdit('bad');
 

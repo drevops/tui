@@ -7,11 +7,11 @@ namespace DrevOps\Tui\Render;
 /**
  * Hands a text buffer off to the user's $EDITOR and captures the result.
  *
- * The buffer is written to a temporary file, the terminal is suspended (leaving
- * raw mode and the alternate screen so the editor can drive the TTY), the editor
- * is launched, and on its return the terminal is restored and the saved file is
- * read back. The actual process spawn is the one seam that touches the real TTY
- * and is excluded from coverage; everything around it is testable.
+ * The buffer is written to a temp file, the terminal is suspended (leaving raw
+ * mode and the alt screen so the editor drives the TTY), then the editor runs.
+ * On return the terminal is restored and the saved file is read back. The
+ * process spawn is the one seam that touches the real TTY and is excluded from
+ * coverage; everything around it is testable.
  *
  * @package DrevOps\Tui\Render
  */
@@ -55,12 +55,12 @@ class ExternalEditor {
    * @param string $initial
    *   The buffer the editor opens with.
    * @param \DrevOps\Tui\Render\Terminal|null $terminal
-   *   The terminal to suspend around the editor, or NULL to leave terminal state
-   *   untouched (the editor still runs).
+   *   The terminal to suspend around the editor, or NULL to leave terminal
+   *   state untouched (the editor still runs).
    *
    * @return string|null
-   *   The saved buffer, or NULL when no editor is available or the editor exited
-   *   non-zero (an aborted edit) - the caller then keeps the inline value.
+   *   The saved buffer, or NULL when no editor is available or the editor
+   *   exited non-zero (an aborted edit) - the caller keeps the inline value.
    */
   public function edit(string $initial, ?Terminal $terminal = NULL): ?string {
     $command = $this->command();
@@ -95,8 +95,8 @@ class ExternalEditor {
         return NULL;
       }
 
-      // Guard the read: an editor that deletes the file rather than saving it is
-      // treated as an aborted edit, not a fatal error.
+      // Guard the read: a file the editor deleted counts as an aborted edit,
+      // not a fatal error.
       $content = is_file($file) ? file_get_contents($file) : FALSE;
 
       return is_string($content) ? $this->normalize($content) : NULL;

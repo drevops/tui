@@ -285,7 +285,7 @@ final class PanelControllerTest extends TestCase {
     $controller->handle(Key::named(KeyName::Enter));
     $controller->handle(Key::char("\x05"));
 
-    // A NULL capture (aborted edit) leaves the field open with its value intact.
+    // A NULL capture (aborted edit) leaves the field open, value intact.
     $this->assertTrue($controller->isEditing());
     $this->assertSame('seeded', $controller->answers()->value('notes'));
   }

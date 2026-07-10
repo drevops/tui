@@ -18,9 +18,8 @@ class WidgetFactory {
    * Construct a widget factory.
    *
    * @param bool $externalEditorAvailable
-   *   Whether an external editor can be launched in the current environment; a
-   *   textarea field opts in per-field, but the handoff is only offered when one
-   *   is also available here.
+   *   Whether an external editor is launchable here. A textarea field opts in
+   *   per-field; the handoff shows only when one is also available.
    */
   public function __construct(protected bool $externalEditorAvailable = FALSE) {
   }
