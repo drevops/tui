@@ -129,11 +129,11 @@ final class MultiSelectWidgetTest extends TestCase {
     $widget = new MultiSelectWidget(['a' => 'Apple', 'b' => 'Banana']);
 
     $unicode = Ansi::strip($widget->view(new DefaultTheme()));
-    $this->assertStringContainsString('space select · ↑/↓ move · ←/→ all/none · ↵ accept · esc cancel', $unicode);
+    $this->assertStringContainsString('space select · ↑/↓ move · ←/→ none/all · ↵ accept · esc cancel', $unicode);
 
     // The glyphs degrade with the theme's Unicode mode.
     $ascii = Ansi::strip($widget->view(new DefaultTheme(76, ['unicode' => FALSE])));
-    $this->assertStringContainsString('</> all/none', $ascii);
+    $this->assertStringContainsString('</> none/all', $ascii);
   }
 
   public function testRendersOwnHint(): void {

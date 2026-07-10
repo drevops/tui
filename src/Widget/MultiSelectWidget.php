@@ -221,7 +221,7 @@ class MultiSelectWidget extends AbstractWidget {
     $fragments = [
       'space select',
       $theme->arrowUp() . '/' . $theme->arrowDown() . ' move',
-      $theme->arrowLeft() . '/' . $theme->arrowRight() . ' all/none',
+      $theme->arrowLeft() . '/' . $theme->arrowRight() . ' none/all',
       $theme->enter() . ' accept',
       'esc cancel',
     ];

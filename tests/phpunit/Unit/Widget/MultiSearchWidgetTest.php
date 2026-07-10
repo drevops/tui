@@ -61,7 +61,7 @@ final class MultiSearchWidgetTest extends TestCase {
 
     $view = Ansi::strip($widget->view(new DefaultTheme()));
 
-    $this->assertStringContainsString('space select · ↑/↓ move · ←/→ all/none · ↵ accept · esc cancel', $view);
+    $this->assertStringContainsString('space select · ↑/↓ move · ←/→ none/all · ↵ accept · esc cancel', $view);
   }
 
 }
