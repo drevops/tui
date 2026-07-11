@@ -37,7 +37,7 @@ class SuggestWidget extends AbstractWidget {
    */
   public function __construct(protected array $values, protected string $buffer = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL, ?int $pageSize = NULL) {
     parent::__construct($validate, $transform);
-    $this->pageSize = $pageSize ?? self::DEFAULT_PAGE_SIZE;
+    $this->pageSize = $this->resolvePageSize($pageSize);
   }
 
   /**

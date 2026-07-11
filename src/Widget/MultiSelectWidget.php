@@ -60,7 +60,7 @@ class MultiSelectWidget extends AbstractWidget {
   public function __construct(array $options, array $default = [], ?\Closure $validate = NULL, ?\Closure $transform = NULL, ?int $pageSize = NULL) {
     parent::__construct($validate, $transform);
     $this->initOptions($options);
-    $this->pageSize = $pageSize ?? self::DEFAULT_PAGE_SIZE;
+    $this->pageSize = $this->resolvePageSize($pageSize);
 
     $selectable = array_fill_keys($this->selectableValues(), TRUE);
     foreach ($default as $value) {

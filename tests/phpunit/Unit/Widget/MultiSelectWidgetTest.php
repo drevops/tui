@@ -229,6 +229,13 @@ final class MultiSelectWidgetTest extends TestCase {
     $this->assertStringNotContainsString('Banana', Ansi::strip($widget->view(new DefaultTheme())));
   }
 
+  public function testRejectsNonPositivePageSize(): void {
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessage('Page size must be a positive integer, -3 given.');
+
+    new MultiSelectWidget(['a' => 'A'], pageSize: -3);
+  }
+
   public function testPagesLongOptionList(): void {
     $widget = new MultiSelectWidget(['a' => 'Apple', 'b' => 'Banana', 'c' => 'Cherry', 'd' => 'Date'], pageSize: 2);
 

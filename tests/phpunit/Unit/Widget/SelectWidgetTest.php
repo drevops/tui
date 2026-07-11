@@ -137,6 +137,13 @@ final class SelectWidgetTest extends TestCase {
     $this->assertSame('', $widget->value());
   }
 
+  public function testRejectsNonPositivePageSize(): void {
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessage('Page size must be a positive integer, 0 given.');
+
+    new SelectWidget(['a' => 'A'], pageSize: 0);
+  }
+
   public function testPagesLongOptionList(): void {
     $widget = new SelectWidget(['a' => 'Apple', 'b' => 'Banana', 'c' => 'Cherry', 'd' => 'Date'], pageSize: 2);
 

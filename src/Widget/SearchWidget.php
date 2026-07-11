@@ -48,7 +48,7 @@ class SearchWidget extends AbstractWidget {
     parent::__construct($validate, $transform);
     $this->initOptions($options);
     $this->cursor = $this->cursorForDefault($this->options, $default);
-    $this->pageSize = $pageSize ?? self::DEFAULT_PAGE_SIZE;
+    $this->pageSize = $this->resolvePageSize($pageSize);
   }
 
   /**

@@ -222,6 +222,29 @@ abstract class AbstractWidget implements WidgetInterface {
   }
 
   /**
+   * Resolve the effective page size, rejecting a non-positive declared value.
+   *
+   * The builder rejects a non-positive page size, but a widget may be
+   * constructed directly, so the invariant is enforced here too.
+   *
+   * @param int|null $pageSize
+   *   The declared page size, or NULL to use the default.
+   *
+   * @return int
+   *   The effective page size.
+   *
+   * @throws \InvalidArgumentException
+   *   When a declared page size is not positive.
+   */
+  protected function resolvePageSize(?int $pageSize): int {
+    if ($pageSize !== NULL && $pageSize < 1) {
+      throw new \InvalidArgumentException(sprintf('Page size must be a positive integer, %d given.', $pageSize));
+    }
+
+    return $pageSize ?? self::DEFAULT_PAGE_SIZE;
+  }
+
+  /**
    * Compute the cursor-visible paging window, storing its offset.
    *
    * @param int $total

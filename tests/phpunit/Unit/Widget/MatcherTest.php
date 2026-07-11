@@ -8,6 +8,7 @@ use DrevOps\Tui\Config\Option;
 use DrevOps\Tui\Config\OptionKind;
 use DrevOps\Tui\Widget\Matcher;
 use DrevOps\Tui\Widget\MatchResult;
+use DrevOps\Tui\Widget\MatchTier;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
@@ -18,6 +19,7 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass(Matcher::class)]
 #[CoversClass(MatchResult::class)]
+#[CoversClass(MatchTier::class)]
 #[Group('widget')]
 final class MatcherTest extends TestCase {
 

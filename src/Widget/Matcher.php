@@ -58,7 +58,7 @@ final class Matcher {
 
     [$positions, $refinement] = $best;
 
-    return new MatchResult($this->tier(mb_strtolower($haystack), mb_strtolower($needle)) * self::TIER_WEIGHT + $refinement, $positions);
+    return new MatchResult($this->tier(mb_strtolower($haystack), mb_strtolower($needle))->weight() * self::TIER_WEIGHT + $refinement, $positions);
   }
 
   /**
@@ -100,7 +100,7 @@ final class Matcher {
 
     // Sort by score, best first; uasort is stable, so equal scores keep their
     // insertion order - which is the input order.
-    uasort($scores, static fn(int $a, int $b): int => $b <=> $a);
+    uasort($scores, static fn(int $left_score, int $right_score): int => $right_score <=> $left_score);
 
     $ranked = [];
     foreach (array_keys($scores) as $index) {
@@ -140,7 +140,7 @@ final class Matcher {
 
     // Sort by score, best first; uasort is stable, so equal scores keep their
     // insertion order - which is the declaration order.
-    uasort($scores, static fn(int $a, int $b): int => $b <=> $a);
+    uasort($scores, static fn(int $left_score, int $right_score): int => $right_score <=> $left_score);
 
     $ranked = [];
     foreach (array_keys($scores) as $index) {
@@ -151,26 +151,26 @@ final class Matcher {
   }
 
   /**
-   * The match tier: exact (4), prefix (3), substring (2) or subsequence (1).
+   * The match tier: exact, prefix, substring or subsequence.
    *
    * @param string $haystack
    *   The lowercased candidate.
    * @param string $needle
    *   The lowercased query.
    *
-   * @return int
+   * @return \DrevOps\Tui\Widget\MatchTier
    *   The tier.
    */
-  protected function tier(string $haystack, string $needle): int {
+  protected function tier(string $haystack, string $needle): MatchTier {
     if ($haystack === $needle) {
-      return 4;
+      return MatchTier::Exact;
     }
 
     if (str_starts_with($haystack, $needle)) {
-      return 3;
+      return MatchTier::Prefix;
     }
 
-    return str_contains($haystack, $needle) ? 2 : 1;
+    return str_contains($haystack, $needle) ? MatchTier::Substring : MatchTier::Subsequence;
   }
 
   /**
