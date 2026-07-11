@@ -120,6 +120,13 @@ final class SuggestWidgetTest extends TestCase {
     $this->assertStringContainsString('Palace', Ansi::strip($view));
   }
 
+  public function testRejectsNonPositivePageSize(): void {
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessage('Page size must be a positive integer, 0 given.');
+
+    new SuggestWidget(['x'], pageSize: 0);
+  }
+
   public function testPagesLongSuggestionList(): void {
     $widget = new SuggestWidget(['one', 'two', 'three', 'four', 'five'], pageSize: 2);
 

@@ -201,6 +201,13 @@ final class SearchWidgetTest extends TestCase {
     $this->assertStringContainsString('Palace', Ansi::strip($view));
   }
 
+  public function testRejectsNonPositivePageSize(): void {
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessage('Page size must be a positive integer, -2 given.');
+
+    new SearchWidget(['a' => 'A'], pageSize: -2);
+  }
+
   public function testPagesLongOptionList(): void {
     $widget = new SearchWidget(['a' => 'Apple', 'b' => 'Banana', 'c' => 'Cherry', 'd' => 'Date'], pageSize: 2);
 
