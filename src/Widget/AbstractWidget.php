@@ -222,7 +222,7 @@ abstract class AbstractWidget implements WidgetInterface {
   }
 
   /**
-   * Compute the paging window that keeps the cursor visible, storing its offset.
+   * Compute the cursor-visible paging window, storing its offset.
    *
    * @param int $total
    *   The total number of option rows.

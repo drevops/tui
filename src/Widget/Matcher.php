@@ -48,8 +48,8 @@ final class Matcher {
     // Fold each code point on its own, so a matched index maps straight back to
     // the original string even when lowercasing changes a character's length.
     $chars = mb_str_split($haystack);
-    $folded = array_map(static fn(string $char): string => mb_strtolower($char), $chars);
-    $needle_folded = array_map(static fn(string $char): string => mb_strtolower($char), mb_str_split($needle));
+    $folded = array_map(mb_strtolower(...), $chars);
+    $needle_folded = array_map(mb_strtolower(...), mb_str_split($needle));
 
     $best = $this->bestSubsequence($folded, $needle_folded, $chars);
     if ($best === NULL) {
@@ -73,7 +73,9 @@ final class Matcher {
    *   The matched indices.
    */
   public function positions(string $haystack, string $needle): array {
-    return $this->match($haystack, $needle)?->positions ?? [];
+    $result = $this->match($haystack, $needle);
+
+    return $result instanceof MatchResult ? $result->positions : [];
   }
 
   /**
@@ -175,12 +177,12 @@ final class Matcher {
    * The best-scoring ordered embedding of the needle in the candidate.
    *
    * Every ordered way the needle's characters appear in the candidate is an
-   * embedding; this returns the one the refinement rates highest - the tightest,
-   * earliest, most word-boundary-aligned - so the score and the highlighted
-   * characters always agree. The refinement rewards an early, word-boundary
-   * start and penalises gaps between matched characters; because that penalty is
-   * additive over consecutive characters, a short dynamic program finds the best
-   * embedding in O(candidate * needle) time.
+   * embedding; this returns the one the refinement rates highest - the
+   * tightest, earliest, most word-boundary-aligned - so the score and the
+   * highlighted characters always agree. The refinement rewards an early,
+   * word-boundary start and penalises gaps between matched characters; because
+   * that penalty is additive over consecutive characters, a short dynamic
+   * program finds the best embedding in O(candidate * needle) time.
    *
    * @param list<string> $haystack
    *   The per-character-folded candidate.
@@ -190,8 +192,8 @@ final class Matcher {
    *   The original candidate characters, for word-boundary tests.
    *
    * @return array{list<int>, int}|null
-   *   The matched indices and the bounded refinement, or NULL when the needle is
-   *   not a subsequence of the candidate.
+   *   The matched indices and the bounded refinement, or NULL when the needle
+   *   is not a subsequence of the candidate.
    */
   protected function bestSubsequence(array $haystack, array $needle, array $original): ?array {
     $count = count($haystack);

@@ -114,8 +114,8 @@ final class SuggestWidgetTest extends TestCase {
     $widget->handle(Key::char('a'));
     $view = $widget->view($theme);
 
-    // The matched "Pa" prefix is themed as a match run; the label is intact once
-    // the styling is stripped.
+    // The matched "Pa" prefix is themed as a match run; the label is intact
+    // once the styling is stripped.
     $this->assertStringContainsString($theme->highlightMatch('Pa'), $view);
     $this->assertStringContainsString('Palace', Ansi::strip($view));
   }

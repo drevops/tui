@@ -243,8 +243,8 @@ final class MultiSelectWidgetTest extends TestCase {
     $widget->handle(Key::named(KeyName::Down));
     $scrolled = Ansi::strip($widget->view(new DefaultTheme()));
 
-    // The window has followed the cursor down, so the "more above" indicator now
-    // shows and the first option has scrolled off.
+    // The window has followed the cursor down, so the "more above"
+    // indicator now shows and the first option has scrolled off.
     $this->assertStringContainsString('Cherry', $scrolled);
     $this->assertStringContainsString('▲', $scrolled);
     $this->assertStringNotContainsString('Apple', $scrolled);

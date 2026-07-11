@@ -102,7 +102,7 @@ class SearchWidget extends AbstractWidget {
   }
 
   /**
-   * Land the cursor on the first match and rewind paging when the query changes.
+   * Land the cursor on the first match and reset paging on a query change.
    */
   protected function resetFilterCursor(): void {
     $this->cursor = $this->firstSelectable($this->visible());

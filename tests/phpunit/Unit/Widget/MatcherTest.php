@@ -29,18 +29,20 @@ final class MatcherTest extends TestCase {
     $this->assertSame([], $result->positions);
   }
 
-  #[DataProvider('dataProviderNoMatch')]
-  public function testMatchReturnsNullWhenNotASubsequence(string $haystack, string $needle): void {
-    $this->assertNull((new Matcher())->match($haystack, $needle));
+  #[DataProvider('dataProviderMatchRejectsNonSubsequence')]
+  public function testMatchRejectsNonSubsequence(string $haystack, string $needle): void {
+    $result = (new Matcher())->match($haystack, $needle);
+
+    $this->assertNotInstanceOf(MatchResult::class, $result);
   }
 
-  public static function dataProviderNoMatch(): \Iterator {
+  public static function dataProviderMatchRejectsNonSubsequence(): \Iterator {
     yield 'missing character' => ['GitHub Actions', 'ghz'];
     yield 'wrong order' => ['abc', 'cba'];
     yield 'needle longer than haystack' => ['ab', 'abc'];
   }
 
-  #[DataProvider('dataProviderTierOrder')]
+  #[DataProvider('dataProviderTighterMatchesRankAhead')]
   public function testTighterMatchesRankAhead(string $needle, string $stronger, string $weaker): void {
     $matcher = new Matcher();
 
@@ -52,7 +54,7 @@ final class MatcherTest extends TestCase {
     $this->assertGreaterThan($weak->score, $strong->score);
   }
 
-  public static function dataProviderTierOrder(): \Iterator {
+  public static function dataProviderTighterMatchesRankAhead(): \Iterator {
     yield 'exact over prefix' => ['lon', 'lon', 'london'];
     yield 'prefix over substring' => ['lon', 'london', 'ceylon'];
     yield 'substring over subsequence' => ['lon', 'ceylon', 'lemon'];
@@ -61,7 +63,7 @@ final class MatcherTest extends TestCase {
     yield 'tighter but later over looser but earlier' => ['ab', 'xxxxxab', 'axxxxxxb'];
   }
 
-  #[DataProvider('dataProviderPositions')]
+  #[DataProvider('dataProviderMatchLocatesHighlightPositions')]
   public function testMatchLocatesHighlightPositions(string $haystack, string $needle, array $expected): void {
     $result = (new Matcher())->match($haystack, $needle);
 
@@ -69,7 +71,7 @@ final class MatcherTest extends TestCase {
     $this->assertSame($expected, $result->positions);
   }
 
-  public static function dataProviderPositions(): \Iterator {
+  public static function dataProviderMatchLocatesHighlightPositions(): \Iterator {
     yield 'prefix is a contiguous run' => ['London', 'lon', [0, 1, 2]];
     yield 'substring run at its offset' => ['CircleCI', 'ci', [0, 1]];
     yield 'scattered subsequence indices' => ['GitHub Actions', 'gha', [0, 3, 7]];
@@ -77,8 +79,8 @@ final class MatcherTest extends TestCase {
     yield 'multibyte trailing character' => ['Café', 'é', [3]];
     // The tight "abc" cluster at the end beats the greedy leftmost a-b-c.
     yield 'tightest embedding not the greedy one' => ['axxxxxxxabyc', 'abc', [8, 9, 11]];
-    // Lowercasing "İ" expands to two code points; positions must still index the
-    // original string, so "sum" lands on the original indices 2, 3 and 4.
+    // Lowercasing "İ" expands to two code points; positions must still
+    // index the original string, so "sum" lands on original indices 2-4.
     yield 'length-changing fold keeps original offsets' => ['İpsum', 'sum', [2, 3, 4]];
   }
 
