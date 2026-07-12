@@ -35,11 +35,15 @@ class SelectWidget extends AbstractWidget {
    *   Optional validator (see AbstractWidget).
    * @param \Closure|null $transform
    *   Optional transformer (see AbstractWidget).
+   * @param int|null $pageSize
+   *   The number of option rows shown at once before the list pages; NULL uses
+   *   the default.
    */
-  public function __construct(array $options, string $default = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL) {
+  public function __construct(array $options, string $default = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL, ?int $pageSize = NULL) {
     parent::__construct($validate, $transform);
     $this->initOptions($options);
     $this->cursor = $this->cursorForDefault($this->options, $default);
+    $this->pageSize = $this->resolvePageSize($pageSize);
   }
 
   /**
@@ -92,7 +96,15 @@ class SelectWidget extends AbstractWidget {
   public function view(ThemeInterface $theme): string {
     $lines = [];
 
-    foreach ($this->options as $index => $option) {
+    $viewport = $this->pageViewport(count($this->options), $this->cursor);
+
+    if ($viewport->has_above) {
+      $lines[] = $theme->indicator('  ' . $theme->indicatorUp());
+    }
+
+    foreach (array_slice($this->options, $viewport->offset, $this->pageSize) as $slot => $option) {
+      $index = $viewport->offset + $slot;
+
       if ($option->kind === OptionKind::Heading) {
         $lines[] = $this->renderHeadingRow($theme, $option);
 
@@ -112,6 +124,10 @@ class SelectWidget extends AbstractWidget {
       }
 
       $lines[] = $this->renderRadioRow($theme, $option->label, $index === $this->cursor);
+    }
+
+    if ($viewport->has_below) {
+      $lines[] = $theme->indicator('  ' . $theme->indicatorDown());
     }
 
     return implode("\n", $lines);

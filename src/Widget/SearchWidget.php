@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Widget;
 
-use DrevOps\Tui\Config\Option;
 use DrevOps\Tui\Config\OptionKind;
 use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Theme\ThemeInterface;
 
 /**
- * A single-choice list with type-to-filter over the option labels.
+ * A single-choice list with fuzzy type-to-filter over the option labels.
  *
  * @package DrevOps\Tui\Widget
  */
@@ -41,11 +40,15 @@ class SearchWidget extends AbstractWidget {
    *   Optional validator (see AbstractWidget).
    * @param \Closure|null $transform
    *   Optional transformer (see AbstractWidget).
+   * @param int|null $pageSize
+   *   The number of option rows shown at once before the list pages; NULL uses
+   *   the default.
    */
-  public function __construct(array $options, string $default = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL) {
+  public function __construct(array $options, string $default = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL, ?int $pageSize = NULL) {
     parent::__construct($validate, $transform);
     $this->initOptions($options);
     $this->cursor = $this->cursorForDefault($this->options, $default);
+    $this->pageSize = $this->resolvePageSize($pageSize);
   }
 
   /**
@@ -80,30 +83,38 @@ class SearchWidget extends AbstractWidget {
 
     if ($keys->matches($key, Action::DeleteBack)) {
       $this->filter = substr($this->filter, 0, -1);
-      $this->cursor = $this->firstSelectable($this->visible());
+      $this->resetFilterCursor();
 
       return;
     }
 
     if ($keys->matches($key, Action::InsertSpace)) {
       $this->filter .= ' ';
-      $this->cursor = $this->firstSelectable($this->visible());
+      $this->resetFilterCursor();
 
       return;
     }
 
     if ($key->isChar()) {
       $this->filter .= $key->char ?? '';
-      $this->cursor = $this->firstSelectable($this->visible());
+      $this->resetFilterCursor();
     }
+  }
+
+  /**
+   * Land the cursor on the first match and reset paging on a query change.
+   */
+  protected function resetFilterCursor(): void {
+    $this->cursor = $this->firstSelectable($this->visible());
+    $this->offset = 0;
   }
 
   /**
    * The rows currently visible under the filter.
    *
    * With no filter every row shows in declared order; once filtering, only
-   * matching options show - structural headings and separators drop away so the
-   * result reads as a flat relevance list.
+   * matching options show, ranked by fuzzy relevance - structural headings and
+   * separators drop away so the result reads as a flat relevance list.
    *
    * @return list<\DrevOps\Tui\Config\Option>
    *   The visible rows.
@@ -113,9 +124,7 @@ class SearchWidget extends AbstractWidget {
       return $this->options;
     }
 
-    $needle = strtolower($this->filter);
-
-    return array_values(array_filter($this->options, fn(Option $option): bool => $option->kind === OptionKind::Option && str_contains(strtolower($option->label), $needle)));
+    return $this->matcher()->rankOptions($this->options, $this->filter);
   }
 
   /**
@@ -141,7 +150,16 @@ class SearchWidget extends AbstractWidget {
   public function view(ThemeInterface $theme): string {
     $lines = [$this->filter . $theme->caret()];
 
-    foreach ($this->visible() as $index => $option) {
+    $visible = $this->visible();
+    $viewport = $this->pageViewport(count($visible), $this->cursor);
+
+    if ($viewport->has_above) {
+      $lines[] = $theme->indicator('  ' . $theme->indicatorUp());
+    }
+
+    foreach (array_slice($visible, $viewport->offset, $this->pageSize) as $slot => $option) {
+      $index = $viewport->offset + $slot;
+
       if ($option->kind === OptionKind::Heading) {
         $lines[] = $this->renderHeadingRow($theme, $option);
 
@@ -160,10 +178,28 @@ class SearchWidget extends AbstractWidget {
         continue;
       }
 
-      $lines[] = $this->renderRadioRow($theme, $option->label, $index === $this->cursor);
+      $current = $index === $this->cursor;
+      $lines[] = $theme->radio($current) . ' ' . $this->renderMatchedLabel($theme, $option->label, $this->positionsFor($option->label), $current);
+    }
+
+    if ($viewport->has_below) {
+      $lines[] = $theme->indicator('  ' . $theme->indicatorDown());
     }
 
     return implode("\n", $lines);
+  }
+
+  /**
+   * The matched-character positions in a label under the current filter.
+   *
+   * @param string $label
+   *   The option label.
+   *
+   * @return list<int>
+   *   The matched indices, or an empty list when not filtering.
+   */
+  protected function positionsFor(string $label): array {
+    return $this->filter === '' ? [] : $this->matcher()->positions($label, $this->filter);
   }
 
 }

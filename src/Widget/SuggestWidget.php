@@ -9,7 +9,7 @@ use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Theme\ThemeInterface;
 
 /**
- * An autocomplete text input filtering a fixed option set.
+ * An autocomplete text input fuzzy-filtering a fixed option set.
  *
  * @package DrevOps\Tui\Widget
  */
@@ -31,9 +31,13 @@ class SuggestWidget extends AbstractWidget {
    *   Optional validator (see AbstractWidget).
    * @param \Closure|null $transform
    *   Optional transformer (see AbstractWidget).
+   * @param int|null $pageSize
+   *   The number of suggestions shown at once before the list pages; NULL uses
+   *   the default.
    */
-  public function __construct(protected array $values, protected string $buffer = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL) {
+  public function __construct(protected array $values, protected string $buffer = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL, ?int $pageSize = NULL) {
     parent::__construct($validate, $transform);
+    $this->pageSize = $this->resolvePageSize($pageSize);
   }
 
   /**
@@ -66,38 +70,44 @@ class SuggestWidget extends AbstractWidget {
 
     if ($keys->matches($key, Action::DeleteBack)) {
       $this->buffer = substr($this->buffer, 0, -1);
-      $this->highlight = -1;
+      $this->resetFilterCursor();
 
       return;
     }
 
     if ($keys->matches($key, Action::InsertSpace)) {
       $this->buffer .= ' ';
-      $this->highlight = -1;
+      $this->resetFilterCursor();
 
       return;
     }
 
     if ($key->isChar()) {
       $this->buffer .= $key->char ?? '';
-      $this->highlight = -1;
+      $this->resetFilterCursor();
     }
   }
 
   /**
-   * The suggestions matching the current buffer.
+   * Reset the highlight and paging when the query changes.
+   */
+  protected function resetFilterCursor(): void {
+    $this->highlight = -1;
+    $this->offset = 0;
+  }
+
+  /**
+   * The suggestions matching the current buffer, ranked by fuzzy relevance.
    *
    * @return list<string>
-   *   The matching suggestion values.
+   *   The matching suggestion values, most relevant first.
    */
   protected function matches(): array {
     if ($this->buffer === '') {
       return $this->values;
     }
 
-    $needle = strtolower($this->buffer);
-
-    return array_values(array_filter($this->values, fn(string $value): bool => str_contains(strtolower($value), $needle)));
+    return $this->matcher()->rankValues($this->values, $this->buffer);
   }
 
   /**
@@ -119,13 +129,37 @@ class SuggestWidget extends AbstractWidget {
   public function view(ThemeInterface $theme): string {
     $lines = [$this->buffer . $theme->caret()];
 
-    foreach ($this->matches() as $index => $value) {
+    $matches = $this->matches();
+    $viewport = $this->pageViewport(count($matches), $this->highlight);
+
+    if ($viewport->has_above) {
+      $lines[] = $theme->indicator('  ' . $theme->indicatorUp());
+    }
+
+    foreach (array_slice($matches, $viewport->offset, $this->pageSize) as $slot => $value) {
+      $index = $viewport->offset + $slot;
       $current = $index === $this->highlight;
-      $marker = $theme->marker($current);
-      $lines[] = $marker . ' ' . $this->highlightLabel($theme, $value, $current);
+      $lines[] = $theme->marker($current) . ' ' . $this->renderMatchedLabel($theme, $value, $this->positionsFor($value), $current);
+    }
+
+    if ($viewport->has_below) {
+      $lines[] = $theme->indicator('  ' . $theme->indicatorDown());
     }
 
     return implode("\n", $lines);
+  }
+
+  /**
+   * The matched-character positions in a suggestion under the current buffer.
+   *
+   * @param string $value
+   *   The suggestion value.
+   *
+   * @return list<int>
+   *   The matched indices, or an empty list when not filtering.
+   */
+  protected function positionsFor(string $value): array {
+    return $this->buffer === '' ? [] : $this->matcher()->positions($value, $this->buffer);
   }
 
 }

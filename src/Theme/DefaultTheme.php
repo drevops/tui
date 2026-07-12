@@ -338,6 +338,13 @@ class DefaultTheme implements ThemeInterface {
   /**
    * {@inheritdoc}
    */
+  public function highlightMatch(string $text): string {
+    return $this->paint($this->isDark ? '1;33' : '1;35', $text);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function heading(string $text): string {
     return $this->paint('1;90', $text);
   }

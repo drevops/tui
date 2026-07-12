@@ -30,9 +30,11 @@ final class ThemeTest extends TestCase {
     yield 'dark value' => [static fn(): string => (new DefaultTheme())->value('X'), '32'];
     yield 'dark indicator' => [static fn(): string => (new DefaultTheme())->indicator('X'), '1;33'];
     yield 'dark border' => [static fn(): string => (new DefaultTheme())->border('X'), '36'];
+    yield 'dark match highlight' => [static fn(): string => (new DefaultTheme())->highlightMatch('X'), '1;33'];
     yield 'light title' => [static fn(): string => self::light()->title('X'), '1;34'];
     yield 'light indicator' => [static fn(): string => self::light()->indicator('X'), '35'];
     yield 'light border' => [static fn(): string => self::light()->border('X'), '34'];
+    yield 'light match highlight' => [static fn(): string => self::light()->highlightMatch('X'), '1;35'];
     // These roles are mode-independent: dimmed chrome and the red error.
     yield 'description' => [static fn(): string => (new DefaultTheme())->description('X'), '90'];
     yield 'error' => [static fn(): string => (new DefaultTheme())->error('X'), '31'];

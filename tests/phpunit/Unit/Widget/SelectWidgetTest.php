@@ -137,4 +137,30 @@ final class SelectWidgetTest extends TestCase {
     $this->assertSame('', $widget->value());
   }
 
+  public function testRejectsNonPositivePageSize(): void {
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessage('Page size must be a positive integer, 0 given.');
+
+    new SelectWidget(['a' => 'A'], pageSize: 0);
+  }
+
+  public function testPagesLongOptionList(): void {
+    $widget = new SelectWidget(['a' => 'Apple', 'b' => 'Banana', 'c' => 'Cherry', 'd' => 'Date'], pageSize: 2);
+
+    $view = Ansi::strip($widget->view(new DefaultTheme()));
+
+    $this->assertStringContainsString('Apple', $view);
+    $this->assertStringContainsString('Banana', $view);
+    $this->assertStringNotContainsString('Cherry', $view);
+    $this->assertStringContainsString('▼', $view);
+
+    $widget->handle(Key::named(KeyName::Down));
+    $widget->handle(Key::named(KeyName::Down));
+    $scrolled = Ansi::strip($widget->view(new DefaultTheme()));
+
+    $this->assertStringContainsString('Cherry', $scrolled);
+    $this->assertStringContainsString('▲', $scrolled);
+    $this->assertStringNotContainsString('Apple', $scrolled);
+  }
+
 }

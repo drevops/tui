@@ -128,6 +128,11 @@ interface ThemeInterface {
   public function highlight(string $text): string;
 
   /**
+   * A run of query-matched characters within an option label.
+   */
+  public function highlightMatch(string $text): string;
+
+  /**
    * A non-selectable group heading in an option list.
    */
   public function heading(string $text): string;

@@ -54,9 +54,9 @@ final class MultiSearchWidgetTest extends TestCase {
     $widget = new MultiSearchWidget($this->labels);
 
     $widget->handle(Key::char('r'));
-    $view = $widget->view(new DefaultTheme());
+    $view = Ansi::strip($widget->view(new DefaultTheme()));
 
-    $this->assertStringContainsString("r█\n", Ansi::strip($view));
+    $this->assertStringContainsString("r█\n", $view);
     $this->assertStringContainsString('Redis', $view);
     $this->assertStringNotContainsString('ClamAV', $view);
   }
@@ -91,6 +91,53 @@ final class MultiSearchWidgetTest extends TestCase {
     $this->assertStringContainsString('Fruits', $view);
     $this->assertStringContainsString('Cherry (out of stock)', $view);
     $this->assertStringContainsString('──', $view);
+  }
+
+  public function testFuzzyMatchesNonContiguousSubsequence(): void {
+    $widget = new MultiSearchWidget(['banana' => 'Banana', 'apple' => 'Apple', 'cherry' => 'Cherry']);
+
+    // "bn" is not a substring of any label but is a subsequence of "Banana".
+    $value = WidgetRunner::run($widget, ArrayKeyStream::of('bn', Key::named(KeyName::Space), Key::named(KeyName::Enter)));
+
+    $this->assertSame(['banana'], $value);
+  }
+
+  public function testHighlightsMatchedCharacters(): void {
+    $theme = new DefaultTheme();
+    $widget = new MultiSearchWidget(['banana' => 'Banana']);
+
+    $widget->handle(Key::char('b'));
+    $widget->handle(Key::char('n'));
+    $view = $widget->view($theme);
+
+    // The non-contiguous match highlights each hit character on its own,
+    // leaving the intervening characters unstyled.
+    $this->assertStringContainsString($theme->highlightMatch('B'), $view);
+    $this->assertStringContainsString($theme->highlightMatch('n'), $view);
+    $this->assertStringContainsString('Banana', Ansi::strip($view));
+  }
+
+  public function testPagesLongOptionList(): void {
+    $widget = new MultiSearchWidget(['a' => 'Apple', 'b' => 'Banana', 'c' => 'Cherry', 'd' => 'Date'], pageSize: 2);
+
+    $view = Ansi::strip($widget->view(new DefaultTheme()));
+
+    $this->assertStringContainsString('Apple', $view);
+    $this->assertStringContainsString('Banana', $view);
+    $this->assertStringNotContainsString('Cherry', $view);
+    $this->assertStringContainsString('▼', $view);
+  }
+
+  public function testPagingFollowsCursorDownTheList(): void {
+    $widget = new MultiSearchWidget(['a' => 'Apple', 'b' => 'Banana', 'c' => 'Cherry', 'd' => 'Date'], pageSize: 2);
+
+    $widget->handle(Key::named(KeyName::Down));
+    $widget->handle(Key::named(KeyName::Down));
+    $view = Ansi::strip($widget->view(new DefaultTheme()));
+
+    $this->assertStringContainsString('Cherry', $view);
+    $this->assertStringContainsString('▲', $view);
+    $this->assertStringNotContainsString('Apple', $view);
   }
 
 }

@@ -218,4 +218,43 @@ final class MultiSelectWidgetTest extends TestCase {
     $this->assertStringContainsString('──', $view);
   }
 
+  public function testFilterStaysSubstringNotFuzzy(): void {
+    $widget = new MultiSelectWidget(['banana' => 'Banana', 'apple' => 'Apple']);
+
+    // "bn" is a subsequence of "Banana" but not a substring, so the checkbox
+    // list - which stays substring-only - narrows it away.
+    $widget->handle(Key::char('b'));
+    $widget->handle(Key::char('n'));
+
+    $this->assertStringNotContainsString('Banana', Ansi::strip($widget->view(new DefaultTheme())));
+  }
+
+  public function testRejectsNonPositivePageSize(): void {
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessage('Page size must be a positive integer, -3 given.');
+
+    new MultiSelectWidget(['a' => 'A'], pageSize: -3);
+  }
+
+  public function testPagesLongOptionList(): void {
+    $widget = new MultiSelectWidget(['a' => 'Apple', 'b' => 'Banana', 'c' => 'Cherry', 'd' => 'Date'], pageSize: 2);
+
+    $view = Ansi::strip($widget->view(new DefaultTheme()));
+
+    $this->assertStringContainsString('Apple', $view);
+    $this->assertStringContainsString('Banana', $view);
+    $this->assertStringNotContainsString('Cherry', $view);
+    $this->assertStringContainsString('▼', $view);
+
+    $widget->handle(Key::named(KeyName::Down));
+    $widget->handle(Key::named(KeyName::Down));
+    $scrolled = Ansi::strip($widget->view(new DefaultTheme()));
+
+    // The window has followed the cursor down, so the "more above"
+    // indicator now shows and the first option has scrolled off.
+    $this->assertStringContainsString('Cherry', $scrolled);
+    $this->assertStringContainsString('▲', $scrolled);
+    $this->assertStringNotContainsString('Apple', $scrolled);
+  }
+
 }

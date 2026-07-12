@@ -12,6 +12,7 @@ use DrevOps\Tui\Config\OptionKind;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyMapManager;
 use DrevOps\Tui\Input\KeyName;
+use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\ConfirmWidget;
 use DrevOps\Tui\Widget\FilePickerWidget;
@@ -154,6 +155,18 @@ final class WidgetFactoryTest extends TestCase {
     $widget->handle(Key::char('j'));
 
     $this->assertSame('b', $widget->value());
+  }
+
+  public function testPageSizePassedThrough(): void {
+    $options = ['a' => new Option('a', 'A'), 'b' => new Option('b', 'B'), 'c' => new Option('c', 'C')];
+    $field = new Field('f', 'F', '', FieldType::Select, '', $options, pageSize: 2);
+
+    $view = (new WidgetFactory())->create($field, 'a')->view(new DefaultTheme());
+
+    // A page size of 2 over three options hides the last one and shows the
+    // "more below" indicator, proving the field's page size reached the widget.
+    $this->assertStringContainsString('▼', $view);
+    $this->assertStringNotContainsString('C', Ansi::strip($view));
   }
 
   public function testSuggestReceivesSelectableValuesOnly(): void {
