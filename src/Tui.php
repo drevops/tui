@@ -71,10 +71,10 @@ final class Tui {
     $this->engine = new Engine($this->config, $this->registry);
 
     // Activate the form's translator process-wide so t() localizes chrome and
-    // questions from any depth without threading the translator through.
-    if ($this->config->translator instanceof Translator) {
-      Translator::setShared($this->config->translator);
-    }
+    // questions from any depth without threading the translator through. A NULL
+    // translator clears any previously activated one, so a translator-less form
+    // never inherits the language of an earlier instance.
+    Translator::setShared($this->config->translator);
   }
 
   /**

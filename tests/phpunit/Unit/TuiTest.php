@@ -46,6 +46,25 @@ final class TuiTest extends TestCase {
     $this->assertSame($translator, Translator::shared());
   }
 
+  public function testTranslatorClearedWhenFormHasNone(): void {
+    // A translated form activates its translator.
+    $translated = Form::create('Demo')
+      ->translator(new Translator('es', [dirname(__DIR__) . '/Fixtures/translations']))
+      ->panel('p', 'p', function (PanelBuilder $panel): void {
+        $panel->text('name');
+      });
+    new Tui($translated);
+    $this->assertInstanceOf(Translator::class, Translator::shared());
+
+    // A later translator-less form clears it, so its language does not leak.
+    $plain = Form::create('Demo')
+      ->panel('p', 'p', function (PanelBuilder $panel): void {
+        $panel->text('name');
+      });
+    new Tui($plain);
+    $this->assertNull(Translator::shared());
+  }
+
   public function testCollect(): void {
     $answers = $this->tui()->collect('{"name":"Acme"}', 'dir', FALSE, '1.0');
 
