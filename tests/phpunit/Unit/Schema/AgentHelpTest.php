@@ -26,11 +26,11 @@ final class AgentHelpTest extends TestCase {
       })
       ->build();
 
-    $help = (new AgentHelp($config, 'VORTEX_'))->generate();
+    $help = (new AgentHelp($config, 'APP_'))->generate();
 
     $this->assertStringContainsString('--no-interaction', $help);
     $this->assertStringContainsString('--prompts', $help);
-    $this->assertStringContainsString('VORTEX_<ID>', $help);
+    $this->assertStringContainsString('APP_<ID>', $help);
     $this->assertStringContainsString('Precedence: --prompts > environment > discovered > derived > default.', $help);
     $this->assertStringContainsString('name [text] (required) - Site name', $help);
     $this->assertStringContainsString('agree [confirm] - Agree', $help);

@@ -9,11 +9,11 @@ import {themes as prismThemes} from 'prism-react-renderer';
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'TUI',
-  tagline: 'Panel-based terminal forms for PHP',
+  tagline: 'Terminal user interfaces for PHP',
   favicon: 'img/logo.png',
 
   // Set the production url of your site here.
-  url: 'https://tui.drevops.com',
+  url: 'https://phptui.dev',
   // Set the /<baseUrl>/ pathname under which your site is served.
   // For GitHub pages deployment, it is often '/<projectName>/'.
   baseUrl: '/',

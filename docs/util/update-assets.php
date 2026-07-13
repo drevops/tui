@@ -344,6 +344,53 @@ EXPECT;
 }
 
 /**
+ * The expect body driving the bordered-panels panel TUI.
+ *
+ * @return string
+ *   The expect script body.
+ */
+function borderedPanelsInteraction(): string {
+  return <<<'EXPECT'
+# Wait for the hub, then drill into Basics.
+expect "Basics" {
+    pause 2000
+    safe_send "\r"
+}
+
+# Walk the Basics fields inside the bordered frame.
+pause 1500
+arrow_down
+arrow_down
+
+# Back to the hub, drill into Deployment.
+press_escape
+pause 1000
+arrow_down
+pause 500
+safe_send "\r"
+
+# Drill into the nested Resources panel - the border follows.
+pause 1500
+arrow_down
+arrow_down
+pause 500
+safe_send "\r"
+
+# Look at Resources, then back out to the hub.
+pause 1500
+press_escape
+press_escape
+
+# Submit via the Create button.
+pause 1000
+arrow_down
+arrow_down
+pause 600
+safe_send "\r"
+EXPECT;
+}
+
+/**
  * The expect body driving the custom-theme (ocean) panel TUI.
  *
  * @return string
@@ -464,6 +511,24 @@ function getJobs(string $project_dir): array {
     'rows' => TERMINAL_ROWS,
     'cols' => TERMINAL_COLS,
     'verify' => 'Identity',
+  ];
+
+  // The panel browser wrapped in a rounded border frame.
+  $jobs['bordered-panels'] = [
+    'command' => 'env LINES=' . TERMINAL_ROWS . ' COLUMNS=' . TERMINAL_COLS . ' php ' . $project_dir . '/playground/9-bordered-panels/run.php',
+    'interact' => borderedPanelsInteraction(),
+    'rows' => TERMINAL_ROWS,
+    'cols' => TERMINAL_COLS,
+    'verify' => 'Basics',
+  ];
+
+  // The same panel browser without a border, at normal spacing.
+  $jobs['borderless-panels'] = [
+    'command' => 'env LINES=' . TERMINAL_ROWS . ' COLUMNS=' . TERMINAL_COLS . ' php ' . $project_dir . '/playground/9-bordered-panels/run.php --border=none --spacing=normal',
+    'interact' => borderedPanelsInteraction(),
+    'rows' => TERMINAL_ROWS,
+    'cols' => TERMINAL_COLS,
+    'verify' => 'Basics',
   ];
 
   // The custom ocean theme with a banner.

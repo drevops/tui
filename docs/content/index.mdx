@@ -4,29 +4,29 @@ slug: /
 sidebar_position: 1
 ---
 
-# Panel-based terminal forms for PHP
+# Terminal user interfaces for PHP
 
-A dependency-light PHP engine for building **panel-based terminal forms**:
-interactive, keyboard-driven questionnaires that collect answers and hand them to
+A dependency-light PHP engine for building **terminal user interfaces**:
+interactive, keyboard-driven forms that collect answers and hand them to
 your code. Describe the questions in PHP with a fluent builder, add a handler
 class wherever a question needs real behaviour, and the engine renders a
-scrollable, themeable TUI - or runs headless from a JSON payload.
+scrollable, themeable TUI - or collects the answers non-interactively from a JSON
+payload.
 
-It powers the [Vortex](https://www.vortextemplate.com) project installer, but
-knows nothing about Vortex: the engine is generic, the project-specific questions
-and handlers live in the consumer, and **applying the collected answers is the
-consumer's job, not the TUI's**.
+The engine knows nothing about the application it serves: it stays generic, the
+application-specific questions and handlers live in the consumer, and **applying
+the collected answers is the consumer's job, not the TUI's**.
 
 <p align="center">
-  <img src="/scaffolder.svg" width="100%" alt="Package scaffolder panel TUI" />
+  <img src="/scaffolder.svg" width="100%" alt="Package scaffolder TUI" />
 </p>
 
 ## Features
 
-- 🧭 [**Panel TUI**](/panels) - a full-screen, scrollable, keyboard-driven form: panels hold fields, sub-panels drill in to any depth, with a contextual key-hint footer and a `?` help overlay
-- 🧩 [**Widgets**](/widgets) - `text`, `number`, `date`, `textarea`, `password`, `select`, `multiselect`, `suggest`, `search`, `multisearch`, `filepicker`, `multifilepicker`, `confirm`, `toggle`, `pause`
-- 🏗️ [**Builder-driven**](/configuration) - panels and fields are declared in PHP with a fluent builder; the common cases need no code
-- 🤖 [**Interactive or headless**](/headless-collection) - drive the panel TUI by keyboard, or collect answers non-interactively from a JSON payload and environment variables (and emit a JSON schema for agents and forms)
+- 🧭 [**Full-screen TUI**](/panels) - a scrollable, keyboard-driven form: fields group into sections that drill in to any depth, with a contextual key-hint footer and a `?` help overlay
+- 🧩 [**Widgets**](/widgets) - `confirm`, `date`, `filepicker`, `multifilepicker`, `multisearch`, `multiselect`, `number`, `password`, `pause`, `search`, `select`, `suggest`, `text`, `textarea`, `toggle`
+- 🏗️ [**Builder-driven**](/configuration) - the form is declared in PHP with a fluent builder; the common cases need no code
+- 🎛️ [**Interactive or unattended**](/headless-collection) - answer the form by keyboard, or supply the answers up front as a JSON payload and environment variables so it runs without prompting (and emit a JSON schema for agents and forms)
 - 🔗 [**Derived values**](/configuration#derived-values) - compute one field from others with [str2name](https://github.com/AlexSkrypnyk/str2name) transforms; chains settle to a fixpoint
 - 🔀 [**Conditional fields**](/configuration#conditional-fields) - show or hide fields with `when` rules; a fix-up pass reconciles dependent answers
 - 🔍 [**Discovery**](/discovery) - detect sensible defaults from the target directory (`.env` keys, JSON paths, path existence, directory scans)
@@ -51,12 +51,12 @@ $form = Form::create('My form')
 
 $tui = new Tui($form, ['App\\Handler']);
 
-// Interactive panel TUI on a terminal, headless otherwise.
+// Interactive on a terminal, non-interactive otherwise.
 $answers = $tui->run();
 
 // Or call a mode directly:
-echo $tui->collect('{"name":"Ada"}')->toJson();  // headless: JSON + environment
-$answers = $tui->interact();                     // interactive panel TUI
+echo $tui->collect('{"name":"Ada"}')->toJson();  // non-interactive: JSON + environment
+$answers = $tui->interact();                     // interactive TUI
 ```
 
 It also exposes `schema()`, `agentHelp()` and `validate()`, and - when you want

@@ -25,7 +25,7 @@ class InputResolver {
    * Construct a resolver.
    *
    * @param string $env_prefix
-   *   The prefix for per-question env variable names (e.g. "VORTEX_").
+   *   The prefix for per-question env variable names (e.g. "APP_").
    */
   public function __construct(protected string $env_prefix = '') {
   }

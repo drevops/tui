@@ -52,7 +52,7 @@ final class FormTest extends TestCase {
   public function testBuildsExpectedConfig(): void {
     $fixup = new Fixup(set: 'a', to: 'b', when: new Condition('x', eq: 'y'));
 
-    $config = Form::create('Vortex', 'the project')
+    $config = Form::create('My app', 'the project')
       ->theme('dark')
       ->banner('LOGO')
       ->buttons(TRUE, 'Install', 'Quit')
@@ -79,7 +79,7 @@ final class FormTest extends TestCase {
       })
       ->build();
 
-    $this->assertSame('Vortex', $config->title);
+    $this->assertSame('My app', $config->title);
     $this->assertSame('the project', $config->subject);
     $this->assertSame('dark', $config->theme);
     $this->assertSame('LOGO', $config->banner);

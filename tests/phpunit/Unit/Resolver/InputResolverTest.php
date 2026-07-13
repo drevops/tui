@@ -20,10 +20,10 @@ use PHPUnit\Framework\TestCase;
 final class InputResolverTest extends TestCase {
 
   public function testEnvCoercion(): void {
-    $inputs = (new InputResolver('VORTEX_'))->resolve($this->fields(), '', [
-      'VORTEX_NAME' => 'Acme',
-      'VORTEX_AGREE' => 'yes',
-      'VORTEX_MODS' => 'a, b ,c',
+    $inputs = (new InputResolver('APP_'))->resolve($this->fields(), '', [
+      'APP_NAME' => 'Acme',
+      'APP_AGREE' => 'yes',
+      'APP_MODS' => 'a, b ,c',
     ]);
 
     $this->assertSame('Acme', $inputs['name']);
@@ -32,27 +32,27 @@ final class InputResolverTest extends TestCase {
   }
 
   public function testConfirmFalsey(): void {
-    $inputs = (new InputResolver('VORTEX_'))->resolve($this->fields(), '', ['VORTEX_AGREE' => 'no']);
+    $inputs = (new InputResolver('APP_'))->resolve($this->fields(), '', ['APP_AGREE' => 'no']);
 
     $this->assertFalse($inputs['agree']);
   }
 
   public function testToggleCoercion(): void {
-    $inputs = (new InputResolver('VORTEX_'))->resolve($this->fields(), '', ['VORTEX_VIS' => 'private']);
+    $inputs = (new InputResolver('APP_'))->resolve($this->fields(), '', ['APP_VIS' => 'private']);
 
     $this->assertSame('private', $inputs['vis']);
   }
 
   public function testEmptyMultiselect(): void {
-    $inputs = (new InputResolver('VORTEX_'))->resolve($this->fields(), '', ['VORTEX_MODS' => '']);
+    $inputs = (new InputResolver('APP_'))->resolve($this->fields(), '', ['APP_MODS' => '']);
 
     $this->assertSame([], $inputs['mods']);
   }
 
   public function testPromptsJsonWinsOverEnv(): void {
-    $inputs = (new InputResolver('VORTEX_'))->resolve($this->fields(), '{"name": "FromPrompts", "agree": true}', [
-      'VORTEX_NAME' => 'FromEnv',
-      'VORTEX_AGREE' => 'no',
+    $inputs = (new InputResolver('APP_'))->resolve($this->fields(), '{"name": "FromPrompts", "agree": true}', [
+      'APP_NAME' => 'FromEnv',
+      'APP_AGREE' => 'no',
     ]);
 
     $this->assertSame('FromPrompts', $inputs['name']);
@@ -60,11 +60,11 @@ final class InputResolverTest extends TestCase {
   }
 
   public function testMissingEnvOmitsField(): void {
-    $this->assertSame([], (new InputResolver('VORTEX_'))->resolve($this->fields(), '', []));
+    $this->assertSame([], (new InputResolver('APP_'))->resolve($this->fields(), '', []));
   }
 
   public function testMalformedPromptsIgnored(): void {
-    $inputs = (new InputResolver('VORTEX_'))->resolve($this->fields(), 'not json', ['VORTEX_NAME' => 'Acme']);
+    $inputs = (new InputResolver('APP_'))->resolve($this->fields(), 'not json', ['APP_NAME' => 'Acme']);
 
     $this->assertSame(['name' => 'Acme'], $inputs);
   }
@@ -72,25 +72,25 @@ final class InputResolverTest extends TestCase {
   public function testPromptsFromFile(): void {
     vfsStream::setup('p', NULL, ['prompts.json' => '{"name": "FromFile"}']);
 
-    $inputs = (new InputResolver('VORTEX_'))->resolve($this->fields(), vfsStream::url('p/prompts.json'), []);
+    $inputs = (new InputResolver('APP_'))->resolve($this->fields(), vfsStream::url('p/prompts.json'), []);
 
     $this->assertSame('FromFile', $inputs['name']);
   }
 
   public function testDateCoercionPassesThroughString(): void {
-    $inputs = (new InputResolver('VORTEX_'))->resolve($this->fields(), '', ['VORTEX_DUE' => '2026-07-15']);
+    $inputs = (new InputResolver('APP_'))->resolve($this->fields(), '', ['APP_DUE' => '2026-07-15']);
 
     $this->assertSame('2026-07-15', $inputs['due']);
   }
 
   public function testEnvName(): void {
-    $this->assertSame('VORTEX_MACHINE_NAME', (new InputResolver('VORTEX_'))->envName('machine_name'));
+    $this->assertSame('APP_MACHINE_NAME', (new InputResolver('APP_'))->envName('machine_name'));
   }
 
   public function testFilePickerCoercion(): void {
-    $inputs = (new InputResolver('VORTEX_'))->resolve($this->fields(), '', [
-      'VORTEX_PATHS' => 'a/b, c/d',
-      'VORTEX_CFG' => '/etc/app.yml',
+    $inputs = (new InputResolver('APP_'))->resolve($this->fields(), '', [
+      'APP_PATHS' => 'a/b, c/d',
+      'APP_CFG' => '/etc/app.yml',
     ]);
 
     // A multiple picker splits a comma list; a single picker stays a string.
@@ -99,10 +99,10 @@ final class InputResolverTest extends TestCase {
   }
 
   public function testNumberPauseAndMultisearchCoercion(): void {
-    $inputs = (new InputResolver('VORTEX_'))->resolve($this->fields(), '', [
-      'VORTEX_PORT' => ' 8080 ',
-      'VORTEX_ACK' => 'yes',
-      'VORTEX_TAGS' => 'a, b',
+    $inputs = (new InputResolver('APP_'))->resolve($this->fields(), '', [
+      'APP_PORT' => ' 8080 ',
+      'APP_ACK' => 'yes',
+      'APP_TAGS' => 'a, b',
     ]);
 
     $this->assertSame(8080, $inputs['port']);
@@ -111,7 +111,7 @@ final class InputResolverTest extends TestCase {
   }
 
   public function testReorderCoercion(): void {
-    $inputs = (new InputResolver('VORTEX_'))->resolve($this->fields(), '', ['VORTEX_RANK' => 'c, a, b']);
+    $inputs = (new InputResolver('APP_'))->resolve($this->fields(), '', ['APP_RANK' => 'c, a, b']);
 
     $this->assertSame(['c', 'a', 'b'], $inputs['rank']);
   }

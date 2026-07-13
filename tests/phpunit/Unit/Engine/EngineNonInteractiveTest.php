@@ -36,7 +36,7 @@ final class EngineNonInteractiveTest extends TestCase {
         $p->text('target')->default('static')->derive(new Derive('d-{{src}}'))->discover(new Dotenv('DETECTED'));
       })
       ->build();
-    $resolver = new InputResolver('VORTEX_');
+    $resolver = new InputResolver('APP_');
     $engine = new Engine($config, new HandlerRegistry());
 
     // Static default is overtaken by the derived value (fresh install).
@@ -48,11 +48,11 @@ final class EngineNonInteractiveTest extends TestCase {
     $this->assertSame('from_env', $engine->collect($inputs, new Context($dir, [], TRUE))['target']);
 
     // Env wins over detected.
-    $inputs = $resolver->resolve($config->fields(), '', ['VORTEX_TARGET' => 'from_env_var']);
+    $inputs = $resolver->resolve($config->fields(), '', ['APP_TARGET' => 'from_env_var']);
     $this->assertSame('from_env_var', $engine->collect($inputs, new Context($dir, [], TRUE))['target']);
 
     // --prompts wins over env.
-    $inputs = $resolver->resolve($config->fields(), '{"target": "from_prompts"}', ['VORTEX_TARGET' => 'from_env_var']);
+    $inputs = $resolver->resolve($config->fields(), '{"target": "from_prompts"}', ['APP_TARGET' => 'from_env_var']);
     $this->assertSame('from_prompts', $engine->collect($inputs, new Context($dir, [], TRUE))['target']);
   }
 
@@ -62,7 +62,7 @@ final class EngineNonInteractiveTest extends TestCase {
         $p->reorder('ranking')->options(['a' => 'A', 'b' => 'B', 'c' => 'C'])->default(['b']);
       })
       ->build();
-    $resolver = new InputResolver('VORTEX_');
+    $resolver = new InputResolver('APP_');
     $engine = new Engine($config, new HandlerRegistry());
 
     // No input: the declared default, completed to a full ranking.
@@ -70,7 +70,7 @@ final class EngineNonInteractiveTest extends TestCase {
     $this->assertSame(['b', 'a', 'c'], $engine->collect($inputs, new Context('', [], FALSE))['ranking']);
 
     // An env comma list is coerced to an ordered ranking.
-    $inputs = $resolver->resolve($config->fields(), '', ['VORTEX_RANKING' => 'c, a, b']);
+    $inputs = $resolver->resolve($config->fields(), '', ['APP_RANKING' => 'c, a, b']);
     $this->assertSame(['c', 'a', 'b'], $engine->collect($inputs, new Context('', [], FALSE))['ranking']);
 
     // A --prompts JSON array is taken as the ranking directly.
@@ -84,10 +84,10 @@ final class EngineNonInteractiveTest extends TestCase {
         $p->reorder('ranking')->option('a')->option('b')->option('c');
       })
       ->build();
-    $resolver = new InputResolver('VORTEX_');
+    $resolver = new InputResolver('APP_');
     $engine = new Engine($config, new HandlerRegistry());
 
-    $inputs = $resolver->resolve($config->fields(), '', ['VORTEX_RANKING' => 'a, b']);
+    $inputs = $resolver->resolve($config->fields(), '', ['APP_RANKING' => 'a, b']);
 
     $this->expectException(EngineException::class);
     $this->expectExceptionMessage('Invalid value for field "ranking": must rank every option exactly once (a, b, c)');
