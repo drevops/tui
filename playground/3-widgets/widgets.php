@@ -48,13 +48,7 @@ $interact = static function (WidgetInterface $widget, string $label, array $hint
   try {
     while (!$widget->isComplete() && !$widget->isCancelled()) {
       $lines = [$theme->renderEditorHeader($label . ' widget')];
-
-      // A widget that draws its own key hints (like the date calendar) gets no
-      // generic hint line, so the two cannot contradict.
-      if (!$widget->rendersHint()) {
-        $lines[] = $theme->renderHintLine(...$hints);
-      }
-
+      $lines[] = $theme->renderHintLine(...$hints);
       $lines[] = '';
       $lines[] = $widget->view($theme);
       $terminal->render(implode("\n", $lines));
