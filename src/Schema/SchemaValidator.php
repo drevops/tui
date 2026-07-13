@@ -150,7 +150,7 @@ class SchemaValidator {
   protected function isType(FieldType $type, mixed $value): bool {
     return match ($type) {
       FieldType::Confirm, FieldType::Pause => is_bool($value),
-      FieldType::MultiSelect, FieldType::MultiSearch, FieldType::MultiFilePicker => is_array($value),
+      FieldType::MultiSelect, FieldType::MultiSearch, FieldType::MultiFilePicker, FieldType::Reorder => is_array($value),
       FieldType::Number => is_int($value) || is_float($value),
       // An empty string is an unset date, left to the required check; any other
       // value must be a strict `Y-m-d` calendar date.
@@ -171,7 +171,7 @@ class SchemaValidator {
   protected function typeName(FieldType $type): string {
     return match ($type) {
       FieldType::Confirm, FieldType::Pause => 'a boolean',
-      FieldType::MultiSelect, FieldType::MultiSearch, FieldType::MultiFilePicker => 'a list',
+      FieldType::MultiSelect, FieldType::MultiSearch, FieldType::MultiFilePicker, FieldType::Reorder => 'a list',
       FieldType::Number => 'a number',
       FieldType::Date => 'a date (YYYY-MM-DD)',
       default => 'a string',

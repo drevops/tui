@@ -77,6 +77,7 @@ final class OptionTest extends TestCase {
     yield [FieldType::Search, TRUE];
     yield [FieldType::MultiSelect, TRUE];
     yield [FieldType::MultiSearch, TRUE];
+    yield [FieldType::Reorder, TRUE];
     yield [FieldType::Suggest, FALSE];
     yield [FieldType::Text, FALSE];
     yield [FieldType::Confirm, FALSE];
@@ -90,6 +91,7 @@ final class OptionTest extends TestCase {
   public static function dataProviderIsMulti(): \Iterator {
     yield [FieldType::MultiSelect, TRUE];
     yield [FieldType::MultiSearch, TRUE];
+    yield [FieldType::Reorder, TRUE];
     yield [FieldType::Select, FALSE];
     yield [FieldType::Search, FALSE];
     yield [FieldType::Text, FALSE];
@@ -134,6 +136,41 @@ final class OptionTest extends TestCase {
     yield 'multi valid' => [FieldType::MultiSelect, $options, ['standard', 'minimal'], NULL];
     yield 'multi disabled item' => [FieldType::MultiSelect, $options, ['standard', 'demo'], 'option "demo" is disabled: unavailable'];
     yield 'multi non-array' => [FieldType::MultiSelect, $options, 'standard', 'value must be a list'];
+    yield 'reorder full permutation' => [FieldType::Reorder, $options, ['minimal', 'standard'], NULL];
+    yield 'reorder partial' => [FieldType::Reorder, $options, ['standard'], 'must rank every option exactly once (standard, minimal)'];
+    yield 'reorder duplicate' => [FieldType::Reorder, $options, ['standard', 'standard'], 'must rank every option exactly once (standard, minimal)'];
+    yield 'reorder unknown item' => [FieldType::Reorder, $options, ['standard', 'bogus'], 'value "bogus" is not one of: standard, minimal'];
+    yield 'reorder non-array' => [FieldType::Reorder, $options, 'standard', 'value must be a list'];
+  }
+
+  /**
+   * Tests completing and de-duplicating a desired ordering.
+   *
+   * @param list<string> $allowed
+   *   The full set of values, in declared order.
+   * @param list<string> $desired
+   *   The requested ordering.
+   * @param list<string> $expected
+   *   The resolved permutation.
+   */
+  #[DataProvider('dataProviderCanonicalOrder')]
+  public function testCanonicalOrder(array $allowed, array $desired, array $expected): void {
+    $this->assertSame($expected, Field::canonicalOrder($allowed, $desired));
+  }
+
+  /**
+   * Data provider for testCanonicalOrder().
+   *
+   * @return \Iterator<string, array{list<string>, list<string>, list<string>}>
+   *   The allowed values, desired order and resolved permutation.
+   */
+  public static function dataProviderCanonicalOrder(): \Iterator {
+    yield 'empty desired keeps declared order' => [['a', 'b', 'c'], [], ['a', 'b', 'c']];
+    yield 'full desired preserved' => [['a', 'b', 'c'], ['c', 'b', 'a'], ['c', 'b', 'a']];
+    yield 'partial desired completed' => [['a', 'b', 'c'], ['c'], ['c', 'a', 'b']];
+    yield 'unknown desired dropped' => [['a', 'b', 'c'], ['x', 'b'], ['b', 'a', 'c']];
+    yield 'duplicate desired collapsed' => [['a', 'b', 'c'], ['b', 'b', 'a'], ['b', 'a', 'c']];
+    yield 'no allowed values' => [[], ['a'], []];
   }
 
   /**

@@ -87,7 +87,7 @@ class InputResolver {
   protected function coerce(string $value, FieldType $type): mixed {
     return match ($type) {
       FieldType::Confirm, FieldType::Pause => in_array(strtolower(trim($value)), ['1', 'true', 'yes', 'on'], TRUE),
-      FieldType::MultiSelect, FieldType::MultiSearch, FieldType::MultiFilePicker => $this->splitList($value),
+      FieldType::MultiSelect, FieldType::MultiSearch, FieldType::MultiFilePicker, FieldType::Reorder => $this->splitList($value),
       FieldType::Number => (int) trim($value),
       default => $value,
     };

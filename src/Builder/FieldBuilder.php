@@ -695,6 +695,12 @@ final class FieldBuilder {
    *   The default value.
    */
   protected function resolveDefault(): mixed {
+    // A reorder default is always completed to a full ranking, so even a
+    // partial or unset declared order resolves to every option in sequence.
+    if ($this->fieldType === FieldType::Reorder) {
+      return $this->reorderDefault();
+    }
+
     if ($this->hasDefault) {
       return $this->default;
     }
@@ -708,6 +714,33 @@ final class FieldBuilder {
     }
 
     return $this->defaultFor($this->fieldType);
+  }
+
+  /**
+   * The reorder field's default: the declared order completed to a full rank.
+   *
+   * @return list<string>
+   *   Every selectable option value, the declared default order first and the
+   *   remaining options appended in declared order.
+   */
+  protected function reorderDefault(): array {
+    $values = [];
+    foreach ($this->options as $option) {
+      if ($option->selectable()) {
+        $values[] = $option->value;
+      }
+    }
+
+    $desired = [];
+    if ($this->hasDefault && is_array($this->default)) {
+      foreach ($this->default as $item) {
+        if (is_string($item)) {
+          $desired[] = $item;
+        }
+      }
+    }
+
+    return Field::canonicalOrder($values, $desired);
   }
 
   /**

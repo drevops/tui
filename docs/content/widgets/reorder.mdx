@@ -1,0 +1,36 @@
+---
+title: Reorder
+sidebar_position: 7.5
+---
+
+# Reorder
+
+Rank a list by moving items into the order you want. Up/Down move the highlight;
+Space picks the highlighted item up and, while it is held, Up/Down carry it
+through the list; Space (or Enter) drops it, and Enter accepts. The widget
+returns every item in its final order - a permutation of the options, never a
+subset. Pass `default` (a list of option keys) to seed the starting order; any
+options it omits are appended in declared order, so the ranking is always
+complete. Long lists page around the cursor - set the window with `->pageSize()`.
+
+```php
+$p->reorder('priorities', 'Rank by priority')->default(['redis', 'solr'])->options(['redis' => 'Redis', 'solr' => 'Solr', 'clamav' => 'ClamAV']);
+```
+
+<table>
+  <tr>
+    <td></td>
+    <td align="center"><strong>ANSI</strong></td>
+    <td align="center"><strong>No ANSI</strong></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>Unicode</strong></td>
+    <td><img src="/widget-reorder.svg" alt="Reorder: Unicode + ANSI" /></td>
+    <td><img src="/widget-reorder-no-ansi.svg" alt="Reorder: Unicode + No ANSI" /></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>ASCII</strong></td>
+    <td><img src="/widget-reorder-ascii.svg" alt="Reorder: ASCII + ANSI" /></td>
+    <td><img src="/widget-reorder-ascii-no-ansi.svg" alt="Reorder: ASCII + No ANSI" /></td>
+  </tr>
+</table>

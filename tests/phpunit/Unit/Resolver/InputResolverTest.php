@@ -110,6 +110,12 @@ final class InputResolverTest extends TestCase {
     $this->assertSame(['a', 'b'], $inputs['tags']);
   }
 
+  public function testReorderCoercion(): void {
+    $inputs = (new InputResolver('VORTEX_'))->resolve($this->fields(), '', ['VORTEX_RANK' => 'c, a, b']);
+
+    $this->assertSame(['c', 'a', 'b'], $inputs['rank']);
+  }
+
   /**
    * Build one field of each coercible type for resolution.
    *
@@ -124,6 +130,7 @@ final class InputResolverTest extends TestCase {
       new Field('port', 'Port', '', FieldType::Number, 0),
       new Field('ack', 'Ack', '', FieldType::Pause, TRUE),
       new Field('tags', 'Tags', '', FieldType::MultiSearch, []),
+      new Field('rank', 'Rank', '', FieldType::Reorder, []),
       new Field('vis', 'Visibility', '', FieldType::Toggle, 'public'),
       new Field('paths', 'Paths', '', FieldType::MultiFilePicker, []),
       new Field('cfg', 'Config', '', FieldType::FilePicker, ''),

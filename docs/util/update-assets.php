@@ -123,6 +123,17 @@ expect "MultiSelect widget" {
     wait_and_enter
 }
 EXPECT,
+    'reorder' => <<<'EXPECT'
+# Reorder: open the field, grab the top item, move it down, drop, accept.
+expect "Reorder widget" {
+    pause 1000
+    safe_send "\r"
+    toggle_space
+    arrow_down
+    toggle_space
+    wait_and_enter
+}
+EXPECT,
     'suggest' => <<<'EXPECT'
 # Suggest: type to filter, highlight a suggestion, accept.
 expect "Suggest widget" {
@@ -502,6 +513,9 @@ EXPECT,
     'password' => 6,
     'select' => 8,
     'multiselect' => 8,
+    // The reorder frame captures its opened editor, which is taller than the
+    // panel-hub summary the other single-field forms show at their anchor.
+    'reorder' => 12,
     'suggest' => 10,
     'search' => 10,
     'multisearch' => 10,
@@ -525,6 +539,14 @@ EXPECT,
         'at_needle' => $gate,
       ];
     }
+  }
+
+  // The reorder field opens its editor only after Enter, so its frame anchors
+  // on the widget's own labels ("Redis") rather than the form title - the panel
+  // hub summary lists the lowercase option values, so the capital label appears
+  // only once the reorder list is on screen.
+  foreach ($flag_variants as $suffix => $flags) {
+    $jobs['widget-reorder' . $suffix]['at_needle'] = 'Redis';
   }
 
   // The file pickers browse a fixture tree, so they stand apart from the

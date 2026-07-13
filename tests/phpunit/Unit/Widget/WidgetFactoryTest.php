@@ -24,6 +24,7 @@ use DrevOps\Tui\Widget\MultiSelectWidget;
 use DrevOps\Tui\Widget\NumberWidget;
 use DrevOps\Tui\Widget\PasswordWidget;
 use DrevOps\Tui\Widget\PauseWidget;
+use DrevOps\Tui\Widget\ReorderWidget;
 use DrevOps\Tui\Widget\SearchWidget;
 use DrevOps\Tui\Widget\SelectWidget;
 use DrevOps\Tui\Widget\SuggestWidget;
@@ -57,6 +58,7 @@ final class WidgetFactoryTest extends TestCase {
     $this->assertInstanceOf(PasswordWidget::class, $factory->create($this->field(FieldType::Password), 'x'));
     $this->assertInstanceOf(SearchWidget::class, $factory->create($this->fieldWithOptions(FieldType::Search), 'a'));
     $this->assertInstanceOf(MultiSearchWidget::class, $factory->create($this->fieldWithOptions(FieldType::MultiSearch), ['a']));
+    $this->assertInstanceOf(ReorderWidget::class, $factory->create($this->fieldWithOptions(FieldType::Reorder), ['a']));
     $this->assertInstanceOf(FilePickerWidget::class, $factory->create($this->field(FieldType::FilePicker), '/tmp'));
     $this->assertInstanceOf(FilePickerWidget::class, $factory->create($this->field(FieldType::MultiFilePicker), ['/tmp']));
     $this->assertInstanceOf(PauseWidget::class, $factory->create($this->field(FieldType::Pause), TRUE));
@@ -87,6 +89,14 @@ final class WidgetFactoryTest extends TestCase {
     // Confirm shows through the two-step flow: the first Enter does not accept.
     $widget->handle(Key::named(KeyName::Enter));
     $this->assertFalse($widget->isComplete());
+  }
+
+  public function testReorderSeededFromCurrentValue(): void {
+    $widget = (new WidgetFactory())->create($this->fieldWithOptions(FieldType::Reorder), ['b']);
+
+    // The seed order flows through the factory: the given value first, the
+    // remaining option appended to complete the ranking.
+    $this->assertSame(['b', 'a'], $widget->value());
   }
 
   public function testNumberSeededFromIntCurrent(): void {
