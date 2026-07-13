@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Tests\Unit;
 
+use DrevOps\Tui\Answers\Answers;
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Builder\PanelBuilder;
 use DrevOps\Tui\Derive\Derive;
+use DrevOps\Tui\Render\PanelController;
 use DrevOps\Tui\Render\Terminal;
+use DrevOps\Tui\Testing\BufferedTerminal;
+use DrevOps\Tui\Theme\ThemeInterface;
 use DrevOps\Tui\Tui;
 use DrevOps\Tui\Engine\Engine;
 use DrevOps\Tui\Handler\HandlerRegistry;
@@ -84,6 +88,25 @@ final class TuiTest extends TestCase {
     $this->assertSame('Demo', $tui->config()->title);
     $this->assertInstanceOf(Engine::class, $tui->engine());
     $this->assertInstanceOf(HandlerRegistry::class, $tui->registry());
+  }
+
+  public function testController(): void {
+    $controller = $this->tui()->controller(['color' => FALSE, 'unicode' => TRUE, 'mode' => ThemeInterface::MODE_DARK]);
+
+    $this->assertInstanceOf(PanelController::class, $controller);
+    // The engine's resolved answers seed the controller.
+    $this->assertSame('', $controller->answers()->value('name'));
+  }
+
+  public function testInteractDrivesScriptedTerminal(): void {
+    // The Demo hub lists the panel, then Submit and Cancel: Down reaches
+    // Submit, Enter activates it. "\033[B" is Down, "\r" is Enter.
+    $terminal = new BufferedTerminal(["\033[B", "\r"]);
+
+    $answers = $this->tui()->interact(terminal: $terminal);
+
+    $this->assertInstanceOf(Answers::class, $answers);
+    $this->assertStringContainsString('Demo', $terminal->output());
   }
 
   #[DataProvider('dataProviderResolveTheme')]

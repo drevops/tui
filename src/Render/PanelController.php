@@ -218,7 +218,6 @@ class PanelController {
    *   The collected answers.
    */
   public function run(Terminal $terminal): Answers {
-    // @codeCoverageIgnoreStart
     $parser = new KeyParser();
     $this->terminal = $terminal;
     $terminal->setup();
@@ -233,7 +232,16 @@ class PanelController {
         // Fill the terminal, reserving four rows of chrome: the breadcrumb
         // header, the status footer and the two scroll indicators.
         $terminal->render($this->frame(max(3, $terminal->height() - 4)));
-        foreach ($parser->parse($terminal->read()) as $key) {
+
+        $bytes = $terminal->read();
+
+        // An empty read means the input is exhausted - the scripted input ran
+        // out or the stream closed. Stop rather than spin re-rendering forever.
+        if ($bytes === '') {
+          break;
+        }
+
+        foreach ($parser->parse($bytes) as $key) {
           $this->handle($key);
         }
       }
@@ -246,7 +254,6 @@ class PanelController {
     }
 
     return $this->answers();
-    // @codeCoverageIgnoreEnd
   }
 
   /**

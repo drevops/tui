@@ -101,11 +101,9 @@ class Terminal {
    *   The bytes read.
    */
   public function read(int $bytes = 32): string {
-    // @codeCoverageIgnoreStart
     $data = fread($this->input, max(1, $bytes));
 
     return $data === FALSE ? '' : $data;
-    // @codeCoverageIgnoreEnd
   }
 
   /**
@@ -131,11 +129,11 @@ class Terminal {
    *   arrived.
    */
   public function queryBackground(): ?string {
-    // @codeCoverageIgnoreStart
     if (!stream_isatty($this->input)) {
       return NULL;
     }
 
+    // @codeCoverageIgnoreStart
     $this->stty('-echo -icanon');
     $response = '';
 

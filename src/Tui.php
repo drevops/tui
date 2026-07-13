@@ -138,30 +138,55 @@ final class Tui {
    *   The collected answers.
    */
   public function interact(string $theme = '', string $banner = '', string $version = '', string $directory = '', ?Terminal $terminal = NULL): Answers {
-    // @codeCoverageIgnoreStart
+    if (!$terminal instanceof Terminal) {
+      // @codeCoverageIgnoreStart
+      $terminal = new Terminal();
+      // @codeCoverageIgnoreEnd
+    }
+
+    // The theme's display options (colour, Unicode, mode) come from the config
+    // when set, otherwise they are auto-detected from the terminal.
+    $controller = $this->controller($this->resolveThemeOptions($terminal), $theme, $banner, $version, $directory);
+
+    return $controller->run($terminal);
+  }
+
+  /**
+   * Build the interactive panel controller for the resolved display options.
+   *
+   * Shared by interact() and the test harness: it settles the engine's answers,
+   * resolves the theme and banner, and wires the controller - so a caller that
+   * supplies its own terminal (a real one, or a scripted one for tests) can run
+   * the interactive loop against it.
+   *
+   * @param array<string,mixed> $options
+   *   The resolved theme display options (colour, Unicode, mode).
+   * @param string $theme
+   *   The theme name or class; empty falls back to the config's theme.
+   * @param string $banner
+   *   An optional start banner; empty falls back to the config's banner.
+   * @param string $version
+   *   An optional version shown below the banner and stamped into the context.
+   * @param string $directory
+   *   The target directory (defaults to the current working directory).
+   *
+   * @return \DrevOps\Tui\Render\PanelController
+   *   The controller, ready to run against a terminal.
+   */
+  public function controller(array $options, string $theme = '', string $banner = '', string $version = '', string $directory = ''): PanelController {
     $this->engine->collect([], $this->context($directory, FALSE, $version));
 
-    $terminal ??= new Terminal();
-
-    // The banner comes from the argument, then the config. The theme's display
-    // options (colour, Unicode, mode) come from the config when set, otherwise
-    // they are auto-detected from the terminal.
     $banner_text = $banner !== '' ? $banner : $this->config->banner;
+    $answers = $this->engine->answers();
 
-    $theme_name = $this->resolveTheme($theme);
-    $options = $this->resolveThemeOptions($terminal);
-
-    $controller = new PanelController(
+    return new PanelController(
       $this->config,
-      ThemeManager::create($theme_name, 76, $options),
-      $this->engine->answers()->values,
-      $this->engine->answers()->provenance,
+      ThemeManager::create($this->resolveTheme($theme), 76, $options),
+      $answers->values,
+      $answers->provenance,
       $banner_text,
       $version,
     );
-
-    return $controller->run($terminal);
-    // @codeCoverageIgnoreEnd
   }
 
   /**
