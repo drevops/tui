@@ -1,0 +1,32 @@
+---
+title: Toggle
+sidebar_position: 15
+---
+
+# Toggle
+
+An inline switch between two labeled values. Arrows or Space flip, the first
+letter of each label sets the choice directly, Enter accepts. Pass `default` (an
+option value) to start on the other value.
+
+```php
+$p->toggle('telemetry', 'Telemetry')->options(['enabled' => 'Enabled', 'disabled' => 'Disabled'])->default('enabled');
+```
+
+<table>
+  <tr>
+    <td></td>
+    <td align="center"><strong>ANSI</strong></td>
+    <td align="center"><strong>No ANSI</strong></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>Unicode</strong></td>
+    <td><img src="/widget-toggle.svg" alt="Toggle: Unicode + ANSI" /></td>
+    <td><img src="/widget-toggle-no-ansi.svg" alt="Toggle: Unicode + No ANSI" /></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>ASCII</strong></td>
+    <td><img src="/widget-toggle-ascii.svg" alt="Toggle: ASCII + ANSI" /></td>
+    <td><img src="/widget-toggle-ascii-no-ansi.svg" alt="Toggle: ASCII + No ANSI" /></td>
+  </tr>
+</table>

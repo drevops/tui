@@ -1,0 +1,32 @@
+---
+title: MultiFilePicker
+sidebar_position: 13
+---
+
+# MultiFilePicker
+
+Like the file picker, but several paths can be chosen: `Space` toggles the
+highlighted entry and selections accumulate as you browse between directories,
+`Enter` accepts them all. It collects the list of chosen paths.
+
+```php
+$p->multiFilePicker('assets', 'Asset files')->start(getcwd())->extensions(['png', 'svg']);
+```
+
+<table>
+  <tr>
+    <td></td>
+    <td align="center"><strong>ANSI</strong></td>
+    <td align="center"><strong>No ANSI</strong></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>Unicode</strong></td>
+    <td><img src="/widget-multifilepicker.svg" alt="Multi file picker: Unicode + ANSI" /></td>
+    <td><img src="/widget-multifilepicker-no-ansi.svg" alt="Multi file picker: Unicode + No ANSI" /></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>ASCII</strong></td>
+    <td><img src="/widget-multifilepicker-ascii.svg" alt="Multi file picker: ASCII + ANSI" /></td>
+    <td><img src="/widget-multifilepicker-ascii-no-ansi.svg" alt="Multi file picker: ASCII + No ANSI" /></td>
+  </tr>
+</table>

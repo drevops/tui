@@ -1,0 +1,31 @@
+---
+title: Confirm
+sidebar_position: 14
+---
+
+# Confirm
+
+Yes/No toggle. Arrows or Space switch, `y`/`n` set the choice directly, Enter
+accepts.
+
+```php
+$p->confirm('cdn', 'Serve via CDN?')->default(TRUE);
+```
+
+<table>
+  <tr>
+    <td></td>
+    <td align="center"><strong>ANSI</strong></td>
+    <td align="center"><strong>No ANSI</strong></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>Unicode</strong></td>
+    <td><img src="/widget-confirm.svg" alt="Confirm: Unicode + ANSI" /></td>
+    <td><img src="/widget-confirm-no-ansi.svg" alt="Confirm: Unicode + No ANSI" /></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>ASCII</strong></td>
+    <td><img src="/widget-confirm-ascii.svg" alt="Confirm: ASCII + ANSI" /></td>
+    <td><img src="/widget-confirm-ascii-no-ansi.svg" alt="Confirm: ASCII + No ANSI" /></td>
+  </tr>
+</table>

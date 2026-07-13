@@ -1,0 +1,56 @@
+---
+title: Installation
+sidebar_position: 2
+---
+
+# Installation
+
+Install the package with [Composer](https://getcomposer.org/):
+
+```bash
+composer require drevops/tui
+```
+
+The package is a library consumed programmatically - it has no CLI entry point of
+its own. The public surface is:
+
+- **`DrevOps\Tui\Tui`** - the facade: collect a form's answers, headlessly or
+  through the interactive panel TUI.
+- **`DrevOps\Tui\Builder\Form`** - the fluent builder for declaring a form's
+  panels and fields.
+
+## Usage
+
+Declare a form with the fluent `Form` builder, then drive it with the `Tui`
+facade - one class that wires the engine, resolver, schema tools and TUI for you:
+
+```php
+use DrevOps\Tui\Builder\Form;
+use DrevOps\Tui\Builder\PanelBuilder;
+use DrevOps\Tui\Tui;
+
+$form = Form::create('My form')
+  ->panel('general', 'General', fn(PanelBuilder $p) => $p->text('name', 'Your name')->required());
+
+$tui = new Tui($form, ['App\\Handler']);
+
+// Interactive panel TUI on a terminal, headless otherwise.
+$answers = $tui->run();
+
+// Or call a mode directly:
+echo $tui->collect('{"name":"Ada"}')->toJson();  // headless: JSON + environment
+$answers = $tui->interact();                     // interactive panel TUI
+```
+
+`run()` picks the mode automatically: it drives the interactive panel TUI on a
+terminal and collects headlessly otherwise (or whenever prompts are supplied).
+The facade also exposes `schema()`, `agentHelp()` and `validate()`, and - when
+you want finer control - the internals via `config()`, `engine()` and
+`registry()`.
+
+## Next steps
+
+- [Widgets](/widgets) - the fifteen field types and their options.
+- [Configuration](/configuration) - declaring panels, derived values and conditional fields.
+- [Headless collection](/headless-collection) - driving the form from JSON and environment variables.
+- [Playground](/playground) - complete, runnable examples.

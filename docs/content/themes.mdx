@@ -1,0 +1,57 @@
+---
+title: Themes
+sidebar_position: 10
+---
+
+# Themes
+
+A theme is a self-contained class that owns the entire visual representation - the
+palette (per-role ANSI style codes), the glyphs (marker, caret, scroll indicators,
+separators - each a Unicode/ASCII pair) and how every row is composed.
+`AbstractTheme` implements all of it with a neutral base, and a concrete theme
+overrides only what it colours. The `ThemeManager` turns a theme name into an
+instance; two themes are built in:
+
+```php
+use DrevOps\Tui\Theme\ThemeManager;
+
+ThemeManager::create('dark');   // bright foregrounds for a dark terminal
+ThemeManager::create('light');  // higher-contrast foregrounds for a light terminal
+```
+
+When a form sets no theme (or the explicit `'auto'` sentinel), the interactive TUI
+picks `dark` or `light` from the actual terminal background: it queries the
+background colour over OSC 11, falls back to the `COLORFGBG` environment variable,
+and settles on `dark` when neither answers. An explicit `->theme('dark')` or
+`->theme('light')` opts out of detection.
+
+A custom theme subclasses a built-in theme (e.g. `DarkTheme`) or `AbstractTheme`,
+overrides the styles or glyphs it changes and merges the rest from the parent -
+roles it does not mention keep working:
+
+```php
+use DrevOps\Tui\Theme\DarkTheme;
+
+class OceanTheme extends DarkTheme {
+  protected function defineStyles(): array {
+    return ['title' => '1;96', 'value' => '96', 'marker' => '1;96'] + parent::defineStyles();
+  }
+}
+```
+
+Override any `render*` method to change how an element is laid out. Lowest
+friction: a form names the class directly, with no registration:
+
+```php
+$form = Form::create('My form')->theme('\App\OceanTheme')/* ... */;
+```
+
+Or register a short alias with `ThemeManager::register('ocean',
+OceanTheme::class)`, then `->theme('ocean')` - an unknown theme name fails loudly
+instead of silently falling back. Here is the [playground's ocean
+theme](https://github.com/drevops/tui/tree/main/playground/2-custom-theme) with a
+start banner:
+
+<p align="center">
+  <img src="/theme-ocean.svg" width="100%" alt="Custom ocean theme with a banner" />
+</p>

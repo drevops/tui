@@ -1,0 +1,36 @@
+---
+title: MultiSearch
+sidebar_position: 10
+---
+
+# MultiSearch
+
+A multi-select whose filter query is shown as a search line: typing fuzzy-matches
+and ranks the options with the matched characters highlighted, Space toggles,
+Enter accepts the checked set. Long lists page around the cursor - set the window
+with `->pageSize()`.
+
+```php
+$p->multisearch('services', 'Services')->default(['redis'])->options(['redis' => 'Redis', 'solr' => 'Solr', 'clamav' => 'ClamAV', 'memcached' => 'Memcached']);
+```
+
+For headings, separators and disabled options, see [Option
+groups](/widgets/option-groups).
+
+<table>
+  <tr>
+    <td></td>
+    <td align="center"><strong>ANSI</strong></td>
+    <td align="center"><strong>No ANSI</strong></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>Unicode</strong></td>
+    <td><img src="/widget-multisearch.svg" alt="MultiSearch: Unicode + ANSI" /></td>
+    <td><img src="/widget-multisearch-no-ansi.svg" alt="MultiSearch: Unicode + No ANSI" /></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>ASCII</strong></td>
+    <td><img src="/widget-multisearch-ascii.svg" alt="MultiSearch: ASCII + ANSI" /></td>
+    <td><img src="/widget-multisearch-ascii-no-ansi.svg" alt="MultiSearch: ASCII + No ANSI" /></td>
+  </tr>
+</table>

@@ -1,0 +1,59 @@
+---
+title: Panels and navigation
+sidebar_position: 4
+---
+
+# Panels and navigation
+
+The interactive TUI is a full-screen panel browser: the root hub lists the form's
+panels with live value summaries, and each panel lists its fields with their
+current values and provenance badges. Up/Down move the cursor, Enter edits a field
+(or drills into a sub-panel), Esc goes back, `q` quits, and the mouse wheel
+scrolls long panels without moving the cursor - all of these keys are configurable
+(see [Key bindings](/key-bindings)). **Submit** and **Cancel** buttons live on the
+root panel - `->buttons(FALSE)` hides them, `->buttons(TRUE, 'Save', 'Discard')`
+relabels them.
+
+A **contextual help footer** runs along the foot of every screen, listing exactly
+the keys valid right now and updating as focus moves between the hub and each
+editor. The hub shows move, select, back, quit and `?`; each widget contributes
+its own bindings on top of accept/cancel - a select adds move, a multiselect adds
+toggle and select-all/none, a bounded number adds the step keys, a textarea adds
+newline and the external-editor handoff, a revealable password adds the reveal
+toggle. Pressing `?` at the hub opens a fuller overlay that lists the hub and
+every widget type the form uses, so the form teaches its own less-common widgets.
+The footer follows the active theme and key map - it degrades to ASCII glyphs and
+always reflects remapped keys - and `->footer(FALSE)` turns it off form-wide.
+
+A form-level `->banner()` shows a start screen (with an optional version) before
+the panels, and `->clearOnExit(FALSE)` keeps the final frame on screen after the
+TUI exits.
+
+## Nested panels
+
+Panels nest to any depth: a sub-panel renders as a drillable row with a one-line
+summary of its values, and the breadcrumb header tracks where you are. A
+`->fixup()` rule reconciles dependent answers on every settle pass - here, CDN is
+forced off outside production, whatever was answered:
+
+```php
+$form = Form::create('Site settings')
+  ->buttons(TRUE, 'Save', 'Discard')
+  ->fixup(new Fixup(set: 'cdn', to: FALSE, when: new Condition('environment', ne: 'prod')))
+  ->panel('stack', 'Stack', function (PanelBuilder $p): void {
+    $p->select('environment', 'Environment')->default('dev')->option('dev', 'Development', 'Local containers')->option('stage', 'Staging', 'Shared preview')->option('prod', 'Production', 'Live traffic');
+    $p->confirm('cdn', 'Serve via CDN?')->default(TRUE);
+
+    $p->panel('services', 'Services', function (PanelBuilder $sp): void {
+      $sp->multiselect('services', 'Enabled services')->options(['solr' => 'Solr', 'redis' => 'Redis', 'clamav' => 'ClamAV']);
+
+      $sp->panel('tuning', 'Tuning', function (PanelBuilder $tp): void {
+        $tp->suggest('php_memory', 'PHP memory limit')->default('256M')->options(['128M' => '128M', '256M' => '256M', '512M' => '512M']);
+      });
+    });
+  });
+```
+
+<p align="center">
+  <img src="/nested-panels.svg" width="100%" alt="Nested panels demo" />
+</p>

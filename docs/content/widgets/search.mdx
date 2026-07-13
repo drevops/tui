@@ -1,0 +1,37 @@
+---
+title: Search
+sidebar_position: 9
+---
+
+# Search
+
+Single choice with a visible filter line above the options: typing fuzzy-matches
+and ranks the labels - exact and prefix matches lead, looser subsequence matches
+follow - and highlights the matched characters; Up/Down move, Enter accepts the
+highlighted option's key. Long lists page around the cursor - set the window with
+`->pageSize()`.
+
+```php
+$p->search('timezone', 'Timezone')->default('london')->pageSize(8)->options(['utc' => 'UTC', 'london' => 'Europe/London', 'paris' => 'Europe/Paris', 'sydney' => 'Australia/Sydney']);
+```
+
+For headings, separators and disabled options, see [Option
+groups](/widgets/option-groups).
+
+<table>
+  <tr>
+    <td></td>
+    <td align="center"><strong>ANSI</strong></td>
+    <td align="center"><strong>No ANSI</strong></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>Unicode</strong></td>
+    <td><img src="/widget-search.svg" alt="Search: Unicode + ANSI" /></td>
+    <td><img src="/widget-search-no-ansi.svg" alt="Search: Unicode + No ANSI" /></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>ASCII</strong></td>
+    <td><img src="/widget-search-ascii.svg" alt="Search: ASCII + ANSI" /></td>
+    <td><img src="/widget-search-ascii-no-ansi.svg" alt="Search: ASCII + No ANSI" /></td>
+  </tr>
+</table>

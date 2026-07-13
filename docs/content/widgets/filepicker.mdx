@@ -1,0 +1,35 @@
+---
+title: FilePicker
+sidebar_position: 12
+---
+
+# FilePicker
+
+Browse the filesystem for a single path. Arrows move, `→` enters the highlighted
+directory and `←` returns to its parent (never above the start directory), typing
+filters the current directory and `Tab` reveals hidden entries; `Enter` selects
+the highlighted entry. Restrict what may be chosen with `filesOnly()` or
+`directoriesOnly()`, limit files with `extensions()`, and choose where browsing
+starts with `start()`. It collects the chosen path.
+
+```php
+$p->filePicker('config', 'Config file')->start(getcwd())->filesOnly()->extensions(['yml', 'yaml']);
+```
+
+<table>
+  <tr>
+    <td></td>
+    <td align="center"><strong>ANSI</strong></td>
+    <td align="center"><strong>No ANSI</strong></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>Unicode</strong></td>
+    <td><img src="/widget-filepicker.svg" alt="File picker: Unicode + ANSI" /></td>
+    <td><img src="/widget-filepicker-no-ansi.svg" alt="File picker: Unicode + No ANSI" /></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>ASCII</strong></td>
+    <td><img src="/widget-filepicker-ascii.svg" alt="File picker: ASCII + ANSI" /></td>
+    <td><img src="/widget-filepicker-ascii-no-ansi.svg" alt="File picker: ASCII + No ANSI" /></td>
+  </tr>
+</table>

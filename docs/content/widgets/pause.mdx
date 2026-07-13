@@ -1,0 +1,31 @@
+---
+title: Pause
+sidebar_position: 16
+---
+
+# Pause
+
+An acknowledgement gate: Enter (or Space) accepts `TRUE`. Headless runs
+auto-acknowledge it, so it never blocks automation.
+
+```php
+$p->pause('ready', 'Review the summary above');
+```
+
+<table>
+  <tr>
+    <td></td>
+    <td align="center"><strong>ANSI</strong></td>
+    <td align="center"><strong>No ANSI</strong></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>Unicode</strong></td>
+    <td><img src="/widget-pause.svg" alt="Pause: Unicode + ANSI" /></td>
+    <td><img src="/widget-pause-no-ansi.svg" alt="Pause: Unicode + No ANSI" /></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>ASCII</strong></td>
+    <td><img src="/widget-pause-ascii.svg" alt="Pause: ASCII + ANSI" /></td>
+    <td><img src="/widget-pause-ascii-no-ansi.svg" alt="Pause: ASCII + No ANSI" /></td>
+  </tr>
+</table>

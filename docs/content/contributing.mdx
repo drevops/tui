@@ -1,0 +1,87 @@
+---
+title: Contributing
+sidebar_position: 15
+---
+
+# Contributing
+
+Contributions are welcome. The project lives at
+[github.com/drevops/tui](https://github.com/drevops/tui) - open an
+[issue](https://github.com/drevops/tui/issues) to report a bug or propose a
+feature, or send a pull request.
+
+## Getting set up
+
+```bash
+git clone https://github.com/drevops/tui.git
+cd tui
+composer install
+```
+
+## Quality stack
+
+Code passes a three-layer quality stack before it merges:
+
+1. **PHP_CodeSniffer** - Drupal coding standards plus a strict-types requirement (`phpcs.xml`).
+2. **PHPStan** - level 9 static analysis (`phpstan.neon`).
+3. **Rector** - PHP 8.3 modernization and code-quality rules (`rector.php`).
+
+Run all linters, or auto-fix what can be fixed:
+
+```bash
+composer lint
+composer lint-fix
+```
+
+## Tests
+
+Tests are written with PHPUnit 11 and split into `tests/phpunit/Unit/` (mocks, no
+I/O) and `tests/phpunit/Functional/` (real filesystem).
+
+```bash
+# Run the full suite (fast, no coverage).
+composer test
+
+# Run with coverage reports.
+composer test-coverage
+
+# Run a single file or method.
+./vendor/bin/phpunit tests/phpunit/Unit/TuiTest.php
+./vendor/bin/phpunit --filter testMethodName
+```
+
+Prefer data providers, cover new behaviour with both unit and functional tests
+where it makes sense, and keep coverage high.
+
+## Coding conventions
+
+- All PHP files declare `strict_types=1`.
+- Local variables and method arguments are `snake_case`; method names and class properties are `camelCase`.
+- Single quotes for strings (double quotes only when the string contains a single quote).
+- Never model a closed set of values as string literals - use a backed or pure enum (for example `FieldType`, `Provenance`, `Source`, `KeyName`), typing every property, parameter and return that carries it.
+
+## Documentation
+
+This site is built from the `.mdx` pages in
+[`docs/content/`](https://github.com/drevops/tui/tree/main/docs/content). To work
+on it locally:
+
+```bash
+cd docs
+npm install
+npm start
+```
+
+The terminal-demo SVGs are regenerated with `php docs/util/update-assets.php`
+(requires `asciinema`, `expect`, `node` and `npm`). The architecture diagrams
+under `docs/architecture/` are PlantUML sources rendered to SVG - update them
+after any structural change with the `render-tui-diagrams` workflow.
+
+## Pull requests
+
+- Branch off `main`.
+- Keep changes focused and covered by tests.
+- Make sure `composer lint` and `composer test` pass locally before opening the PR.
+
+The CI matrix runs the linters and the test suite across PHP 8.3, 8.4 and 8.5
+(normal and lowest dependency sets).

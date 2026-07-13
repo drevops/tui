@@ -1,0 +1,10 @@
+{
+  "label": "Widgets",
+  "position": 3,
+  "collapsible": true,
+  "collapsed": false,
+  "link": {
+    "type": "doc",
+    "id": "widgets/index"
+  }
+}

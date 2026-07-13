@@ -1,0 +1,35 @@
+---
+title: Select
+sidebar_position: 6
+---
+
+# Select
+
+Single choice from a list. Up/Down move, Enter accepts the highlighted option.
+Pass `default` (an option key) to start on an option other than the first. Long
+lists page around the cursor - set the window with `->pageSize()`.
+
+```php
+$p->select('profile', 'Install profile')->default('minimal')->options(['standard' => 'Standard', 'minimal' => 'Minimal', 'demo_umami' => 'Demo Umami']);
+```
+
+For headings, separators and disabled options, see [Option
+groups](/widgets/option-groups).
+
+<table>
+  <tr>
+    <td></td>
+    <td align="center"><strong>ANSI</strong></td>
+    <td align="center"><strong>No ANSI</strong></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>Unicode</strong></td>
+    <td><img src="/widget-select.svg" alt="Select: Unicode + ANSI" /></td>
+    <td><img src="/widget-select-no-ansi.svg" alt="Select: Unicode + No ANSI" /></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>ASCII</strong></td>
+    <td><img src="/widget-select-ascii.svg" alt="Select: ASCII + ANSI" /></td>
+    <td><img src="/widget-select-ascii-no-ansi.svg" alt="Select: ASCII + No ANSI" /></td>
+  </tr>
+</table>
