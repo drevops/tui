@@ -13,7 +13,7 @@ the highlighted entry. Restrict what may be chosen with `filesOnly()` or
 starts with `start()`. It collects the chosen path.
 
 ```php
-$p->filePicker('config', 'Config file')->start(getcwd())->filesOnly()->extensions(['yml', 'yaml']);
+$p->filePicker('config', 'Config file')->startIn(getcwd())->filesOnly()->extensions(['yml', 'yaml']);
 ```
 
 <table>

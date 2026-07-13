@@ -259,7 +259,7 @@ final class FieldBuilder {
    * @return $this
    *   The builder.
    */
-  public function confirm(bool $confirm = TRUE): self {
+  public function confirmation(bool $confirm = TRUE): self {
     $this->confirm = $confirm;
 
     return $this;
@@ -341,7 +341,7 @@ final class FieldBuilder {
    * @return $this
    *   The builder.
    */
-  public function start(string $directory): self {
+  public function startIn(string $directory): self {
     $this->pickerStart = $directory;
 
     return $this;

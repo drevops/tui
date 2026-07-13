@@ -44,7 +44,7 @@ $form = Form::create('Theme options demo')
       'library' => 'Library',
       'project' => 'Project',
     ]);
-    $p->multiselect('features', 'Features')->options([
+    $p->multiSelect('features', 'Features')->options([
       'tests' => 'Tests',
       'ci' => 'CI',
       'docker' => 'Docker',

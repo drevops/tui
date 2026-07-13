@@ -6,7 +6,7 @@ namespace DrevOps\Tui\Tests\Unit\Widget;
 
 use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\FilePickerMode;
-use DrevOps\Tui\Input\ArrayKeyStream;
+use DrevOps\Tui\Testing\ArrayKeyStream;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyMapManager;
 use DrevOps\Tui\Input\KeyName;
@@ -14,7 +14,7 @@ use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\AbstractWidget;
 use DrevOps\Tui\Widget\FilePickerWidget;
-use DrevOps\Tui\Widget\WidgetRunner;
+use DrevOps\Tui\Testing\WidgetRunner;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;

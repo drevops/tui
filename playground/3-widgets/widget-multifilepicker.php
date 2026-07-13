@@ -5,7 +5,7 @@
  * Multi file picker field on a form, collected through the Tui facade.
  *
  * Space toggles, arrows move, Enter accepts. The form points the picker at a
- * small fixture tree with `->start()` and lets several entries be chosen,
+ * small fixture tree with `->startIn()` and lets several entries be chosen,
  * instead of invoking the widget directly.
  *
  * Usage:
@@ -30,7 +30,7 @@ $form = Form::create('Multi file picker widget')
   ->color(isset($opts['no-ansi']) ? FALSE : NULL)
   ->unicode(isset($opts['no-unicode']) ? FALSE : NULL)
   ->panel('main', 'Multi file picker', function (PanelBuilder $p): void {
-    $p->multiFilePicker('files', 'Multi file picker')->start(__DIR__ . '/filepicker-tree');
+    $p->multiFilePicker('files', 'Multi file picker')->startIn(__DIR__ . '/filepicker-tree');
   });
 
 echo (new Tui($form))->run()->toJson() . "\n";

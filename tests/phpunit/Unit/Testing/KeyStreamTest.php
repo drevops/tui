@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\Tui\Tests\Unit\Input;
+namespace DrevOps\Tui\Tests\Unit\Testing;
 
-use DrevOps\Tui\Input\ArrayKeyStream;
+use DrevOps\Tui\Testing\ArrayKeyStream;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
 use PHPUnit\Framework\Attributes\CoversClass;

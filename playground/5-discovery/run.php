@@ -42,7 +42,7 @@ $form = Form::create('Discovery demo', 'an existing project')
     // Whether a path exists.
     $p->confirm('docker', 'Uses Docker?')->discover(new PathExists('docker-compose.yml'));
     // List directory entries ("type" is dir / file / any).
-    $p->multiselect('modules', 'Custom modules')->options(['alpha' => 'Alpha', 'beta' => 'Beta', 'gamma' => 'Gamma'])->discover(new Scan('modules', type: 'dir'));
+    $p->multiSelect('modules', 'Custom modules')->options(['alpha' => 'Alpha', 'beta' => 'Beta', 'gamma' => 'Gamma'])->discover(new Scan('modules', type: 'dir'));
   });
 
 $tui = new Tui($form);

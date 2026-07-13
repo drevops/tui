@@ -2,12 +2,14 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\Tui\Input;
+namespace DrevOps\Tui\Testing;
+
+use DrevOps\Tui\Input\Key;
 
 /**
  * A source of key presses consumed by the widgets.
  *
- * @package DrevOps\Tui\Input
+ * @package DrevOps\Tui\Testing
  */
 interface KeyStreamInterface {
 

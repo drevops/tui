@@ -29,7 +29,7 @@ $form = Form::create('MultiSelect widget')
   ->color(isset($opts['no-ansi']) ? FALSE : NULL)
   ->unicode(isset($opts['no-unicode']) ? FALSE : NULL)
   ->panel('main', 'MultiSelect', function (PanelBuilder $p): void {
-    $p->multiselect('multiselect', 'MultiSelect')->default(['redis'])->options([
+    $p->multiSelect('multiselect', 'MultiSelect')->default(['redis'])->options([
       'redis' => 'Redis',
       'solr' => 'Solr',
       'clamav' => 'ClamAV',

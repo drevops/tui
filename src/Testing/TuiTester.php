@@ -8,7 +8,7 @@ use DrevOps\Tui\Answers\Answers;
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Config\Config;
 use DrevOps\Tui\Input\Key;
-use DrevOps\Tui\Input\KeyEncoder;
+use DrevOps\Tui\Testing\KeyEncoder;
 use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Theme\Mode;
 use DrevOps\Tui\Tui;
@@ -16,7 +16,7 @@ use DrevOps\Tui\Tui;
 /**
  * Drives a form's interactive panel TUI from scripted keystrokes.
  *
- * The form-level companion to {@see \DrevOps\Tui\Widget\WidgetRunner}: it
+ * The form-level companion to {@see \DrevOps\Tui\Testing\WidgetRunner}: it
  * feeds keystrokes through a scripted terminal's read() and runs the real
  * panel loop, so a consumer can assert on the collected answers and on what
  * was rendered - without a real TTY. Keystrokes are supplied as raw byte

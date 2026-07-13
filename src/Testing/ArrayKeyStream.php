@@ -2,12 +2,14 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\Tui\Input;
+namespace DrevOps\Tui\Testing;
+
+use DrevOps\Tui\Input\Key;
 
 /**
  * An in-memory key stream, used for scripted (headless) input.
  *
- * @package DrevOps\Tui\Input
+ * @package DrevOps\Tui\Testing
  */
 final class ArrayKeyStream implements KeyStreamInterface {
 

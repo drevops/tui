@@ -9,7 +9,7 @@ use DrevOps\Tui\Answers\Provenance;
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Builder\PanelBuilder;
 use DrevOps\Tui\Input\Key;
-use DrevOps\Tui\Input\KeyEncoder;
+use DrevOps\Tui\Testing\KeyEncoder;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Render\ExternalEditor;

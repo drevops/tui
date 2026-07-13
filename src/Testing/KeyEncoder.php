@@ -2,7 +2,11 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\Tui\Input;
+namespace DrevOps\Tui\Testing;
+
+use DrevOps\Tui\Input\Key;
+use DrevOps\Tui\Input\KeyName;
+use DrevOps\Tui\Input\KeyParser;
 
 /**
  * Encodes a key into the terminal bytes a KeyParser decodes back into it.
@@ -12,7 +16,7 @@ namespace DrevOps\Tui\Input;
  * be delivered through a terminal's read() and decoded back by the production
  * parser.
  *
- * @package DrevOps\Tui\Input
+ * @package DrevOps\Tui\Testing
  */
 final class KeyEncoder {
 

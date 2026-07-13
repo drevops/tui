@@ -79,7 +79,7 @@ final class ConfigModelTest extends TestCase {
   public function testTypeDefaults(): void {
     $config = Form::create('T')
       ->panel('p', 'p', function (PanelBuilder $p): void {
-        $p->multiselect('ms');
+        $p->multiSelect('ms');
         $p->confirm('cb');
         $p->text('tx');
       })

@@ -45,7 +45,7 @@ $form = Form::create('Site settings')
     $p->confirm('cdn', 'Serve via CDN?')->default(TRUE);
 
     $p->panel('services', 'Services', function (PanelBuilder $sp): void {
-      $sp->multiselect('services', 'Enabled services')->options(['solr' => 'Solr', 'redis' => 'Redis', 'clamav' => 'ClamAV']);
+      $sp->multiSelect('services', 'Enabled services')->options(['solr' => 'Solr', 'redis' => 'Redis', 'clamav' => 'ClamAV']);
 
       $sp->panel('tuning', 'Tuning', function (PanelBuilder $tp): void {
         $tp->suggest('php_memory', 'PHP memory limit')->default('256M')->options(['128M' => '128M', '256M' => '256M', '512M' => '512M']);

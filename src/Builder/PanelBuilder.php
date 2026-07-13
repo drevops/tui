@@ -101,7 +101,7 @@ final class PanelBuilder {
    * @return \DrevOps\Tui\Builder\FieldBuilder
    *   The field builder.
    */
-  public function multiselect(string $id, string $label = ''): FieldBuilder {
+  public function multiSelect(string $id, string $label = ''): FieldBuilder {
     return $this->field($id, $label, FieldType::MultiSelect);
   }
 
@@ -251,7 +251,7 @@ final class PanelBuilder {
    * @return \DrevOps\Tui\Builder\FieldBuilder
    *   The field builder.
    */
-  public function multisearch(string $id, string $label = ''): FieldBuilder {
+  public function multiSearch(string $id, string $label = ''): FieldBuilder {
     return $this->field($id, $label, FieldType::MultiSearch);
   }
 

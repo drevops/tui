@@ -51,7 +51,7 @@ $form = Form::create('Package scaffolder')
       'cli' => 'CLI tool',
     ]);
     // A multi-select list.
-    $p->multiselect('features', 'Features')->description('Space to toggle, type to filter.')->options([
+    $p->multiSelect('features', 'Features')->description('Space to toggle, type to filter.')->options([
       'tests' => 'Tests',
       'ci' => 'CI',
       'docker' => 'Docker',

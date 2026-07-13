@@ -32,7 +32,7 @@ $form = Form::create('MultiSelect with groups')
   ->color(isset($opts['no-ansi']) ? FALSE : NULL)
   ->unicode(isset($opts['no-unicode']) ? FALSE : NULL)
   ->panel('main', 'MultiSelect', function (PanelBuilder $p): void {
-    $p->multiselect('multiselect', 'MultiSelect')->default(['redis'])
+    $p->multiSelect('multiselect', 'MultiSelect')->default(['redis'])
       ->heading('Services')
       ->option('redis', 'Redis')
       ->option('solr', 'Solr')
