@@ -1,6 +1,6 @@
 @startuml
 ' drevops/tui - data flow for headless collection.
-' Traced from src/Engine/Engine.php (collect -> resolveInitial -> stabilize -> validate/transform).
+' Traced from src/Engine/Engine.php (collect -> resolveAll -> stabilize -> guardInputs).
 ' Regenerate every SVG with:  plantuml -tsvg docs/architecture/*.puml
 !theme plain
 skinparam backgroundColor white
@@ -29,6 +29,7 @@ loop each field, in order
   alt update mode and no input
     Eng -> Disc: discover(directory)
     Disc --> Eng: discovered value
+    note right of Eng: adopted only when it passes the\nfield's type, bounds and options
   end
   note right of Eng: input > discovered > declared default > static default
 end
@@ -43,11 +44,12 @@ CE --> Eng: active / inactive per field
 deactivate CE
 note right of Eng: apply fix-ups; repeat until stable
 
-loop each active field
-  Eng -> B: validate(value)
-  B --> Eng: error or null
+loop each active field with a supplied input
   Eng -> B: transform(value)
   B --> Eng: normalized value
+  Eng -> B: validate(value)
+  B --> Eng: error or null
+  note right of Eng: type and bounds checked first;\nthe first error throws
 end
 
 Eng -> Ans: build(values, provenance)
