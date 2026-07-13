@@ -10,8 +10,7 @@ use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Theme\ThemeInterface;
-
-use function DrevOps\Tui\t;
+use DrevOps\Tui\Translation\Translator;
 
 /**
  * Single-line text input rendered masked; the accepted value stays plain.
@@ -97,7 +96,7 @@ class PasswordWidget extends TextWidget {
     }
 
     if ($this->buffer !== $this->firstEntry) {
-      $this->error = t('Passwords do not match.');
+      $this->error = Translator::t('Passwords do not match.');
       $this->reset();
 
       return;
@@ -129,7 +128,7 @@ class PasswordWidget extends TextWidget {
     $rows = [$this->renderLine($theme)];
 
     if ($this->firstEntry !== NULL) {
-      $rows[] = $theme->footer(t('re-enter to confirm'));
+      $rows[] = $theme->footer(Translator::t('re-enter to confirm'));
     }
 
     if ($this->error !== NULL) {

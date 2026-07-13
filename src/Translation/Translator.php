@@ -77,6 +77,25 @@ final class Translator {
   }
 
   /**
+   * Translate a string through the process-wide translator, English fallback.
+   *
+   * The entry point for every user-facing string: with a shared translator set
+   * it localizes, otherwise it returns the source with its placeholders filled,
+   * so a call is always safe and defaults to English.
+   *
+   * @param string $message
+   *   The English source string, used as the catalog key.
+   * @param array<string,string|int|float|\Stringable> $args
+   *   Replacements for the @name placeholders in the message.
+   *
+   * @return string
+   *   The translated string, or the interpolated source when untranslated.
+   */
+  public static function t(string $message, array $args = []): string {
+    return self::$shared instanceof self ? self::$shared->translate($message, $args) : self::interpolate($message, $args);
+  }
+
+  /**
    * Translate a source string, substituting its placeholders.
    *
    * @param string $source

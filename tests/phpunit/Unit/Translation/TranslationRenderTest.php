@@ -15,6 +15,8 @@ use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Render\PanelController;
+use DrevOps\Tui\Schema\AgentHelp;
+use DrevOps\Tui\Schema\SchemaValidator;
 use DrevOps\Tui\Tests\Traits\ResetsTranslator;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Translation\Translator;
@@ -30,6 +32,8 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(DefaultTheme::class)]
 #[CoversClass(WidgetFactory::class)]
 #[CoversClass(SummaryFormatter::class)]
+#[CoversClass(SchemaValidator::class)]
+#[CoversClass(AgentHelp::class)]
 #[Group('tui')]
 final class TranslationRenderTest extends TestCase {
 
@@ -86,6 +90,18 @@ final class TranslationRenderTest extends TestCase {
     $this->assertStringContainsString('De acuerdo', $summary);
     $this->assertStringContainsString('si', $summary);
     $this->assertStringContainsString('editado', $summary);
+  }
+
+  public function testHeadlessMessagesTranslated(): void {
+    $config = Form::create('Demo')
+      ->panel('general', 'General', function (PanelBuilder $panel): void {
+        $panel->text('name', 'Site name')->required();
+      })
+      ->build();
+
+    // A headless validation error and the agent help both localize.
+    $this->assertContains('Falta la pregunta obligatoria "name".', (new SchemaValidator($config))->validate([]));
+    $this->assertStringContainsString('Preguntas:', (new AgentHelp($config, 'TUI_'))->generate());
   }
 
 }

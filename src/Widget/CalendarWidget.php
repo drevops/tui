@@ -14,8 +14,7 @@ use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Input\ScopedKeyMap;
 use DrevOps\Tui\Theme\ThemeInterface;
-
-use function DrevOps\Tui\t;
+use DrevOps\Tui\Translation\Translator;
 
 /**
  * A navigable month calendar returning a normalized ISO `Y-m-d` string.
@@ -195,7 +194,7 @@ class CalendarWidget extends AbstractWidget {
    *   The themed, centered heading.
    */
   protected function heading(ThemeInterface $theme): string {
-    $title = t($this->cursor->format('F')) . ' ' . $this->cursor->format('Y');
+    $title = Translator::t($this->cursor->format('F')) . ' ' . $this->cursor->format('Y');
     $left = max(0, intdiv(self::GRID_WIDTH - mb_strlen($title), 2));
 
     return str_repeat(' ', $left) . $theme->title($title);

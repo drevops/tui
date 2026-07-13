@@ -20,4 +20,6 @@ return [
   'Agree' => 'De acuerdo',
   'yes' => 'si',
   'edited' => 'editado',
+  'Missing required question "@id".' => 'Falta la pregunta obligatoria "@id".',
+  'Questions:' => 'Preguntas:',
 ];

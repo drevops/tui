@@ -13,6 +13,7 @@ use DrevOps\Tui\Derive\Deriver;
 use DrevOps\Tui\Discovery\DiscoverInterface;
 use DrevOps\Tui\Handler\Context;
 use DrevOps\Tui\Handler\HandlerRegistry;
+use DrevOps\Tui\Translation\Translator;
 
 /**
  * Orchestrates the question lifecycle generically over a configuration.
@@ -114,12 +115,12 @@ class Engine {
 
       $error = $this->validateValue($field, $values[$field->id]);
       if ($error !== NULL) {
-        throw new EngineException(sprintf('Invalid value for field "%s": %s', $field->id, $error));
+        throw new EngineException(Translator::t('Invalid value for field "@id": @error', ['@id' => $field->id, '@error' => $error]));
       }
 
       $option_error = $field->optionError($values[$field->id]);
       if ($option_error !== NULL) {
-        throw new EngineException(sprintf('Invalid value for field "%s": %s', $field->id, $option_error));
+        throw new EngineException(Translator::t('Invalid value for field "@id": @error', ['@id' => $field->id, '@error' => $option_error]));
       }
     }
 
@@ -195,7 +196,7 @@ class Engine {
   protected function validateValue(Field $field, mixed $value): ?string {
     $violation = $field->bounds?->violation($value) ?? $field->dateBounds?->violation($value);
     if ($violation !== NULL) {
-      return sprintf('must be %s.', $violation);
+      return Translator::t('must be @constraint.', ['@constraint' => $violation]);
     }
 
     $validator = $field->validate ?? $this->handlers->validator($field->id);

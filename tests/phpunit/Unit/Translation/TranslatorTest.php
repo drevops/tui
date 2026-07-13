@@ -7,18 +7,14 @@ namespace DrevOps\Tui\Tests\Unit\Translation;
 use DrevOps\Tui\Tests\Traits\ResetsTranslator;
 use DrevOps\Tui\Translation\Translator;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
-use function DrevOps\Tui\t;
-
 /**
- * Tests the translator and the t() function.
+ * Tests the translator and its static t() bridge.
  */
 #[CoversClass(Translator::class)]
-#[CoversFunction('DrevOps\Tui\t')]
 #[Group('tui')]
 final class TranslatorTest extends TestCase {
 
@@ -127,12 +123,12 @@ final class TranslatorTest extends TestCase {
     $this->assertNull(Translator::shared());
   }
 
-  public function testFunctionUsesSharedTranslator(): void {
-    $this->assertSame('Submit', t('Submit'));
-    $this->assertSame('Value 3.', t('Value @n.', ['@n' => 3]));
+  public function testStaticBridgeUsesSharedTranslator(): void {
+    $this->assertSame('Submit', Translator::t('Submit'));
+    $this->assertSame('Value 3.', Translator::t('Value @n.', ['@n' => 3]));
 
     Translator::setShared(new Translator('es', [$this->fixtures('translations')]));
-    $this->assertSame('Enviar', t('Submit'));
+    $this->assertSame('Enviar', Translator::t('Submit'));
   }
 
 }

@@ -39,10 +39,7 @@
     "autoload": {
         "psr-4": {
             "DrevOps\\Tui\\": "src/"
-        },
-        "files": [
-            "src/t.php"
-        ]
+        }
     },
     "autoload-dev": {
         "psr-4": {

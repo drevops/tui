@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Input;
 
-use function DrevOps\Tui\t;
+use DrevOps\Tui\Translation\Translator;
 
 /**
  * One labelled fragment of a context's key-hint footer.
@@ -45,7 +45,7 @@ final readonly class Hint {
     string $label,
     Action ...$actions,
   ) {
-    $this->label = t($label);
+    $this->label = Translator::t($label);
     $this->actions = array_values($actions);
   }
 

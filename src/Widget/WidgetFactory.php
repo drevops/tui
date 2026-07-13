@@ -9,8 +9,7 @@ use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\Option;
 use DrevOps\Tui\Input\KeyMap;
 use DrevOps\Tui\Input\KeyMapManager;
-
-use function DrevOps\Tui\t;
+use DrevOps\Tui\Translation\Translator;
 
 /**
  * Builds the widget for a field, seeded with the field's current value.
@@ -115,7 +114,7 @@ class WidgetFactory {
 
     foreach ($field->options as $option) {
       if ($option->selectable()) {
-        $out[$option->value] = t($option->label);
+        $out[$option->value] = Translator::t($option->label);
       }
     }
 
@@ -138,11 +137,11 @@ class WidgetFactory {
   protected function options(Field $field): array {
     return array_map(static fn(Option $option): Option => new Option(
       $option->value,
-      t($option->label),
+      Translator::t($option->label),
       $option->description,
       $option->kind,
       $option->disabled,
-      $option->disabledReason !== '' ? t($option->disabledReason) : '',
+      $option->disabledReason !== '' ? Translator::t($option->disabledReason) : '',
     ), $field->options);
   }
 

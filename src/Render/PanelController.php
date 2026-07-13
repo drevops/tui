@@ -17,11 +17,10 @@ use DrevOps\Tui\Input\KeyMapManager;
 use DrevOps\Tui\Input\KeyParser;
 use DrevOps\Tui\Input\ScopedKeyMap;
 use DrevOps\Tui\Theme\DefaultTheme;
+use DrevOps\Tui\Translation\Translator;
 use DrevOps\Tui\Widget\TextareaWidget;
 use DrevOps\Tui\Widget\WidgetFactory;
 use DrevOps\Tui\Widget\WidgetInterface;
-
-use function DrevOps\Tui\t;
 
 /**
  * The interactive state machine behind the panel TUI.
@@ -226,7 +225,7 @@ class PanelController {
 
     try {
       if ($this->banner !== '') {
-        $terminal->render($this->theme->renderBanner($this->banner, $this->version) . "\n\n" . t('Press any key to continue...'));
+        $terminal->render($this->theme->renderBanner($this->banner, $this->version) . "\n\n" . Translator::t('Press any key to continue...'));
         $terminal->read();
       }
 
@@ -303,7 +302,7 @@ class PanelController {
     }
 
     if ($this->editor instanceof WidgetInterface) {
-      $label = $this->editing instanceof Field ? t($this->editing->label) : '';
+      $label = $this->editing instanceof Field ? Translator::t($this->editing->label) : '';
       $keys = $this->editing instanceof Field ? $this->keymap->forField($this->editing->type) : $this->nav;
       $hints = $this->config->footer ? $this->editor->hints() : [];
 
@@ -324,7 +323,7 @@ class PanelController {
         $cursor_line = count($body);
       }
 
-      $body[] = $this->theme->renderButtonBar([t($this->config->submitLabel), t($this->config->cancelLabel)], $selected);
+      $body[] = $this->theme->renderButtonBar([Translator::t($this->config->submitLabel), Translator::t($this->config->cancelLabel)], $selected);
     }
 
     $total = count($body);
@@ -496,7 +495,7 @@ class PanelController {
    *   The sections.
    */
   protected function helpSections(): array {
-    $sections = [new HelpSection(t('Navigation'), $this->nav, ...$this->navigationHints())];
+    $sections = [new HelpSection(Translator::t('Navigation'), $this->nav, ...$this->navigationHints())];
 
     $seen = [];
     foreach ($this->config->fields() as $field) {
@@ -506,7 +505,7 @@ class PanelController {
 
       $seen[] = $field->type;
       $widget = $this->widgets->create($field, $this->values[$field->id] ?? $field->default);
-      $sections[] = new HelpSection(t(ucfirst($field->type->value)), $this->keymap->forField($field->type), ...$widget->hints());
+      $sections[] = new HelpSection(Translator::t(ucfirst($field->type->value)), $this->keymap->forField($field->type), ...$widget->hints());
     }
 
     return $sections;

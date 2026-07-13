@@ -10,8 +10,7 @@ use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Theme\ThemeInterface;
-
-use function DrevOps\Tui\t;
+use DrevOps\Tui\Translation\Translator;
 
 /**
  * An acknowledgement gate: Enter (or Space) accepts TRUE.
@@ -57,7 +56,7 @@ class PauseWidget extends AbstractWidget {
     $key = $this->keys()->primary(Action::Accept);
     $glyph = $key instanceof Key ? $theme->keyHint($key) : $theme->enter();
 
-    return t('Press @key to continue', ['@key' => $theme->highlight($glyph)]);
+    return Translator::t('Press @key to continue', ['@key' => $theme->highlight($glyph)]);
   }
 
   /**

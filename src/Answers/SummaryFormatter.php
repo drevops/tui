@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Answers;
 
 use DrevOps\Tui\Config\FieldType;
-
-use function DrevOps\Tui\t;
+use DrevOps\Tui\Translation\Translator;
 
 /**
  * Formats a self-describing answer set as a human summary grouped by panel.
@@ -39,11 +38,11 @@ class SummaryFormatter {
       }
 
       foreach (array_slice($item->panels, $common) as $offset => $title) {
-        $lines[] = str_repeat('  ', $common + $offset) . t($title);
+        $lines[] = str_repeat('  ', $common + $offset) . Translator::t($title);
       }
 
       $trail = $item->panels;
-      $lines[] = str_repeat('  ', count($item->panels)) . t($item->label) . ': ' . $this->renderValue($item) . $this->badge($item->provenance);
+      $lines[] = str_repeat('  ', count($item->panels)) . Translator::t($item->label) . ': ' . $this->renderValue($item) . $this->badge($item->provenance);
     }
 
     return implode("\n", $lines);
@@ -67,7 +66,7 @@ class SummaryFormatter {
     }
 
     if (is_bool($value)) {
-      return $value ? t('yes') : t('no');
+      return $value ? Translator::t('yes') : Translator::t('no');
     }
 
     if (is_array($value)) {
@@ -87,7 +86,7 @@ class SummaryFormatter {
    *   The badge suffix.
    */
   protected function badge(Provenance $provenance): string {
-    return $provenance === Provenance::Default ? '' : ' (' . t($provenance->value) . ')';
+    return $provenance === Provenance::Default ? '' : ' (' . Translator::t($provenance->value) . ')';
   }
 
 }
