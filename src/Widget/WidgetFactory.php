@@ -6,8 +6,10 @@ namespace DrevOps\Tui\Widget;
 
 use DrevOps\Tui\Config\Field;
 use DrevOps\Tui\Config\FieldType;
+use DrevOps\Tui\Config\Option;
 use DrevOps\Tui\Input\KeyMap;
 use DrevOps\Tui\Input\KeyMapManager;
+use DrevOps\Tui\Translation\Translator;
 
 /**
  * Builds the widget for a field, seeded with the field's current value.
@@ -51,12 +53,12 @@ class WidgetFactory {
     $widget = match ($field->type) {
       FieldType::Confirm => new ConfirmWidget((bool) $current),
       FieldType::Toggle => new ToggleWidget($this->labels($field), is_string($current) ? $current : ''),
-      FieldType::Select => new SelectWidget($field->options, is_string($current) ? $current : '', pageSize: $field->pageSize),
-      FieldType::MultiSelect => new MultiSelectWidget($field->options, $this->toList($current), pageSize: $field->pageSize),
-      FieldType::MultiSearch => new MultiSearchWidget($field->options, $this->toList($current), pageSize: $field->pageSize),
-      FieldType::Reorder => new ReorderWidget($field->options, $this->toList($current), pageSize: $field->pageSize),
+      FieldType::Select => new SelectWidget($this->options($field), is_string($current) ? $current : '', pageSize: $field->pageSize),
+      FieldType::MultiSelect => new MultiSelectWidget($this->options($field), $this->toList($current), pageSize: $field->pageSize),
+      FieldType::MultiSearch => new MultiSearchWidget($this->options($field), $this->toList($current), pageSize: $field->pageSize),
+      FieldType::Reorder => new ReorderWidget($this->options($field), $this->toList($current), pageSize: $field->pageSize),
       FieldType::Suggest => new SuggestWidget($field->selectableValues(), is_string($current) ? $current : '', pageSize: $field->pageSize),
-      FieldType::Search => new SearchWidget($field->options, is_string($current) ? $current : '', pageSize: $field->pageSize),
+      FieldType::Search => new SearchWidget($this->options($field), is_string($current) ? $current : '', pageSize: $field->pageSize),
       FieldType::FilePicker => new FilePickerWidget($field->pickerStart, is_string($current) ? $current : '', $field->pickerMode, $field->pickerExtensions, $field->pickerShowHidden),
       FieldType::MultiFilePicker => new FilePickerWidget($field->pickerStart, $this->toList($current), $field->pickerMode, $field->pickerExtensions, $field->pickerShowHidden, multiple: TRUE),
       FieldType::Number => new NumberWidget(is_int($current) || is_float($current) ? (string) (int) $current : '', bounds: $field->bounds),
@@ -112,11 +114,35 @@ class WidgetFactory {
 
     foreach ($field->options as $option) {
       if ($option->selectable()) {
-        $out[$option->value] = $option->label;
+        $out[$option->value] = Translator::t($option->label);
       }
     }
 
     return $out;
+  }
+
+  /**
+   * A field's options with their labels and disabled reasons translated.
+   *
+   * Translating once here, rather than at each widget draw, keeps the list a
+   * widget searches identical to the list it shows, so a match runs against the
+   * same text the user reads.
+   *
+   * @param \DrevOps\Tui\Config\Field $field
+   *   The field.
+   *
+   * @return list<\DrevOps\Tui\Config\Option>
+   *   The options in display order, localized to the active language.
+   */
+  protected function options(Field $field): array {
+    return array_map(static fn(Option $option): Option => new Option(
+      $option->value,
+      Translator::t($option->label),
+      $option->description,
+      $option->kind,
+      $option->disabled,
+      $option->disabledReason !== '' ? Translator::t($option->disabledReason) : '',
+    ), $field->options);
   }
 
   /**

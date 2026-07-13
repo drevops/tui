@@ -8,6 +8,7 @@ use DrevOps\Tui\Config\Config;
 use DrevOps\Tui\Config\DateBounds;
 use DrevOps\Tui\Config\Field;
 use DrevOps\Tui\Config\NumberBounds;
+use DrevOps\Tui\Translation\Translator;
 
 /**
  * Produces instructions for driving the form non-interactively.
@@ -35,23 +36,25 @@ class AgentHelp {
    */
   public function generate(): string {
     $lines = [
-      'Drive the form non-interactively:',
+      Translator::t('Drive the form non-interactively:'),
       '',
-      '- Pass --no-interaction to resolve every question from defaults, discovery and derivation without prompting.',
-      '- Pass --prompts with a JSON object (or a path to a JSON file) of answers keyed by question id; these take the highest precedence.',
+      Translator::t('- Pass --no-interaction to resolve every question from defaults, discovery and derivation without prompting.'),
+      Translator::t('- Pass --prompts with a JSON object (or a path to a JSON file) of answers keyed by question id; these take the highest precedence.'),
     ];
 
     if ($this->env_prefix !== '') {
-      $lines[] = sprintf('- Set per-question environment variables named %s<ID> (the uppercased question id); these win over discovery but lose to --prompts.', $this->env_prefix);
+      $lines[] = Translator::t('- Set per-question environment variables named @prefix<ID> (the uppercased question id); these win over discovery but lose to --prompts.', [
+        '@prefix' => $this->env_prefix,
+      ]);
     }
 
-    $lines[] = '- Precedence: --prompts > environment > discovered > derived > default.';
+    $lines[] = Translator::t('- Precedence: --prompts > environment > discovered > derived > default.');
     $lines[] = '';
-    $lines[] = 'Questions:';
+    $lines[] = Translator::t('Questions:');
 
     foreach ($this->config->fields() as $field) {
-      $required = $field->required ? ' (required)' : '';
-      $lines[] = sprintf('  %s [%s]%s - %s%s%s', $field->id, $field->type->value, $required, $field->label, $this->rangeNote($field), $this->dateNote($field));
+      $required = $field->required ? ' ' . Translator::t('(required)') : '';
+      $lines[] = sprintf('  %s [%s]%s - %s%s%s', $field->id, $field->type->value, $required, Translator::t($field->label), $this->rangeNote($field), $this->dateNote($field));
     }
 
     return implode("\n", $lines);
@@ -79,7 +82,7 @@ class AgentHelp {
     }
 
     if ($field->bounds->step !== NULL) {
-      $parts[] = sprintf('step %d', $field->bounds->step);
+      $parts[] = Translator::t('step @step', ['@step' => $field->bounds->step]);
     }
 
     return sprintf(' (%s)', implode(', ', $parts));

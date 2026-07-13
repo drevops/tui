@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Config;
 
+use DrevOps\Tui\Translation\Translator;
+
 /**
  * Optional integer bounds and step for a number field.
  *
@@ -79,15 +81,15 @@ final readonly class NumberBounds {
    */
   public function describe(): string {
     if ($this->min !== NULL && $this->max !== NULL) {
-      return sprintf('between %d and %d', $this->min, $this->max);
+      return Translator::t('between @min and @max', ['@min' => $this->min, '@max' => $this->max]);
     }
 
     if ($this->min !== NULL) {
-      return sprintf('at least %d', $this->min);
+      return Translator::t('at least @min', ['@min' => $this->min]);
     }
 
     if ($this->max !== NULL) {
-      return sprintf('at most %d', $this->max);
+      return Translator::t('at most @max', ['@max' => $this->max]);
     }
 
     return '';

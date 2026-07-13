@@ -13,6 +13,7 @@ use DrevOps\Tui\Input\ScopedKeyMap;
 use DrevOps\Tui\Render\Scroller;
 use DrevOps\Tui\Render\Viewport;
 use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Translation\Translator;
 
 /**
  * Shared widget behaviour: accept/cancel, validation and transformation.
@@ -239,7 +240,9 @@ abstract class AbstractWidget implements WidgetInterface {
    */
   protected function resolvePageSize(?int $pageSize): int {
     if ($pageSize !== NULL && $pageSize < 1) {
-      throw new \InvalidArgumentException(sprintf('Page size must be a positive integer, %d given.', $pageSize));
+      throw new \InvalidArgumentException(Translator::t('Page size must be a positive integer, @size given.', [
+        '@size' => $pageSize,
+      ]));
     }
 
     return $pageSize ?? self::DEFAULT_PAGE_SIZE;

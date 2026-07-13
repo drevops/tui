@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Answers;
 
+use DrevOps\Tui\Translation\Translator;
+
 /**
  * How an answer's value came to be.
  *
@@ -25,5 +27,24 @@ enum Provenance: string {
 
   // Supplied by the user over a derive rule, pinning the derived value.
   case Override = 'override';
+
+  /**
+   * The badge label in the active language.
+   *
+   * A literal per case, rather than translating the backing value, so each
+   * badge string is a discoverable chrome key in the catalog template.
+   *
+   * @return string
+   *   The translated badge label.
+   */
+  public function label(): string {
+    return match ($this) {
+      self::Default => Translator::t('default'),
+      self::Detected => Translator::t('detected'),
+      self::Edited => Translator::t('edited'),
+      self::Derived => Translator::t('derived'),
+      self::Override => Translator::t('override'),
+    };
+  }
 
 }

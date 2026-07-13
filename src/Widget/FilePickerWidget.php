@@ -13,6 +13,7 @@ use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Render\Scroller;
 use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Translation\Translator;
 
 /**
  * A filesystem browser that selects a path, or several in multiple mode.
@@ -226,7 +227,7 @@ class FilePickerWidget extends AbstractWidget {
     $entries = $this->entries();
 
     if ($entries === []) {
-      $lines[] = $theme->description('(empty)');
+      $lines[] = $theme->description(Translator::t('(empty)'));
     }
 
     $viewport = $this->scroller->compute(count($entries), self::WINDOW, $this->cursor, $this->offset);

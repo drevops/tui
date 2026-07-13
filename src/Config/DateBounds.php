@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Config;
 
+use DrevOps\Tui\Translation\Translator;
+
 /**
  * Optional min/max date range and the calendar's week-start day.
  *
@@ -36,7 +38,10 @@ final readonly class DateBounds {
     public Weekday $weekStart = Weekday::Monday,
   ) {
     if ($this->min instanceof \DateTimeImmutable && $this->max instanceof \DateTimeImmutable && $this->min > $this->max) {
-      throw new ConfigException(sprintf('Date bounds declare a minimum of %s after the maximum of %s.', $this->min->format('Y-m-d'), $this->max->format('Y-m-d')));
+      throw new ConfigException(Translator::t('Date bounds declare a minimum of @min after the maximum of @max.', [
+        '@min' => $this->min->format('Y-m-d'),
+        '@max' => $this->max->format('Y-m-d'),
+      ]));
     }
   }
 
@@ -111,15 +116,18 @@ final readonly class DateBounds {
    */
   public function describe(): string {
     if ($this->min instanceof \DateTimeImmutable && $this->max instanceof \DateTimeImmutable) {
-      return sprintf('between %s and %s', $this->min->format('Y-m-d'), $this->max->format('Y-m-d'));
+      return Translator::t('between @min and @max', [
+        '@min' => $this->min->format('Y-m-d'),
+        '@max' => $this->max->format('Y-m-d'),
+      ]);
     }
 
     if ($this->min instanceof \DateTimeImmutable) {
-      return sprintf('on or after %s', $this->min->format('Y-m-d'));
+      return Translator::t('on or after @min', ['@min' => $this->min->format('Y-m-d')]);
     }
 
     if ($this->max instanceof \DateTimeImmutable) {
-      return sprintf('on or before %s', $this->max->format('Y-m-d'));
+      return Translator::t('on or before @max', ['@max' => $this->max->format('Y-m-d')]);
     }
 
     return '';

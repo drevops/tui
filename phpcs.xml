@@ -3,7 +3,13 @@
     <description>Custom PHPCS standard.</description>
 
     <!-- Using Drupal coding standard as a base. -->
-    <rule ref="Drupal"/>
+    <rule ref="Drupal">
+        <!-- Translator::t() is this library's own translation function; its
+             render-boundary calls translate consumer-declared labels, which are
+             dynamic by design, so the Drupal literal-string sniff does not
+             apply. -->
+        <exclude name="Drupal.Semantics.FunctionT.NotLiteralString"/>
+    </rule>
     <rule ref="DrevOps"/>
     <!-- Checks that the strict_types has been declared. -->
     <rule ref="Generic.PHP.RequireStrictTypes"/>

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Config;
 
+use DrevOps\Tui\Translation\Translator;
+
 /**
  * A day of the week, backed by its ISO-8601 number (Monday = 1 ... Sunday = 7).
  *
@@ -30,13 +32,13 @@ enum Weekday: int {
    */
   public function abbreviation(): string {
     return match ($this) {
-      self::Monday => 'Mo',
-      self::Tuesday => 'Tu',
-      self::Wednesday => 'We',
-      self::Thursday => 'Th',
-      self::Friday => 'Fr',
-      self::Saturday => 'Sa',
-      self::Sunday => 'Su',
+      self::Monday => Translator::t('Mo'),
+      self::Tuesday => Translator::t('Tu'),
+      self::Wednesday => Translator::t('We'),
+      self::Thursday => Translator::t('Th'),
+      self::Friday => Translator::t('Fr'),
+      self::Saturday => Translator::t('Sa'),
+      self::Sunday => Translator::t('Su'),
     };
   }
 

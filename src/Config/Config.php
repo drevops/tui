@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Config;
 
 use DrevOps\Tui\Input\KeyMap;
+use DrevOps\Tui\Translation\Translator;
 
 /**
  * The root configuration model: title, subject and a tree of panels.
@@ -52,6 +53,9 @@ final readonly class Config {
    *   preset. The Form builder resolves and validates this at build time.
    * @param bool $footer
    *   Whether the interactive TUI shows the contextual key-hint footer.
+   * @param \DrevOps\Tui\Translation\Translator|null $translator
+   *   The translator localizing chrome and questions; NULL leaves every string
+   *   in its English source.
    */
   public function __construct(
     public string $title,
@@ -70,6 +74,7 @@ final readonly class Config {
     public array $themeOptions = [],
     public ?KeyMap $keymap = NULL,
     public bool $footer = TRUE,
+    public ?Translator $translator = NULL,
   ) {
   }
 

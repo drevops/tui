@@ -11,7 +11,9 @@ use DrevOps\Tui\Derive\Derive;
 use DrevOps\Tui\Render\PanelController;
 use DrevOps\Tui\Render\Terminal;
 use DrevOps\Tui\Testing\BufferedTerminal;
+use DrevOps\Tui\Tests\Traits\ResetsTranslatorTrait;
 use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Translation\Translator;
 use DrevOps\Tui\Tui;
 use DrevOps\Tui\Engine\Engine;
 use DrevOps\Tui\Handler\HandlerRegistry;
@@ -26,6 +28,42 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Tui::class)]
 #[Group('tui')]
 final class TuiTest extends TestCase {
+
+  use ResetsTranslatorTrait;
+
+  public function testActivatesTranslator(): void {
+    $this->assertNotInstanceOf(Translator::class, Translator::shared());
+
+    $translator = new Translator('es', [dirname(__DIR__) . '/Fixtures/translations']);
+    $form = Form::create('Demo')
+      ->translator($translator)
+      ->panel('p', 'p', function (PanelBuilder $panel): void {
+        $panel->text('name');
+      });
+
+    new Tui($form);
+
+    $this->assertSame($translator, Translator::shared());
+  }
+
+  public function testTranslatorClearedWhenFormHasNone(): void {
+    // A translated form activates its translator.
+    $translated = Form::create('Demo')
+      ->translator(new Translator('es', [dirname(__DIR__) . '/Fixtures/translations']))
+      ->panel('p', 'p', function (PanelBuilder $panel): void {
+        $panel->text('name');
+      });
+    new Tui($translated);
+    $this->assertInstanceOf(Translator::class, Translator::shared());
+
+    // A later translator-less form clears it, so its language does not leak.
+    $plain = Form::create('Demo')
+      ->panel('p', 'p', function (PanelBuilder $panel): void {
+        $panel->text('name');
+      });
+    new Tui($plain);
+    $this->assertNull(Translator::shared());
+  }
 
   public function testCollect(): void {
     $answers = $this->tui()->collect('{"name":"Acme"}', 'dir', FALSE, '1.0');

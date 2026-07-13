@@ -20,6 +20,7 @@ use DrevOps\Tui\Render\HelpSection;
 use DrevOps\Tui\Render\Navigator;
 use DrevOps\Tui\Render\Scroller;
 use DrevOps\Tui\Render\Viewport;
+use DrevOps\Tui\Translation\Translator;
 
 /**
  * The default theme: the appearance atoms plus the assembly that arranges them.
@@ -105,11 +106,18 @@ class DefaultTheme implements ThemeInterface {
 
     foreach ($this->options as $key => $value) {
       if (!array_key_exists($key, $schema)) {
-        throw new \InvalidArgumentException(sprintf('Unknown theme option "%s". Known: %s.', $key, implode(', ', array_keys($schema))));
+        throw new \InvalidArgumentException(Translator::t('Unknown theme option "@key". Known: @known.', [
+          '@key' => $key,
+          '@known' => implode(', ', array_keys($schema)),
+        ]));
       }
 
       if (!in_array($value, $schema[$key], TRUE)) {
-        throw new \InvalidArgumentException(sprintf('%s is not a valid "%s". Allowed: %s.', $this->showValue($value), $key, implode(', ', array_map($this->showValue(...), $schema[$key]))));
+        throw new \InvalidArgumentException(Translator::t('@value is not a valid "@key". Allowed: @allowed.', [
+          '@value' => $this->showValue($value),
+          '@key' => $key,
+          '@allowed' => implode(', ', array_map($this->showValue(...), $schema[$key])),
+        ]));
       }
     }
   }
@@ -545,7 +553,7 @@ class DefaultTheme implements ThemeInterface {
       $lines[] = $this->renderFieldLine($field, $answers, $index === $cursor);
 
       if ($verbose && $field->description !== '') {
-        $lines[] = $this->renderDescriptionLine($field->description, $index === $cursor);
+        $lines[] = $this->renderDescriptionLine(Translator::t($field->description), $index === $cursor);
       }
 
       $index++;
@@ -563,7 +571,7 @@ class DefaultTheme implements ThemeInterface {
       $lines[] = $this->renderPanelLine($subpanel, $index === $cursor);
 
       if ($verbose && $subpanel->description !== '') {
-        $lines[] = $this->renderDescriptionLine($subpanel->description, $index === $cursor);
+        $lines[] = $this->renderDescriptionLine(Translator::t($subpanel->description), $index === $cursor);
       }
 
       $summary = $verbose ? $this->summarizePanel($subpanel, $answers) : '';
@@ -591,14 +599,14 @@ class DefaultTheme implements ThemeInterface {
    *   The row.
    */
   public function renderFieldLine(Field $field, Answers $answers, bool $selected): string {
-    $left = $this->marker($selected) . ' ' . $this->label($field->label, $selected) . '  ' . $this->value($this->renderFieldValue($field, $answers->value($field->id)), $selected);
+    $left = $this->marker($selected) . ' ' . $this->label(Translator::t($field->label), $selected) . '  ' . $this->value($this->renderFieldValue($field, $answers->value($field->id)), $selected);
 
     $provenance = $answers->provenanceOf($field->id);
     if ($provenance === Provenance::Default) {
       return $left;
     }
 
-    return Ansi::alignRight($left, $this->badge(' ' . $provenance->value . ' ', $selected), $this->width);
+    return Ansi::alignRight($left, $this->badge(' ' . $provenance->label() . ' ', $selected), $this->width);
   }
 
   /**
@@ -613,7 +621,7 @@ class DefaultTheme implements ThemeInterface {
    *   The row.
    */
   public function renderPanelLine(Panel $panel, bool $selected): string {
-    return $this->marker($selected) . ' ' . $this->label($panel->title, $selected) . ' ' . $this->description($this->arrow(), $selected);
+    return $this->marker($selected) . ' ' . $this->label(Translator::t($panel->title), $selected) . ' ' . $this->description($this->arrow(), $selected);
   }
 
   /**
@@ -651,7 +659,9 @@ class DefaultTheme implements ThemeInterface {
       }
 
       $value = $answers->value($field->id);
-      $parts[] = is_array($value) && count($value) > 3 ? count($value) . ' selected' : $this->renderFieldValue($field, $value);
+      $parts[] = is_array($value) && count($value) > 3 ? Translator::t('@count selected', [
+        '@count' => count($value),
+      ]) : $this->renderFieldValue($field, $value);
 
       if (count($parts) >= 4) {
         break;
@@ -689,7 +699,7 @@ class DefaultTheme implements ThemeInterface {
    *   The breadcrumb line.
    */
   public function renderBreadcrumbLine(Navigator $navigator): string {
-    return $this->breadcrumb(implode(' ' . $this->separator() . ' ', $navigator->breadcrumb()));
+    return $this->breadcrumb(implode(' ' . $this->separator() . ' ', array_map(Translator::t(...), $navigator->breadcrumb())));
   }
 
   /**
@@ -855,7 +865,7 @@ class DefaultTheme implements ThemeInterface {
 
     if ($version !== '') {
       $lines[] = '';
-      $lines[] = $this->footer('Version: ' . $version);
+      $lines[] = $this->footer(Translator::t('Version: @version', ['@version' => $version]));
     }
 
     return implode("\n", $lines);
@@ -880,15 +890,15 @@ class DefaultTheme implements ThemeInterface {
       KeyName::Left => $this->arrowLeft(),
       KeyName::Right => $this->arrowRight(),
       KeyName::Enter => $this->enter(),
-      KeyName::Escape => 'esc',
-      KeyName::Tab => 'tab',
-      KeyName::Space => 'space',
-      KeyName::Backspace => $this->unicode ? '⌫' : 'bksp',
-      KeyName::Delete => 'del',
-      KeyName::Home => 'home',
-      KeyName::End => 'end',
-      KeyName::PageUp => 'pgup',
-      KeyName::PageDown => 'pgdn',
+      KeyName::Escape => Translator::t('esc'),
+      KeyName::Tab => Translator::t('tab'),
+      KeyName::Space => Translator::t('space'),
+      KeyName::Backspace => $this->unicode ? '⌫' : Translator::t('bksp'),
+      KeyName::Delete => Translator::t('del'),
+      KeyName::Home => Translator::t('home'),
+      KeyName::End => Translator::t('end'),
+      KeyName::PageUp => Translator::t('pgup'),
+      KeyName::PageDown => Translator::t('pgdn'),
     };
   }
 
@@ -1010,7 +1020,7 @@ class DefaultTheme implements ThemeInterface {
    *   The rendered overlay.
    */
   public function renderHelp(ScopedKeyMap $nav, HelpSection ...$sections): string {
-    $lines = [$this->title('Keyboard help'), ''];
+    $lines = [$this->title(Translator::t('Keyboard help')), ''];
 
     foreach ($sections as $section) {
       $lines[] = $this->label($section->title);
@@ -1080,7 +1090,7 @@ class DefaultTheme implements ThemeInterface {
    */
   protected function renderValue(mixed $value): string {
     if (is_bool($value)) {
-      return $value ? 'yes' : 'no';
+      return $value ? Translator::t('yes') : Translator::t('no');
     }
 
     if (is_array($value)) {

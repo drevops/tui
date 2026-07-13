@@ -11,6 +11,7 @@ use DrevOps\Tui\Config\Fixup;
 use DrevOps\Tui\Config\Option;
 use DrevOps\Tui\Config\Panel;
 use DrevOps\Tui\Input\KeyMapManager;
+use DrevOps\Tui\Translation\Translator;
 
 /**
  * A fluent builder declaring a form: its panels, fields and TUI options.
@@ -87,6 +88,11 @@ final class Form {
    * The prefix namespacing per-question env-variable overrides.
    */
   protected string $envPrefix = '';
+
+  /**
+   * The translator localizing chrome and questions (NULL leaves English).
+   */
+  protected ?Translator $translator = NULL;
 
   /**
    * The post-settle fix-up rules.
@@ -285,6 +291,25 @@ final class Form {
   }
 
   /**
+   * Set the translator localizing chrome and questions.
+   *
+   * The translator carries the active language and catalog directories; the
+   * {@see \DrevOps\Tui\Tui} facade activates it so `t()` resolves during a run.
+   * Without one, every string renders in its English source.
+   *
+   * @param \DrevOps\Tui\Translation\Translator $translator
+   *   The translator.
+   *
+   * @return $this
+   *   The builder.
+   */
+  public function translator(Translator $translator): self {
+    $this->translator = $translator;
+
+    return $this;
+  }
+
+  /**
    * Add a post-settle fix-up rule.
    *
    * @param \DrevOps\Tui\Config\Fixup $fixup
@@ -346,6 +371,7 @@ final class Form {
       $this->themeOptions,
       KeyMapManager::create($this->keymap, $this->keymapOverrides),
       $this->footer,
+      $this->translator,
     );
 
     $this->assertUniqueFieldIds($config);
@@ -366,7 +392,7 @@ final class Form {
 
     foreach ($config->fields() as $field) {
       if (isset($seen[$field->id])) {
-        throw new ConfigException(sprintf('Duplicate field id "%s".', $field->id));
+        throw new ConfigException(Translator::t('Duplicate field id "@id".', ['@id' => $field->id]));
       }
 
       $seen[$field->id] = TRUE;
@@ -386,7 +412,10 @@ final class Form {
       }
 
       if (count($field->options) !== 2) {
-        throw new ConfigException(sprintf('Toggle field "%s" must have exactly two options, %d given.', $field->id, count($field->options)));
+        throw new ConfigException(Translator::t('Toggle field "@id" must have exactly two options, @count given.', [
+          '@id' => $field->id,
+          '@count' => count($field->options),
+        ]));
       }
 
       // A dynamic default is a closure resolved at runtime; every literal
@@ -399,7 +428,10 @@ final class Form {
       $values = array_map(static fn(Option $option): string => $option->value, $field->options);
 
       if (!is_string($field->default) || !in_array($field->default, $values, TRUE)) {
-        throw new ConfigException(sprintf('Toggle field "%s" default must be one of: %s.', $field->id, implode(', ', $values)));
+        throw new ConfigException(Translator::t('Toggle field "@id" default must be one of: @values.', [
+          '@id' => $field->id,
+          '@values' => implode(', ', $values),
+        ]));
       }
     }
   }

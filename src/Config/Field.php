@@ -7,6 +7,7 @@ namespace DrevOps\Tui\Config;
 use DrevOps\Tui\Condition\ConditionInterface;
 use DrevOps\Tui\Derive\Derive;
 use DrevOps\Tui\Discovery\DiscoverInterface;
+use DrevOps\Tui\Translation\Translator;
 
 /**
  * A single question in the configuration model.
@@ -179,7 +180,7 @@ final readonly class Field {
 
     if ($this->type->isMulti()) {
       if (!is_array($value)) {
-        return 'value must be a list';
+        return Translator::t('value must be a list');
       }
 
       $items = $value;
@@ -220,11 +221,17 @@ final readonly class Field {
     $option = $this->option($value);
     if ($option instanceof Option && $option->disabled) {
       return $option->disabledReason !== ''
-        ? sprintf('option "%s" is disabled: %s', $value, $option->disabledReason)
-        : sprintf('option "%s" is disabled', $value);
+        ? Translator::t('option "@value" is disabled: @reason', [
+          '@value' => $value,
+          '@reason' => $option->disabledReason,
+        ])
+        : Translator::t('option "@value" is disabled', ['@value' => $value]);
     }
 
-    return sprintf('value "%s" is not one of: %s', $value, implode(', ', $this->selectableValues()));
+    return Translator::t('value "@value" is not one of: @options', [
+      '@value' => $value,
+      '@options' => implode(', ', $this->selectableValues()),
+    ]);
   }
 
   /**

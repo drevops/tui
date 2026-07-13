@@ -1,0 +1,93 @@
+---
+title: Translations
+sidebar_position: 13
+---
+
+# Translations
+
+Every string the TUI shows can be presented in another language: the framework's
+own **chrome** (key hints, the help overlay, buttons, validation and error
+messages) and the **questions** you declare (field and panel labels,
+descriptions and option labels). A missing translation always falls back to the
+English source, so a partial catalog is safe.
+
+## Setting a translator
+
+Translation is off by default. Turn it on by giving the form a `Translator` - the
+active language and the directories its catalogs live in - the same way you set a
+theme or key map:
+
+```php
+use DrevOps\Tui\Builder\Form;
+use DrevOps\Tui\Translation\Translator;
+
+$form = Form::create('My form')
+  ->translator(new Translator('es', [__DIR__ . '/translations']));
+```
+
+The facade activates the translator for the run, so labels and chrome resolve to
+the active language wherever they render - interactively and headlessly.
+
+## Choosing the language
+
+The first argument selects the language:
+
+| Intent            | Argument                          | Result                       |
+|-------------------|-----------------------------------|------------------------------|
+| Do not translate  | omit `->translator(...)`, or `''` | English source               |
+| Auto-detect       | `'auto'`                          | the environment's locale     |
+| Force a language  | `'es'`, `'es_ES'`, ...            | that language                |
+
+`'auto'` reads the POSIX locale variables `LC_ALL`, `LC_MESSAGES` and `LANG` (in
+that order) and strips the encoding, so `LANG=es_ES.UTF-8` selects `es_ES`; a `C`
+or `POSIX` locale means English. A region locale falls back to its base language,
+so `es_ES` uses `es.php` when no `es_ES.php` exists.
+
+## Writing a catalog
+
+A catalog is a plain PHP file named for its language that returns a
+`source => translation` map. The English source string is the key:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+// translations/es.php
+return [
+  // Chrome.
+  'Submit' => 'Enviar',
+  'move' => 'mover',
+  'Passwords do not match.' => 'Las contraseñas no coinciden.',
+  // Questions - the labels you declared, keyed by their English source.
+  'Colour theme' => 'Tema de color',
+  'Pick a theme' => 'Elige un tema',
+];
+```
+
+Your form keeps its English source strings; the catalog maps them to the target
+language, so one form definition serves every language.
+
+Some strings carry `@name` placeholders (for example `Enter a number
+@constraint.` or `@count selected`). Keep each placeholder verbatim in the
+translation - the library substitutes the value at render time.
+
+Directories are searched in order and a later one wins, so you can layer a
+catalog that overrides individual strings on top of another.
+
+## The chrome catalog template
+
+The package ships `translations/tui.php` - the canonical list of every chrome
+string the library emits, as an English `key => key` map. Copy it to a locale
+file and translate the values to get a complete chrome catalog to start from:
+
+```bash
+cp vendor/drevops/tui/translations/tui.php translations/es.php
+```
+
+## Packaging
+
+Catalogs are ordinary files loaded with `require`, so they bundle into a
+consumer-built PHAR with no extra configuration - reference them by a path
+relative to your application (for example `__DIR__ . '/translations'`), which
+resolves inside the archive.

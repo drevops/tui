@@ -8,6 +8,7 @@ use DrevOps\Tui\Config\Config;
 use DrevOps\Tui\Config\DateBounds;
 use DrevOps\Tui\Config\Field;
 use DrevOps\Tui\Config\FieldType;
+use DrevOps\Tui\Translation\Translator;
 
 /**
  * Validates an answer set against the configuration.
@@ -48,7 +49,7 @@ class SchemaValidator {
 
       if (!array_key_exists($field->id, $answers)) {
         if ($field->required) {
-          $errors[] = sprintf('Missing required question "%s".', $field->id);
+          $errors[] = Translator::t('Missing required question "@id".', ['@id' => $field->id]);
         }
 
         continue;
@@ -62,7 +63,7 @@ class SchemaValidator {
 
     foreach (array_keys($answers) as $id) {
       if (!$this->config->field((string) $id) instanceof Field) {
-        $errors[] = sprintf('Unknown question "%s".', (string) $id);
+        $errors[] = Translator::t('Unknown question "@id".', ['@id' => (string) $id]);
       }
     }
 
@@ -82,11 +83,14 @@ class SchemaValidator {
    */
   protected function validateValue(Field $field, mixed $value): ?string {
     if (!$this->isType($field->type, $value)) {
-      return sprintf('Question "%s" must be %s.', $field->id, $this->typeName($field->type));
+      return Translator::t('Question "@id" must be @constraint.', [
+        '@id' => $field->id,
+        '@constraint' => $this->typeName($field->type),
+      ]);
     }
 
     if ($field->required && $this->isEmpty($value)) {
-      return sprintf('Question "%s" is required.', $field->id);
+      return Translator::t('Question "@id" is required.', ['@id' => $field->id]);
     }
 
     $bounds_error = $this->checkBounds($field, $value);
@@ -116,7 +120,10 @@ class SchemaValidator {
   protected function checkBounds(Field $field, mixed $value): ?string {
     $violation = $field->bounds?->violation($value);
 
-    return $violation === NULL ? NULL : sprintf('Question "%s" must be %s.', $field->id, $violation);
+    return $violation === NULL ? NULL : Translator::t('Question "@id" must be @constraint.', [
+      '@id' => $field->id,
+      '@constraint' => $violation,
+    ]);
   }
 
   /**
@@ -133,7 +140,10 @@ class SchemaValidator {
   protected function checkDateBounds(Field $field, mixed $value): ?string {
     $violation = $field->dateBounds?->violation($value);
 
-    return $violation === NULL ? NULL : sprintf('Question "%s" must be %s.', $field->id, $violation);
+    return $violation === NULL ? NULL : Translator::t('Question "@id" must be @constraint.', [
+      '@id' => $field->id,
+      '@constraint' => $violation,
+    ]);
   }
 
   /**
@@ -170,11 +180,11 @@ class SchemaValidator {
    */
   protected function typeName(FieldType $type): string {
     return match ($type) {
-      FieldType::Confirm, FieldType::Pause => 'a boolean',
-      FieldType::MultiSelect, FieldType::MultiSearch, FieldType::MultiFilePicker, FieldType::Reorder => 'a list',
-      FieldType::Number => 'a number',
-      FieldType::Calendar => 'a date (YYYY-MM-DD)',
-      default => 'a string',
+      FieldType::Confirm, FieldType::Pause => Translator::t('a boolean'),
+      FieldType::MultiSelect, FieldType::MultiSearch, FieldType::MultiFilePicker, FieldType::Reorder => Translator::t('a list'),
+      FieldType::Number => Translator::t('a number'),
+      FieldType::Calendar => Translator::t('a date (YYYY-MM-DD)'),
+      default => Translator::t('a string'),
     };
   }
 
@@ -208,7 +218,7 @@ class SchemaValidator {
   protected function checkOptions(Field $field, mixed $value): ?string {
     $error = $field->optionError($value);
 
-    return $error === NULL ? NULL : sprintf('Question "%s": %s.', $field->id, $error);
+    return $error === NULL ? NULL : Translator::t('Question "@id": @error.', ['@id' => $field->id, '@error' => $error]);
   }
 
 }

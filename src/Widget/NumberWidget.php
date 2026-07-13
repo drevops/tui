@@ -10,6 +10,7 @@ use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\Scope;
+use DrevOps\Tui\Translation\Translator;
 
 /**
  * Integer input: digits with an optional leading minus, accepted as an int.
@@ -104,7 +105,7 @@ class NumberWidget extends TextWidget {
   protected function accept(mixed $value): bool {
     $violation = $this->bounds?->violation($value);
     if ($violation !== NULL) {
-      $this->error = sprintf('Enter a number %s.', $violation);
+      $this->error = Translator::t('Enter a number @constraint.', ['@constraint' => $violation]);
 
       return FALSE;
     }
