@@ -34,6 +34,7 @@ enum Action {
   case Quit;
   case ScrollUp;
   case ScrollDown;
+  case Help;
 
   // Text editing.
   case DeleteBack;
@@ -41,6 +42,10 @@ enum Action {
   case NewLine;
   case ExternalEdit;
   case Complete;
+
+  // Number entry.
+  case Increment;
+  case Decrement;
 
   // List and multiselect.
   case Toggle;

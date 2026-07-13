@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Tests\Unit\Widget;
 
 use DrevOps\Tui\Input\ArrayKeyStream;
+use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Theme\DefaultTheme;
@@ -81,7 +82,6 @@ final class PasswordWidgetTest extends TestCase {
     // Tab neither revealed the value nor was inserted as a character.
     $this->assertSame(3, substr_count($widget->view($theme), '•'));
     $this->assertStringNotContainsString('abc', $widget->view($theme));
-    $this->assertFalse($widget->rendersHint());
   }
 
   public function testRevealDoesNotChangeAcceptedValue(): void {
@@ -93,15 +93,11 @@ final class PasswordWidgetTest extends TestCase {
   }
 
   public function testHintShownOnlyWhenRevealable(): void {
-    $theme = new DefaultTheme();
+    $revealable = array_map(static fn(Hint $hint): string => $hint->label, (new PasswordWidget('x', revealable: TRUE))->hints());
+    $this->assertContains('reveal', $revealable);
 
-    $revealable = new PasswordWidget('x', revealable: TRUE);
-    $this->assertTrue($revealable->rendersHint());
-    $this->assertStringContainsString('tab reveal', $revealable->view($theme));
-
-    $plain = new PasswordWidget('x');
-    $this->assertFalse($plain->rendersHint());
-    $this->assertStringNotContainsString('tab reveal', $plain->view($theme));
+    $plain = array_map(static fn(Hint $hint): string => $hint->label, (new PasswordWidget('x'))->hints());
+    $this->assertNotContains('reveal', $plain);
   }
 
   public function testConfirmAcceptsMatchingEntries(): void {

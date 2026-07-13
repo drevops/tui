@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Tests\Unit\Widget;
 
 use DrevOps\Tui\Input\ArrayKeyStream;
+use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Theme\DefaultTheme;
@@ -90,9 +91,11 @@ final class TextWidgetTest extends TestCase {
     $this->assertSame('a b', $value);
   }
 
-  public function testDoesNotRenderOwnHint(): void {
-    // A plain widget leaves the editor chrome to supply the accept/cancel hint.
-    $this->assertFalse((new TextWidget())->rendersHint());
+  public function testHints(): void {
+    // A plain widget contributes the shared accept/cancel hints.
+    $labels = array_map(static fn(Hint $hint): string => $hint->label, (new TextWidget())->hints());
+
+    $this->assertSame(['accept', 'cancel'], $labels);
   }
 
   public function testGhostTextRendersDimmedSuffix(): void {

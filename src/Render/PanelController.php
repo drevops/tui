@@ -10,6 +10,7 @@ use DrevOps\Tui\Config\Config;
 use DrevOps\Tui\Config\Field;
 use DrevOps\Tui\Config\Panel;
 use DrevOps\Tui\Input\Action;
+use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyMap;
 use DrevOps\Tui\Input\KeyMapManager;
@@ -104,6 +105,11 @@ class PanelController {
   protected bool $cancelled = FALSE;
 
   /**
+   * Whether the help overlay is showing.
+   */
+  protected bool $help = FALSE;
+
+  /**
    * Construct a controller.
    *
    * @param \DrevOps\Tui\Config\Config $config
@@ -146,6 +152,13 @@ class PanelController {
    *   The key.
    */
   public function handle(Key $key): void {
+    if ($this->help) {
+      // Any key dismisses the help overlay.
+      $this->help = FALSE;
+
+      return;
+    }
+
     if ($this->editor instanceof WidgetInterface) {
       $this->handleEditing($key);
 
@@ -183,6 +196,16 @@ class PanelController {
    */
   public function isCancelled(): bool {
     return $this->cancelled;
+  }
+
+  /**
+   * Whether the help overlay is showing.
+   *
+   * @return bool
+   *   TRUE when the overlay is open.
+   */
+  public function isShowingHelp(): bool {
+    return $this->help;
   }
 
   /**
@@ -266,11 +289,16 @@ class PanelController {
    *   The frame.
    */
   public function frame(int $height = 12): string {
+    if ($this->help) {
+      return $this->theme->renderHelp($this->nav, ...$this->helpSections());
+    }
+
     if ($this->editor instanceof WidgetInterface) {
       $label = $this->editing instanceof Field ? $this->editing->label : '';
       $keys = $this->editing instanceof Field ? $this->keymap->forField($this->editing->type) : $this->nav;
+      $hints = $this->config->footer ? $this->editor->hints() : [];
 
-      return $this->theme->renderEditor($label, $this->editor->view($this->theme), $this->editor->rendersHint(), $keys);
+      return $this->theme->renderEditor($label, $this->editor->view($this->theme), $hints, $keys);
     }
 
     $panel = $this->navigator->current();
@@ -302,7 +330,7 @@ class PanelController {
 
     $this->offset = $viewport->offset;
     $header = [$this->theme->renderBreadcrumbLine($this->navigator)];
-    $footer = [$this->theme->renderStatusLine($this->nav)];
+    $footer = $this->hubFooter();
 
     return $this->theme->renderFrame($header, $body, $footer, $viewport, $height);
   }
@@ -345,6 +373,12 @@ class PanelController {
    *   The key.
    */
   protected function handleNavigation(Key $key): void {
+    if ($this->nav->matches($key, Action::Help)) {
+      $this->help = TRUE;
+
+      return;
+    }
+
     if ($this->nav->matches($key, Action::Quit)) {
       $this->done = TRUE;
 
@@ -415,6 +449,58 @@ class PanelController {
     if ($this->buttonsVisible()) {
       $this->activateButton($this->cursor - $field_count - count($panel->panels));
     }
+  }
+
+  /**
+   * The panel-hub footer: the contextual hint line, unless turned off.
+   *
+   * @return list<string>
+   *   The footer lines: one when the footer is on, none when it is off.
+   */
+  protected function hubFooter(): array {
+    return $this->config->footer ? [$this->theme->renderHints($this->nav, ...$this->navigationHints())] : [];
+  }
+
+  /**
+   * The hint fragments for the panel hub, in display order.
+   *
+   * @return list<\DrevOps\Tui\Input\Hint>
+   *   The hub hints.
+   */
+  protected function navigationHints(): array {
+    return [
+      new Hint('move', Action::MoveUp, Action::MoveDown),
+      new Hint('select', Action::Activate),
+      new Hint('back', Action::Back),
+      new Hint('quit', Action::Quit),
+      new Hint('help', Action::Help),
+    ];
+  }
+
+  /**
+   * The help-overlay sections: the hub, then each widget type the form uses.
+   *
+   * Field types are listed once, in first-seen order, so the overlay teaches
+   * every widget the form can show without repeating a type.
+   *
+   * @return list<\DrevOps\Tui\Render\HelpSection>
+   *   The sections.
+   */
+  protected function helpSections(): array {
+    $sections = [new HelpSection('Navigation', $this->nav, ...$this->navigationHints())];
+
+    $seen = [];
+    foreach ($this->config->fields() as $field) {
+      if (in_array($field->type, $seen, TRUE)) {
+        continue;
+      }
+
+      $seen[] = $field->type;
+      $widget = $this->widgets->create($field, $this->values[$field->id] ?? $field->default);
+      $sections[] = new HelpSection(ucfirst($field->type->value), $this->keymap->forField($field->type), ...$widget->hints());
+    }
+
+    return $sections;
   }
 
   /**

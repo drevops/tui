@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Tests\Unit\Widget;
 
 use DrevOps\Tui\Input\ArrayKeyStream;
+use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Theme\DefaultTheme;
@@ -59,6 +60,12 @@ final class PauseWidgetTest extends TestCase {
 
     $widget->handle(Key::named(KeyName::Escape));
     $this->assertTrue($widget->isCancelled());
+  }
+
+  public function testHints(): void {
+    $labels = array_map(static fn(Hint $hint): string => $hint->label, (new PauseWidget())->hints());
+
+    $this->assertSame(['continue', 'cancel'], $labels);
   }
 
 }

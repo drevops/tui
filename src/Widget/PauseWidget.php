@@ -6,6 +6,7 @@ namespace DrevOps\Tui\Widget;
 
 use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Input\Action;
+use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Theme\ThemeInterface;
@@ -55,6 +56,14 @@ class PauseWidget extends AbstractWidget {
     $glyph = $key instanceof Key ? $theme->keyHint($key) : $theme->enter();
 
     return 'Press ' . $theme->highlight($glyph) . ' to continue';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  public function hints(): array {
+    return [new Hint('continue', Action::Accept), new Hint('cancel', Action::Cancel)];
   }
 
 }

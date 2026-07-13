@@ -7,7 +7,7 @@ namespace Playground\CustomTheme;
 use DrevOps\Tui\Answers\Answers;
 use DrevOps\Tui\Config\Field;
 use DrevOps\Tui\Config\Panel;
-use DrevOps\Tui\Input\Action;
+use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\ScopedKeyMap;
 use DrevOps\Tui\Render\Navigator;
 use DrevOps\Tui\Theme\DefaultTheme;
@@ -243,14 +243,10 @@ class OceanTheme extends DefaultTheme {
    * {@inheritdoc}
    */
   #[\Override]
-  public function renderStatusLine(ScopedKeyMap $nav): string {
+  public function renderHints(ScopedKeyMap $keys, Hint ...$hints): string {
     $sep = '  ' . $this->dot() . '  ';
 
-    $fragments = array_filter([
-      $this->keysHint($nav, 'move', Action::MoveUp, Action::MoveDown),
-      $this->keysHint($nav, 'choose', Action::Activate),
-      $this->keysHint($nav, 'back', Action::Back),
-    ]);
+    $fragments = array_filter(array_map(fn(Hint $hint): string => $this->keysHint($keys, $hint->label, ...$hint->actions), $hints));
 
     return $this->footer(implode($sep, $fragments));
   }

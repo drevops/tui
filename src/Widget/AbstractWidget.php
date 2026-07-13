@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Widget;
 
 use DrevOps\Tui\Input\Action;
+use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyMapManager;
 use DrevOps\Tui\Input\Scope;
@@ -114,8 +115,8 @@ abstract class AbstractWidget implements WidgetInterface {
   /**
    * {@inheritdoc}
    */
-  public function rendersHint(): bool {
-    return FALSE;
+  public function hints(): array {
+    return [new Hint('accept', Action::Accept), new Hint('cancel', Action::Cancel)];
   }
 
   /**

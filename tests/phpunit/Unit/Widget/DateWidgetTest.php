@@ -8,6 +8,7 @@ use DrevOps\Tui\Config\DateBounds;
 use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\Weekday;
 use DrevOps\Tui\Input\ArrayKeyStream;
+use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyMapManager;
 use DrevOps\Tui\Input\KeyName;
@@ -174,17 +175,10 @@ final class DateWidgetTest extends TestCase {
     $this->assertMatchesRegularExpression('/Mo\s+Tu\s+We\s+Th\s+Fr\s+Sa\s+Su/', $view);
   }
 
-  public function testRendersOwnHint(): void {
-    $widget = new DateWidget('2026-07-15');
+  public function testHints(): void {
+    $labels = array_map(static fn(Hint $hint): string => $hint->label, (new DateWidget('2026-07-15'))->hints());
 
-    $this->assertTrue($widget->rendersHint());
-
-    $view = Ansi::strip($widget->view(new DefaultTheme()));
-    $this->assertStringContainsString('day', $view);
-    $this->assertStringContainsString('week', $view);
-    $this->assertStringContainsString('month', $view);
-    $this->assertStringContainsString('accept', $view);
-    $this->assertStringContainsString('cancel', $view);
+    $this->assertSame(['day', 'week', 'accept', 'cancel'], $labels);
   }
 
   public function testWeekStartRotatesHeaderAndLayout(): void {

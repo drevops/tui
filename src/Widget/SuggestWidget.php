@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Widget;
 
 use DrevOps\Tui\Input\Action;
+use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Theme\ThemeInterface;
 
@@ -160,6 +161,14 @@ class SuggestWidget extends AbstractWidget {
    */
   protected function positionsFor(string $value): array {
     return $this->buffer === '' ? [] : $this->matcher()->positions($value, $this->buffer);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  public function hints(): array {
+    return [new Hint('move', Action::MoveUp, Action::MoveDown), ...parent::hints()];
   }
 
 }

@@ -28,7 +28,7 @@ It powers the [Vortex](https://www.vortextemplate.com) project installer, but kn
 
 ## Features
 
-- 🧭 [**Panel TUI**](#panels-and-navigation) - a full-screen, scrollable, keyboard-driven form: panels hold fields, sub-panels drill in to any depth
+- 🧭 [**Panel TUI**](#panels-and-navigation) - a full-screen, scrollable, keyboard-driven form: panels hold fields, sub-panels drill in to any depth, with a contextual key-hint footer and a `?` help overlay
 - 🧩 [**Widgets**](#widgets) - `text`, `number`, `date`, `textarea`, `password`, `select`, `multiselect`, `suggest`, `search`, `multisearch`, `filepicker`, `multifilepicker`, `confirm`, `toggle`, `pause`
 - 🏗️ [**Builder-driven**](#configuration) - panels and fields are declared in PHP with a fluent builder; the common cases need no code
 - 🤖 [**Interactive or headless**](#headless-collection) - drive the panel TUI by keyboard, or collect answers non-interactively from a JSON payload and environment variables (and emit a JSON schema for agents and forms)
@@ -573,6 +573,8 @@ $p->pause('ready', 'Review the summary above');
 ## Panels and navigation
 
 The interactive TUI is a full-screen panel browser: the root hub lists the form's panels with live value summaries, and each panel lists its fields with their current values and provenance badges. Up/Down move the cursor, Enter edits a field (or drills into a sub-panel), Esc goes back, `q` quits, and the mouse wheel scrolls long panels without moving the cursor - all of these keys are configurable (see [Key bindings](#key-bindings)). **Submit** and **Cancel** buttons live on the root panel - `->buttons(FALSE)` hides them, `->buttons(TRUE, 'Save', 'Discard')` relabels them.
+
+A **contextual help footer** runs along the foot of every screen, listing exactly the keys valid right now and updating as focus moves between the hub and each editor. The hub shows move, select, back, quit and `?`; each widget contributes its own bindings on top of accept/cancel - a select adds move, a multiselect adds toggle and select-all/none, a bounded number adds the step keys, a textarea adds newline and the external-editor handoff, a revealable password adds the reveal toggle. Pressing `?` at the hub opens a fuller overlay that lists the hub and every widget type the form uses, so the form teaches its own less-common widgets. The footer follows the active theme and key map - it degrades to ASCII glyphs and always reflects remapped keys - and `->footer(FALSE)` turns it off form-wide.
 
 A form-level `->banner()` shows a start screen (with an optional version) before the panels, and `->clearOnExit(FALSE)` keeps the final frame on screen after the TUI exits.
 

@@ -69,6 +69,11 @@ final class Form {
   protected bool $clearOnExit = TRUE;
 
   /**
+   * Whether the interactive TUI shows the contextual key-hint footer.
+   */
+  protected bool $footer = TRUE;
+
+  /**
    * Force ANSI colour on/off; NULL auto-detects.
    */
   protected ?bool $color = NULL;
@@ -220,6 +225,21 @@ final class Form {
   }
 
   /**
+   * Set whether the contextual key-hint footer is shown.
+   *
+   * @param bool $show
+   *   Whether to show the footer.
+   *
+   * @return $this
+   *   The builder.
+   */
+  public function footer(bool $show): self {
+    $this->footer = $show;
+
+    return $this;
+  }
+
+  /**
    * Force ANSI colour on or off.
    *
    * @param bool|null $color
@@ -325,6 +345,7 @@ final class Form {
       $this->envPrefix,
       $this->themeOptions,
       KeyMapManager::create($this->keymap, $this->keymapOverrides),
+      $this->footer,
     );
 
     $this->assertUniqueFieldIds($config);

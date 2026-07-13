@@ -8,6 +8,7 @@ use DrevOps\Tui\Config\DateBounds;
 use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\Weekday;
 use DrevOps\Tui\Input\Action;
+use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Input\Scope;
@@ -158,7 +159,7 @@ class DateWidget extends AbstractWidget {
    * {@inheritdoc}
    */
   public function view(ThemeInterface $theme): string {
-    $rows = array_merge([$this->heading($theme), $this->weekdayRow($theme)], $this->weekRows($theme), [$this->hint($theme)]);
+    $rows = array_merge([$this->heading($theme), $this->weekdayRow($theme)], $this->weekRows($theme));
 
     if ($this->error !== NULL) {
       $rows[] = $theme->error($this->error);
@@ -169,10 +170,17 @@ class DateWidget extends AbstractWidget {
 
   /**
    * {@inheritdoc}
+   *
+   * Month (PgUp/PgDn) and month-edge (Home/End) jumps have no action of their
+   * own, so the footer advertises the binding-driven day/week motion.
    */
   #[\Override]
-  public function rendersHint(): bool {
-    return TRUE;
+  public function hints(): array {
+    return [
+      new Hint('day', Action::MoveLeft, Action::MoveRight),
+      new Hint('week', Action::MoveUp, Action::MoveDown),
+      ...parent::hints(),
+    ];
   }
 
   /**
@@ -257,27 +265,6 @@ class DateWidget extends AbstractWidget {
     $cell = sprintf(' %2d ', $day);
 
     return $this->bounds->contains($date) ? $cell : $theme->description($cell);
-  }
-
-  /**
-   * Build the key-hint line shown beneath the calendar.
-   *
-   * @param \DrevOps\Tui\Theme\ThemeInterface $theme
-   *   The theme.
-   *
-   * @return string
-   *   The themed, dot-joined hint line.
-   */
-  protected function hint(ThemeInterface $theme): string {
-    $fragments = [
-      $theme->arrowLeft() . '/' . $theme->arrowRight() . ' day',
-      $theme->arrowUp() . '/' . $theme->arrowDown() . ' week',
-      'PgUp/PgDn month',
-      $theme->enter() . ' accept',
-      'esc cancel',
-    ];
-
-    return $theme->footer(implode(' ' . $theme->dot() . ' ', $fragments));
   }
 
 }

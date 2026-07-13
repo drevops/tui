@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Tests\Unit\Widget;
 
+use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\FilePickerMode;
 use DrevOps\Tui\Input\ArrayKeyStream;
 use DrevOps\Tui\Input\Key;
+use DrevOps\Tui\Input\KeyMapManager;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Theme\DefaultTheme;
@@ -283,7 +285,6 @@ final class FilePickerWidgetTest extends TestCase {
   public function testNonexistentStartIsEmpty(): void {
     $widget = new FilePickerWidget($this->root . '/missing');
 
-    $this->assertTrue($widget->rendersHint());
     $this->assertSame('', $widget->value());
     $this->assertStringContainsString('(empty)', $this->render($widget));
   }
@@ -349,9 +350,6 @@ final class FilePickerWidgetTest extends TestCase {
     // The cursor row carries the ASCII marker; directories carry a slash.
     $this->assertStringContainsString('> docs/', $view);
     $this->assertStringContainsString('src/', $view);
-    // The hint line advertises the navigation keys.
-    $this->assertStringContainsString('open', $view);
-    $this->assertStringContainsString('tab hidden', $view);
   }
 
   public function testMultipleAsciiCheckboxes(): void {
@@ -362,8 +360,22 @@ final class FilePickerWidgetTest extends TestCase {
 
     $widget->handle(Key::named(KeyName::Space));
     $this->assertStringContainsString('[x] docs/', $widget->view($theme));
-    // The multiple-mode hint leads with the toggle key.
-    $this->assertStringContainsString('space select', $widget->view($theme));
+  }
+
+  public function testHintsRenderPerMode(): void {
+    $theme = new DefaultTheme(76, ['unicode' => FALSE, 'color' => FALSE]);
+
+    // A single picker binds no toggle key, so that fragment drops and Accept
+    // reads "select"; the browse and hidden fragments are always present.
+    $single = Ansi::strip($theme->renderHints(KeyMapManager::create()->forField(FieldType::FilePicker), ...(new FilePickerWidget($this->root))->hints()));
+    $this->assertStringNotContainsString('space select', $single);
+    $this->assertStringContainsString('open', $single);
+    $this->assertStringContainsString('tab hidden', $single);
+
+    // Multiple mode leads with the toggle key and Accept reads "accept".
+    $multiple = Ansi::strip($theme->renderHints(KeyMapManager::create()->forField(FieldType::MultiFilePicker), ...(new FilePickerWidget($this->root, multiple: TRUE))->hints()));
+    $this->assertStringContainsString('space select', $multiple);
+    $this->assertStringContainsString('accept', $multiple);
   }
 
   public function testScrollsLargeDirectory(): void {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Tests\Unit\Widget;
 
 use DrevOps\Tui\Input\ArrayKeyStream;
+use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Render\Ansi;
@@ -152,6 +153,12 @@ final class SuggestWidgetTest extends TestCase {
     $this->assertStringContainsString('▲', $view);
     $this->assertStringContainsString('▼', $view);
     $this->assertStringNotContainsString('one', $view);
+  }
+
+  public function testHints(): void {
+    $labels = array_map(static fn(Hint $hint): string => $hint->label, (new SuggestWidget(['UTC', 'GMT']))->hints());
+
+    $this->assertSame(['move', 'accept', 'cancel'], $labels);
   }
 
 }

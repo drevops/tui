@@ -8,6 +8,9 @@ use DrevOps\Tui\Answers\Answers;
 use DrevOps\Tui\Config\Field;
 use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\Panel;
+use DrevOps\Tui\Input\Action;
+use DrevOps\Tui\Input\Hint;
+use DrevOps\Tui\Input\KeyMapManager;
 use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Render\Viewport;
 use DrevOps\Tui\Tests\Fixtures\Theme\AccentOptionTheme;
@@ -125,17 +128,18 @@ final class ThemeOptionsTest extends TestCase {
     $this->assertStringContainsString('Acme', Ansi::strip($boxed));
   }
 
-  public function testEditorOmitsGenericHintWhenViewRendersOwn(): void {
+  public function testEditorDrawsHintsOnlyWhenGiven(): void {
     $plain = new DefaultTheme(30, ['color' => FALSE]);
+    $keys = KeyMapManager::create()->forField(FieldType::Text);
 
-    // With the flag set, the generic accept/cancel hint is dropped so it cannot
-    // contradict a hint the widget's own view already renders.
-    $this->assertStringNotContainsString('accept', $plain->renderEditor('Name', 'body', TRUE));
-    $this->assertStringContainsString('accept', $plain->renderEditor('Name', 'body', FALSE));
+    // An empty hint list draws no footer (the footer can be turned off); a
+    // non-empty list draws it.
+    $this->assertStringNotContainsString('accept', $plain->renderEditor('Name', 'body', [], $keys));
+    $this->assertStringContainsString('accept', $plain->renderEditor('Name', 'body', [new Hint('accept', Action::Accept)], $keys));
 
-    // Bordered: the dropped footer still closes the box with a single rule.
+    // Bordered: an empty hint list still closes the box with a single rule.
     $boxed = new DefaultTheme(30, ['color' => FALSE, 'border' => ThemeInterface::BORDER_LINE]);
-    $frame = $boxed->renderEditor('Name', 'body', TRUE);
+    $frame = $boxed->renderEditor('Name', 'body', [], $keys);
     $this->assertStringNotContainsString('accept', $frame);
     $this->assertStringContainsString('body', Ansi::strip($frame));
   }

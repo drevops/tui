@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Tests\Unit\Widget;
 
 use DrevOps\Tui\Input\ArrayKeyStream;
+use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Theme\DefaultTheme;
@@ -64,11 +65,8 @@ final class TextareaWidgetTest extends TestCase {
     $this->assertSame("aZ\nlonger", $widget->value());
   }
 
-  public function testViewShowsHintAndError(): void {
+  public function testViewShowsError(): void {
     $widget = new TextareaWidget('x', fn(mixed $value): string => 'Nope.');
-
-    $view = $widget->view(new DefaultTheme());
-    $this->assertStringContainsString('tab accept', $view);
 
     $widget->handle(Key::named(KeyName::Tab));
     $this->assertStringContainsString('Nope.', $widget->view(new DefaultTheme()));
@@ -83,10 +81,10 @@ final class TextareaWidgetTest extends TestCase {
     $this->assertNull($value);
   }
 
-  public function testRendersOwnHint(): void {
-    // Its view already shows "enter newline / tab accept", so the editor chrome
-    // must not add the generic "enter accept" hint on top.
-    $this->assertTrue((new TextareaWidget('x'))->rendersHint());
+  public function testHints(): void {
+    $labels = array_map(static fn(Hint $hint): string => $hint->label, (new TextareaWidget('x'))->hints());
+
+    $this->assertSame(['newline', 'accept', 'cancel'], $labels);
   }
 
   public function testEditorKeyRequestsHandoffWhenEnabled(): void {
@@ -141,9 +139,12 @@ final class TextareaWidgetTest extends TestCase {
     $this->assertStringContainsString('Nope.', $widget->view(new DefaultTheme()));
   }
 
-  public function testViewShowsEditorHintOnlyWhenEnabled(): void {
-    $this->assertStringContainsString('ctrl-e editor', (new TextareaWidget('x', externalEdit: TRUE))->view(new DefaultTheme()));
-    $this->assertStringNotContainsString('ctrl-e editor', (new TextareaWidget('x'))->view(new DefaultTheme()));
+  public function testEditorHintOnlyWhenEnabled(): void {
+    $enabled = array_map(static fn(Hint $hint): string => $hint->label, (new TextareaWidget('x', externalEdit: TRUE))->hints());
+    $this->assertContains('editor', $enabled);
+
+    $disabled = array_map(static fn(Hint $hint): string => $hint->label, (new TextareaWidget('x'))->hints());
+    $this->assertNotContains('editor', $disabled);
   }
 
 }

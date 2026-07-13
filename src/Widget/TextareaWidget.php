@@ -6,6 +6,7 @@ namespace DrevOps\Tui\Widget;
 
 use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Input\Action;
+use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Theme\ThemeInterface;
@@ -165,29 +166,21 @@ class TextareaWidget extends TextWidget {
   public function view(ThemeInterface $theme): string {
     $text = substr($this->buffer, 0, $this->cursor) . $theme->caret() . substr($this->buffer, $this->cursor);
 
-    $fragments = [
-      $theme->keysHint($this->keys(), 'newline', Action::NewLine),
-      $theme->keysHint($this->keys(), 'accept', Action::Accept),
-      $theme->keysHint($this->keys(), 'cancel', Action::Cancel),
-    ];
-
-    if ($this->externalEdit) {
-      $fragments[] = $theme->keysHint($this->keys(), 'editor', Action::ExternalEdit);
-    }
-
-    $hint = $theme->footer(implode(' ' . $theme->dot() . ' ', array_filter($fragments)));
-
-    $out = $text . "\n" . $hint;
-
-    return $this->error === NULL ? $out : $out . "\n" . $theme->error($this->error);
+    return $this->error === NULL ? $text : $text . "\n" . $theme->error($this->error);
   }
 
   /**
    * {@inheritdoc}
    */
   #[\Override]
-  public function rendersHint(): bool {
-    return TRUE;
+  public function hints(): array {
+    $hints = [new Hint('newline', Action::NewLine), ...parent::hints()];
+
+    if ($this->externalEdit) {
+      $hints[] = new Hint('editor', Action::ExternalEdit);
+    }
+
+    return $hints;
   }
 
 }

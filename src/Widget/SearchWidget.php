@@ -6,6 +6,7 @@ namespace DrevOps\Tui\Widget;
 
 use DrevOps\Tui\Config\OptionKind;
 use DrevOps\Tui\Input\Action;
+use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Theme\ThemeInterface;
 
@@ -200,6 +201,14 @@ class SearchWidget extends AbstractWidget {
    */
   protected function positionsFor(string $label): array {
     return $this->filter === '' ? [] : $this->matcher()->positions($label, $this->filter);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  public function hints(): array {
+    return [new Hint('move', Action::MoveUp, Action::MoveDown), ...parent::hints()];
   }
 
 }
