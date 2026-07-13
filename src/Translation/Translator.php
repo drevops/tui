@@ -133,7 +133,7 @@ final class Translator {
    * @return string
    *   The message with its placeholders replaced.
    */
-  public static function interpolate(string $message, array $args = []): string {
+  protected static function interpolate(string $message, array $args = []): string {
     if ($args === []) {
       return $message;
     }
@@ -212,18 +212,34 @@ final class Translator {
           continue;
         }
 
-        $data = require $file;
-        if (is_array($data)) {
-          foreach ($data as $key => $value) {
-            if (is_string($key) && is_string($value)) {
-              $catalog[$key] = $value;
-            }
-          }
-        }
+        $catalog = array_merge($catalog, $this->readCatalog($file));
 
         // The first candidate present in a directory wins; a region catalog is
         // not merged on top of its primary-subtag catalog within one directory.
         break;
+      }
+    }
+
+    return $catalog;
+  }
+
+  /**
+   * Read a catalog file, keeping only its string => string pairs.
+   *
+   * @param string $file
+   *   The catalog file path.
+   *
+   * @return array<string,string>
+   *   The source => translation map.
+   */
+  protected function readCatalog(string $file): array {
+    $data = require $file;
+
+    $catalog = [];
+
+    foreach (is_array($data) ? $data : [] as $key => $value) {
+      if (is_string($key) && is_string($value)) {
+        $catalog[$key] = $value;
       }
     }
 

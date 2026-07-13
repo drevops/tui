@@ -35,8 +35,8 @@ final class EngineDeclaredBehaviourTest extends TestCase {
 
     $answers = $engine->collect([], new Context('some/project'));
 
-    $this->assertSame('from-project', $answers['name']);
-    $this->assertSame(Provenance::Default, $engine->provenance()['name']);
+    $this->assertSame('from-project', $answers->value('name'));
+    $this->assertSame(Provenance::Default, $answers->provenanceOf('name'));
   }
 
   public function testDeclaredDefaultOverriddenByInput(): void {
@@ -44,7 +44,7 @@ final class EngineDeclaredBehaviourTest extends TestCase {
       $p->text('name')->default(fn (Context $c): string => 'dynamic');
     });
 
-    $this->assertSame(['name' => 'given'], $engine->collect(['name' => 'given'], new Context()));
+    $this->assertSame(['name' => 'given'], $engine->collect(['name' => 'given'], new Context())->values);
   }
 
   public function testDeclaredValidateRejects(): void {
@@ -52,7 +52,7 @@ final class EngineDeclaredBehaviourTest extends TestCase {
       $p->text('name')->validate(fn (mixed $v): ?string => $v === 'ok' ? NULL : 'Must be "ok".');
     });
 
-    $this->assertSame(['name' => 'ok'], $engine->collect(['name' => 'ok'], new Context()));
+    $this->assertSame(['name' => 'ok'], $engine->collect(['name' => 'ok'], new Context())->values);
 
     $this->expectException(EngineException::class);
     $this->expectExceptionMessage('Invalid value for field "name": Must be "ok".');
@@ -64,7 +64,7 @@ final class EngineDeclaredBehaviourTest extends TestCase {
       $p->number('port')->min(1)->max(10);
     });
 
-    $this->assertSame(['port' => 5], $engine->collect(['port' => 5], new Context()));
+    $this->assertSame(['port' => 5], $engine->collect(['port' => 5], new Context())->values);
 
     $this->expectException(EngineException::class);
     $this->expectExceptionMessage('Invalid value for field "port": must be between 1 and 10.');
@@ -87,7 +87,7 @@ final class EngineDeclaredBehaviourTest extends TestCase {
       $p->calendar('due')->minDate('2026-01-01')->maxDate('2026-12-31');
     });
 
-    $this->assertSame(['due' => '2026-06-15'], $engine->collect(['due' => '2026-06-15'], new Context()));
+    $this->assertSame(['due' => '2026-06-15'], $engine->collect(['due' => '2026-06-15'], new Context())->values);
 
     $this->expectException(EngineException::class);
     $this->expectExceptionMessage('Invalid value for field "due": must be between 2026-01-01 and 2026-12-31.');
@@ -99,7 +99,7 @@ final class EngineDeclaredBehaviourTest extends TestCase {
       $p->text('name')->transform(fn (mixed $v): mixed => is_string($v) ? trim($v) : $v);
     });
 
-    $this->assertSame(['name' => 'Acme'], $engine->collect(['name' => '  Acme  '], new Context()));
+    $this->assertSame(['name' => 'Acme'], $engine->collect(['name' => '  Acme  '], new Context())->values);
   }
 
   public function testDeclaredDiscoverClosure(): void {
@@ -109,8 +109,8 @@ final class EngineDeclaredBehaviourTest extends TestCase {
 
     $answers = $engine->collect([], new Context('some/project', [], TRUE));
 
-    $this->assertSame('seen-project', $answers['name']);
-    $this->assertSame(Provenance::Detected, $engine->provenance()['name']);
+    $this->assertSame('seen-project', $answers->value('name'));
+    $this->assertSame(Provenance::Detected, $answers->provenanceOf('name'));
   }
 
   public function testDeclarationWinsOverHandler(): void {
@@ -124,7 +124,7 @@ final class EngineDeclaredBehaviourTest extends TestCase {
 
     $answers = $engine->collect(['spy' => 'declared'], new Context('project'));
 
-    $this->assertSame('declared?', $answers['spy']);
+    $this->assertSame('declared?', $answers->value('spy'));
     $this->assertSame([], Spy::$calls);
   }
 

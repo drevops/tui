@@ -34,12 +34,12 @@ final class EngineConditionalTest extends TestCase {
     );
 
     $answers = $engine->collect([], new Context());
-    $this->assertArrayHasKey('theme', $answers);
-    $this->assertArrayNotHasKey('custom_theme', $answers);
+    $this->assertTrue($answers->has('theme'));
+    $this->assertFalse($answers->has('custom_theme'));
 
     $answers = $engine->collect(['theme' => 'custom'], new Context());
-    $this->assertArrayHasKey('custom_theme', $answers);
-    $this->assertSame('mytheme', $answers['custom_theme']);
+    $this->assertTrue($answers->has('custom_theme'));
+    $this->assertSame('mytheme', $answers->value('custom_theme'));
   }
 
   public function testForceFixupAutoResolves(): void {
@@ -53,9 +53,9 @@ final class EngineConditionalTest extends TestCase {
         ->build()
     );
 
-    $this->assertSame('url', $engine->collect([], new Context())['database_source']);
+    $this->assertSame('url', $engine->collect([], new Context())->value('database_source'));
     // No input for database_source: the fix-up resolves it without prompting.
-    $this->assertSame('none', $engine->collect(['provision' => 'profile'], new Context())['database_source']);
+    $this->assertSame('none', $engine->collect(['provision' => 'profile'], new Context())->value('database_source'));
   }
 
   public function testMultiFieldConditional(): void {
@@ -71,10 +71,10 @@ final class EngineConditionalTest extends TestCase {
     );
 
     // Both conditions hold: c is active.
-    $this->assertArrayHasKey('c', $engine->collect([], new Context()));
+    $this->assertTrue($engine->collect([], new Context())->has('c'));
 
     // One condition fails: c is gated out.
-    $this->assertArrayNotHasKey('c', $engine->collect(['b' => 'other'], new Context()));
+    $this->assertFalse($engine->collect(['b' => 'other'], new Context())->has('c'));
   }
 
   public function testMergeCustomFixup(): void {
@@ -89,7 +89,7 @@ final class EngineConditionalTest extends TestCase {
     );
 
     $answers = $engine->collect(['profile' => 'custom', 'profile_custom' => 'my_profile'], new Context());
-    $this->assertSame('my_profile', $answers['profile']);
+    $this->assertSame('my_profile', $answers->value('profile'));
   }
 
   public function testCascadingDeactivation(): void {
@@ -103,8 +103,8 @@ final class EngineConditionalTest extends TestCase {
         ->build()
     );
 
-    $this->assertSame(['a' => 'x', 'b' => 'y', 'c' => 'z'], $engine->collect([], new Context()));
-    $this->assertSame(['a' => 'off'], $engine->collect(['a' => 'off'], new Context()));
+    $this->assertSame(['a' => 'x', 'b' => 'y', 'c' => 'z'], $engine->collect([], new Context())->values);
+    $this->assertSame(['a' => 'off'], $engine->collect(['a' => 'off'], new Context())->values);
   }
 
   /**

@@ -50,7 +50,7 @@ final readonly class Condition implements ConditionInterface {
    *   The composite condition.
    */
   public static function all(ConditionInterface ...$conditions): CompositeCondition {
-    return new CompositeCondition('all', array_values($conditions));
+    return new CompositeCondition(CompositeOperator::All, array_values($conditions));
   }
 
   /**
@@ -63,7 +63,7 @@ final readonly class Condition implements ConditionInterface {
    *   The composite condition.
    */
   public static function any(ConditionInterface ...$conditions): CompositeCondition {
-    return new CompositeCondition('any', array_values($conditions));
+    return new CompositeCondition(CompositeOperator::Any, array_values($conditions));
   }
 
   /**
@@ -76,7 +76,7 @@ final readonly class Condition implements ConditionInterface {
    *   The composite condition.
    */
   public static function not(ConditionInterface $condition): CompositeCondition {
-    return new CompositeCondition('not', [$condition]);
+    return new CompositeCondition(CompositeOperator::Not, [$condition]);
   }
 
   /**

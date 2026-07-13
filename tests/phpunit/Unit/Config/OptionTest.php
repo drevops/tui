@@ -83,17 +83,33 @@ final class OptionTest extends TestCase {
     yield [FieldType::Confirm, FALSE];
   }
 
-  #[DataProvider('dataProviderIsMulti')]
-  public function testIsMulti(FieldType $type, bool $expected): void {
-    $this->assertSame($expected, $type->isMulti());
+  #[DataProvider('dataProviderIsMultiChoice')]
+  public function testIsMultiChoice(FieldType $type, bool $expected): void {
+    $this->assertSame($expected, $type->isMultiChoice());
   }
 
-  public static function dataProviderIsMulti(): \Iterator {
+  public static function dataProviderIsMultiChoice(): \Iterator {
     yield [FieldType::MultiSelect, TRUE];
     yield [FieldType::MultiSearch, TRUE];
     yield [FieldType::Reorder, TRUE];
+    yield [FieldType::MultiFilePicker, FALSE];
     yield [FieldType::Select, FALSE];
     yield [FieldType::Search, FALSE];
+    yield [FieldType::Text, FALSE];
+  }
+
+  #[DataProvider('dataProviderCollectsList')]
+  public function testCollectsList(FieldType $type, bool $expected): void {
+    $this->assertSame($expected, $type->collectsList());
+  }
+
+  public static function dataProviderCollectsList(): \Iterator {
+    yield [FieldType::MultiSelect, TRUE];
+    yield [FieldType::MultiSearch, TRUE];
+    yield [FieldType::MultiFilePicker, TRUE];
+    yield [FieldType::Reorder, TRUE];
+    yield [FieldType::Select, FALSE];
+    yield [FieldType::FilePicker, FALSE];
     yield [FieldType::Text, FALSE];
   }
 
@@ -114,7 +130,7 @@ final class OptionTest extends TestCase {
 
   #[DataProvider('dataProviderOptionError')]
   public function testOptionError(FieldType $type, array $options, mixed $value, ?string $expected): void {
-    $field = new Field('f', 'F', '', $type, $type->isMulti() ? [] : '', $options);
+    $field = new Field('f', 'F', '', $type, $type->isMultiChoice() ? [] : '', $options);
 
     $this->assertSame($expected, $field->optionError($value));
   }

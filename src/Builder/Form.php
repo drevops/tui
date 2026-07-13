@@ -392,7 +392,7 @@ final class Form {
 
     foreach ($config->fields() as $field) {
       if (isset($seen[$field->id])) {
-        throw new ConfigException(Translator::t('Duplicate field id "@id".', ['@id' => $field->id]));
+        throw new ConfigException(sprintf('Duplicate field id "%s".', $field->id));
       }
 
       $seen[$field->id] = TRUE;
@@ -412,10 +412,7 @@ final class Form {
       }
 
       if (count($field->options) !== 2) {
-        throw new ConfigException(Translator::t('Toggle field "@id" must have exactly two options, @count given.', [
-          '@id' => $field->id,
-          '@count' => count($field->options),
-        ]));
+        throw new ConfigException(sprintf('Toggle field "%s" must have exactly two options, %d given.', $field->id, count($field->options)));
       }
 
       // A dynamic default is a closure resolved at runtime; every literal
@@ -428,10 +425,7 @@ final class Form {
       $values = array_map(static fn(Option $option): string => $option->value, $field->options);
 
       if (!is_string($field->default) || !in_array($field->default, $values, TRUE)) {
-        throw new ConfigException(Translator::t('Toggle field "@id" default must be one of: @values.', [
-          '@id' => $field->id,
-          '@values' => implode(', ', $values),
-        ]));
+        throw new ConfigException(sprintf('Toggle field "%s" default must be one of: %s.', $field->id, implode(', ', $values)));
       }
     }
   }

@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Schema;
 
 use DrevOps\Tui\Config\Config;
-use DrevOps\Tui\Config\DateBounds;
 use DrevOps\Tui\Config\Field;
-use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Translation\Translator;
 
 /**
@@ -85,8 +83,8 @@ class SchemaValidator {
    *   The first error, or NULL when valid.
    */
   protected function validateValue(Field $field, mixed $value): ?string {
-    if (!$this->isType($field->type, $value)) {
-      return $this->constraintMessage($field, $this->typeName($field->type));
+    if (!$field->type->acceptsValue($value)) {
+      return $this->constraintMessage($field, $field->type->valueKind());
     }
 
     if ($field->required && $this->isEmpty($value)) {
@@ -113,7 +111,7 @@ class SchemaValidator {
    *   An error, or NULL when in range (or when the field declares no bounds).
    */
   protected function checkBounds(Field $field, mixed $value): ?string {
-    $violation = $field->bounds?->violation($value) ?? $field->dateBounds?->violation($value);
+    $violation = $field->boundsViolation($value);
 
     return $violation === NULL ? NULL : $this->constraintMessage($field, $violation);
   }
@@ -131,48 +129,6 @@ class SchemaValidator {
    */
   protected function constraintMessage(Field $field, string $constraint): string {
     return Translator::t('Question "@id" must be @constraint.', ['@id' => $field->id, '@constraint' => $constraint]);
-  }
-
-  /**
-   * Whether the value matches the field type.
-   *
-   * @param \DrevOps\Tui\Config\FieldType $type
-   *   The field type.
-   * @param mixed $value
-   *   The value.
-   *
-   * @return bool
-   *   TRUE when the value matches.
-   */
-  protected function isType(FieldType $type, mixed $value): bool {
-    return match ($type) {
-      FieldType::Confirm, FieldType::Pause => is_bool($value),
-      FieldType::MultiSelect, FieldType::MultiSearch, FieldType::MultiFilePicker, FieldType::Reorder => is_array($value),
-      FieldType::Number => is_int($value) || is_float($value),
-      // An empty string is an unset date, left to the required check; any other
-      // value must be a strict `Y-m-d` calendar date.
-      FieldType::Calendar => is_string($value) && ($value === '' || DateBounds::parse($value) instanceof \DateTimeImmutable),
-      default => is_string($value),
-    };
-  }
-
-  /**
-   * A human name for a field type.
-   *
-   * @param \DrevOps\Tui\Config\FieldType $type
-   *   The field type.
-   *
-   * @return string
-   *   The human name.
-   */
-  protected function typeName(FieldType $type): string {
-    return match ($type) {
-      FieldType::Confirm, FieldType::Pause => Translator::t('a boolean'),
-      FieldType::MultiSelect, FieldType::MultiSearch, FieldType::MultiFilePicker, FieldType::Reorder => Translator::t('a list'),
-      FieldType::Number => Translator::t('a number'),
-      FieldType::Calendar => Translator::t('a date (YYYY-MM-DD)'),
-      default => Translator::t('a string'),
-    };
   }
 
   /**

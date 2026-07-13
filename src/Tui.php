@@ -121,9 +121,8 @@ final class Tui {
    */
   public function collect(string $prompts = '', string $directory = '', bool $update = FALSE, string $version = ''): Answers {
     $inputs = (new InputResolver($this->envPrefix))->resolve($this->config->fields(), $prompts, getenv());
-    $this->engine->collect($inputs, $this->context($directory, $update, $version));
 
-    return $this->engine->answers();
+    return $this->engine->collect($inputs, $this->context($directory, $update, $version));
   }
 
   /**
@@ -186,10 +185,9 @@ final class Tui {
    *   collect through run(), collect() or interact().
    */
   public function controller(array $options, string $theme = '', string $banner = '', string $version = '', string $directory = ''): PanelController {
-    $this->engine->collect([], $this->context($directory, FALSE, $version));
+    $answers = $this->engine->collect([], $this->context($directory, FALSE, $version));
 
     $banner_text = $banner !== '' ? $banner : $this->config->banner;
-    $answers = $this->engine->answers();
 
     return new PanelController(
       $this->config,

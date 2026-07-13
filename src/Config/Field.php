@@ -160,6 +160,20 @@ final readonly class Field {
   }
 
   /**
+   * The first violated number or date bound, as an error fragment.
+   *
+   * @param mixed $value
+   *   The candidate value.
+   *
+   * @return string|null
+   *   The violation fragment (e.g. "between 1 and 10"), or NULL when the
+   *   value is in range or the field declares no bounds.
+   */
+  public function boundsViolation(mixed $value): ?string {
+    return $this->bounds?->violation($value) ?? $this->dateBounds?->violation($value);
+  }
+
+  /**
    * Validate a supplied value against the field's selectable options.
    *
    * Handles both a single-choice scalar and a multi-choice list, returning the
@@ -178,7 +192,7 @@ final readonly class Field {
       return NULL;
     }
 
-    if ($this->type->isMulti()) {
+    if ($this->type->isMultiChoice()) {
       if (!is_array($value)) {
         return Translator::t('value must be a list');
       }
@@ -259,7 +273,7 @@ final readonly class Field {
       return NULL;
     }
 
-    return sprintf('must rank every option exactly once (%s)', implode(', ', $selectable));
+    return Translator::t('must rank every option exactly once (@options)', ['@options' => implode(', ', $selectable)]);
   }
 
   /**

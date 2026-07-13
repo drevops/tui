@@ -83,10 +83,60 @@ enum FieldType: string {
    * Whether the field collects a list of values rather than a single value.
    *
    * @return bool
-   *   TRUE for the multi-choice types.
+   *   TRUE for the list-collecting types.
    */
-  public function isMulti(): bool {
+  public function collectsList(): bool {
+    return in_array($this, [self::MultiSelect, self::MultiSearch, self::MultiFilePicker, self::Reorder], TRUE);
+  }
+
+  /**
+   * Whether the field is a multi-selection over its declared option set.
+   *
+   * Narrower than {@see collectsList()}: the multi file picker collects a
+   * list too, but its entries come from the filesystem, not the options.
+   *
+   * @return bool
+   *   TRUE for the option-backed multi-choice types.
+   */
+  public function isMultiChoice(): bool {
     return in_array($this, [self::MultiSelect, self::MultiSearch, self::Reorder], TRUE);
+  }
+
+  /**
+   * Whether a headless value has the shape this field type collects.
+   *
+   * @param mixed $value
+   *   The candidate value.
+   *
+   * @return bool
+   *   TRUE when the value's type matches the field type.
+   */
+  public function acceptsValue(mixed $value): bool {
+    return match (TRUE) {
+      $this === self::Confirm, $this === self::Pause => is_bool($value),
+      $this->collectsList() => is_array($value),
+      $this === self::Number => is_int($value) || is_float($value),
+      // An empty string is an unset date, left to the required check; any
+      // other value must be a strict `Y-m-d` calendar date.
+      $this === self::Calendar => is_string($value) && ($value === '' || DateBounds::parse($value) instanceof \DateTimeImmutable),
+      default => is_string($value),
+    };
+  }
+
+  /**
+   * The human name of the value shape this type collects, translated.
+   *
+   * @return string
+   *   The value-kind fragment (e.g. "a string", "a list").
+   */
+  public function valueKind(): string {
+    return match (TRUE) {
+      $this === self::Confirm, $this === self::Pause => Translator::t('a boolean'),
+      $this->collectsList() => Translator::t('a list'),
+      $this === self::Number => Translator::t('a number'),
+      $this === self::Calendar => Translator::t('a date (YYYY-MM-DD)'),
+      default => Translator::t('a string'),
+    };
   }
 
 }

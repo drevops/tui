@@ -47,10 +47,10 @@ final class EngineDiscoveryTest extends TestCase {
 
     $answers = $engine->collect([], new Context($this->dir, [], TRUE));
 
-    $this->assertSame('minimal', $answers['profile']);
-    $this->assertSame('acme/site', $answers['name']);
-    $this->assertSame(Provenance::Detected, $engine->provenance()['profile']);
-    $this->assertSame(Provenance::Detected, $engine->provenance()['name']);
+    $this->assertSame('minimal', $answers->value('profile'));
+    $this->assertSame('acme/site', $answers->value('name'));
+    $this->assertSame(Provenance::Detected, $answers->provenanceOf('profile'));
+    $this->assertSame(Provenance::Detected, $answers->provenanceOf('name'));
   }
 
   public function testFreshInstallDiscoversNothing(): void {
@@ -60,8 +60,8 @@ final class EngineDiscoveryTest extends TestCase {
 
     $answers = $engine->collect([], new Context($this->dir, [], FALSE));
 
-    $this->assertSame('standard', $answers['profile']);
-    $this->assertSame(Provenance::Default, $engine->provenance()['profile']);
+    $this->assertSame('standard', $answers->value('profile'));
+    $this->assertSame(Provenance::Default, $answers->provenanceOf('profile'));
   }
 
   public function testInputWinsOverDetected(): void {
@@ -71,8 +71,8 @@ final class EngineDiscoveryTest extends TestCase {
 
     $answers = $engine->collect(['profile' => 'demo'], new Context($this->dir, [], TRUE));
 
-    $this->assertSame('demo', $answers['profile']);
-    $this->assertSame(Provenance::Edited, $engine->provenance()['profile']);
+    $this->assertSame('demo', $answers->value('profile'));
+    $this->assertSame(Provenance::Edited, $answers->provenanceOf('profile'));
   }
 
   public function testDetectedWinsOverDerived(): void {
@@ -83,8 +83,8 @@ final class EngineDiscoveryTest extends TestCase {
 
     $answers = $engine->collect([], new Context($this->dir, [], TRUE));
 
-    $this->assertSame('from_env', $answers['profile']);
-    $this->assertSame(Provenance::Detected, $engine->provenance()['profile']);
+    $this->assertSame('from_env', $answers->value('profile'));
+    $this->assertSame(Provenance::Detected, $answers->provenanceOf('profile'));
   }
 
   /**

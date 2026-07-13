@@ -27,10 +27,10 @@ final class EngineDeriveTest extends TestCase {
 
     $answers = $engine->collect(['name' => 'Acme Site'], new Context());
 
-    $this->assertSame('acme_site', $answers['machine']);
-    $this->assertSame('acme-site.com', $answers['domain']);
-    $this->assertSame(Provenance::Derived, $engine->provenance()['machine']);
-    $this->assertSame(Provenance::Edited, $engine->provenance()['name']);
+    $this->assertSame('acme_site', $answers->value('machine'));
+    $this->assertSame('acme-site.com', $answers->value('domain'));
+    $this->assertSame(Provenance::Derived, $answers->provenanceOf('machine'));
+    $this->assertSame(Provenance::Edited, $answers->provenanceOf('name'));
   }
 
   public function testOverrideHoldsWhileFollowersUpdate(): void {
@@ -39,10 +39,10 @@ final class EngineDeriveTest extends TestCase {
     // Machine is pinned; the domain still follows the pinned machine, not name.
     $answers = $engine->collect(['name' => 'Acme Site', 'machine' => 'custom'], new Context());
 
-    $this->assertSame('custom', $answers['machine']);
-    $this->assertSame('custom.com', $answers['domain']);
-    $this->assertSame(Provenance::Override, $engine->provenance()['machine']);
-    $this->assertSame(Provenance::Derived, $engine->provenance()['domain']);
+    $this->assertSame('custom', $answers->value('machine'));
+    $this->assertSame('custom.com', $answers->value('domain'));
+    $this->assertSame(Provenance::Override, $answers->provenanceOf('machine'));
+    $this->assertSame(Provenance::Derived, $answers->provenanceOf('domain'));
   }
 
   public function testResetRelinks(): void {
@@ -53,8 +53,8 @@ final class EngineDeriveTest extends TestCase {
     // Re-running without the machine input relinks (reset) and re-derives.
     $answers = $engine->collect(['name' => 'Acme'], new Context());
 
-    $this->assertSame('acme', $answers['machine']);
-    $this->assertSame(Provenance::Derived, $engine->provenance()['machine']);
+    $this->assertSame('acme', $answers->value('machine'));
+    $this->assertSame(Provenance::Derived, $answers->provenanceOf('machine'));
   }
 
   /**

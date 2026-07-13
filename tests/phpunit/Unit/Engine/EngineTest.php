@@ -39,9 +39,9 @@ final class EngineTest extends TestCase {
     $answers = $engine->collect(['spy' => 'given'], new Context('project'));
 
     // The supplied input flows through the discovered static transform.
-    $this->assertSame('given!', $answers['spy']);
+    $this->assertSame('given!', $answers->value('spy'));
     // A field with no input keeps its default untouched by the guards.
-    $this->assertSame('', $answers['plain']);
+    $this->assertSame('', $answers->value('plain'));
     // Lifecycle order per field: normalize first, then validate.
     $this->assertSame(['transform', 'validate'], Spy::$calls);
   }
@@ -53,7 +53,7 @@ final class EngineTest extends TestCase {
 
     $answers = $engine->collect(['spy' => 'given'], new Context('project'));
 
-    $this->assertSame('given!', $answers['spy']);
+    $this->assertSame('given!', $answers->value('spy'));
     $this->assertSame(['transform', 'validate'], Spy::$calls);
   }
 
@@ -75,7 +75,7 @@ final class EngineTest extends TestCase {
 
     $answers = $engine->collect(['machine_name' => 'ACME'], new Context('project'));
 
-    $this->assertSame('acme', $answers['machine_name']);
+    $this->assertSame('acme', $answers->value('machine_name'));
   }
 
   #[DataProvider('dataProviderCollectRejectsNonSelectableOption')]
@@ -108,10 +108,10 @@ final class EngineTest extends TestCase {
 
     $answers = $engine->collect(['profile' => 'standard', 'mods' => ['a', 'b'], 'engine' => 'solr', 'tags' => ['x']], new Context('project'));
 
-    $this->assertSame('standard', $answers['profile']);
-    $this->assertSame(['a', 'b'], $answers['mods']);
-    $this->assertSame('solr', $answers['engine']);
-    $this->assertSame(['x'], $answers['tags']);
+    $this->assertSame('standard', $answers->value('profile'));
+    $this->assertSame(['a', 'b'], $answers->value('mods'));
+    $this->assertSame('solr', $answers->value('engine'));
+    $this->assertSame(['x'], $answers->value('tags'));
   }
 
   public function testCollectRejectsNonArrayMultiValue(): void {
@@ -120,7 +120,7 @@ final class EngineTest extends TestCase {
     });
 
     $this->expectException(EngineException::class);
-    $this->expectExceptionMessage('Invalid value for field "mods": value must be a list');
+    $this->expectExceptionMessage('Invalid value for field "mods": must be a list');
     $engine->collect(['mods' => 'notalist'], new Context('project'));
   }
 
