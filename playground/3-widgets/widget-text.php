@@ -32,4 +32,4 @@ $form = Form::create('Text widget')
     $p->text('text', 'Text')->default('Acme Site');
   });
 
-echo (new Tui($form))->run()->toJson() . PHP_EOL;
+echo (new Tui($form))->run()->toJson() . "\n";

@@ -34,4 +34,4 @@ $form = Form::create('File picker widget')
     $p->filePicker('file', 'File picker')->start(__DIR__ . '/filepicker-tree')->filesOnly()->extensions(['yml', 'yaml']);
   });
 
-echo (new Tui($form))->run()->toJson() . PHP_EOL;
+echo (new Tui($form))->run()->toJson() . "\n";

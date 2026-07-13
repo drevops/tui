@@ -40,4 +40,4 @@ $form = Form::create('MultiSelect with groups')
       ->option('clamav', 'ClamAV', disabled: TRUE, disabled_reason: 'licence required');
   });
 
-echo (new Tui($form))->run()->toJson() . PHP_EOL;
+echo (new Tui($form))->run()->toJson() . "\n";

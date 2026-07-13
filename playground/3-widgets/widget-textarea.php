@@ -34,4 +34,4 @@ $form = Form::create('Textarea widget')
     $p->textarea('textarea', 'Textarea')->default("Redis for cache\nSolr for search")->externalEditor();
   });
 
-echo (new Tui($form))->run()->toJson() . PHP_EOL;
+echo (new Tui($form))->run()->toJson() . "\n";

@@ -35,4 +35,4 @@ $form = Form::create('Toggle widget')
     ]);
   });
 
-echo (new Tui($form))->run()->toJson() . PHP_EOL;
+echo (new Tui($form))->run()->toJson() . "\n";

@@ -33,4 +33,4 @@ $form = Form::create('Password widget')
     $p->password('password', 'Password')->default('hunter2')->revealable();
   });
 
-echo (new Tui($form))->run()->toJson() . PHP_EOL;
+echo (new Tui($form))->run()->toJson() . "\n";

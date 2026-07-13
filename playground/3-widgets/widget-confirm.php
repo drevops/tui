@@ -32,4 +32,4 @@ $form = Form::create('Confirm widget')
     $p->confirm('confirm', 'Confirm')->default(TRUE);
   });
 
-echo (new Tui($form))->run()->toJson() . PHP_EOL;
+echo (new Tui($form))->run()->toJson() . "\n";

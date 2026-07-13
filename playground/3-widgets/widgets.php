@@ -72,4 +72,4 @@ $form = Form::create('Widgets')
     $p->pause('pause', 'Pause');
   });
 
-echo (new Tui($form))->run()->toSummary() . PHP_EOL;
+echo (new Tui($form))->run()->toSummary() . "\n";

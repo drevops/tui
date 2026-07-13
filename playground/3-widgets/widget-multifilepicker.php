@@ -33,4 +33,4 @@ $form = Form::create('Multi file picker widget')
     $p->multiFilePicker('files', 'Multi file picker')->start(__DIR__ . '/filepicker-tree');
   });
 
-echo (new Tui($form))->run()->toJson() . PHP_EOL;
+echo (new Tui($form))->run()->toJson() . "\n";
