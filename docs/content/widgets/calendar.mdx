@@ -1,9 +1,9 @@
 ---
-title: Date
+title: Calendar
 sidebar_position: 3
 ---
 
-# Date
+# Calendar
 
 A month calendar that returns a normalized ISO `YYYY-MM-DD` date. Left/Right move
 by day and Up/Down by week (the vim preset binds `h`/`l` and `k`/`j` to the same
@@ -13,7 +13,7 @@ specific date; with none the calendar opens on today. The move keys are
 configurable through the key map, like every other widget.
 
 ```php
-$p->date('release', 'Release date')->default('2026-07-15');
+$p->calendar('release', 'Release date')->default('2026-07-15');
 ```
 
 Declare optional `minDate`, `maxDate` and `weekStart` to bound the range and set
@@ -26,7 +26,7 @@ rejected - and are reflected in the JSON schema as `min_date`, `max_date` and
 ```php
 use DrevOps\Tui\Config\Weekday;
 
-$p->date('release', 'Release date')->minDate('2026-01-01')->maxDate('2026-12-31')->weekStart(Weekday::Sunday);
+$p->calendar('release', 'Release date')->minDate('2026-01-01')->maxDate('2026-12-31')->weekStart(Weekday::Sunday);
 ```
 
 <table>
@@ -37,12 +37,12 @@ $p->date('release', 'Release date')->minDate('2026-01-01')->maxDate('2026-12-31'
   </tr>
   <tr>
     <td align="right"><strong>Unicode</strong></td>
-    <td><img src="/widget-date.svg" alt="Date: Unicode + ANSI" /></td>
-    <td><img src="/widget-date-no-ansi.svg" alt="Date: Unicode + No ANSI" /></td>
+    <td><img src="/widget-calendar.svg" alt="Calendar: Unicode + ANSI" /></td>
+    <td><img src="/widget-calendar-no-ansi.svg" alt="Calendar: Unicode + No ANSI" /></td>
   </tr>
   <tr>
     <td align="right"><strong>ASCII</strong></td>
-    <td><img src="/widget-date-ascii.svg" alt="Date: ASCII + ANSI" /></td>
-    <td><img src="/widget-date-ascii-no-ansi.svg" alt="Date: ASCII + No ANSI" /></td>
+    <td><img src="/widget-calendar-ascii.svg" alt="Calendar: ASCII + ANSI" /></td>
+    <td><img src="/widget-calendar-ascii-no-ansi.svg" alt="Calendar: ASCII + No ANSI" /></td>
   </tr>
 </table>

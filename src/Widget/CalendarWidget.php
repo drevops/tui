@@ -16,7 +16,7 @@ use DrevOps\Tui\Input\ScopedKeyMap;
 use DrevOps\Tui\Theme\ThemeInterface;
 
 /**
- * A month-calendar date picker returning a normalized ISO `Y-m-d` string.
+ * A navigable month calendar returning a normalized ISO `Y-m-d` string.
  *
  * The move actions - bound to the arrow keys by default, and to h/j/k/l too
  * under the vim preset - move the cursor by day and by week; the page keys
@@ -27,7 +27,7 @@ use DrevOps\Tui\Theme\ThemeInterface;
  *
  * @package DrevOps\Tui\Widget
  */
-class DateWidget extends AbstractWidget {
+class CalendarWidget extends AbstractWidget {
 
   /**
    * The visible width of the seven-column grid, at four columns per day.
@@ -50,7 +50,7 @@ class DateWidget extends AbstractWidget {
   protected \DateTimeImmutable $cursor;
 
   /**
-   * Construct a date widget.
+   * Construct a calendar widget.
    *
    * @param string $value
    *   The initial date as an ISO `Y-m-d` string; empty opens on today.
@@ -74,7 +74,7 @@ class DateWidget extends AbstractWidget {
    */
   #[\Override]
   protected function keyScope(): Scope {
-    return Scope::field(FieldType::Date);
+    return Scope::field(FieldType::Calendar);
   }
 
   /**

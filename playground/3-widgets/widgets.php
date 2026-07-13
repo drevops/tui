@@ -33,7 +33,7 @@ $form = Form::create('Widgets')
   ->panel('widgets', 'Widgets', function (PanelBuilder $p): void {
     $p->text('text', 'Text')->default('Acme Site');
     $p->number('number', 'Number')->default(8080);
-    $p->date('date', 'Date')->default('2026-07-15');
+    $p->calendar('date', 'Calendar')->default('2026-07-15');
     $p->textarea('textarea', 'Textarea')->default("Redis for cache\nSolr for search");
     $p->password('password', 'Password')->default('hunter2');
     $p->select('select', 'Select')->default('minimal')->options([

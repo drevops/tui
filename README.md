@@ -31,7 +31,7 @@ It powers the [Vortex](https://www.vortextemplate.com) project installer, but kn
 Full documentation - every widget, configuration, theming, key bindings and the engine architecture - lives at **[tui.drevops.com](https://tui.drevops.com)**.
 
 - 🧭 [**Panel TUI**](https://tui.drevops.com/panels) - a full-screen, scrollable, keyboard-driven form with a contextual key-hint footer and a `?` help overlay
-- 🧩 [**Widgets**](https://tui.drevops.com/widgets) - `text`, `number`, `date`, `textarea`, `password`, `select`, `multiselect`, `suggest`, `search`, `multisearch`, `filepicker`, `multifilepicker`, `confirm`, `toggle`, `pause`
+- 🧩 [**Widgets**](https://tui.drevops.com/widgets) - `text`, `number`, `calendar`, `textarea`, `password`, `select`, `multiselect`, `suggest`, `search`, `multisearch`, `filepicker`, `multifilepicker`, `confirm`, `toggle`, `pause`
 - 🏗️ [**Builder-driven**](https://tui.drevops.com/configuration) - panels and fields declared in PHP with a fluent builder
 - 🤖 [**Interactive or headless**](https://tui.drevops.com/headless-collection) - drive the panel TUI by keyboard, or collect answers from a JSON payload and environment variables
 - 🔗 [**Derived values**](https://tui.drevops.com/configuration#derived-values) and 🔀 [**conditional fields**](https://tui.drevops.com/configuration#conditional-fields) that settle to a fixpoint

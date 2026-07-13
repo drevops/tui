@@ -134,7 +134,7 @@ final class InputResolverTest extends TestCase {
       new Field('vis', 'Visibility', '', FieldType::Toggle, 'public'),
       new Field('paths', 'Paths', '', FieldType::MultiFilePicker, []),
       new Field('cfg', 'Config', '', FieldType::FilePicker, ''),
-      new Field('due', 'Due', '', FieldType::Date, ''),
+      new Field('due', 'Due', '', FieldType::Calendar, ''),
     ];
   }
 

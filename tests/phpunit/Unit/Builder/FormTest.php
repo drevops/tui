@@ -154,7 +154,7 @@ final class FormTest extends TestCase {
         $panel->confirm('c');
         $panel->suggest('g');
         $panel->number('n');
-        $panel->date('dt');
+        $panel->calendar('dt');
         $panel->textarea('ta');
         $panel->password('pw');
         $panel->search('se')->option('a');
@@ -281,8 +281,8 @@ final class FormTest extends TestCase {
   public function testDateBoundsAssembled(): void {
     $config = Form::create('T')
       ->panel('p', 'P', function (PanelBuilder $panel): void {
-        $panel->date('birthday', 'Birthday')->minDate('2000-01-01')->maxDate('2030-12-31')->weekStart(Weekday::Sunday);
-        $panel->date('plain', 'Plain');
+        $panel->calendar('birthday', 'Birthday')->minDate('2000-01-01')->maxDate('2030-12-31')->weekStart(Weekday::Sunday);
+        $panel->calendar('plain', 'Plain');
       })
       ->build();
 
@@ -307,7 +307,7 @@ final class FormTest extends TestCase {
     $this->expectExceptionMessage('Field "d" declares an invalid date "2026-13-01".');
 
     Form::create('T')
-      ->panel('p', 'P', fn(PanelBuilder $p): FieldBuilder => $p->date('d')->minDate('2026-13-01'))
+      ->panel('p', 'P', fn(PanelBuilder $p): FieldBuilder => $p->calendar('d')->minDate('2026-13-01'))
       ->build();
   }
 
@@ -316,7 +316,7 @@ final class FormTest extends TestCase {
     $this->expectExceptionMessage('Field "d" declares min date 2026-12-31 after max date 2026-01-01.');
 
     Form::create('T')
-      ->panel('p', 'P', fn(PanelBuilder $p): FieldBuilder => $p->date('d')->minDate('2026-12-31')->maxDate('2026-01-01'))
+      ->panel('p', 'P', fn(PanelBuilder $p): FieldBuilder => $p->calendar('d')->minDate('2026-12-31')->maxDate('2026-01-01'))
       ->build();
   }
 

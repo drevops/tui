@@ -28,7 +28,7 @@ final class SchemaGeneratorTest extends TestCase {
         $profile->option('standard', 'Standard', 'Std')->option('minimal', 'Minimal');
         $p->text('theme')->derive(new Derive('{{profile}}'))->when(new Condition('profile', eq: 'standard'));
         $p->number('port', 'Port')->min(1)->max(65535)->step(5);
-        $p->date('release', 'Release date')->minDate('2000-01-01')->maxDate('2030-12-31')->weekStart(Weekday::Sunday);
+        $p->calendar('release', 'Release date')->minDate('2000-01-01')->maxDate('2030-12-31')->weekStart(Weekday::Sunday);
       })
       ->build();
 
@@ -96,7 +96,7 @@ final class SchemaGeneratorTest extends TestCase {
         ],
         [
           'id' => 'release',
-          'type' => 'date',
+          'type' => 'calendar',
           'label' => 'Release date',
           'description' => '',
           'options' => [],

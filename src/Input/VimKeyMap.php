@@ -35,10 +35,10 @@ class VimKeyMap extends DefaultKeyMap {
       new Binding(Scope::field(FieldType::Select), Action::MoveUp, 'k', KeyName::Up),
       new Binding(Scope::field(FieldType::Select), Action::MoveDown, 'j', KeyName::Down),
 
-      new Binding(Scope::field(FieldType::Date), Action::MoveUp, 'k', KeyName::Up),
-      new Binding(Scope::field(FieldType::Date), Action::MoveDown, 'j', KeyName::Down),
-      new Binding(Scope::field(FieldType::Date), Action::MoveLeft, 'h', KeyName::Left),
-      new Binding(Scope::field(FieldType::Date), Action::MoveRight, 'l', KeyName::Right),
+      new Binding(Scope::field(FieldType::Calendar), Action::MoveUp, 'k', KeyName::Up),
+      new Binding(Scope::field(FieldType::Calendar), Action::MoveDown, 'j', KeyName::Down),
+      new Binding(Scope::field(FieldType::Calendar), Action::MoveLeft, 'h', KeyName::Left),
+      new Binding(Scope::field(FieldType::Calendar), Action::MoveRight, 'l', KeyName::Right),
     ]);
   }
 

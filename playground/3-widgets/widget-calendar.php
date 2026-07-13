@@ -2,15 +2,15 @@
 
 /**
  * @file
- * Date field on a form, collected through the Tui facade.
+ * Calendar field on a form, collected through the Tui facade.
  *
  * Arrows move by day/week, PgUp/PgDn change month - the panel TUI drives the
- * date widget, instead of invoking the widget directly.
+ * calendar widget, instead of invoking the widget directly.
  *
  * Usage:
- *   php 3-widgets/widget-date.php
- *   php 3-widgets/widget-date.php --no-unicode   # textual glyphs
- *   php 3-widgets/widget-date.php --no-ansi      # no colour.
+ *   php 3-widgets/widget-calendar.php
+ *   php 3-widgets/widget-calendar.php --no-unicode   # textual glyphs
+ *   php 3-widgets/widget-calendar.php --no-ansi      # no colour.
  */
 
 declare(strict_types=1);
@@ -25,11 +25,11 @@ require __DIR__ . '/../../vendor/autoload.php';
 // rendering without changing the terminal locale.
 $opts = getopt('', ['no-unicode', 'no-ansi']);
 
-$form = Form::create('Date widget')
+$form = Form::create('Calendar widget')
   ->color(isset($opts['no-ansi']) ? FALSE : NULL)
   ->unicode(isset($opts['no-unicode']) ? FALSE : NULL)
-  ->panel('main', 'Date', function (PanelBuilder $p): void {
-    $p->date('date', 'Date')->default('2026-07-15');
+  ->panel('main', 'Calendar', function (PanelBuilder $p): void {
+    $p->calendar('date', 'Calendar')->default('2026-07-15');
   });
 
 echo (new Tui($form))->run()->toJson() . "\n";

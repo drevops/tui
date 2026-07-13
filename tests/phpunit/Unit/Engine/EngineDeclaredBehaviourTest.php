@@ -84,7 +84,7 @@ final class EngineDeclaredBehaviourTest extends TestCase {
 
   public function testDateBoundsRejectOutOfRange(): void {
     $engine = $this->engine(function (PanelBuilder $p): void {
-      $p->date('due')->minDate('2026-01-01')->maxDate('2026-12-31');
+      $p->calendar('due')->minDate('2026-01-01')->maxDate('2026-12-31');
     });
 
     $this->assertSame(['due' => '2026-06-15'], $engine->collect(['due' => '2026-06-15'], new Context()));

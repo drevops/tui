@@ -91,7 +91,7 @@ final class AllWidgetsFormTest extends TestCase {
 
     // Every widget's label was rendered somewhere in the session.
     $display = $tester->display();
-    foreach (['Text', 'Number', 'Date', 'Textarea', 'Password', 'Select', 'MultiSelect', 'Suggest', 'Search', 'MultiSearch', 'Reorder', 'Confirm', 'Toggle', 'FilePicker', 'MultiFilePicker', 'Pause'] as $label) {
+    foreach (['Text', 'Number', 'Calendar', 'Textarea', 'Password', 'Select', 'MultiSelect', 'Suggest', 'Search', 'MultiSearch', 'Reorder', 'Confirm', 'Toggle', 'FilePicker', 'MultiFilePicker', 'Pause'] as $label) {
       $this->assertStringContainsString($label, $display, sprintf('The "%s" label was not rendered.', $label));
     }
   }
@@ -122,7 +122,7 @@ final class AllWidgetsFormTest extends TestCase {
       // Each field: open the editor, accept its default, move to the next.
       $enter, $enter, $down,
       $enter, $enter, $down,
-      // Date accepts the calendar's current day with Enter.
+      // Calendar accepts the current day with Enter.
       $enter, $enter, $down,
       // Textarea accepts with Tab (Enter inserts a newline).
       $enter, $tab, $down,
