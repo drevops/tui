@@ -37,6 +37,7 @@ Full documentation - every widget, configuration, theming, key bindings and the 
 - 🔗 [**Derived values**](https://tui.drevops.com/configuration#derived-values) and 🔀 [**conditional fields**](https://tui.drevops.com/configuration#conditional-fields) that settle to a fixpoint
 - 🔍 [**Discovery**](https://tui.drevops.com/discovery), ⚙️ [**declared behaviour**](https://tui.drevops.com/field-behaviour) and 📦 [**self-describing answers**](https://tui.drevops.com/self-describing-answers)
 - 🎨 [**Themes**](https://tui.drevops.com/themes), ⌨️ [**key bindings**](https://tui.drevops.com/key-bindings) and ✨ [**Unicode and ASCII**](https://tui.drevops.com/display-modes) display modes
+- 🧪 [**Test harness**](https://tui.drevops.com/testing) - drive a form's panel TUI from scripted keystrokes and assert on the answers and rendered output
 
 ## Installation
 

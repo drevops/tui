@@ -1,0 +1,86 @@
+<?php
+
+declare(strict_types=1);
+
+namespace DrevOps\Tui\Testing;
+
+use DrevOps\Tui\Render\Terminal;
+
+/**
+ * A terminal that feeds scripted keystrokes and captures rendered output.
+ *
+ * Stands in for a real TTY: each read() returns the next scripted keystroke's
+ * bytes - one keypress at a time, as a real terminal delivers them - and
+ * everything the panel loop renders is captured for later assertions. The
+ * raw-mode and alternate-screen calls are no-ops because there is no TTY to
+ * switch, and the height is fixed so rendered frames are deterministic.
+ *
+ * @package DrevOps\Tui\Testing
+ */
+final class BufferedTerminal extends Terminal {
+
+  /**
+   * Construct a buffered terminal.
+   *
+   * @param list<string> $keystrokes
+   *   The keystroke byte sequences to deliver, one per read().
+   * @param int $rows
+   *   The reported terminal height, fixed so rendered frames do not depend on
+   *   the machine running the test.
+   */
+  public function __construct(protected array $keystrokes = [], protected int $rows = 24) {
+    $output = fopen('php://memory', 'r+');
+    $input = fopen('php://memory', 'r+');
+
+    if ($output === FALSE || $input === FALSE) {
+      // @codeCoverageIgnoreStart
+      throw new \RuntimeException('Failed to open an in-memory stream.');
+      // @codeCoverageIgnoreEnd
+    }
+
+    parent::__construct($output, $input);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  public function setup(): void {
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  public function restore(): void {
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  public function read(int $bytes = 32): string {
+    return array_shift($this->keystrokes) ?? '';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  public function height(): int {
+    return $this->rows;
+  }
+
+  /**
+   * Everything written to the terminal since construction.
+   *
+   * @return string
+   *   The captured output: all rendered frames and control sequences.
+   */
+  public function output(): string {
+    rewind($this->output);
+
+    return (string) stream_get_contents($this->output);
+  }
+
+}

@@ -53,6 +53,37 @@ final class TerminalTest extends TestCase {
     $this->assertStringContainsString("\033[2J", $contents);
   }
 
+  public function testRead(): void {
+    $output = fopen('php://memory', 'r+');
+    $input = fopen('php://memory', 'r+');
+    $this->assertIsResource($output);
+    $this->assertIsResource($input);
+
+    fwrite($input, 'abc');
+    rewind($input);
+
+    $terminal = new Terminal($output, $input);
+    $this->assertSame('abc', $terminal->read(32));
+    // A read past the end of the stream reports no bytes.
+    $this->assertSame('', $terminal->read(32));
+
+    fclose($output);
+    fclose($input);
+  }
+
+  public function testQueryBackgroundReturnsNullOffTty(): void {
+    $output = fopen('php://memory', 'r+');
+    $input = fopen('php://memory', 'r+');
+    $this->assertIsResource($output);
+    $this->assertIsResource($input);
+
+    // A non-TTY input has no queryable background.
+    $this->assertNull((new Terminal($output, $input))->queryBackground());
+
+    fclose($output);
+    fclose($input);
+  }
+
   #[DataProvider('dataProviderDetectUnicode')]
   public function testDetectUnicode(?string $lc_all, ?string $lc_ctype, ?string $lang, bool $expected): void {
     $restore = [];

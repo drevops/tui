@@ -1,0 +1,149 @@
+<?php
+
+declare(strict_types=1);
+
+namespace DrevOps\Tui\Tests\Unit\Testing;
+
+use DrevOps\Tui\Config\FieldType;
+use DrevOps\Tui\Input\Key;
+use DrevOps\Tui\Input\KeyName;
+use DrevOps\Tui\Testing\TuiTester;
+use DrevOps\Tui\Tests\Fixtures\Form\AllWidgetsForm;
+use DrevOps\Tui\Tests\Fixtures\Theme\OceanTheme;
+use DrevOps\Tui\Theme\ThemeInterface;
+use org\bovigo\vfs\vfsStream;
+use PHPUnit\Framework\Attributes\CoversNothing;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\TestCase;
+
+/**
+ * Drives every widget through the harness and guards widget-type coverage.
+ */
+#[CoversNothing]
+#[Group('testing')]
+final class AllWidgetsFormTest extends TestCase {
+
+  /**
+   * The directory the file-picker fields open at.
+   */
+  protected string $pick;
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp(): void {
+    parent::setUp();
+
+    vfsStream::setup('root', NULL, ['pick' => ['file.txt' => '']]);
+    $this->pick = vfsStream::url('root/pick');
+  }
+
+  public function testEveryWidgetTypeIsExercised(): void {
+    $config = AllWidgetsForm::create()->build();
+
+    $present = [];
+    foreach ($config->fields() as $field) {
+      $present[$field->type->value] = TRUE;
+    }
+    $actual = array_keys($present);
+    sort($actual);
+
+    $expected = array_map(static fn(FieldType $type): string => $type->value, FieldType::cases());
+    sort($expected);
+
+    $this->assertSame($expected, $actual, 'AllWidgetsForm must exercise every FieldType so new widgets are not left untested.');
+  }
+
+  public function testDrivesEveryWidget(): void {
+    $tester = new TuiTester(AllWidgetsForm::create($this->pick));
+
+    $answers = $tester->run(...$this->keystrokes());
+
+    $this->assertSame('txt', $answers->value('text'));
+    $this->assertSame(7, $answers->value('number'));
+    $this->assertSame('2026-07-15', $answers->value('date'));
+    $this->assertSame('note', $answers->value('textarea'));
+    $this->assertSame('pw', $answers->value('password'));
+    $this->assertSame('b', $answers->value('select'));
+    $this->assertSame(['a'], $answers->value('multiselect'));
+    $this->assertSame('utc', $answers->value('suggest'));
+    $this->assertSame('b', $answers->value('search'));
+    $this->assertSame(['b'], $answers->value('multisearch'));
+    $this->assertSame(['a', 'b', 'c'], $answers->value('reorder'));
+    $this->assertTrue($answers->value('confirm'));
+    $this->assertSame('off', $answers->value('toggle'));
+    $this->assertSame($this->pick . '/file.txt', $answers->value('filepicker'));
+    $this->assertSame([$this->pick . '/file.txt'], $answers->value('multifilepicker'));
+    $this->assertTrue($answers->value('pause'));
+    $this->assertFalse($tester->isCancelled());
+  }
+
+  #[DataProvider('dataProviderRendersEveryWidgetAcrossThemes')]
+  public function testRendersEveryWidgetAcrossThemes(string $theme, array $options): void {
+    $tester = (new TuiTester(AllWidgetsForm::create($this->pick)))->theme($theme)->options($options);
+
+    $answers = $tester->run(...$this->keystrokes());
+
+    // Answers are collected identically regardless of the theme.
+    $this->assertSame('txt', $answers->value('text'));
+    $this->assertSame('off', $answers->value('toggle'));
+
+    // Every widget's label was rendered somewhere in the session.
+    $display = $tester->display();
+    foreach (['Text', 'Number', 'Date', 'Textarea', 'Password', 'Select', 'MultiSelect', 'Suggest', 'Search', 'MultiSearch', 'Reorder', 'Confirm', 'Toggle', 'FilePicker', 'MultiFilePicker', 'Pause'] as $label) {
+      $this->assertStringContainsString($label, $display, sprintf('The "%s" label was not rendered.', $label));
+    }
+  }
+
+  public static function dataProviderRendersEveryWidgetAcrossThemes(): \Iterator {
+    yield 'default dark' => ['', ['mode' => ThemeInterface::MODE_DARK, 'color' => TRUE, 'unicode' => TRUE]];
+    yield 'default light' => ['', ['mode' => ThemeInterface::MODE_LIGHT, 'color' => TRUE, 'unicode' => TRUE]];
+    yield 'ascii no color' => ['', ['mode' => ThemeInterface::MODE_DARK, 'color' => FALSE, 'unicode' => FALSE]];
+    yield 'custom theme class' => [OceanTheme::class, ['mode' => ThemeInterface::MODE_DARK, 'color' => TRUE, 'unicode' => TRUE]];
+  }
+
+  /**
+   * The scripted keystrokes that open and accept every field, then submit.
+   *
+   * @return list<string|\DrevOps\Tui\Input\Key>
+   *   The keystrokes.
+   */
+  protected function keystrokes(): array {
+    $enter = Key::named(KeyName::Enter);
+    $down = Key::named(KeyName::Down);
+    $tab = Key::named(KeyName::Tab);
+    $space = Key::named(KeyName::Space);
+    $escape = Key::named(KeyName::Escape);
+
+    return [
+      // Drill into the Widgets panel; the cursor lands on the first field.
+      $enter,
+      // Each field: open the editor, accept its default, move to the next.
+      $enter, $enter, $down,
+      $enter, $enter, $down,
+      // Date accepts the calendar's current day with Enter.
+      $enter, $enter, $down,
+      // Textarea accepts with Tab (Enter inserts a newline).
+      $enter, $tab, $down,
+      $enter, $enter, $down,
+      $enter, $enter, $down,
+      $enter, $enter, $down,
+      $enter, $enter, $down,
+      $enter, $enter, $down,
+      $enter, $enter, $down,
+      // Reorder: open, accept the default (declared) ranking.
+      $enter, $enter, $down,
+      $enter, $enter, $down,
+      $enter, $enter, $down,
+      $enter, $enter, $down,
+      // Multi file picker: open, toggle the highlighted entry, accept.
+      $enter, $space, $enter, $down,
+      // Pause: open and acknowledge.
+      $enter, $enter,
+      // Back to the root, then activate Submit.
+      $escape, $down, $enter,
+    ];
+  }
+
+}

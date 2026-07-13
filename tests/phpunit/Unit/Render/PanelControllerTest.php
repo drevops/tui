@@ -4,15 +4,18 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Tests\Unit\Render;
 
+use DrevOps\Tui\Answers\Answers;
 use DrevOps\Tui\Answers\Provenance;
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Builder\PanelBuilder;
 use DrevOps\Tui\Input\Key;
+use DrevOps\Tui\Input\KeyEncoder;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Render\ExternalEditor;
 use DrevOps\Tui\Render\PanelController;
 use DrevOps\Tui\Render\Terminal;
+use DrevOps\Tui\Testing\BufferedTerminal;
 use DrevOps\Tui\Theme\DefaultTheme;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
@@ -314,6 +317,52 @@ final class PanelControllerTest extends TestCase {
     $controller->handle(Key::named(KeyName::Enter));
     $this->assertTrue($controller->isEditing());
     $this->assertStringNotContainsString('accept', Ansi::strip($controller->frame(12)));
+  }
+
+  public function testRunSubmitsThroughTheInputPipe(): void {
+    $controller = $this->controller();
+    $terminal = new BufferedTerminal([
+      KeyEncoder::encode(Key::named(KeyName::Down)),
+      KeyEncoder::encode(Key::named(KeyName::Down)),
+      KeyEncoder::encode(Key::named(KeyName::Enter)),
+    ]);
+
+    $answers = $controller->run($terminal);
+
+    $this->assertInstanceOf(Answers::class, $answers);
+    $this->assertTrue($controller->isDone());
+    $this->assertFalse($controller->isCancelled());
+    // The loop rendered the hub before submitting.
+    $this->assertStringContainsString('Demo', Ansi::strip($terminal->output()));
+  }
+
+  public function testRunStopsWhenInputIsExhausted(): void {
+    $controller = $this->controller();
+    // A single navigation key that does not finish the form; input then ends.
+    $terminal = new BufferedTerminal([KeyEncoder::encode(Key::named(KeyName::Down))]);
+
+    $controller->run($terminal);
+
+    // The EOF break ends the loop without the form being submitted.
+    $this->assertFalse($controller->isDone());
+    $this->assertSame(1, $controller->cursor());
+  }
+
+  public function testRunRendersBannerThenTheForm(): void {
+    $config = Form::create('Demo')
+      ->panel('general', 'General', function (PanelBuilder $p): void {
+        $p->text('name', 'Name');
+      })
+      ->build();
+    $controller = new PanelController($config, new DefaultTheme(40, ['color' => FALSE]), ['name' => 'Acme'], [], 'WELCOME', '2.0');
+    // The first key dismisses the banner; input then ends.
+    $terminal = new BufferedTerminal([KeyEncoder::encode(Key::named(KeyName::Enter))]);
+
+    $controller->run($terminal);
+
+    $this->assertStringContainsString('Press any key to continue', Ansi::strip($terminal->output()));
+    // After the banner is dismissed, the loop renders the form body itself.
+    $this->assertStringContainsString('General', Ansi::strip($terminal->output()));
   }
 
   public function testTextareaExternalEditCommitsCapturedValue(): void {
