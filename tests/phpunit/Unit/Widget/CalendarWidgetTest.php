@@ -7,15 +7,16 @@ namespace DrevOps\Tui\Tests\Unit\Widget;
 use DrevOps\Tui\Config\DateBounds;
 use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\Weekday;
-use DrevOps\Tui\Testing\ArrayKeyStream;
 use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyMapManager;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Render\Ansi;
-use DrevOps\Tui\Theme\DefaultTheme;
-use DrevOps\Tui\Widget\CalendarWidget;
+use DrevOps\Tui\Testing\ArrayKeyStream;
 use DrevOps\Tui\Testing\WidgetRunner;
+use DrevOps\Tui\Theme\DefaultTheme;
+use DrevOps\Tui\Widget\AbstractWidget;
+use DrevOps\Tui\Widget\CalendarWidget;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
@@ -25,6 +26,7 @@ use PHPUnit\Framework\TestCase;
  * Tests the calendar widget.
  */
 #[CoversClass(CalendarWidget::class)]
+#[CoversClass(AbstractWidget::class)]
 #[Group('widget')]
 final class CalendarWidgetTest extends TestCase {
 

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Tests\Unit\Testing;
 
 use DrevOps\Tui\Input\Key;
-use DrevOps\Tui\Testing\KeyEncoder;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Input\KeyParser;
+use DrevOps\Tui\Testing\KeyEncoder;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;

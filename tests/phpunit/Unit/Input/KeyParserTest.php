@@ -35,23 +35,6 @@ final class KeyParserTest extends TestCase {
   }
 
   /**
-   * Describe a key for assertion.
-   *
-   * @param \DrevOps\Tui\Input\Key $key
-   *   The key.
-   *
-   * @return string
-   *   The description.
-   */
-  protected function describe(Key $key): string {
-    if ($key->isChar()) {
-      return 'char:' . ($key->char ?? '');
-    }
-
-    return $key->name instanceof KeyName ? $key->name->name : '?';
-  }
-
-  /**
    * Data provider for testParse().
    *
    * @return \Iterator<string,array{string,list<string>}>
@@ -102,6 +85,23 @@ final class KeyParserTest extends TestCase {
     yield 'multibyte between ascii' => ['aéb', ['char:a', 'char:é', 'char:b']];
     yield 'four byte emoji' => ['😀', ['char:😀']];
     yield 'stray continuation byte stays a byte' => ["\x80", ["char:\x80"]];
+  }
+
+  /**
+   * Describe a key for assertion.
+   *
+   * @param \DrevOps\Tui\Input\Key $key
+   *   The key.
+   *
+   * @return string
+   *   The description.
+   */
+  protected function describe(Key $key): string {
+    if ($key->isChar()) {
+      return 'char:' . ($key->char ?? '');
+    }
+
+    return $key->name instanceof KeyName ? $key->name->name : '?';
   }
 
 }

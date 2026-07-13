@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Tests\Unit\Widget;
 
-use DrevOps\Tui\Testing\ArrayKeyStream;
 use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
+use DrevOps\Tui\Testing\ArrayKeyStream;
+use DrevOps\Tui\Testing\WidgetRunner;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\PasswordWidget;
-use DrevOps\Tui\Testing\WidgetRunner;
+use DrevOps\Tui\Widget\TextWidget;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -19,6 +20,7 @@ use PHPUnit\Framework\TestCase;
  * Tests the password widget.
  */
 #[CoversClass(PasswordWidget::class)]
+#[CoversClass(TextWidget::class)]
 #[Group('widget')]
 final class PasswordWidgetTest extends TestCase {
 

@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Tests\Unit\Widget;
 
-use DrevOps\Tui\Testing\ArrayKeyStream;
 use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Render\Ansi;
+use DrevOps\Tui\Testing\ArrayKeyStream;
+use DrevOps\Tui\Testing\WidgetRunner;
+use DrevOps\Tui\Tests\Traits\AssertsPagingTrait;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\AbstractWidget;
 use DrevOps\Tui\Widget\SuggestWidget;
-use DrevOps\Tui\Testing\WidgetRunner;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -24,6 +25,8 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(AbstractWidget::class)]
 #[Group('widget')]
 final class SuggestWidgetTest extends TestCase {
+
+  use AssertsPagingTrait;
 
   public function testTypeAcceptsBuffer(): void {
     $widget = new SuggestWidget(['UTC', 'Europe/London', 'Australia/Sydney']);
@@ -122,37 +125,12 @@ final class SuggestWidgetTest extends TestCase {
   }
 
   public function testRejectsNonPositivePageSize(): void {
-    $this->expectException(\InvalidArgumentException::class);
-    $this->expectExceptionMessage('Page size must be a positive integer, 0 given.');
-
-    new SuggestWidget(['x'], pageSize: 0);
+    $this->assertRejectsNonPositivePageSize(static fn(int $size): SuggestWidget => new SuggestWidget(['x'], pageSize: $size), 0);
   }
 
   public function testPagesLongSuggestionList(): void {
-    $widget = new SuggestWidget(['one', 'two', 'three', 'four', 'five'], pageSize: 2);
-
-    $view = Ansi::strip($widget->view(new DefaultTheme()));
-
-    $this->assertStringContainsString('one', $view);
-    $this->assertStringContainsString('two', $view);
-    $this->assertStringNotContainsString('three', $view);
-    $this->assertStringContainsString('▼', $view);
-  }
-
-  public function testPagingFollowsHighlightDownTheList(): void {
-    $widget = new SuggestWidget(['one', 'two', 'three', 'four', 'five'], pageSize: 2);
-
-    $widget->handle(Key::named(KeyName::Down));
-    $widget->handle(Key::named(KeyName::Down));
-    $widget->handle(Key::named(KeyName::Down));
-    $view = Ansi::strip($widget->view(new DefaultTheme()));
-
-    // The window has scrolled to keep the third item ("three") in view and
-    // shows both scroll indicators.
-    $this->assertStringContainsString('three', $view);
-    $this->assertStringContainsString('▲', $view);
-    $this->assertStringContainsString('▼', $view);
-    $this->assertStringNotContainsString('one', $view);
+    // The highlight starts detached (-1), so three Downs reach the third item.
+    $this->assertPagesAndFollowsCursor(static fn(int $size): SuggestWidget => new SuggestWidget(array_values(self::pagingOptions()), pageSize: $size), 3);
   }
 
   public function testHints(): void {

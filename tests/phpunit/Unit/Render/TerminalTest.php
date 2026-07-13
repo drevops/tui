@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Tests\Unit\Render;
 
 use DrevOps\Tui\Render\Terminal;
+use DrevOps\Tui\Tests\Traits\IsolatesEnvTrait;
 use DrevOps\Tui\Theme\Mode;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -17,6 +18,13 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Terminal::class)]
 #[Group('tui')]
 final class TerminalTest extends TestCase {
+
+  use IsolatesEnvTrait;
+
+  protected function tearDown(): void {
+    $this->restoreEnv();
+    parent::tearDown();
+  }
 
   public function testWriteAndRender(): void {
     $stream = fopen('php://memory', 'rw');
@@ -86,20 +94,11 @@ final class TerminalTest extends TestCase {
 
   #[DataProvider('dataProviderDetectUnicode')]
   public function testDetectUnicode(?string $lc_all, ?string $lc_ctype, ?string $lang, bool $expected): void {
-    $restore = [];
-    foreach (['LC_ALL' => $lc_all, 'LC_CTYPE' => $lc_ctype, 'LANG' => $lang] as $var => $value) {
-      $restore[$var] = getenv($var);
-      is_string($value) ? putenv($var . '=' . $value) : putenv($var);
-    }
+    $this->putEnv('LC_ALL', $lc_all);
+    $this->putEnv('LC_CTYPE', $lc_ctype);
+    $this->putEnv('LANG', $lang);
 
-    try {
-      $this->assertSame($expected, Terminal::detectUnicode());
-    }
-    finally {
-      foreach ($restore as $var => $value) {
-        is_string($value) ? putenv($var . '=' . $value) : putenv($var);
-      }
-    }
+    $this->assertSame($expected, Terminal::detectUnicode());
   }
 
   public static function dataProviderDetectUnicode(): \Iterator {
@@ -112,18 +111,10 @@ final class TerminalTest extends TestCase {
 
   #[DataProvider('dataProviderDetectColor')]
   public function testDetectColor(?string $no_color, ?string $term, bool $expected): void {
-    $restore = ['NO_COLOR' => getenv('NO_COLOR'), 'TERM' => getenv('TERM')];
-    is_string($no_color) ? putenv('NO_COLOR=' . $no_color) : putenv('NO_COLOR');
-    is_string($term) ? putenv('TERM=' . $term) : putenv('TERM');
+    $this->putEnv('NO_COLOR', $no_color);
+    $this->putEnv('TERM', $term);
 
-    try {
-      $this->assertSame($expected, Terminal::detectColor());
-    }
-    finally {
-      foreach ($restore as $var => $value) {
-        is_string($value) ? putenv($var . '=' . $value) : putenv($var);
-      }
-    }
+    $this->assertSame($expected, Terminal::detectColor());
   }
 
   public static function dataProviderDetectColor(): \Iterator {
@@ -135,15 +126,9 @@ final class TerminalTest extends TestCase {
 
   #[DataProvider('dataProviderDetectMode')]
   public function testDetectMode(?string $osc_response, ?string $colorfgbg, Mode $expected): void {
-    $restore = getenv('COLORFGBG');
-    is_string($colorfgbg) ? putenv('COLORFGBG=' . $colorfgbg) : putenv('COLORFGBG');
+    $this->putEnv('COLORFGBG', $colorfgbg);
 
-    try {
-      $this->assertSame($expected, Terminal::detectMode($osc_response));
-    }
-    finally {
-      is_string($restore) ? putenv('COLORFGBG=' . $restore) : putenv('COLORFGBG');
-    }
+    $this->assertSame($expected, Terminal::detectMode($osc_response));
   }
 
   public static function dataProviderDetectMode(): \Iterator {

@@ -11,6 +11,7 @@ use DrevOps\Tui\Condition\Condition;
 use DrevOps\Tui\Config\Config;
 use DrevOps\Tui\Schema\SchemaValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
@@ -21,139 +22,74 @@ use PHPUnit\Framework\TestCase;
 #[Group('schema')]
 final class SchemaValidatorTest extends TestCase {
 
-  public function testValidPasses(): void {
-    $errors = (new SchemaValidator($this->config()))->validate([
-      'name' => 'Acme',
-      'profile' => 'standard',
-      'agree' => TRUE,
-      'mods' => ['a', 'b'],
-    ]);
+  /**
+   * An answer set yields no errors, or contains the one expected error.
+   *
+   * @param array<string,mixed> $answers
+   *   The answers to validate.
+   * @param string|null $expected_error
+   *   The expected error message, or NULL when the set must be valid.
+   */
+  #[DataProvider('dataProviderValidate')]
+  public function testValidate(array $answers, ?string $expected_error): void {
+    $errors = (new SchemaValidator($this->config()))->validate($answers);
 
-    $this->assertSame([], $errors);
+    if ($expected_error === NULL) {
+      $this->assertSame([], $errors);
+
+      return;
+    }
+
+    $this->assertContains($expected_error, $errors);
   }
 
-  public function testMissingRequired(): void {
-    $errors = (new SchemaValidator($this->config()))->validate(['profile' => 'standard']);
-
-    $this->assertContains('Missing required question "name".', $errors);
-  }
-
-  public function testRequiredEmptyString(): void {
-    $errors = (new SchemaValidator($this->config()))->validate(['name' => '']);
-
-    $this->assertContains('Question "name" is required.', $errors);
-  }
-
-  public function testWrongType(): void {
-    $errors = (new SchemaValidator($this->config()))->validate(['name' => 'Acme', 'agree' => 'yes']);
-
-    $this->assertContains('Question "agree" must be a boolean.', $errors);
-  }
-
-  public function testInvalidSelectOption(): void {
-    $errors = (new SchemaValidator($this->config()))->validate(['name' => 'Acme', 'profile' => 'bogus']);
-
-    $this->assertContains('Question "profile": value "bogus" is not one of: standard, minimal.', $errors);
-  }
-
-  public function testDisabledSelectOptionRejected(): void {
-    $errors = (new SchemaValidator($this->config()))->validate(['name' => 'Acme', 'profile' => 'demo']);
-
-    $this->assertContains('Question "profile": option "demo" is disabled: unavailable.', $errors);
-  }
-
-  public function testInvalidMultiselectOption(): void {
-    $errors = (new SchemaValidator($this->config()))->validate(['name' => 'Acme', 'mods' => ['a', 'z']]);
-
-    $this->assertContains('Question "mods": value "z" is not one of: a, b.', $errors);
-  }
-
-  public function testDisabledMultiselectOptionRejected(): void {
-    $errors = (new SchemaValidator($this->config()))->validate(['name' => 'Acme', 'mods' => ['a', 'c']]);
-
-    $this->assertContains('Question "mods": option "c" is disabled.', $errors);
-  }
-
-  public function testMultiselectWrongType(): void {
-    $errors = (new SchemaValidator($this->config()))->validate(['name' => 'Acme', 'mods' => 'notalist']);
-
-    $this->assertContains('Question "mods" must be a list.', $errors);
-  }
-
-  public function testUnknownQuestion(): void {
-    $errors = (new SchemaValidator($this->config()))->validate(['name' => 'Acme', 'bogus' => 'x']);
-
-    $this->assertContains('Unknown question "bogus".', $errors);
-  }
-
-  public function testInactiveRequiredFieldSkipped(): void {
+  /**
+   * Data provider for testValidate().
+   *
+   * @return \Iterator<string,array{array<string,mixed>,string|null}>
+   *   Answer sets and the expected error (NULL for a valid set).
+   */
+  public static function dataProviderValidate(): \Iterator {
+    yield 'valid full set' => [['name' => 'Acme', 'profile' => 'standard', 'agree' => TRUE, 'mods' => ['a', 'b']], NULL];
+    yield 'missing required' => [['profile' => 'standard'], 'Missing required question "name".'];
+    yield 'required empty string' => [['name' => ''], 'Question "name" is required.'];
+    yield 'wrong type' => [['name' => 'Acme', 'agree' => 'yes'], 'Question "agree" must be a boolean.'];
+    yield 'invalid select option' => [['name' => 'Acme', 'profile' => 'bogus'], 'Question "profile": value "bogus" is not one of: standard, minimal.'];
+    yield 'disabled select option' => [['name' => 'Acme', 'profile' => 'demo'], 'Question "profile": option "demo" is disabled: unavailable.'];
+    yield 'invalid multiselect option' => [['name' => 'Acme', 'mods' => ['a', 'z']], 'Question "mods": value "z" is not one of: a, b.'];
+    yield 'disabled multiselect option' => [['name' => 'Acme', 'mods' => ['a', 'c']], 'Question "mods": option "c" is disabled.'];
+    yield 'multiselect wrong type' => [['name' => 'Acme', 'mods' => 'notalist'], 'Question "mods" must be a list.'];
+    yield 'unknown question' => [['name' => 'Acme', 'bogus' => 'x'], 'Unknown question "bogus".'];
     // 'custom' is required but only appears when profile == custom.
-    $errors = (new SchemaValidator($this->config()))->validate(['name' => 'Acme', 'profile' => 'standard']);
-
-    $this->assertSame([], $errors);
-  }
-
-  public function testNumberAcceptsIntRejectsString(): void {
-    $validator = new SchemaValidator($this->config());
-
-    $this->assertSame([], $validator->validate(['name' => 'Acme', 'port' => 8080]));
-    $this->assertContains('Question "port" must be a number.', $validator->validate(['name' => 'Acme', 'port' => '8080']));
-  }
-
-  public function testNumberBoundsRejectOutOfRange(): void {
-    $validator = new SchemaValidator($this->config());
-
-    $this->assertSame([], $validator->validate(['name' => 'Acme', 'port' => 8080]));
-    $this->assertContains('Question "port" must be between 1 and 65535.', $validator->validate(['name' => 'Acme', 'port' => 99999]));
-  }
-
-  public function testDateAcceptsValidRejectsMalformed(): void {
-    $validator = new SchemaValidator($this->config());
-    $error = 'Question "due" must be a date (YYYY-MM-DD).';
-
-    $this->assertSame([], $validator->validate(['name' => 'Acme', 'due' => '2026-07-15']));
+    yield 'inactive required field skipped' => [['name' => 'Acme', 'profile' => 'standard'], NULL];
+    yield 'number int accepted' => [['name' => 'Acme', 'port' => 8080], NULL];
+    yield 'number string rejected' => [['name' => 'Acme', 'port' => '8080'], 'Question "port" must be a number.'];
+    yield 'number out of range' => [['name' => 'Acme', 'port' => 99999], 'Question "port" must be between 1 and 65535.'];
+    yield 'date valid' => [['name' => 'Acme', 'due' => '2026-07-15'], NULL];
     // A wrongly-padded value and an impossible calendar date are both rejected.
-    $this->assertContains($error, $validator->validate(['name' => 'Acme', 'due' => '2026-7-5']));
-    $this->assertContains($error, $validator->validate(['name' => 'Acme', 'due' => '2026-02-30']));
-  }
-
-  public function testDateBoundsRejectOutOfRange(): void {
-    $validator = new SchemaValidator($this->config());
-    $error = 'Question "due" must be between 2026-01-01 and 2026-12-31.';
-
+    yield 'date unpadded rejected' => [['name' => 'Acme', 'due' => '2026-7-5'], 'Question "due" must be a date (YYYY-MM-DD).'];
+    yield 'date impossible rejected' => [['name' => 'Acme', 'due' => '2026-02-30'], 'Question "due" must be a date (YYYY-MM-DD).'];
     // The inclusive endpoints are accepted; a date on either side is rejected.
-    $this->assertSame([], $validator->validate(['name' => 'Acme', 'due' => '2026-01-01']));
-    $this->assertSame([], $validator->validate(['name' => 'Acme', 'due' => '2026-12-31']));
-    $this->assertContains($error, $validator->validate(['name' => 'Acme', 'due' => '2025-12-31']));
-    $this->assertContains($error, $validator->validate(['name' => 'Acme', 'due' => '2027-01-01']));
-  }
-
-  public function testPauseAcceptsBoolRejectsString(): void {
-    $validator = new SchemaValidator($this->config());
-
-    $this->assertSame([], $validator->validate(['name' => 'Acme', 'ack' => TRUE]));
-    $this->assertContains('Question "ack" must be a boolean.', $validator->validate(['name' => 'Acme', 'ack' => 'yes']));
-  }
-
-  public function testSearchOptionMembership(): void {
-    $validator = new SchemaValidator($this->config());
-
-    $this->assertSame([], $validator->validate(['name' => 'Acme', 'engine' => 'solr']));
-    $this->assertContains('Question "engine": value "bogus" is not one of: solr, none.', $validator->validate(['name' => 'Acme', 'engine' => 'bogus']));
-  }
-
-  public function testMultisearchOptionMembership(): void {
-    $validator = new SchemaValidator($this->config());
-
-    $this->assertSame([], $validator->validate(['name' => 'Acme', 'tags' => ['a']]));
-    $this->assertContains('Question "tags": value "z" is not one of: a, b.', $validator->validate(['name' => 'Acme', 'tags' => ['z']]));
-  }
-
-  public function testToggleOptionMembership(): void {
-    $validator = new SchemaValidator($this->config());
-
-    $this->assertSame([], $validator->validate(['name' => 'Acme', 'visibility' => 'private']));
-    $this->assertContains('Question "visibility": value "bogus" is not one of: public, private.', $validator->validate(['name' => 'Acme', 'visibility' => 'bogus']));
+    yield 'date at lower endpoint' => [['name' => 'Acme', 'due' => '2026-01-01'], NULL];
+    yield 'date at upper endpoint' => [['name' => 'Acme', 'due' => '2026-12-31'], NULL];
+    yield 'date before range' => [['name' => 'Acme', 'due' => '2025-12-31'], 'Question "due" must be between 2026-01-01 and 2026-12-31.'];
+    yield 'date after range' => [['name' => 'Acme', 'due' => '2027-01-01'], 'Question "due" must be between 2026-01-01 and 2026-12-31.'];
+    yield 'pause bool accepted' => [['name' => 'Acme', 'ack' => TRUE], NULL];
+    yield 'pause string rejected' => [['name' => 'Acme', 'ack' => 'yes'], 'Question "ack" must be a boolean.'];
+    yield 'search member accepted' => [['name' => 'Acme', 'engine' => 'solr'], NULL];
+    yield 'search unknown rejected' => [['name' => 'Acme', 'engine' => 'bogus'], 'Question "engine": value "bogus" is not one of: solr, none.'];
+    yield 'multisearch member accepted' => [['name' => 'Acme', 'tags' => ['a']], NULL];
+    yield 'multisearch unknown rejected' => [['name' => 'Acme', 'tags' => ['z']], 'Question "tags": value "z" is not one of: a, b.'];
+    yield 'toggle member accepted' => [['name' => 'Acme', 'visibility' => 'private'], NULL];
+    yield 'toggle unknown rejected' => [['name' => 'Acme', 'visibility' => 'bogus'], 'Question "visibility": value "bogus" is not one of: public, private.'];
+    yield 'file picker string accepted' => [['name' => 'Acme', 'cfg' => '/etc/app.yml'], NULL];
+    yield 'file picker list rejected' => [['name' => 'Acme', 'cfg' => ['x']], 'Question "cfg" must be a string.'];
+    yield 'multi file picker list accepted' => [['name' => 'Acme', 'paths' => ['/a', '/b']], NULL];
+    yield 'multi file picker string rejected' => [['name' => 'Acme', 'paths' => 'notalist'], 'Question "paths" must be a list.'];
+    yield 'reorder full permutation accepted' => [['name' => 'Acme', 'ranking' => ['z', 'x', 'y']], NULL];
+    yield 'reorder wrong type' => [['name' => 'Acme', 'ranking' => 'notalist'], 'Question "ranking" must be a list.'];
+    yield 'reorder incomplete rejected' => [['name' => 'Acme', 'ranking' => ['x', 'y']], 'Question "ranking": must rank every option exactly once (x, y, z).'];
+    yield 'reorder unknown item rejected' => [['name' => 'Acme', 'ranking' => ['x', 'y', 'w']], 'Question "ranking": value "w" is not one of: x, y, z.'];
   }
 
   public function testNumericStringOptionMembership(): void {
@@ -165,44 +101,6 @@ final class SchemaValidatorTest extends TestCase {
     // A numeric-string value stays valid: values are compared as strings.
     $this->assertSame([], $validator->validate(['flag' => '1']));
     $this->assertContains('Question "flag": value "2" is not one of: 0, 1.', $validator->validate(['flag' => '2']));
-  }
-
-  public function testFilePickerAcceptsString(): void {
-    $validator = new SchemaValidator($this->config());
-
-    $this->assertSame([], $validator->validate(['name' => 'Acme', 'cfg' => '/etc/app.yml']));
-    $this->assertContains('Question "cfg" must be a string.', $validator->validate(['name' => 'Acme', 'cfg' => ['x']]));
-  }
-
-  public function testMultiFilePickerAcceptsList(): void {
-    $validator = new SchemaValidator($this->config());
-
-    $this->assertSame([], $validator->validate(['name' => 'Acme', 'paths' => ['/a', '/b']]));
-    $this->assertContains('Question "paths" must be a list.', $validator->validate(['name' => 'Acme', 'paths' => 'notalist']));
-  }
-
-  public function testReorderAcceptsFullPermutation(): void {
-    $validator = new SchemaValidator($this->config());
-
-    $this->assertSame([], $validator->validate(['name' => 'Acme', 'ranking' => ['z', 'x', 'y']]));
-  }
-
-  public function testReorderWrongType(): void {
-    $errors = (new SchemaValidator($this->config()))->validate(['name' => 'Acme', 'ranking' => 'notalist']);
-
-    $this->assertContains('Question "ranking" must be a list.', $errors);
-  }
-
-  public function testReorderIncompleteRankingRejected(): void {
-    $errors = (new SchemaValidator($this->config()))->validate(['name' => 'Acme', 'ranking' => ['x', 'y']]);
-
-    $this->assertContains('Question "ranking": must rank every option exactly once (x, y, z).', $errors);
-  }
-
-  public function testReorderUnknownItemRejected(): void {
-    $errors = (new SchemaValidator($this->config()))->validate(['name' => 'Acme', 'ranking' => ['x', 'y', 'w']]);
-
-    $this->assertContains('Question "ranking": value "w" is not one of: x, y, z.', $errors);
   }
 
   /**

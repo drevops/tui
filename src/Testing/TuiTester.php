@@ -8,8 +8,8 @@ use DrevOps\Tui\Answers\Answers;
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Config\Config;
 use DrevOps\Tui\Input\Key;
-use DrevOps\Tui\Testing\KeyEncoder;
 use DrevOps\Tui\Render\Ansi;
+use DrevOps\Tui\Testing\KeyEncoder;
 use DrevOps\Tui\Theme\Mode;
 use DrevOps\Tui\Tui;
 

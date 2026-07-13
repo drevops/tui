@@ -6,13 +6,14 @@ namespace DrevOps\Tui\Tests\Unit\Widget;
 
 use DrevOps\Tui\Config\NumberBounds;
 use DrevOps\Tui\Input\Action;
-use DrevOps\Tui\Testing\ArrayKeyStream;
 use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
+use DrevOps\Tui\Testing\ArrayKeyStream;
+use DrevOps\Tui\Testing\WidgetRunner;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\NumberWidget;
-use DrevOps\Tui\Testing\WidgetRunner;
+use DrevOps\Tui\Widget\TextWidget;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -21,6 +22,7 @@ use PHPUnit\Framework\TestCase;
  * Tests the number widget.
  */
 #[CoversClass(NumberWidget::class)]
+#[CoversClass(TextWidget::class)]
 #[Group('widget')]
 final class NumberWidgetTest extends TestCase {
 

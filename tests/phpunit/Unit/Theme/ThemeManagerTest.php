@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Tests\Unit\Theme;
 
 use DrevOps\Tui\Render\Ansi;
+use DrevOps\Tui\Tests\Traits\ResetsRegistriesTrait;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Theme\Mode;
 use DrevOps\Tui\Theme\ThemeManager;
@@ -19,6 +20,13 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(ThemeManager::class)]
 #[Group('tui')]
 final class ThemeManagerTest extends TestCase {
+
+  use ResetsRegistriesTrait;
+
+  protected function tearDown(): void {
+    $this->restoreRegistries();
+    parent::tearDown();
+  }
 
   #[DataProvider('dataProviderCreate')]
   public function testCreate(string $name, array $options, \Closure $styled, string $code): void {
@@ -50,6 +58,7 @@ final class ThemeManagerTest extends TestCase {
   }
 
   public function testRegister(): void {
+    $this->snapshotRegistry(ThemeManager::class);
     ThemeManager::register('registered', DefaultTheme::class);
 
     $this->assertInstanceOf(DefaultTheme::class, ThemeManager::create('registered'));

@@ -6,15 +6,15 @@ namespace DrevOps\Tui\Tests\Unit\Widget;
 
 use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\FilePickerMode;
-use DrevOps\Tui\Testing\ArrayKeyStream;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyMapManager;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Render\Ansi;
+use DrevOps\Tui\Testing\ArrayKeyStream;
+use DrevOps\Tui\Testing\WidgetRunner;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\AbstractWidget;
 use DrevOps\Tui\Widget\FilePickerWidget;
-use DrevOps\Tui\Testing\WidgetRunner;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
@@ -419,11 +419,24 @@ final class FilePickerWidgetTest extends TestCase {
   }
 
   public function testDefaultsToWorkingDirectoryWhenStartEmpty(): void {
-    $widget = new FilePickerWidget('');
+    $scratch = dirname(__DIR__, 4) . '/.artifacts/tmp/filepicker-cwd';
+    if (!is_dir($scratch)) {
+      mkdir($scratch, 0777, TRUE);
+    }
 
-    // With no start the browser roots at the current working directory, so the
-    // breadcrumb is its basename.
-    $this->assertStringContainsString(basename((string) getcwd()), $this->render($widget));
+    $previous = (string) getcwd();
+    chdir($scratch);
+
+    try {
+      $widget = new FilePickerWidget('');
+
+      // With no start the browser roots at the current working directory, so
+      // the breadcrumb is its basename.
+      $this->assertStringContainsString('filepicker-cwd', $this->render($widget));
+    }
+    finally {
+      chdir($previous);
+    }
   }
 
   /**

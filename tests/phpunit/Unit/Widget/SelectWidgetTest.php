@@ -7,18 +7,19 @@ namespace DrevOps\Tui\Tests\Unit\Widget;
 use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\Option;
 use DrevOps\Tui\Config\OptionKind;
-use DrevOps\Tui\Testing\ArrayKeyStream;
 use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyMapManager;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Render\Ansi;
+use DrevOps\Tui\Testing\ArrayKeyStream;
+use DrevOps\Tui\Testing\WidgetRunner;
+use DrevOps\Tui\Tests\Traits\AssertsPagingTrait;
 use DrevOps\Tui\Tests\Traits\MixedOptionsTrait;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\AbstractWidget;
 use DrevOps\Tui\Widget\ChoiceListTrait;
 use DrevOps\Tui\Widget\SelectWidget;
-use DrevOps\Tui\Testing\WidgetRunner;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -32,6 +33,7 @@ use PHPUnit\Framework\TestCase;
 #[Group('widget')]
 final class SelectWidgetTest extends TestCase {
 
+  use AssertsPagingTrait;
   use MixedOptionsTrait;
 
   public function testNavigatesAndSelects(): void {
@@ -139,29 +141,11 @@ final class SelectWidgetTest extends TestCase {
   }
 
   public function testRejectsNonPositivePageSize(): void {
-    $this->expectException(\InvalidArgumentException::class);
-    $this->expectExceptionMessage('Page size must be a positive integer, 0 given.');
-
-    new SelectWidget(['a' => 'A'], pageSize: 0);
+    $this->assertRejectsNonPositivePageSize(static fn(int $size): SelectWidget => new SelectWidget(['a' => 'A'], pageSize: $size), 0);
   }
 
   public function testPagesLongOptionList(): void {
-    $widget = new SelectWidget(['a' => 'Apple', 'b' => 'Banana', 'c' => 'Cherry', 'd' => 'Date'], pageSize: 2);
-
-    $view = Ansi::strip($widget->view(new DefaultTheme()));
-
-    $this->assertStringContainsString('Apple', $view);
-    $this->assertStringContainsString('Banana', $view);
-    $this->assertStringNotContainsString('Cherry', $view);
-    $this->assertStringContainsString('▼', $view);
-
-    $widget->handle(Key::named(KeyName::Down));
-    $widget->handle(Key::named(KeyName::Down));
-    $scrolled = Ansi::strip($widget->view(new DefaultTheme()));
-
-    $this->assertStringContainsString('Cherry', $scrolled);
-    $this->assertStringContainsString('▲', $scrolled);
-    $this->assertStringNotContainsString('Apple', $scrolled);
+    $this->assertPagesAndFollowsCursor(static fn(int $size): SelectWidget => new SelectWidget(self::pagingOptions(), pageSize: $size));
   }
 
   public function testHints(): void {

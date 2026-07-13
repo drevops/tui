@@ -116,9 +116,9 @@ composer install
 
 ### PHPUnit Structure
 
-- `tests/phpunit/Unit/` - Unit tests with mocks, no I/O
-- `tests/phpunit/Functional/` - Integration tests, real file system
-- `tests/phpunit/Traits/` - Shared test utilities
+- `tests/phpunit/Unit/` - unit tests; filesystem seams use vfsStream
+- `tests/phpunit/Fixtures/` - shared fixtures and test doubles
+- `tests/phpunit/Traits/` - shared test utilities
 
 ### Writing Tests
 

@@ -5,17 +5,18 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Tests\Unit\Widget;
 
 use DrevOps\Tui\Input\Action;
-use DrevOps\Tui\Testing\ArrayKeyStream;
 use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Render\Ansi;
+use DrevOps\Tui\Testing\ArrayKeyStream;
+use DrevOps\Tui\Testing\WidgetRunner;
+use DrevOps\Tui\Tests\Traits\AssertsPagingTrait;
 use DrevOps\Tui\Tests\Traits\MixedOptionsTrait;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\AbstractWidget;
 use DrevOps\Tui\Widget\ChoiceListTrait;
 use DrevOps\Tui\Widget\MultiSelectWidget;
-use DrevOps\Tui\Testing\WidgetRunner;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -29,6 +30,7 @@ use PHPUnit\Framework\TestCase;
 #[Group('widget')]
 final class MultiSelectWidgetTest extends TestCase {
 
+  use AssertsPagingTrait;
   use MixedOptionsTrait;
 
   public function testToggleAndAccept(): void {
@@ -227,31 +229,11 @@ final class MultiSelectWidgetTest extends TestCase {
   }
 
   public function testRejectsNonPositivePageSize(): void {
-    $this->expectException(\InvalidArgumentException::class);
-    $this->expectExceptionMessage('Page size must be a positive integer, -3 given.');
-
-    new MultiSelectWidget(['a' => 'A'], pageSize: -3);
+    $this->assertRejectsNonPositivePageSize(static fn(int $size): MultiSelectWidget => new MultiSelectWidget(['a' => 'A'], pageSize: $size), -3);
   }
 
   public function testPagesLongOptionList(): void {
-    $widget = new MultiSelectWidget(['a' => 'Apple', 'b' => 'Banana', 'c' => 'Cherry', 'd' => 'Date'], pageSize: 2);
-
-    $view = Ansi::strip($widget->view(new DefaultTheme()));
-
-    $this->assertStringContainsString('Apple', $view);
-    $this->assertStringContainsString('Banana', $view);
-    $this->assertStringNotContainsString('Cherry', $view);
-    $this->assertStringContainsString('▼', $view);
-
-    $widget->handle(Key::named(KeyName::Down));
-    $widget->handle(Key::named(KeyName::Down));
-    $scrolled = Ansi::strip($widget->view(new DefaultTheme()));
-
-    // The window has followed the cursor down, so the "more above"
-    // indicator now shows and the first option has scrolled off.
-    $this->assertStringContainsString('Cherry', $scrolled);
-    $this->assertStringContainsString('▲', $scrolled);
-    $this->assertStringNotContainsString('Apple', $scrolled);
+    $this->assertPagesAndFollowsCursor(static fn(int $size): MultiSelectWidget => new MultiSelectWidget(self::pagingOptions(), pageSize: $size));
   }
 
 }

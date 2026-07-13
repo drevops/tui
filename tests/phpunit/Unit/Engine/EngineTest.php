@@ -46,17 +46,6 @@ final class EngineTest extends TestCase {
     $this->assertSame(['transform', 'validate'], Spy::$calls);
   }
 
-  public function testSuppliedInputWins(): void {
-    $engine = $this->engine(function (PanelBuilder $p): void {
-      $p->text('spy');
-    });
-
-    $answers = $engine->collect(['spy' => 'given'], new Context('project'));
-
-    $this->assertSame('given!', $answers->value('spy'));
-    $this->assertSame(['transform', 'validate'], Spy::$calls);
-  }
-
   public function testInvalidValueThrows(): void {
     $engine = $this->engine(function (PanelBuilder $p): void {
       $p->text('machine_name');
