@@ -25,6 +25,7 @@ use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyMap;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Input\Scope;
+use DrevOps\Tui\Translation\Translator;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
@@ -38,6 +39,14 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(FieldBuilder::class)]
 #[Group('config')]
 final class FormTest extends TestCase {
+
+  public function testTranslator(): void {
+    $translator = new Translator('es');
+
+    $config = Form::create('Demo')->translator($translator)->build();
+
+    $this->assertSame($translator, $config->translator);
+  }
 
   public function testBuildsExpectedConfig(): void {
     $fixup = new Fixup(set: 'a', to: 'b', when: new Condition('x', eq: 'y'));
@@ -82,6 +91,8 @@ final class FormTest extends TestCase {
     $this->assertFalse($config->unicode);
     $this->assertSame('APP_', $config->envPrefix);
     $this->assertSame([$fixup], $config->fixups);
+    // A form declares no translator by default, leaving every string English.
+    $this->assertNull($config->translator);
     $this->assertSame('General settings.', $config->panels[0]->description);
 
     $name = $config->field('name');

@@ -18,6 +18,7 @@ use DrevOps\Tui\Render\PanelController;
 use DrevOps\Tui\Render\Terminal;
 use DrevOps\Tui\Theme\ThemeInterface;
 use DrevOps\Tui\Theme\ThemeManager;
+use DrevOps\Tui\Translation\Translator;
 
 /**
  * The one-class entry point for collecting a form's answers.
@@ -68,6 +69,12 @@ final class Tui {
     $this->envPrefix = $env_prefix !== '' ? $env_prefix : ($this->config->envPrefix !== '' ? $this->config->envPrefix : 'TUI_');
     $this->registry = new HandlerRegistry($handler_namespaces);
     $this->engine = new Engine($this->config, $this->registry);
+
+    // Activate the form's translator process-wide so t() localizes chrome and
+    // questions from any depth without threading the translator through.
+    if ($this->config->translator instanceof Translator) {
+      Translator::setShared($this->config->translator);
+    }
   }
 
   /**

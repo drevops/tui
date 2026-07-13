@@ -11,7 +11,9 @@ use DrevOps\Tui\Derive\Derive;
 use DrevOps\Tui\Render\PanelController;
 use DrevOps\Tui\Render\Terminal;
 use DrevOps\Tui\Testing\BufferedTerminal;
+use DrevOps\Tui\Tests\Traits\ResetsTranslator;
 use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Translation\Translator;
 use DrevOps\Tui\Tui;
 use DrevOps\Tui\Engine\Engine;
 use DrevOps\Tui\Handler\HandlerRegistry;
@@ -26,6 +28,23 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Tui::class)]
 #[Group('tui')]
 final class TuiTest extends TestCase {
+
+  use ResetsTranslator;
+
+  public function testActivatesTranslator(): void {
+    $this->assertNull(Translator::shared());
+
+    $translator = new Translator('es', [dirname(__DIR__) . '/Fixtures/translations']);
+    $form = Form::create('Demo')
+      ->translator($translator)
+      ->panel('p', 'p', function (PanelBuilder $panel): void {
+        $panel->text('name');
+      });
+
+    new Tui($form);
+
+    $this->assertSame($translator, Translator::shared());
+  }
 
   public function testCollect(): void {
     $answers = $this->tui()->collect('{"name":"Acme"}', 'dir', FALSE, '1.0');

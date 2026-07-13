@@ -11,6 +11,7 @@ use DrevOps\Tui\Config\Fixup;
 use DrevOps\Tui\Config\Option;
 use DrevOps\Tui\Config\Panel;
 use DrevOps\Tui\Input\KeyMapManager;
+use DrevOps\Tui\Translation\Translator;
 
 /**
  * A fluent builder declaring a form: its panels, fields and TUI options.
@@ -87,6 +88,11 @@ final class Form {
    * The prefix namespacing per-question env-variable overrides.
    */
   protected string $envPrefix = '';
+
+  /**
+   * The translator localizing chrome and questions (NULL leaves English).
+   */
+  protected ?Translator $translator = NULL;
 
   /**
    * The post-settle fix-up rules.
@@ -285,6 +291,25 @@ final class Form {
   }
 
   /**
+   * Set the translator localizing chrome and questions.
+   *
+   * The translator carries the active language and catalog directories; the
+   * {@see \DrevOps\Tui\Tui} facade activates it so `t()` resolves during a run.
+   * Without one, every string renders in its English source.
+   *
+   * @param \DrevOps\Tui\Translation\Translator $translator
+   *   The translator.
+   *
+   * @return $this
+   *   The builder.
+   */
+  public function translator(Translator $translator): self {
+    $this->translator = $translator;
+
+    return $this;
+  }
+
+  /**
    * Add a post-settle fix-up rule.
    *
    * @param \DrevOps\Tui\Config\Fixup $fixup
@@ -346,6 +371,7 @@ final class Form {
       $this->themeOptions,
       KeyMapManager::create($this->keymap, $this->keymapOverrides),
       $this->footer,
+      $this->translator,
     );
 
     $this->assertUniqueFieldIds($config);
