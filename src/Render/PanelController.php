@@ -21,6 +21,8 @@ use DrevOps\Tui\Widget\TextareaWidget;
 use DrevOps\Tui\Widget\WidgetFactory;
 use DrevOps\Tui\Widget\WidgetInterface;
 
+use function DrevOps\Tui\t;
+
 /**
  * The interactive state machine behind the panel TUI.
  *
@@ -224,7 +226,7 @@ class PanelController {
 
     try {
       if ($this->banner !== '') {
-        $terminal->render($this->theme->renderBanner($this->banner, $this->version) . "\n\nPress any key to continue...");
+        $terminal->render($this->theme->renderBanner($this->banner, $this->version) . "\n\n" . t('Press any key to continue...'));
         $terminal->read();
       }
 
@@ -494,7 +496,7 @@ class PanelController {
    *   The sections.
    */
   protected function helpSections(): array {
-    $sections = [new HelpSection('Navigation', $this->nav, ...$this->navigationHints())];
+    $sections = [new HelpSection(t('Navigation'), $this->nav, ...$this->navigationHints())];
 
     $seen = [];
     foreach ($this->config->fields() as $field) {
@@ -504,7 +506,7 @@ class PanelController {
 
       $seen[] = $field->type;
       $widget = $this->widgets->create($field, $this->values[$field->id] ?? $field->default);
-      $sections[] = new HelpSection(ucfirst($field->type->value), $this->keymap->forField($field->type), ...$widget->hints());
+      $sections[] = new HelpSection(t(ucfirst($field->type->value)), $this->keymap->forField($field->type), ...$widget->hints());
     }
 
     return $sections;

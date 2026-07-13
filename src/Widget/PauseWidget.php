@@ -11,6 +11,8 @@ use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Theme\ThemeInterface;
 
+use function DrevOps\Tui\t;
+
 /**
  * An acknowledgement gate: Enter (or Space) accepts TRUE.
  *
@@ -55,7 +57,7 @@ class PauseWidget extends AbstractWidget {
     $key = $this->keys()->primary(Action::Accept);
     $glyph = $key instanceof Key ? $theme->keyHint($key) : $theme->enter();
 
-    return 'Press ' . $theme->highlight($glyph) . ' to continue';
+    return t('Press @key to continue', ['@key' => $theme->highlight($glyph)]);
   }
 
   /**

@@ -21,6 +21,8 @@ use DrevOps\Tui\Render\Navigator;
 use DrevOps\Tui\Render\Scroller;
 use DrevOps\Tui\Render\Viewport;
 
+use function DrevOps\Tui\t;
+
 /**
  * The default theme: the appearance atoms plus the assembly that arranges them.
  *
@@ -651,7 +653,7 @@ class DefaultTheme implements ThemeInterface {
       }
 
       $value = $answers->value($field->id);
-      $parts[] = is_array($value) && count($value) > 3 ? count($value) . ' selected' : $this->renderFieldValue($field, $value);
+      $parts[] = is_array($value) && count($value) > 3 ? t('@count selected', ['@count' => count($value)]) : $this->renderFieldValue($field, $value);
 
       if (count($parts) >= 4) {
         break;
@@ -855,7 +857,7 @@ class DefaultTheme implements ThemeInterface {
 
     if ($version !== '') {
       $lines[] = '';
-      $lines[] = $this->footer('Version: ' . $version);
+      $lines[] = $this->footer(t('Version: @version', ['@version' => $version]));
     }
 
     return implode("\n", $lines);
@@ -880,15 +882,15 @@ class DefaultTheme implements ThemeInterface {
       KeyName::Left => $this->arrowLeft(),
       KeyName::Right => $this->arrowRight(),
       KeyName::Enter => $this->enter(),
-      KeyName::Escape => 'esc',
-      KeyName::Tab => 'tab',
-      KeyName::Space => 'space',
-      KeyName::Backspace => $this->unicode ? '⌫' : 'bksp',
-      KeyName::Delete => 'del',
-      KeyName::Home => 'home',
-      KeyName::End => 'end',
-      KeyName::PageUp => 'pgup',
-      KeyName::PageDown => 'pgdn',
+      KeyName::Escape => t('esc'),
+      KeyName::Tab => t('tab'),
+      KeyName::Space => t('space'),
+      KeyName::Backspace => $this->unicode ? '⌫' : t('bksp'),
+      KeyName::Delete => t('del'),
+      KeyName::Home => t('home'),
+      KeyName::End => t('end'),
+      KeyName::PageUp => t('pgup'),
+      KeyName::PageDown => t('pgdn'),
     };
   }
 
@@ -1010,7 +1012,7 @@ class DefaultTheme implements ThemeInterface {
    *   The rendered overlay.
    */
   public function renderHelp(ScopedKeyMap $nav, HelpSection ...$sections): string {
-    $lines = [$this->title('Keyboard help'), ''];
+    $lines = [$this->title(t('Keyboard help')), ''];
 
     foreach ($sections as $section) {
       $lines[] = $this->label($section->title);
@@ -1080,7 +1082,7 @@ class DefaultTheme implements ThemeInterface {
    */
   protected function renderValue(mixed $value): string {
     if (is_bool($value)) {
-      return $value ? 'yes' : 'no';
+      return $value ? t('yes') : t('no');
     }
 
     if (is_array($value)) {

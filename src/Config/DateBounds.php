@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Config;
 
+use function DrevOps\Tui\t;
+
 /**
  * Optional min/max date range and the calendar's week-start day.
  *
@@ -111,15 +113,15 @@ final readonly class DateBounds {
    */
   public function describe(): string {
     if ($this->min instanceof \DateTimeImmutable && $this->max instanceof \DateTimeImmutable) {
-      return sprintf('between %s and %s', $this->min->format('Y-m-d'), $this->max->format('Y-m-d'));
+      return t('between @min and @max', ['@min' => $this->min->format('Y-m-d'), '@max' => $this->max->format('Y-m-d')]);
     }
 
     if ($this->min instanceof \DateTimeImmutable) {
-      return sprintf('on or after %s', $this->min->format('Y-m-d'));
+      return t('on or after @min', ['@min' => $this->min->format('Y-m-d')]);
     }
 
     if ($this->max instanceof \DateTimeImmutable) {
-      return sprintf('on or before %s', $this->max->format('Y-m-d'));
+      return t('on or before @max', ['@max' => $this->max->format('Y-m-d')]);
     }
 
     return '';

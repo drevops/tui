@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Input;
 
+use function DrevOps\Tui\t;
+
 /**
  * One labelled fragment of a context's key-hint footer.
  *
@@ -19,6 +21,11 @@ namespace DrevOps\Tui\Input;
 final readonly class Hint {
 
   /**
+   * The label describing what the keys do, in the active language.
+   */
+  public string $label;
+
+  /**
    * The actions whose primary keys lead the fragment.
    *
    * @var list<\DrevOps\Tui\Input\Action>
@@ -29,14 +36,16 @@ final readonly class Hint {
    * Construct a hint.
    *
    * @param string $label
-   *   The label describing what the keys do (e.g. "move", "accept").
+   *   The English source label describing what the keys do (e.g. "move",
+   *   "accept"); translated to the active language.
    * @param \DrevOps\Tui\Input\Action ...$actions
    *   The actions whose primary keys illustrate the label.
    */
   public function __construct(
-    public string $label,
+    string $label,
     Action ...$actions,
   ) {
+    $this->label = t($label);
     $this->actions = array_values($actions);
   }
 

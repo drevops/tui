@@ -11,6 +11,8 @@ use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Theme\ThemeInterface;
 
+use function DrevOps\Tui\t;
+
 /**
  * A yes/no toggle.
  *
@@ -86,8 +88,8 @@ class ConfirmWidget extends AbstractWidget {
   public function view(ThemeInterface $theme): string {
     $marker_on = $theme->radio(TRUE);
     $marker_off = $theme->radio(FALSE);
-    $yes_label = $this->highlightLabel($theme, 'Yes', $this->current);
-    $no_label = $this->highlightLabel($theme, 'No', !$this->current);
+    $yes_label = $this->highlightLabel($theme, t('Yes'), $this->current);
+    $no_label = $this->highlightLabel($theme, t('No'), !$this->current);
 
     return $this->current ? $marker_on . ' ' . $yes_label . '  ' . $marker_off . ' ' . $no_label : $marker_off . ' ' . $yes_label . '  ' . $marker_on . ' ' . $no_label;
   }
