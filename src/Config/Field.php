@@ -85,6 +85,11 @@ final readonly class Field {
    *   Choice widgets only: how many option rows show at once before the list
    *   pages; NULL uses the widget default. A purely visual bound - it does not
    *   constrain a headless value, so it is absent from the machine schema.
+   * @param list<string>|\Closure $completion
+   *   Text only: the inline ghost-text completion source - a list of candidate
+   *   strings, or a `fn (array<string,mixed> $answers): list<string>` closure
+   *   over the answers collected so far. Empty disables ghost-text; ignored by
+   *   other types.
    */
   public function __construct(
     public string $id,
@@ -109,6 +114,7 @@ final readonly class Field {
     public array $pickerExtensions = [],
     public bool $pickerShowHidden = FALSE,
     public ?int $pageSize = NULL,
+    public array|\Closure $completion = [],
   ) {
     $this->options = Option::list($options);
   }

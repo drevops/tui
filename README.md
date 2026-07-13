@@ -87,6 +87,16 @@ Single-line text input with a movable caret. Type to insert, Left/Right move the
 $p->text('name', 'Site name')->default('Acme Site')->required();
 ```
 
+Add `complete()` for inline ghost-text autocomplete: as you type, the best-matching candidate is shown dimmed after the caret and accepted with Tab or Right-arrow (at the end of the line). This is distinct from the `suggest` widget's dropdown - ghost-text keeps the eye on the input line. The source is a static list or a closure over the answers collected so far; the match is a case-insensitive prefix, with no match the field behaves as a plain input, and the ghost-text is suppressed when colour is off.
+
+```php
+// Static candidates.
+$p->text('timezone', 'Timezone')->complete(['UTC', 'Europe/London', 'Australia/Sydney']);
+
+// Candidates computed from prior answers.
+$p->text('repo', 'Repository')->complete(fn(array $answers): array => [$answers['owner'] . '/site']);
+```
+
 <table>
   <tr>
     <td></td>

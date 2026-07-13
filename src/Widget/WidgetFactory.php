@@ -41,11 +41,13 @@ class WidgetFactory {
    *   The field.
    * @param mixed $current
    *   The current value to seed the widget with.
+   * @param array<string,mixed> $answers
+   *   The answers collected so far, passed to a text completion closure.
    *
    * @return \DrevOps\Tui\Widget\WidgetInterface
    *   The widget.
    */
-  public function create(Field $field, mixed $current): WidgetInterface {
+  public function create(Field $field, mixed $current, array $answers = []): WidgetInterface {
     $widget = match ($field->type) {
       FieldType::Confirm => new ConfirmWidget((bool) $current),
       FieldType::Toggle => new ToggleWidget($this->labels($field), is_string($current) ? $current : ''),
@@ -60,10 +62,38 @@ class WidgetFactory {
       FieldType::Textarea => new TextareaWidget(is_string($current) ? $current : '', externalEdit: $field->externalEditor && $this->externalEditorAvailable),
       FieldType::Password => new PasswordWidget(is_string($current) ? $current : '', revealable: $field->revealable, confirm: $field->confirm),
       FieldType::Pause => new PauseWidget(),
-      default => new TextWidget(is_string($current) ? $current : ''),
+      default => new TextWidget(is_string($current) ? $current : '', completions: $this->completionsFor($field, $answers)),
     };
 
     return $widget->setKeys($this->keymap->forField($field->type));
+  }
+
+  /**
+   * Resolve a text field's completion source to a concrete candidate list.
+   *
+   * A closure source is called with the answers collected so far; the result is
+   * coerced to a list of strings, so a mistyped source degrades to no
+   * completion rather than erroring.
+   *
+   * @param \DrevOps\Tui\Config\Field $field
+   *   The field.
+   * @param array<string,mixed> $answers
+   *   The answers collected so far.
+   *
+   * @return list<string>
+   *   The candidate strings; empty when the field declares no completion.
+   */
+  protected function completionsFor(Field $field, array $answers): array {
+    $source = $field->completion instanceof \Closure ? ($field->completion)($answers) : $field->completion;
+
+    $out = [];
+    foreach (is_array($source) ? $source : [] as $item) {
+      if (is_string($item)) {
+        $out[] = $item;
+      }
+    }
+
+    return $out;
   }
 
   /**

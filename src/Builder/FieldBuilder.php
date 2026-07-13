@@ -75,6 +75,13 @@ final class FieldBuilder {
   protected ?\Closure $transform = NULL;
 
   /**
+   * The inline ghost-text completion source (a list or a closure).
+   *
+   * @var list<string>|\Closure
+   */
+  protected array|\Closure $completion = [];
+
+  /**
    * The processing weight.
    */
   protected int $weight = 0;
@@ -485,6 +492,26 @@ final class FieldBuilder {
   }
 
   /**
+   * Text only: set the inline ghost-text completion source.
+   *
+   * As the user types, the first candidate the input is a prefix of is shown
+   * dimmed after the caret and accepted with Tab or Right-arrow.
+   *
+   * @param list<string>|\Closure $source
+   *   A list of candidate strings, or a
+   *   `fn (array<string,mixed> $answers): list<string>` closure computing
+   *   candidates from the answers collected so far.
+   *
+   * @return $this
+   *   The builder.
+   */
+  public function complete(array|\Closure $source): self {
+    $this->completion = $source;
+
+    return $this;
+  }
+
+  /**
    * Add a single option.
    *
    * @param string $value
@@ -594,6 +621,7 @@ final class FieldBuilder {
       $this->pickerExtensions,
       $this->pickerShowHidden,
       $this->pageSize,
+      $this->completion,
     );
   }
 

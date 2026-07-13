@@ -53,6 +53,7 @@ final class KeyMapTest extends TestCase {
     yield 'text enter accepts' => [Scope::field(FieldType::Text), Key::named(KeyName::Enter), Action::Accept, TRUE];
     yield 'text space inserts' => [Scope::field(FieldType::Text), Key::named(KeyName::Space), Action::InsertSpace, TRUE];
     yield 'text backspace deletes' => [Scope::field(FieldType::Text), Key::named(KeyName::Backspace), Action::DeleteBack, TRUE];
+    yield 'text tab completes' => [Scope::field(FieldType::Text), Key::named(KeyName::Tab), Action::Complete, TRUE];
     // Textarea overrides the base.
     yield 'textarea enter is newline' => [Scope::field(FieldType::Textarea), Key::named(KeyName::Enter), Action::NewLine, TRUE];
     yield 'textarea enter is not accept' => [Scope::field(FieldType::Textarea), Key::named(KeyName::Enter), Action::Accept, FALSE];

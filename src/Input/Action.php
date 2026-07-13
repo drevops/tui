@@ -40,6 +40,7 @@ enum Action {
   case InsertSpace;
   case NewLine;
   case ExternalEdit;
+  case Complete;
 
   // List and multiselect.
   case Toggle;

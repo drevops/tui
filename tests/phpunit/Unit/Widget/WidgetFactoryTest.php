@@ -183,6 +183,41 @@ final class WidgetFactoryTest extends TestCase {
     $this->assertStringNotContainsString('gmt', $view);
   }
 
+  public function testTextCompletionStaticListReachesWidget(): void {
+    $field = new Field('name', 'Name', '', FieldType::Text, '', completion: ['acme-site']);
+
+    $view = (new WidgetFactory())->create($field, 'ac')->view(new DefaultTheme());
+
+    // The matching candidate's remaining suffix shows as dimmed ghost-text.
+    $this->assertStringContainsString('me-site', $view);
+  }
+
+  public function testTextCompletionClosureReceivesAnswers(): void {
+    $seen = [];
+    $field = new Field('repo', 'Repo', '', FieldType::Text, '', completion: function (array $answers) use (&$seen): array {
+      $seen = $answers;
+
+      return ['acme-site'];
+    });
+
+    $view = (new WidgetFactory())->create($field, 'ac', ['owner' => 'acme'])->view(new DefaultTheme());
+
+    // The closure is handed the answers collected so far and its result reaches
+    // the widget as ghost-text.
+    $this->assertSame(['owner' => 'acme'], $seen);
+    $this->assertStringContainsString('me-site', $view);
+  }
+
+  public function testTextCompletionCoercesInvalidResult(): void {
+    // A mistyped source degrades to no completion rather than erroring: a list
+    // with non-strings is filtered, and a non-list result is ignored.
+    $items = new Field('a', 'A', '', FieldType::Text, '', completion: fn (array $answers): array => [123, NULL]);
+    $this->assertStringNotContainsString("\033[90m", (new WidgetFactory())->create($items, 'ac')->view(new DefaultTheme()));
+
+    $scalar = new Field('b', 'B', '', FieldType::Text, '', completion: fn (array $answers): string => 'oops');
+    $this->assertStringNotContainsString("\033[90m", (new WidgetFactory())->create($scalar, 'ac')->view(new DefaultTheme()));
+  }
+
   /**
    * A field of the given type.
    *
