@@ -2,7 +2,11 @@
 
 /**
  * @file
- * Runs every widget interactively, one after another.
+ * Every core widget as fields on one form, collected through the Tui facade.
+ *
+ * The single-widget examples each declare a one-field form; this gathers them
+ * into one multi-field form and drives it once through the panel TUI, instead
+ * of invoking each widget directly.
  *
  * Usage:
  *   php 3-widgets/widgets.php
@@ -12,74 +16,59 @@
 
 declare(strict_types=1);
 
-use DrevOps\Tui\Input\KeyParser;
-use DrevOps\Tui\Render\Terminal;
-use DrevOps\Tui\Theme\DefaultTheme;
-use DrevOps\Tui\Widget\ConfirmWidget;
-use DrevOps\Tui\Widget\DateWidget;
-use DrevOps\Tui\Widget\MultiSearchWidget;
-use DrevOps\Tui\Widget\MultiSelectWidget;
-use DrevOps\Tui\Widget\NumberWidget;
-use DrevOps\Tui\Widget\PasswordWidget;
-use DrevOps\Tui\Widget\PauseWidget;
-use DrevOps\Tui\Widget\SearchWidget;
-use DrevOps\Tui\Widget\SelectWidget;
-use DrevOps\Tui\Widget\SuggestWidget;
-use DrevOps\Tui\Widget\TextareaWidget;
-use DrevOps\Tui\Widget\TextWidget;
-use DrevOps\Tui\Widget\ToggleWidget;
-use DrevOps\Tui\Widget\WidgetInterface;
+use DrevOps\Tui\Builder\Form;
+use DrevOps\Tui\Builder\PanelBuilder;
+use DrevOps\Tui\Tui;
 
 require __DIR__ . '/../../vendor/autoload.php';
 
 // Forcing the mode with a flag shows the textual (ASCII) or no-colour
 // rendering without changing the terminal locale.
 $opts = getopt('', ['no-unicode', 'no-ansi']);
-$theme = new DefaultTheme(76, ['color' => !isset($opts['no-ansi']), 'unicode' => !isset($opts['no-unicode'])]);
 
-// Drive a widget to completion against the real terminal, then print the
-// value; the single-widget examples inline this same loop.
-$interact = static function (WidgetInterface $widget, string $label, array $hints = []) use ($theme): void {
-  $hints = $hints === [] ? ['edit', 'Enter accept', 'Esc cancel'] : $hints;
-  $terminal = new Terminal();
-  $parser = new KeyParser();
-  $terminal->setup();
+$form = Form::create('Widgets')
+  ->color(isset($opts['no-ansi']) ? FALSE : NULL)
+  ->unicode(isset($opts['no-unicode']) ? FALSE : NULL)
+  ->panel('widgets', 'Widgets', function (PanelBuilder $p): void {
+    $p->text('text', 'Text')->default('Acme Site');
+    $p->number('number', 'Number')->default(8080);
+    $p->date('date', 'Date')->default('2026-07-15');
+    $p->textarea('textarea', 'Textarea')->default("Redis for cache\nSolr for search");
+    $p->password('password', 'Password')->default('hunter2');
+    $p->select('select', 'Select')->default('minimal')->options([
+      'standard' => 'Standard',
+      'minimal' => 'Minimal',
+      'demo_umami' => 'Demo Umami',
+    ]);
+    $p->multiselect('multiselect', 'MultiSelect')->default(['redis'])->options([
+      'redis' => 'Redis',
+      'solr' => 'Solr',
+      'clamav' => 'ClamAV',
+    ]);
+    $p->suggest('suggest', 'Suggest')->options([
+      'UTC' => 'UTC',
+      'Europe/London' => 'Europe/London',
+      'Europe/Paris' => 'Europe/Paris',
+      'Australia/Sydney' => 'Australia/Sydney',
+    ]);
+    $p->search('search', 'Search')->default('london')->options([
+      'utc' => 'UTC',
+      'london' => 'Europe/London',
+      'paris' => 'Europe/Paris',
+      'sydney' => 'Australia/Sydney',
+    ]);
+    $p->multisearch('multisearch', 'MultiSearch')->default(['redis'])->options([
+      'redis' => 'Redis',
+      'solr' => 'Solr',
+      'clamav' => 'ClamAV',
+      'memcached' => 'Memcached',
+    ]);
+    $p->confirm('confirm', 'Confirm')->default(TRUE);
+    $p->toggle('toggle', 'Toggle')->default('enabled')->options([
+      'enabled' => 'Enabled',
+      'disabled' => 'Disabled',
+    ]);
+    $p->pause('pause', 'Pause');
+  });
 
-  try {
-    while (!$widget->isComplete() && !$widget->isCancelled()) {
-      $lines = [$theme->renderEditorHeader($label . ' widget')];
-      $lines[] = $theme->renderHintLine(...$hints);
-      $lines[] = '';
-      $lines[] = $widget->view($theme);
-      $terminal->render(implode("\n", $lines));
-
-      foreach ($parser->parse($terminal->read()) as $key) {
-        $widget->handle($key);
-      }
-    }
-  }
-  finally {
-    $terminal->restore();
-  }
-
-  echo $label . ': ' . ($widget->isCancelled() ? '(cancelled)' : (string) json_encode($widget->value())) . PHP_EOL;
-};
-
-$interact(new TextWidget('Acme Site'), 'Text');
-$interact(new NumberWidget('8080'), 'Number');
-$interact(new DateWidget('2026-07-15'), 'Date');
-$interact(new TextareaWidget("Redis for cache\nSolr for search"), 'Textarea', ['edit', 'Tab accept', 'Esc cancel']);
-$interact(new PasswordWidget('hunter2'), 'Password');
-$interact(new SelectWidget(['standard' => 'Standard', 'minimal' => 'Minimal', 'demo_umami' => 'Demo Umami'], 'minimal'), 'Select');
-$interact(new MultiSelectWidget(['redis' => 'Redis', 'solr' => 'Solr', 'clamav' => 'ClamAV'], ['redis']), 'MultiSelect');
-$interact(new SuggestWidget(['UTC', 'Europe/London', 'Europe/Paris', 'Australia/Sydney'], ''), 'Suggest');
-$interact(new SearchWidget([
-  'utc' => 'UTC',
-  'london' => 'Europe/London',
-  'paris' => 'Europe/Paris',
-  'sydney' => 'Australia/Sydney',
-], 'london'), 'Search');
-$interact(new MultiSearchWidget(['redis' => 'Redis', 'solr' => 'Solr', 'clamav' => 'ClamAV', 'memcached' => 'Memcached'], ['redis']), 'MultiSearch');
-$interact(new ConfirmWidget(TRUE), 'Confirm');
-$interact(new ToggleWidget(['enabled' => 'Enabled', 'disabled' => 'Disabled'], 'enabled'), 'Toggle');
-$interact(new PauseWidget(), 'Pause', ['Enter continue', 'Esc cancel']);
+echo (new Tui($form))->run()->toSummary() . PHP_EOL;
