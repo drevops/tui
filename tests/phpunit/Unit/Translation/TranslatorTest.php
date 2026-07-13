@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Tests\Unit\Translation;
 
-use DrevOps\Tui\Tests\Traits\ResetsTranslator;
+use DrevOps\Tui\Tests\Traits\ResetsTranslatorTrait;
 use DrevOps\Tui\Translation\Translator;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -18,7 +18,7 @@ use PHPUnit\Framework\TestCase;
 #[Group('tui')]
 final class TranslatorTest extends TestCase {
 
-  use ResetsTranslator;
+  use ResetsTranslatorTrait;
 
   /**
    * The absolute path to a translation fixture directory.
@@ -27,15 +27,9 @@ final class TranslatorTest extends TestCase {
     return dirname(__DIR__, 2) . '/Fixtures/' . $name;
   }
 
-  /**
-   * @param list<string> $directories
-   *   The fixture directory names to search.
-   * @param array<string,string|int|float|\Stringable> $args
-   *   The placeholder replacements.
-   */
   #[DataProvider('dataProviderTranslate')]
   public function testTranslate(string $language, array $directories, string $source, array $args, string $expected): void {
-    $translator = new Translator($language, array_map($this->fixtures(...), $directories));
+    $translator = new Translator($language, array_values(array_map($this->fixtures(...), $directories)));
 
     $this->assertSame($expected, $translator->translate($source, $args));
   }
@@ -114,7 +108,7 @@ final class TranslatorTest extends TestCase {
   }
 
   public function testShared(): void {
-    $this->assertNull(Translator::shared());
+    $this->assertNotInstanceOf(Translator::class, Translator::shared());
 
     $translator = new Translator('es', [$this->fixtures('translations')]);
     Translator::setShared($translator);

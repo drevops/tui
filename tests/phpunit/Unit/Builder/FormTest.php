@@ -93,7 +93,7 @@ final class FormTest extends TestCase {
     $this->assertSame('APP_', $config->envPrefix);
     $this->assertSame([$fixup], $config->fixups);
     // A form declares no translator by default, leaving every string English.
-    $this->assertNull($config->translator);
+    $this->assertNotInstanceOf(Translator::class, $config->translator);
     $this->assertSame('General settings.', $config->panels[0]->description);
 
     $name = $config->field('name');

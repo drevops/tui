@@ -323,7 +323,10 @@ class PanelController {
         $cursor_line = count($body);
       }
 
-      $body[] = $this->theme->renderButtonBar([Translator::t($this->config->submitLabel), Translator::t($this->config->cancelLabel)], $selected);
+      $body[] = $this->theme->renderButtonBar([
+        Translator::t($this->config->submitLabel),
+        Translator::t($this->config->cancelLabel),
+      ], $selected);
     }
 
     $total = count($body);

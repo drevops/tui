@@ -12,7 +12,7 @@ use DrevOps\Tui\Translation\Translator;
  * The translator backing the t() function is process-wide state, so a test that
  * sets it must clear it or the language would leak into the next test.
  */
-trait ResetsTranslator {
+trait ResetsTranslatorTrait {
 
   /**
    * Clear the shared translator so no language leaks between tests.

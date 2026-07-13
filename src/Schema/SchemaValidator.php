@@ -83,7 +83,10 @@ class SchemaValidator {
    */
   protected function validateValue(Field $field, mixed $value): ?string {
     if (!$this->isType($field->type, $value)) {
-      return Translator::t('Question "@id" must be @constraint.', ['@id' => $field->id, '@constraint' => $this->typeName($field->type)]);
+      return Translator::t('Question "@id" must be @constraint.', [
+        '@id' => $field->id,
+        '@constraint' => $this->typeName($field->type),
+      ]);
     }
 
     if ($field->required && $this->isEmpty($value)) {
@@ -117,7 +120,10 @@ class SchemaValidator {
   protected function checkBounds(Field $field, mixed $value): ?string {
     $violation = $field->bounds?->violation($value);
 
-    return $violation === NULL ? NULL : Translator::t('Question "@id" must be @constraint.', ['@id' => $field->id, '@constraint' => $violation]);
+    return $violation === NULL ? NULL : Translator::t('Question "@id" must be @constraint.', [
+      '@id' => $field->id,
+      '@constraint' => $violation,
+    ]);
   }
 
   /**
@@ -134,7 +140,10 @@ class SchemaValidator {
   protected function checkDateBounds(Field $field, mixed $value): ?string {
     $violation = $field->dateBounds?->violation($value);
 
-    return $violation === NULL ? NULL : Translator::t('Question "@id" must be @constraint.', ['@id' => $field->id, '@constraint' => $violation]);
+    return $violation === NULL ? NULL : Translator::t('Question "@id" must be @constraint.', [
+      '@id' => $field->id,
+      '@constraint' => $violation,
+    ]);
   }
 
   /**

@@ -115,12 +115,18 @@ class Engine {
 
       $error = $this->validateValue($field, $values[$field->id]);
       if ($error !== NULL) {
-        throw new EngineException(Translator::t('Invalid value for field "@id": @error', ['@id' => $field->id, '@error' => $error]));
+        throw new EngineException(Translator::t('Invalid value for field "@id": @error', [
+          '@id' => $field->id,
+          '@error' => $error,
+        ]));
       }
 
       $option_error = $field->optionError($values[$field->id]);
       if ($option_error !== NULL) {
-        throw new EngineException(Translator::t('Invalid value for field "@id": @error', ['@id' => $field->id, '@error' => $option_error]));
+        throw new EngineException(Translator::t('Invalid value for field "@id": @error', [
+          '@id' => $field->id,
+          '@error' => $option_error,
+        ]));
       }
     }
 

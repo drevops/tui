@@ -43,7 +43,9 @@ class AgentHelp {
     ];
 
     if ($this->env_prefix !== '') {
-      $lines[] = Translator::t('- Set per-question environment variables named @prefix<ID> (the uppercased question id); these win over discovery but lose to --prompts.', ['@prefix' => $this->env_prefix]);
+      $lines[] = Translator::t('- Set per-question environment variables named @prefix<ID> (the uppercased question id); these win over discovery but lose to --prompts.', [
+        '@prefix' => $this->env_prefix,
+      ]);
     }
 
     $lines[] = Translator::t('- Precedence: --prompts > environment > discovered > derived > default.');
@@ -51,7 +53,7 @@ class AgentHelp {
     $lines[] = Translator::t('Questions:');
 
     foreach ($this->config->fields() as $field) {
-      $required = $field->required ? Translator::t(' (required)') : '';
+      $required = $field->required ? ' ' . Translator::t('(required)') : '';
       $lines[] = sprintf('  %s [%s]%s - %s%s%s', $field->id, $field->type->value, $required, Translator::t($field->label), $this->rangeNote($field), $this->dateNote($field));
     }
 

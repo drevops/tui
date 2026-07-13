@@ -6,7 +6,7 @@ namespace DrevOps\Tui\Tests\Unit\Input;
 
 use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Hint;
-use DrevOps\Tui\Tests\Traits\ResetsTranslator;
+use DrevOps\Tui\Tests\Traits\ResetsTranslatorTrait;
 use DrevOps\Tui\Translation\Translator;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
@@ -19,7 +19,7 @@ use PHPUnit\Framework\TestCase;
 #[Group('tui')]
 final class HintTest extends TestCase {
 
-  use ResetsTranslator;
+  use ResetsTranslatorTrait;
 
   public function testLabelIsEnglishWithoutTranslator(): void {
     $hint = new Hint('move', Action::MoveUp, Action::MoveDown);

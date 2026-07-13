@@ -38,7 +38,10 @@ final readonly class DateBounds {
     public Weekday $weekStart = Weekday::Monday,
   ) {
     if ($this->min instanceof \DateTimeImmutable && $this->max instanceof \DateTimeImmutable && $this->min > $this->max) {
-      throw new ConfigException(Translator::t('Date bounds declare a minimum of @min after the maximum of @max.', ['@min' => $this->min->format('Y-m-d'), '@max' => $this->max->format('Y-m-d')]));
+      throw new ConfigException(Translator::t('Date bounds declare a minimum of @min after the maximum of @max.', [
+        '@min' => $this->min->format('Y-m-d'),
+        '@max' => $this->max->format('Y-m-d'),
+      ]));
     }
   }
 
@@ -113,7 +116,10 @@ final readonly class DateBounds {
    */
   public function describe(): string {
     if ($this->min instanceof \DateTimeImmutable && $this->max instanceof \DateTimeImmutable) {
-      return Translator::t('between @min and @max', ['@min' => $this->min->format('Y-m-d'), '@max' => $this->max->format('Y-m-d')]);
+      return Translator::t('between @min and @max', [
+        '@min' => $this->min->format('Y-m-d'),
+        '@max' => $this->max->format('Y-m-d'),
+      ]);
     }
 
     if ($this->min instanceof \DateTimeImmutable) {

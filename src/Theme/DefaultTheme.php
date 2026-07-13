@@ -106,11 +106,18 @@ class DefaultTheme implements ThemeInterface {
 
     foreach ($this->options as $key => $value) {
       if (!array_key_exists($key, $schema)) {
-        throw new \InvalidArgumentException(Translator::t('Unknown theme option "@key". Known: @known.', ['@key' => $key, '@known' => implode(', ', array_keys($schema))]));
+        throw new \InvalidArgumentException(Translator::t('Unknown theme option "@key". Known: @known.', [
+          '@key' => $key,
+          '@known' => implode(', ', array_keys($schema)),
+        ]));
       }
 
       if (!in_array($value, $schema[$key], TRUE)) {
-        throw new \InvalidArgumentException(Translator::t('@value is not a valid "@key". Allowed: @allowed.', ['@value' => $this->showValue($value), '@key' => $key, '@allowed' => implode(', ', array_map($this->showValue(...), $schema[$key]))]));
+        throw new \InvalidArgumentException(Translator::t('@value is not a valid "@key". Allowed: @allowed.', [
+          '@value' => $this->showValue($value),
+          '@key' => $key,
+          '@allowed' => implode(', ', array_map($this->showValue(...), $schema[$key])),
+        ]));
       }
     }
   }
@@ -652,7 +659,9 @@ class DefaultTheme implements ThemeInterface {
       }
 
       $value = $answers->value($field->id);
-      $parts[] = is_array($value) && count($value) > 3 ? Translator::t('@count selected', ['@count' => count($value)]) : $this->renderFieldValue($field, $value);
+      $parts[] = is_array($value) && count($value) > 3 ? Translator::t('@count selected', [
+        '@count' => count($value),
+      ]) : $this->renderFieldValue($field, $value);
 
       if (count($parts) >= 4) {
         break;

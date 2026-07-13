@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Canonical English chrome strings, one per Translator::t() literal.
+ * Canonical English chrome strings the library emits.
  *
  * Copy this file to a locale (e.g. "es.php") and translate the values; the
  * keys are the English source strings the library looks up. Placeholders
@@ -12,8 +12,8 @@
 declare(strict_types=1);
 
 return [
-  ' (required)' => ' (required)',
   '(empty)' => '(empty)',
+  '(required)' => '(required)',
   '- Pass --no-interaction to resolve every question from defaults, discovery and derivation without prompting.' => '- Pass --no-interaction to resolve every question from defaults, discovery and derivation without prompting.',
   '- Pass --prompts with a JSON object (or a path to a JSON file) of answers keyed by question id; these take the highest precedence.' => '- Pass --prompts with a JSON object (or a path to a JSON file) of answers keyed by question id; these take the highest precedence.',
   '- Precedence: --prompts > environment > discovered > derived > default.' => '- Precedence: --prompts > environment > discovered > derived > default.',
@@ -55,27 +55,51 @@ return [
   'a list' => 'a list',
   'a number' => 'a number',
   'a string' => 'a string',
+  'accept' => 'accept',
+  'adjust' => 'adjust',
   'at least @min' => 'at least @min',
   'at most @max' => 'at most @max',
+  'back' => 'back',
   'between @min and @max' => 'between @min and @max',
   'bksp' => 'bksp',
+  'cancel' => 'cancel',
+  'close' => 'close',
+  'continue' => 'continue',
+  'day' => 'day',
   'del' => 'del',
+  'drop' => 'drop',
+  'editor' => 'editor',
   'end' => 'end',
   'esc' => 'esc',
+  'grab' => 'grab',
+  'help' => 'help',
+  'hidden' => 'hidden',
   'home' => 'home',
+  'move' => 'move',
   'must be @constraint.' => 'must be @constraint.',
+  'newline' => 'newline',
   'no' => 'no',
+  'none/all' => 'none/all',
   'on or after @min' => 'on or after @min',
   'on or before @max' => 'on or before @max',
+  'open' => 'open',
   'option "@value" is disabled' => 'option "@value" is disabled',
   'option "@value" is disabled: @reason' => 'option "@value" is disabled: @reason',
   'pgdn' => 'pgdn',
   'pgup' => 'pgup',
+  'quit' => 'quit',
   're-enter to confirm' => 're-enter to confirm',
+  'reorder' => 'reorder',
+  'reveal' => 'reveal',
+  'select' => 'select',
   'space' => 'space',
   'step @step' => 'step @step',
   'tab' => 'tab',
+  'toggle' => 'toggle',
+  'up' => 'up',
   'value "@value" is not one of: @options' => 'value "@value" is not one of: @options',
   'value must be a list' => 'value must be a list',
+  'week' => 'week',
   'yes' => 'yes',
+  'yes/no' => 'yes/no',
 ];

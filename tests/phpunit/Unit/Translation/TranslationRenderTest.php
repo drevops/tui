@@ -17,7 +17,7 @@ use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Render\PanelController;
 use DrevOps\Tui\Schema\AgentHelp;
 use DrevOps\Tui\Schema\SchemaValidator;
-use DrevOps\Tui\Tests\Traits\ResetsTranslator;
+use DrevOps\Tui\Tests\Traits\ResetsTranslatorTrait;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Translation\Translator;
 use DrevOps\Tui\Widget\WidgetFactory;
@@ -37,7 +37,7 @@ use PHPUnit\Framework\TestCase;
 #[Group('tui')]
 final class TranslationRenderTest extends TestCase {
 
-  use ResetsTranslator;
+  use ResetsTranslatorTrait;
 
   protected function setUp(): void {
     Translator::setShared(new Translator('es', [dirname(__DIR__, 2) . '/Fixtures/translations-render']));

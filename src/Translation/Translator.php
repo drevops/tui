@@ -153,7 +153,10 @@ final class Translator {
   public static function detectLanguage(): string {
     foreach (['LC_ALL', 'LC_MESSAGES', 'LANG'] as $var) {
       $value = getenv($var);
-      if (!is_string($value) || $value === '') {
+      if (!is_string($value)) {
+        continue;
+      }
+      if ($value === '') {
         continue;
       }
 
@@ -239,7 +242,7 @@ final class Translator {
     $normalized = str_replace('-', '_', $language);
     $primary = explode('_', $normalized)[0];
 
-    return array_values(array_filter(array_unique([$normalized, $primary]), static fn(string $candidate): bool => preg_match('/^[A-Za-z0-9_]+$/', $candidate) === 1));
+    return array_values(array_filter(array_unique([$normalized, $primary]), static fn(string $candidate): bool => preg_match('/^\w+$/', $candidate) === 1));
   }
 
 }

@@ -221,11 +221,17 @@ final readonly class Field {
     $option = $this->option($value);
     if ($option instanceof Option && $option->disabled) {
       return $option->disabledReason !== ''
-        ? Translator::t('option "@value" is disabled: @reason', ['@value' => $value, '@reason' => $option->disabledReason])
+        ? Translator::t('option "@value" is disabled: @reason', [
+          '@value' => $value,
+          '@reason' => $option->disabledReason,
+        ])
         : Translator::t('option "@value" is disabled', ['@value' => $value]);
     }
 
-    return Translator::t('value "@value" is not one of: @options', ['@value' => $value, '@options' => implode(', ', $this->selectableValues())]);
+    return Translator::t('value "@value" is not one of: @options', [
+      '@value' => $value,
+      '@options' => implode(', ', $this->selectableValues()),
+    ]);
   }
 
   /**

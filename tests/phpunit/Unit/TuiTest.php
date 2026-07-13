@@ -11,7 +11,7 @@ use DrevOps\Tui\Derive\Derive;
 use DrevOps\Tui\Render\PanelController;
 use DrevOps\Tui\Render\Terminal;
 use DrevOps\Tui\Testing\BufferedTerminal;
-use DrevOps\Tui\Tests\Traits\ResetsTranslator;
+use DrevOps\Tui\Tests\Traits\ResetsTranslatorTrait;
 use DrevOps\Tui\Theme\ThemeInterface;
 use DrevOps\Tui\Translation\Translator;
 use DrevOps\Tui\Tui;
@@ -29,10 +29,10 @@ use PHPUnit\Framework\TestCase;
 #[Group('tui')]
 final class TuiTest extends TestCase {
 
-  use ResetsTranslator;
+  use ResetsTranslatorTrait;
 
   public function testActivatesTranslator(): void {
-    $this->assertNull(Translator::shared());
+    $this->assertNotInstanceOf(Translator::class, Translator::shared());
 
     $translator = new Translator('es', [dirname(__DIR__) . '/Fixtures/translations']);
     $form = Form::create('Demo')

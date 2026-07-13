@@ -240,7 +240,9 @@ abstract class AbstractWidget implements WidgetInterface {
    */
   protected function resolvePageSize(?int $pageSize): int {
     if ($pageSize !== NULL && $pageSize < 1) {
-      throw new \InvalidArgumentException(Translator::t('Page size must be a positive integer, @size given.', ['@size' => $pageSize]));
+      throw new \InvalidArgumentException(Translator::t('Page size must be a positive integer, @size given.', [
+        '@size' => $pageSize,
+      ]));
     }
 
     return $pageSize ?? self::DEFAULT_PAGE_SIZE;
