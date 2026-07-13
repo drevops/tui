@@ -7,10 +7,12 @@ namespace DrevOps\Tui\Input;
 /**
  * Parses a raw terminal byte buffer into a list of keys.
  *
- * Recognizes printable characters, Enter/Backspace/Tab/Space, bare Escape,
- * CSI arrows and navigation keys (Home/End/PageUp/PageDown/Delete), and SGR
- * mouse-wheel events. Unrecognized escape sequences degrade to Escape, and
- * unknown mouse events are consumed without emitting a key.
+ * Recognizes printable characters (including multi-byte UTF-8 sequences),
+ * Enter/Backspace/Tab/Space, bare Escape, CSI and SS3 arrows and navigation
+ * keys (Home/End/PageUp/PageDown/Delete) with any modifier parameters, and
+ * SGR mouse-wheel events. Unrecognized or truncated escape sequences are
+ * consumed whole and degrade to Escape, and unknown mouse events are consumed
+ * without emitting a key.
  *
  * @package DrevOps\Tui\Input
  */
@@ -41,11 +43,56 @@ class KeyParser {
         continue;
       }
 
+      // A multi-byte UTF-8 sequence is one typed character, not several keys.
+      $span = $this->utf8Span($bytes, $i);
+      if ($span > 1) {
+        $keys[] = Key::char(substr($bytes, $i, $span));
+        $i += $span;
+        continue;
+      }
+
       $keys[] = $this->parseSimple($bytes[$i]);
       $i++;
     }
 
     return $keys;
+  }
+
+  /**
+   * The byte length of the UTF-8 sequence starting at an offset.
+   *
+   * @param string $bytes
+   *   The raw bytes.
+   * @param int $start
+   *   The offset of the candidate lead byte.
+   *
+   * @return int
+   *   The sequence length (2-4) when a complete, well-formed multi-byte
+   *   sequence starts here; 1 for ASCII, a stray byte or a truncated sequence.
+   */
+  protected function utf8Span(string $bytes, int $start): int {
+    $lead = ord($bytes[$start]);
+
+    $span = match (TRUE) {
+      $lead >= 0xC2 && $lead <= 0xDF => 2,
+      $lead >= 0xE0 && $lead <= 0xEF => 3,
+      $lead >= 0xF0 && $lead <= 0xF4 => 4,
+      default => 1,
+    };
+
+    if ($span === 1 || $start + $span > strlen($bytes)) {
+      return 1;
+    }
+
+    for ($i = 1; $i < $span; $i++) {
+      $byte = ord($bytes[$start + $i]);
+
+      if ($byte < 0x80 || $byte > 0xBF) {
+        return 1;
+      }
+    }
+
+    return $span;
   }
 
   /**
@@ -81,7 +128,23 @@ class KeyParser {
   protected function parseEscape(string $bytes, int $start): array {
     $length = strlen($bytes);
 
-    if ($start + 1 >= $length || $bytes[$start + 1] !== '[') {
+    if ($start + 1 >= $length) {
+      return [Key::named(KeyName::Escape), 1];
+    }
+
+    // SS3 (ESC O <final>): the application-cursor-keys form of the arrows and
+    // Home/End; the final byte matches its CSI counterpart.
+    if ($bytes[$start + 1] === 'O') {
+      if ($start + 2 >= $length) {
+        return [Key::named(KeyName::Escape), 2];
+      }
+
+      $name = $this->csiName($bytes[$start + 2], '');
+
+      return [Key::named($name ?? KeyName::Escape), 3];
+    }
+
+    if ($bytes[$start + 1] !== '[') {
       return [Key::named(KeyName::Escape), 1];
     }
 
@@ -89,15 +152,20 @@ class KeyParser {
       return $this->parseMouse($bytes, $start);
     }
 
+    // Accept the full CSI parameter byte range (digits, ";" and friends) so a
+    // modifier sequence such as Shift-Up (ESC [ 1 ; 2 A) is consumed whole
+    // rather than leaking its tail as typed characters.
     $j = $start + 2;
     $params = '';
-    while ($j < $length && ctype_digit($bytes[$j])) {
+    while ($j < $length && ord($bytes[$j]) >= 0x30 && ord($bytes[$j]) <= 0x3F) {
       $params .= $bytes[$j];
       $j++;
     }
 
     if ($j >= $length) {
-      return [Key::named(KeyName::Escape), 1];
+      // Truncated at a read boundary: swallow the scanned prefix rather than
+      // leaking it as typed characters.
+      return [Key::named(KeyName::Escape), $j - $start];
     }
 
     $name = $this->csiName($bytes[$j], $params);
@@ -133,13 +201,13 @@ class KeyParser {
    * Resolve a `CSI <n> ~` parameter to a key name.
    *
    * @param string $params
-   *   The numeric parameters.
+   *   The parameter bytes; a modifier after ";" does not change the key.
    *
    * @return \DrevOps\Tui\Input\KeyName|null
    *   The key name, or NULL when unrecognized.
    */
   protected function tildeName(string $params): ?KeyName {
-    return match ($params) {
+    return match (explode(';', $params)[0]) {
       '1', '7' => KeyName::Home,
       '4', '8' => KeyName::End,
       '3' => KeyName::Delete,
@@ -170,7 +238,9 @@ class KeyParser {
     }
 
     if ($j >= $length) {
-      return [Key::named(KeyName::Escape), 1];
+      // Truncated at a read boundary: swallow the scanned prefix rather than
+      // leaking it as typed characters.
+      return [Key::named(KeyName::Escape), $j - $start];
     }
 
     $parts = explode(';', $data);

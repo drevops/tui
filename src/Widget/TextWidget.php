@@ -18,7 +18,7 @@ use DrevOps\Tui\Theme\ThemeInterface;
 class TextWidget extends AbstractWidget {
 
   /**
-   * The cursor offset within the buffer.
+   * The cursor offset within the buffer, in characters.
    */
   protected int $cursor;
 
@@ -37,7 +37,7 @@ class TextWidget extends AbstractWidget {
    */
   public function __construct(protected string $buffer = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL, protected array $completions = []) {
     parent::__construct($validate, $transform);
-    $this->cursor = strlen($this->buffer);
+    $this->cursor = mb_strlen($this->buffer);
   }
 
   /**
@@ -89,7 +89,7 @@ class TextWidget extends AbstractWidget {
         $this->applyCompletion();
       }
       else {
-        $this->cursor = min(strlen($this->buffer), $this->cursor + 1);
+        $this->cursor = min(mb_strlen($this->buffer), $this->cursor + 1);
       }
 
       return;
@@ -113,8 +113,8 @@ class TextWidget extends AbstractWidget {
    *   The text to insert.
    */
   protected function insert(string $char): void {
-    $this->buffer = substr($this->buffer, 0, $this->cursor) . $char . substr($this->buffer, $this->cursor);
-    $this->cursor += strlen($char);
+    $this->buffer = mb_substr($this->buffer, 0, $this->cursor) . $char . mb_substr($this->buffer, $this->cursor);
+    $this->cursor += mb_strlen($char);
   }
 
   /**
@@ -122,7 +122,7 @@ class TextWidget extends AbstractWidget {
    */
   protected function backspace(): void {
     if ($this->cursor > 0) {
-      $this->buffer = substr($this->buffer, 0, $this->cursor - 1) . substr($this->buffer, $this->cursor);
+      $this->buffer = mb_substr($this->buffer, 0, $this->cursor - 1) . mb_substr($this->buffer, $this->cursor);
       $this->cursor--;
     }
   }
@@ -139,7 +139,7 @@ class TextWidget extends AbstractWidget {
    *   The full candidate string, or NULL.
    */
   protected function bestMatch(): ?string {
-    if ($this->buffer === '' || $this->cursor !== strlen($this->buffer)) {
+    if ($this->buffer === '' || $this->cursor !== mb_strlen($this->buffer)) {
       return NULL;
     }
 
@@ -177,7 +177,7 @@ class TextWidget extends AbstractWidget {
 
     if ($match !== NULL) {
       $this->buffer = $match;
-      $this->cursor = strlen($match);
+      $this->cursor = mb_strlen($match);
     }
   }
 
@@ -208,7 +208,7 @@ class TextWidget extends AbstractWidget {
     $suffix = $this->ghostSuffix();
     $ghost = $suffix === '' ? '' : $theme->ghost($suffix);
 
-    return substr($this->buffer, 0, $this->cursor) . $theme->caret() . substr($this->buffer, $this->cursor) . $ghost;
+    return mb_substr($this->buffer, 0, $this->cursor) . $theme->caret() . mb_substr($this->buffer, $this->cursor) . $ghost;
   }
 
 }

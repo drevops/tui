@@ -260,7 +260,7 @@ abstract class AbstractWidget implements WidgetInterface {
    *   The window: its offset and whether rows are scrolled off above or below.
    */
   protected function pageViewport(int $total, int $cursor): Viewport {
-    $viewport = (new Scroller())->compute($total, $this->pageSize, max(0, $cursor), $this->offset);
+    $viewport = (new Scroller())->follow($total, $this->pageSize, max(0, $cursor), $this->offset);
     $this->offset = $viewport->offset;
 
     return $viewport;
@@ -282,13 +282,13 @@ abstract class AbstractWidget implements WidgetInterface {
   protected function wrapScrolled(ThemeInterface $theme, array $rows, Viewport $viewport): array {
     $lines = [];
 
-    if ($viewport->has_above) {
+    if ($viewport->hasAbove) {
       $lines[] = $theme->indicator('  ' . $theme->indicatorUp());
     }
 
     $lines = array_merge($lines, $rows);
 
-    if ($viewport->has_below) {
+    if ($viewport->hasBelow) {
       $lines[] = $theme->indicator('  ' . $theme->indicatorDown());
     }
 

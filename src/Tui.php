@@ -180,6 +180,10 @@ final class Tui {
    *
    * @return \DrevOps\Tui\Render\PanelController
    *   The controller, ready to run against a terminal.
+   *
+   * @internal
+   *   Public for the {@see \DrevOps\Tui\Testing\TuiTester} harness; consumers
+   *   collect through run(), collect() or interact().
    */
   public function controller(array $options, string $theme = '', string $banner = '', string $version = '', string $directory = ''): PanelController {
     $this->engine->collect([], $this->context($directory, FALSE, $version));

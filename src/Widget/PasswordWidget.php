@@ -161,8 +161,8 @@ class PasswordWidget extends TextWidget {
   protected function renderLine(ThemeInterface $theme): string {
     return match ($this->display) {
       PasswordDisplay::Hidden => $theme->caret(),
-      PasswordDisplay::Masked => str_repeat($theme->mask(), $this->cursor) . $theme->caret() . str_repeat($theme->mask(), strlen($this->buffer) - $this->cursor),
-      PasswordDisplay::Plaintext => substr($this->buffer, 0, $this->cursor) . $theme->caret() . substr($this->buffer, $this->cursor),
+      PasswordDisplay::Masked => str_repeat($theme->mask(), $this->cursor) . $theme->caret() . str_repeat($theme->mask(), mb_strlen($this->buffer) - $this->cursor),
+      PasswordDisplay::Plaintext => mb_substr($this->buffer, 0, $this->cursor) . $theme->caret() . mb_substr($this->buffer, $this->cursor),
     };
   }
 

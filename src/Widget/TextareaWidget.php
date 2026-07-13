@@ -99,7 +99,7 @@ class TextareaWidget extends TextWidget {
     $line = 0;
     $column = $this->cursor;
     foreach ($lines as $index => $text) {
-      $length = strlen($text);
+      $length = mb_strlen($text);
 
       if ($column <= $length) {
         $line = $index;
@@ -118,10 +118,10 @@ class TextareaWidget extends TextWidget {
 
     $offset = 0;
     for ($index = 0; $index < $target; $index++) {
-      $offset += strlen($lines[$index]) + 1;
+      $offset += mb_strlen($lines[$index]) + 1;
     }
 
-    $this->cursor = $offset + min($column, strlen($lines[$target]));
+    $this->cursor = $offset + min($column, mb_strlen($lines[$target]));
   }
 
   /**
@@ -155,7 +155,7 @@ class TextareaWidget extends TextWidget {
     }
 
     $this->buffer = $content;
-    $this->cursor = strlen($content);
+    $this->cursor = mb_strlen($content);
     $this->accept($content);
   }
 
@@ -164,7 +164,7 @@ class TextareaWidget extends TextWidget {
    */
   #[\Override]
   public function view(ThemeInterface $theme): string {
-    $text = substr($this->buffer, 0, $this->cursor) . $theme->caret() . substr($this->buffer, $this->cursor);
+    $text = mb_substr($this->buffer, 0, $this->cursor) . $theme->caret() . mb_substr($this->buffer, $this->cursor);
 
     return $this->withError($theme, $text);
   }

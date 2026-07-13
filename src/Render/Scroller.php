@@ -7,9 +7,10 @@ namespace DrevOps\Tui\Render;
 /**
  * Computes the visible window of a scrolling list.
  *
- * `compute()` follows the cursor (a key press re-engages cursor-follow),
- * keeping it inside the viewport; `scroll()` moves the window without moving
- * the cursor (mouse wheel). Both clamp to the valid range and report ▲/▼.
+ * `follow()` keeps the cursor inside the viewport (a key press re-engages
+ * cursor-follow); `viewport()` resolves a window for an offset alone; and
+ * `scroll()` moves the window without moving the cursor (mouse wheel). All
+ * clamp to the valid range, and a viewport reports ▲/▼.
  *
  * @package DrevOps\Tui\Render
  */
@@ -30,7 +31,7 @@ class Scroller {
    * @return \DrevOps\Tui\Render\Viewport
    *   The computed viewport.
    */
-  public function compute(int $total, int $height, int $cursor, int $offset): Viewport {
+  public function follow(int $total, int $height, int $cursor, int $offset): Viewport {
     if ($height <= 0 || $total <= 0) {
       return new Viewport(0, FALSE, FALSE);
     }
@@ -42,6 +43,29 @@ class Scroller {
     }
     elseif ($cursor >= $offset + $height) {
       $offset = $cursor - $height + 1;
+    }
+
+    return $this->viewport($offset, $total, $height);
+  }
+
+  /**
+   * The viewport for an offset, clamped, with the scrolled-off flags resolved.
+   *
+   * The single home of the "when do the scroll indicators show" rule.
+   *
+   * @param int $offset
+   *   The desired first-visible-line index.
+   * @param int $total
+   *   The total number of lines.
+   * @param int $height
+   *   The viewport height.
+   *
+   * @return \DrevOps\Tui\Render\Viewport
+   *   The resolved viewport.
+   */
+  public function viewport(int $offset, int $total, int $height): Viewport {
+    if ($height <= 0 || $total <= 0) {
+      return new Viewport(0, FALSE, FALSE);
     }
 
     $offset = $this->clamp($offset, $total, $height);

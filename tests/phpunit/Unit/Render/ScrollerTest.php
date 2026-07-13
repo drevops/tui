@@ -19,36 +19,48 @@ use PHPUnit\Framework\TestCase;
 final class ScrollerTest extends TestCase {
 
   public function testCursorAtTop(): void {
-    $viewport = (new Scroller())->compute(10, 4, 0, 0);
+    $viewport = (new Scroller())->follow(10, 4, 0, 0);
 
     $this->assertSame(0, $viewport->offset);
-    $this->assertFalse($viewport->has_above);
-    $this->assertTrue($viewport->has_below);
+    $this->assertFalse($viewport->hasAbove);
+    $this->assertTrue($viewport->hasBelow);
   }
 
   public function testFollowsCursorDown(): void {
-    $viewport = (new Scroller())->compute(10, 4, 6, 0);
+    $viewport = (new Scroller())->follow(10, 4, 6, 0);
 
     $this->assertSame(3, $viewport->offset);
-    $this->assertTrue($viewport->has_above);
-    $this->assertTrue($viewport->has_below);
+    $this->assertTrue($viewport->hasAbove);
+    $this->assertTrue($viewport->hasBelow);
   }
 
   public function testFollowsCursorUp(): void {
-    $this->assertSame(2, (new Scroller())->compute(10, 4, 2, 5)->offset);
+    $this->assertSame(2, (new Scroller())->follow(10, 4, 2, 5)->offset);
   }
 
   public function testCursorAtBottom(): void {
-    $viewport = (new Scroller())->compute(10, 4, 9, 0);
+    $viewport = (new Scroller())->follow(10, 4, 9, 0);
 
     $this->assertSame(6, $viewport->offset);
-    $this->assertTrue($viewport->has_above);
-    $this->assertFalse($viewport->has_below);
+    $this->assertTrue($viewport->hasAbove);
+    $this->assertFalse($viewport->hasBelow);
   }
 
   public function testEmptyOrZeroHeight(): void {
-    $this->assertFalse((new Scroller())->compute(0, 4, 0, 0)->has_below);
-    $this->assertFalse((new Scroller())->compute(10, 0, 0, 0)->has_below);
+    $this->assertFalse((new Scroller())->follow(0, 4, 0, 0)->hasBelow);
+    $this->assertFalse((new Scroller())->follow(10, 0, 0, 0)->hasBelow);
+  }
+
+  public function testViewportClampsAndFlags(): void {
+    $scroller = new Scroller();
+
+    // An overshooting offset clamps to the last full window.
+    $this->assertSame(6, $scroller->viewport(9, 10, 4)->offset);
+    $this->assertTrue($scroller->viewport(3, 10, 4)->hasAbove);
+    $this->assertTrue($scroller->viewport(3, 10, 4)->hasBelow);
+    $this->assertFalse($scroller->viewport(0, 10, 4)->hasAbove);
+    $this->assertFalse($scroller->viewport(6, 10, 4)->hasBelow);
+    $this->assertFalse($scroller->viewport(0, 0, 4)->hasBelow);
   }
 
   public function testScrollClamps(): void {

@@ -18,6 +18,16 @@ use Symfony\Component\Console\Terminal as ConsoleTerminal;
 class Terminal {
 
   /**
+   * The number of background-query polls before giving up.
+   */
+  protected const int QUERY_POLLS = 3;
+
+  /**
+   * The per-poll wait for a background-query reply, in microseconds.
+   */
+  protected const int QUERY_POLL_INTERVAL_US = 100000;
+
+  /**
    * The output stream.
    *
    * @var resource
@@ -35,13 +45,25 @@ class Terminal {
    * Construct a terminal.
    *
    * @param mixed $output
-   *   The output stream (defaults to STDOUT).
+   *   The output stream resource (defaults to STDOUT).
    * @param mixed $input
-   *   The input stream (defaults to STDIN).
+   *   The input stream resource (defaults to STDIN).
+   *
+   * @throws \InvalidArgumentException
+   *   When a non-NULL argument is not a stream resource - failing loudly
+   *   instead of silently rewiring I/O to the real STDOUT/STDIN.
    */
   public function __construct(mixed $output = NULL, mixed $input = NULL) {
-    $this->output = is_resource($output) ? $output : STDOUT;
-    $this->input = is_resource($input) ? $input : STDIN;
+    if ($output !== NULL && !is_resource($output)) {
+      throw new \InvalidArgumentException('The output stream must be a resource or NULL.');
+    }
+
+    if ($input !== NULL && !is_resource($input)) {
+      throw new \InvalidArgumentException('The input stream must be a resource or NULL.');
+    }
+
+    $this->output = $output ?? STDOUT;
+    $this->input = $input ?? STDIN;
   }
 
   /**
@@ -141,11 +163,11 @@ class Terminal {
       $this->write(TerminalControl::queryBackground());
       fflush($this->output);
 
-      for ($poll = 0; $poll < 3; $poll++) {
+      for ($poll = 0; $poll < self::QUERY_POLLS; $poll++) {
         $read = [$this->input];
         $write = [];
         $except = [];
-        $ready = stream_select($read, $write, $except, 0, 100000);
+        $ready = stream_select($read, $write, $except, 0, self::QUERY_POLL_INTERVAL_US);
 
         if ($ready === FALSE || $ready < 1) {
           if ($response !== '') {

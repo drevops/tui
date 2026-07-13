@@ -74,6 +74,23 @@ final class TextWidgetTest extends TestCase {
     $this->assertStringContainsString('█', $widget->view(new DefaultTheme()));
   }
 
+  public function testMultibyteEditingKeepsCharacterBoundaries(): void {
+    $widget = new TextWidget();
+
+    // One Backspace removes a whole multi-byte character, not one byte.
+    $widget->handle(Key::char('é'));
+    $widget->handle(Key::char('x'));
+    $widget->handle(Key::named(KeyName::Backspace));
+    $widget->handle(Key::named(KeyName::Backspace));
+    $this->assertSame('', $widget->value());
+
+    // Left moves over a whole character, so an insertion cannot split it.
+    $widget->handle(Key::char('é'));
+    $widget->handle(Key::named(KeyName::Left));
+    $widget->handle(Key::char('a'));
+    $this->assertSame('aé', $widget->value());
+  }
+
   public function testCancel(): void {
     $widget = new TextWidget('x');
 

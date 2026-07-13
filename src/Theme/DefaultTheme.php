@@ -831,13 +831,13 @@ class DefaultTheme implements ThemeInterface {
   protected function scrolledBody(array $body, Viewport $viewport, int $height): array {
     $lines = [];
 
-    if ($viewport->has_above) {
+    if ($viewport->hasAbove) {
       $lines[] = $this->indicator('  ' . $this->indicatorUp());
     }
 
     $lines = array_merge($lines, (new Scroller())->slice($body, $viewport->offset, $height));
 
-    if ($viewport->has_below) {
+    if ($viewport->hasBelow) {
       $lines[] = $this->indicator('  ' . $this->indicatorDown());
     }
 

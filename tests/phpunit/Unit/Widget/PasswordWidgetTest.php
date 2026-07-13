@@ -30,6 +30,13 @@ final class PasswordWidgetTest extends TestCase {
     $this->assertSame('s3cret', $value);
   }
 
+  public function testMaskedViewCountsCharactersNotBytes(): void {
+    $widget = new PasswordWidget('éé');
+
+    // Two characters mask as exactly two glyphs, whatever their byte length.
+    $this->assertSame('**|', $widget->view(new DefaultTheme(76, ['color' => FALSE, 'unicode' => FALSE])));
+  }
+
   public function testViewMasksEveryCharacter(): void {
     $widget = new PasswordWidget('abc');
 

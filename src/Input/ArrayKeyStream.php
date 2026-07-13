@@ -55,7 +55,7 @@ final class ArrayKeyStream implements KeyStreamInterface {
         continue;
       }
 
-      foreach (str_split($item) as $char) {
+      foreach (mb_str_split($item) as $char) {
         $keys[] = Key::char($char);
       }
     }

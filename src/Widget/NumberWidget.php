@@ -123,7 +123,7 @@ class NumberWidget extends TextWidget {
    */
   protected function adjust(NumberBounds $bounds, int $direction): void {
     $this->buffer = (string) $bounds->step((int) $this->buffer, $direction);
-    $this->cursor = strlen($this->buffer);
+    $this->cursor = mb_strlen($this->buffer);
     $this->error = NULL;
   }
 
