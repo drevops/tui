@@ -181,7 +181,7 @@ final class PanelBuilder {
   }
 
   /**
-   * Add a date field (a navigable month calendar).
+   * Add a calendar field: a navigable month picker returning an ISO date.
    *
    * @param string $id
    *   The field id.
@@ -191,8 +191,8 @@ final class PanelBuilder {
    * @return \DrevOps\Tui\Builder\FieldBuilder
    *   The field builder.
    */
-  public function date(string $id, string $label = ''): FieldBuilder {
-    return $this->field($id, $label, FieldType::Date);
+  public function calendar(string $id, string $label = ''): FieldBuilder {
+    return $this->field($id, $label, FieldType::Calendar);
   }
 
   /**

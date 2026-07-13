@@ -778,7 +778,7 @@ final class FieldBuilder {
    *   When a declared date is not a valid `Y-m-d` date, or min is after max.
    */
   protected function buildDateBounds(): ?DateBounds {
-    if ($this->fieldType !== FieldType::Date) {
+    if ($this->fieldType !== FieldType::Calendar) {
       return NULL;
     }
 

@@ -217,7 +217,7 @@ final class SchemaValidatorTest extends TestCase {
         $p->multiselect('mods')->option('a')->option('b')->option('c', 'C', disabled: TRUE);
         $p->text('custom')->required()->when(new Condition('profile', eq: 'custom'));
         $p->number('port')->min(1)->max(65535);
-        $p->date('due')->minDate('2026-01-01')->maxDate('2026-12-31');
+        $p->calendar('due')->minDate('2026-01-01')->maxDate('2026-12-31');
         $p->pause('ack');
         $p->search('engine')->option('solr')->option('none');
         $p->multisearch('tags')->option('a')->option('b');

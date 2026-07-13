@@ -14,7 +14,7 @@ use DrevOps\Tui\Input\KeyMapManager;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Theme\DefaultTheme;
-use DrevOps\Tui\Widget\DateWidget;
+use DrevOps\Tui\Widget\CalendarWidget;
 use DrevOps\Tui\Widget\WidgetRunner;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -22,33 +22,33 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Tests the date picker widget.
+ * Tests the calendar widget.
  */
-#[CoversClass(DateWidget::class)]
+#[CoversClass(CalendarWidget::class)]
 #[Group('widget')]
-final class DateWidgetTest extends TestCase {
+final class CalendarWidgetTest extends TestCase {
 
   public function testSeedsFromValue(): void {
-    $widget = new DateWidget('2026-07-15');
+    $widget = new CalendarWidget('2026-07-15');
 
     $this->assertSame('2026-07-15', $widget->value());
   }
 
   public function testOpensOnTodayWhenEmpty(): void {
-    $widget = new DateWidget();
+    $widget = new CalendarWidget();
 
     $this->assertSame((new \DateTimeImmutable('today'))->format('Y-m-d'), $widget->value());
   }
 
   public function testInvalidSeedFallsBackToToday(): void {
-    $widget = new DateWidget('not-a-date');
+    $widget = new CalendarWidget('not-a-date');
 
     $this->assertSame((new \DateTimeImmutable('today'))->format('Y-m-d'), $widget->value());
   }
 
   #[DataProvider('dataProviderNavigation')]
   public function testNavigation(Key $key, string $expected): void {
-    $widget = new DateWidget('2026-07-15');
+    $widget = new CalendarWidget('2026-07-15');
 
     $widget->handle($key);
 
@@ -70,7 +70,7 @@ final class DateWidgetTest extends TestCase {
   public function testVimNavigation(Key $key, string $expected): void {
     // Injecting the vim scope map proves day and week movement resolve through
     // the key bindings: the vim preset reaches the same moves via h/j/k/l.
-    $widget = (new DateWidget('2026-07-15'))->setKeys(KeyMapManager::create('vim')->forField(FieldType::Date));
+    $widget = (new CalendarWidget('2026-07-15'))->setKeys(KeyMapManager::create('vim')->forField(FieldType::Calendar));
 
     $widget->handle($key);
 
@@ -86,7 +86,7 @@ final class DateWidgetTest extends TestCase {
 
   #[DataProvider('dataProviderPageMonthClampsToShortMonth')]
   public function testPageMonthClampsToShortMonth(string $seed, Key $key, string $expected): void {
-    $widget = new DateWidget($seed);
+    $widget = new CalendarWidget($seed);
 
     $widget->handle($key);
 
@@ -103,7 +103,7 @@ final class DateWidgetTest extends TestCase {
   }
 
   public function testUnhandledKeysAreNoOps(): void {
-    $widget = new DateWidget('2026-07-15');
+    $widget = new CalendarWidget('2026-07-15');
 
     // An unmapped character and an unmapped named key both leave the cursor
     // in place.
@@ -115,7 +115,7 @@ final class DateWidgetTest extends TestCase {
 
   public function testNavigationClampsWithinBounds(): void {
     $bounds = new DateBounds(new \DateTimeImmutable('2026-07-10'), new \DateTimeImmutable('2026-07-20'));
-    $widget = new DateWidget('2026-07-11', bounds: $bounds);
+    $widget = new CalendarWidget('2026-07-11', bounds: $bounds);
 
     // A week back would land before the minimum, so it clamps to the minimum.
     $widget->handle(Key::named(KeyName::Up));
@@ -133,12 +133,12 @@ final class DateWidgetTest extends TestCase {
   public function testConstructionClampsSeedIntoBounds(): void {
     $bounds = new DateBounds(new \DateTimeImmutable('2026-07-10'), new \DateTimeImmutable('2026-07-20'));
 
-    $this->assertSame('2026-07-10', (new DateWidget('2026-07-01', bounds: $bounds))->value());
-    $this->assertSame('2026-07-20', (new DateWidget('2026-07-31', bounds: $bounds))->value());
+    $this->assertSame('2026-07-10', (new CalendarWidget('2026-07-01', bounds: $bounds))->value());
+    $this->assertSame('2026-07-20', (new CalendarWidget('2026-07-31', bounds: $bounds))->value());
   }
 
   public function testAcceptReturnsIsoDate(): void {
-    $widget = new DateWidget('2026-07-15');
+    $widget = new CalendarWidget('2026-07-15');
 
     $value = WidgetRunner::run($widget, ArrayKeyStream::of(Key::named(KeyName::Right), Key::named(KeyName::Enter)));
 
@@ -147,7 +147,7 @@ final class DateWidgetTest extends TestCase {
   }
 
   public function testCancel(): void {
-    $widget = new DateWidget('2026-07-15');
+    $widget = new CalendarWidget('2026-07-15');
 
     $widget->handle(Key::named(KeyName::Escape));
 
@@ -155,7 +155,7 @@ final class DateWidgetTest extends TestCase {
   }
 
   public function testValidatorErrorIsShown(): void {
-    $widget = new DateWidget('2026-07-15', validate: static fn(mixed $value): string => 'No dates allowed.');
+    $widget = new CalendarWidget('2026-07-15', validate: static fn(mixed $value): string => 'No dates allowed.');
 
     $widget->handle(Key::named(KeyName::Enter));
 
@@ -164,7 +164,7 @@ final class DateWidgetTest extends TestCase {
   }
 
   public function testRendersCalendar(): void {
-    $widget = new DateWidget('2026-07-15');
+    $widget = new CalendarWidget('2026-07-15');
 
     $view = Ansi::strip($widget->view(new DefaultTheme()));
 
@@ -176,13 +176,13 @@ final class DateWidgetTest extends TestCase {
   }
 
   public function testHints(): void {
-    $labels = array_map(static fn(Hint $hint): string => $hint->label, (new DateWidget('2026-07-15'))->hints());
+    $labels = array_map(static fn(Hint $hint): string => $hint->label, (new CalendarWidget('2026-07-15'))->hints());
 
     $this->assertSame(['day', 'week', 'accept', 'cancel'], $labels);
   }
 
   public function testWeekStartRotatesHeaderAndLayout(): void {
-    $sunday = Ansi::strip((new DateWidget('2026-07-15', bounds: new DateBounds(weekStart: Weekday::Sunday)))->view(new DefaultTheme()));
+    $sunday = Ansi::strip((new CalendarWidget('2026-07-15', bounds: new DateBounds(weekStart: Weekday::Sunday)))->view(new DefaultTheme()));
 
     // A Sunday-first week reorders the weekday header.
     $this->assertMatchesRegularExpression('/Su\s+Mo\s+Tu\s+We\s+Th\s+Fr\s+Sa/', $sunday);
@@ -192,13 +192,13 @@ final class DateWidgetTest extends TestCase {
     // Saturday) and day 5 (Sunday) starts the next row. The default
     // Monday-first week fits days 1-5 in the first row. The first grid row is
     // the third rendered line.
-    $monday = Ansi::strip((new DateWidget('2026-07-15'))->view(new DefaultTheme()));
+    $monday = Ansi::strip((new CalendarWidget('2026-07-15'))->view(new DefaultTheme()));
     $this->assertStringContainsString('5', explode("\n", $monday)[2]);
     $this->assertStringNotContainsString('5', explode("\n", $sunday)[2]);
   }
 
   public function testAsciiRendering(): void {
-    $widget = new DateWidget('2026-07-15');
+    $widget = new CalendarWidget('2026-07-15');
     $theme = new DefaultTheme(76, ['unicode' => FALSE, 'color' => FALSE]);
 
     $view = $widget->view($theme);
@@ -210,7 +210,7 @@ final class DateWidgetTest extends TestCase {
 
   public function testDimsOutOfRangeDays(): void {
     $bounds = new DateBounds(new \DateTimeImmutable('2026-07-10'));
-    $widget = new DateWidget('2026-07-15', bounds: $bounds);
+    $widget = new CalendarWidget('2026-07-15', bounds: $bounds);
     $theme = new DefaultTheme();
 
     $view = $widget->view($theme);
@@ -223,7 +223,7 @@ final class DateWidgetTest extends TestCase {
 
   public function testDimsDaysPastMaximum(): void {
     $bounds = new DateBounds(max: new \DateTimeImmutable('2026-07-20'));
-    $widget = new DateWidget('2026-07-15', bounds: $bounds);
+    $widget = new CalendarWidget('2026-07-15', bounds: $bounds);
     $theme = new DefaultTheme();
 
     $view = $widget->view($theme);

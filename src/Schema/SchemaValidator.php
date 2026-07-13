@@ -154,7 +154,7 @@ class SchemaValidator {
       FieldType::Number => is_int($value) || is_float($value),
       // An empty string is an unset date, left to the required check; any other
       // value must be a strict `Y-m-d` calendar date.
-      FieldType::Date => is_string($value) && ($value === '' || DateBounds::parse($value) instanceof \DateTimeImmutable),
+      FieldType::Calendar => is_string($value) && ($value === '' || DateBounds::parse($value) instanceof \DateTimeImmutable),
       default => is_string($value),
     };
   }
@@ -173,7 +173,7 @@ class SchemaValidator {
       FieldType::Confirm, FieldType::Pause => 'a boolean',
       FieldType::MultiSelect, FieldType::MultiSearch, FieldType::MultiFilePicker, FieldType::Reorder => 'a list',
       FieldType::Number => 'a number',
-      FieldType::Date => 'a date (YYYY-MM-DD)',
+      FieldType::Calendar => 'a date (YYYY-MM-DD)',
       default => 'a string',
     };
   }

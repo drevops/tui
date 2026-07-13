@@ -17,8 +17,8 @@
 declare(strict_types=1);
 
 use DrevOps\Tui\Theme\DefaultTheme;
+use DrevOps\Tui\Widget\CalendarWidget;
 use DrevOps\Tui\Widget\ConfirmWidget;
-use DrevOps\Tui\Widget\DateWidget;
 use DrevOps\Tui\Widget\MultiSearchWidget;
 use DrevOps\Tui\Widget\MultiSelectWidget;
 use DrevOps\Tui\Widget\NumberWidget;
@@ -47,7 +47,7 @@ $ascii = new DefaultTheme(76, ['color' => FALSE, 'unicode' => FALSE]);
 $widgets = [
   'Text' => static fn(): WidgetInterface => new TextWidget('Acme Site'),
   'Number' => static fn(): WidgetInterface => new NumberWidget('8080'),
-  'Date' => static fn(): WidgetInterface => new DateWidget('2026-07-15'),
+  'Calendar' => static fn(): WidgetInterface => new CalendarWidget('2026-07-15'),
   'Textarea' => static fn(): WidgetInterface => new TextareaWidget("Redis for cache\nSolr for search"),
   'Password' => static fn(): WidgetInterface => new PasswordWidget('hunter2'),
   'Select' => static fn(): WidgetInterface => new SelectWidget([

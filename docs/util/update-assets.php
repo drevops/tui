@@ -80,9 +80,9 @@ expect "Number widget" {
     wait_and_enter
 }
 EXPECT,
-    'date' => <<<'EXPECT'
-# Date: move down a week, accept.
-expect "Date widget" {
+    'calendar' => <<<'EXPECT'
+# Calendar: move down a week, accept.
+expect "Calendar widget" {
     pause 1000
     arrow_down
     wait_and_enter
@@ -508,7 +508,7 @@ EXPECT,
   $widget_rows = [
     'text' => 6,
     'number' => 6,
-    'date' => 14,
+    'calendar' => 14,
     'textarea' => 8,
     'password' => 6,
     'select' => 8,

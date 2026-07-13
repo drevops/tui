@@ -33,7 +33,7 @@ final class AllWidgetsForm {
       ->panel('widgets', 'Widgets', function (PanelBuilder $p) use ($picker_start): void {
         $p->text('text', 'Text')->default('txt');
         $p->number('number', 'Number')->default(7);
-        $p->date('date', 'Date')->default('2026-07-15');
+        $p->calendar('date', 'Calendar')->default('2026-07-15');
         $p->textarea('textarea', 'Textarea')->default('note');
         $p->password('password', 'Password')->default('pw');
         $p->select('select', 'Select')->options(['a' => 'Alpha', 'b' => 'Beta'])->default('b');
