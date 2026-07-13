@@ -46,6 +46,11 @@ $form = Form::create('Widgets')
       'solr' => 'Solr',
       'clamav' => 'ClamAV',
     ]);
+    $p->reorder('reorder', 'Reorder')->options([
+      'redis' => 'Redis',
+      'solr' => 'Solr',
+      'clamav' => 'ClamAV',
+    ]);
     $p->suggest('suggest', 'Suggest')->options([
       'UTC' => 'UTC',
       'Europe/London' => 'Europe/London',

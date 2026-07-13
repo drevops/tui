@@ -85,6 +85,10 @@ class DefaultKeyMap {
     $bindings[] = new Binding(Scope::field(FieldType::MultiFilePicker), Action::Reveal, KeyName::Tab);
     $bindings[] = new Binding(Scope::field(FieldType::MultiFilePicker), Action::Toggle, KeyName::Space);
 
+    // The reorder widget picks up and drops the highlighted item on Space;
+    // Up and Down (inherited from the base) move the cursor, or the held item.
+    $bindings[] = new Binding(Scope::field(FieldType::Reorder), Action::Grab, KeyName::Space);
+
     return $bindings;
   }
 

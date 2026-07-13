@@ -181,6 +181,30 @@ final class SchemaValidatorTest extends TestCase {
     $this->assertContains('Question "paths" must be a list.', $validator->validate(['name' => 'Acme', 'paths' => 'notalist']));
   }
 
+  public function testReorderAcceptsFullPermutation(): void {
+    $validator = new SchemaValidator($this->config());
+
+    $this->assertSame([], $validator->validate(['name' => 'Acme', 'ranking' => ['z', 'x', 'y']]));
+  }
+
+  public function testReorderWrongType(): void {
+    $errors = (new SchemaValidator($this->config()))->validate(['name' => 'Acme', 'ranking' => 'notalist']);
+
+    $this->assertContains('Question "ranking" must be a list.', $errors);
+  }
+
+  public function testReorderIncompleteRankingRejected(): void {
+    $errors = (new SchemaValidator($this->config()))->validate(['name' => 'Acme', 'ranking' => ['x', 'y']]);
+
+    $this->assertContains('Question "ranking": must rank every option exactly once (x, y, z).', $errors);
+  }
+
+  public function testReorderUnknownItemRejected(): void {
+    $errors = (new SchemaValidator($this->config()))->validate(['name' => 'Acme', 'ranking' => ['x', 'y', 'w']]);
+
+    $this->assertContains('Question "ranking": value "w" is not one of: x, y, z.', $errors);
+  }
+
   /**
    * Build a config exercising every validation branch.
    */
@@ -200,6 +224,7 @@ final class SchemaValidatorTest extends TestCase {
         $p->toggle('visibility')->option('public')->option('private');
         $p->filePicker('cfg');
         $p->multiFilePicker('paths');
+        $p->reorder('ranking')->option('x')->option('y')->option('z');
       })
       ->build();
   }

@@ -350,6 +350,7 @@ final class Form {
 
     $this->assertUniqueFieldIds($config);
     $this->assertToggleOptions($config);
+    $this->assertReorderOptions($config);
 
     return $config;
   }
@@ -399,6 +400,33 @@ final class Form {
 
       if (!is_string($field->default) || !in_array($field->default, $values, TRUE)) {
         throw new ConfigException(sprintf('Toggle field "%s" default must be one of: %s.', $field->id, implode(', ', $values)));
+      }
+    }
+  }
+
+  /**
+   * Assert that every reorder field declares at least two plain options.
+   *
+   * A ranking arranges a flat list, so headings, separators and disabled rows
+   * have no place in it, and fewer than two items is nothing to reorder.
+   *
+   * @param \DrevOps\Tui\Config\Config $config
+   *   The built config.
+   */
+  protected function assertReorderOptions(Config $config): void {
+    foreach ($config->fields() as $field) {
+      if ($field->type !== FieldType::Reorder) {
+        continue;
+      }
+
+      foreach ($field->options as $option) {
+        if (!$option->selectable()) {
+          throw new ConfigException(sprintf('Reorder field "%s" allows only plain options - no headings, separators or disabled rows.', $field->id));
+        }
+      }
+
+      if (count($field->options) < 2) {
+        throw new ConfigException(sprintf('Reorder field "%s" must have at least two options, %d given.', $field->id, count($field->options)));
       }
     }
   }

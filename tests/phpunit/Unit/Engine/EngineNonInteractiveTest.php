@@ -9,6 +9,7 @@ use DrevOps\Tui\Builder\PanelBuilder;
 use DrevOps\Tui\Derive\Derive;
 use DrevOps\Tui\Discovery\Dotenv;
 use DrevOps\Tui\Engine\Engine;
+use DrevOps\Tui\Engine\EngineException;
 use DrevOps\Tui\Handler\Context;
 use DrevOps\Tui\Handler\HandlerRegistry;
 use DrevOps\Tui\Resolver\InputResolver;
@@ -53,6 +54,45 @@ final class EngineNonInteractiveTest extends TestCase {
     // --prompts wins over env.
     $inputs = $resolver->resolve($config->fields(), '{"target": "from_prompts"}', ['VORTEX_TARGET' => 'from_env_var']);
     $this->assertSame('from_prompts', $engine->collect($inputs, new Context($dir, [], TRUE))['target']);
+  }
+
+  public function testReorderHeadlessParity(): void {
+    $config = Form::create('T')
+      ->panel('p', 'p', function (PanelBuilder $p): void {
+        $p->reorder('ranking')->options(['a' => 'A', 'b' => 'B', 'c' => 'C'])->default(['b']);
+      })
+      ->build();
+    $resolver = new InputResolver('VORTEX_');
+    $engine = new Engine($config, new HandlerRegistry());
+
+    // No input: the declared default, completed to a full ranking.
+    $inputs = $resolver->resolve($config->fields(), '', []);
+    $this->assertSame(['b', 'a', 'c'], $engine->collect($inputs, new Context('', [], FALSE))['ranking']);
+
+    // An env comma list is coerced to an ordered ranking.
+    $inputs = $resolver->resolve($config->fields(), '', ['VORTEX_RANKING' => 'c, a, b']);
+    $this->assertSame(['c', 'a', 'b'], $engine->collect($inputs, new Context('', [], FALSE))['ranking']);
+
+    // A --prompts JSON array is taken as the ranking directly.
+    $inputs = $resolver->resolve($config->fields(), '{"ranking": ["c", "b", "a"]}', []);
+    $this->assertSame(['c', 'b', 'a'], $engine->collect($inputs, new Context('', [], FALSE))['ranking']);
+  }
+
+  public function testReorderRejectsIncompletePermutation(): void {
+    $config = Form::create('T')
+      ->panel('p', 'p', function (PanelBuilder $p): void {
+        $p->reorder('ranking')->option('a')->option('b')->option('c');
+      })
+      ->build();
+    $resolver = new InputResolver('VORTEX_');
+    $engine = new Engine($config, new HandlerRegistry());
+
+    $inputs = $resolver->resolve($config->fields(), '', ['VORTEX_RANKING' => 'a, b']);
+
+    $this->expectException(EngineException::class);
+    $this->expectExceptionMessage('Invalid value for field "ranking": must rank every option exactly once (a, b, c)');
+
+    $engine->collect($inputs, new Context('', [], FALSE));
   }
 
 }

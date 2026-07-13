@@ -187,6 +187,21 @@ final class SchemaGeneratorTest extends TestCase {
     $this->assertStringContainsString('"value":"private"', $json);
   }
 
+  public function testDescribesReorderField(): void {
+    $config = Form::create('T')
+      ->panel('p', 'p', function (PanelBuilder $p): void {
+        $p->reorder('ranking', 'Ranking')->options(['a' => 'A', 'b' => 'B', 'c' => 'C'])->default(['c']);
+      })
+      ->build();
+
+    $json = (string) json_encode((new SchemaGenerator($config))->generate());
+
+    $this->assertStringContainsString('"type":"reorder"', $json);
+    // The partial default is completed to a full ranking in the schema.
+    $this->assertStringContainsString('"default":["c","a","b"]', $json);
+    $this->assertStringContainsString('"value":"a"', $json);
+  }
+
   public function testRoundTripsThroughJson(): void {
     $config = Form::create('T')
       ->panel('p', 'p', function (PanelBuilder $p): void {

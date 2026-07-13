@@ -195,6 +195,10 @@ final readonly class Field {
       }
     }
 
+    if ($this->type === FieldType::Reorder) {
+      return $this->rankingError($items);
+    }
+
     return NULL;
   }
 
@@ -221,6 +225,74 @@ final readonly class Field {
     }
 
     return sprintf('value "%s" is not one of: %s', $value, implode(', ', $this->selectableValues()));
+  }
+
+  /**
+   * Check that a ranking lists every selectable option exactly once.
+   *
+   * Membership is verified by the caller, so a value that is a full
+   * permutation has the same length as the option set with no repeats.
+   *
+   * @param array<array-key,mixed> $items
+   *   The supplied ranking, already confirmed to hold only selectable values.
+   *
+   * @return string|null
+   *   An error fragment when the ranking omits or repeats an option, or NULL
+   *   when it is a complete permutation.
+   */
+  protected function rankingError(array $items): ?string {
+    $selectable = $this->selectableValues();
+
+    $seen = [];
+    foreach ($items as $item) {
+      $seen[is_scalar($item) ? (string) $item : ''] = TRUE;
+    }
+
+    if (count($items) === count($selectable) && count($seen) === count($items)) {
+      return NULL;
+    }
+
+    return sprintf('must rank every option exactly once (%s)', implode(', ', $selectable));
+  }
+
+  /**
+   * Order a set of values, completing and de-duplicating a desired ordering.
+   *
+   * The desired values that belong to the allowed set come first - in the
+   * given order, de-duplicated - then every allowed value the desired list
+   * omits is appended in its declared order. The result is always a full
+   * permutation of the allowed values, so a partial or dirty ordering still
+   * resolves to a complete one.
+   *
+   * @param list<string> $allowed
+   *   The full set of values, in declared order.
+   * @param list<string> $desired
+   *   The requested ordering; values outside the allowed set are ignored and
+   *   repeats collapsed.
+   *
+   * @return list<string>
+   *   The allowed values in the resolved order.
+   */
+  public static function canonicalOrder(array $allowed, array $desired): array {
+    $set = array_fill_keys($allowed, TRUE);
+
+    $order = [];
+    $seen = [];
+    foreach ($desired as $value) {
+      if (isset($set[$value]) && !isset($seen[$value])) {
+        $order[] = $value;
+        $seen[$value] = TRUE;
+      }
+    }
+
+    foreach ($allowed as $value) {
+      if (!isset($seen[$value])) {
+        $order[] = $value;
+        $seen[$value] = TRUE;
+      }
+    }
+
+    return $order;
   }
 
 }

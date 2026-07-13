@@ -52,6 +52,9 @@ enum Action {
   case SelectAll;
   case SelectNone;
 
+  // Reorder.
+  case Grab;
+
   // Confirm.
   case Yes;
   case No;

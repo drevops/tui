@@ -24,6 +24,7 @@ use DrevOps\Tui\Widget\MultiSelectWidget;
 use DrevOps\Tui\Widget\NumberWidget;
 use DrevOps\Tui\Widget\PasswordWidget;
 use DrevOps\Tui\Widget\PauseWidget;
+use DrevOps\Tui\Widget\ReorderWidget;
 use DrevOps\Tui\Widget\SearchWidget;
 use DrevOps\Tui\Widget\SelectWidget;
 use DrevOps\Tui\Widget\SuggestWidget;
@@ -59,6 +60,11 @@ $widgets = [
     'solr' => 'Solr',
     'clamav' => 'ClamAV',
   ], ['redis', 'solr']),
+  'Reorder' => static fn(): WidgetInterface => new ReorderWidget([
+    'redis' => 'Redis',
+    'solr' => 'Solr',
+    'clamav' => 'ClamAV',
+  ]),
   'Suggest' => static fn(): WidgetInterface => new SuggestWidget([
     'UTC',
     'Europe/London',

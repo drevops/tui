@@ -106,6 +106,21 @@ final class PanelBuilder {
   }
 
   /**
+   * Add a reorder field (rank a list by moving the highlighted item).
+   *
+   * @param string $id
+   *   The field id.
+   * @param string $label
+   *   The label (defaults to the id).
+   *
+   * @return \DrevOps\Tui\Builder\FieldBuilder
+   *   The field builder.
+   */
+  public function reorder(string $id, string $label = ''): FieldBuilder {
+    return $this->field($id, $label, FieldType::Reorder);
+  }
+
+  /**
    * Add a confirm field.
    *
    * @param string $id

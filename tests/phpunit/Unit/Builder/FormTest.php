@@ -62,6 +62,7 @@ final class FormTest extends TestCase {
         $p->toggle('visibility', 'Visibility')->options(['public' => 'Public', 'private' => 'Private'])->default('private');
         $p->password('secret', 'Secret')->revealable()->confirm();
         $p->suggest('timezone', 'Timezone')->discover(new Dotenv('TZ'));
+        $p->reorder('ranking', 'Priorities')->options(['fast' => 'Fast', 'cheap' => 'Cheap', 'good' => 'Good'])->default(['good', 'fast']);
         $p->panel('advanced', 'Advanced', function (PanelBuilder $sp): void {
           $sp->text('webroot', 'Web root')->default('web');
         });
@@ -131,6 +132,13 @@ final class FormTest extends TestCase {
     $this->assertInstanceOf(Dotenv::class, $timezone->discover);
     $this->assertSame('TZ', $timezone->discover->key);
 
+    $ranking = $config->field('ranking');
+    $this->assertInstanceOf(Field::class, $ranking);
+    $this->assertSame(FieldType::Reorder, $ranking->type);
+    // A partial declared default is completed to a full ranking in declared
+    // order: the given values first, the remaining options appended.
+    $this->assertSame(['good', 'fast', 'cheap'], $ranking->default);
+
     $webroot = $config->field('webroot');
     $this->assertInstanceOf(Field::class, $webroot);
     $this->assertSame('web', $webroot->default);
@@ -155,6 +163,7 @@ final class FormTest extends TestCase {
         $panel->filePicker('fp');
         $panel->multiFilePicker('mfp');
         $panel->pause('pa');
+        $panel->reorder('rk')->option('a')->option('b')->option('c');
       })
       ->build();
 
@@ -179,6 +188,8 @@ final class FormTest extends TestCase {
     // A single picker defaults to an empty path; a multiple picker to no paths.
     $this->assertSame('', $config->field('fp')?->default);
     $this->assertSame([], $config->field('mfp')?->default);
+    // A reorder with no declared default ranks every option in declared order.
+    $this->assertSame(['a', 'b', 'c'], $config->field('rk')?->default);
     // The picker options are opt-in, so they default off.
     $this->assertSame(FilePickerMode::Any, $config->field('fp')->pickerMode);
     $this->assertSame('', $config->field('fp')->pickerStart);
@@ -473,6 +484,38 @@ final class FormTest extends TestCase {
     // The implicit default is the first option's value "0" as a string, not a
     // numeric-string coerced to int by the array key.
     $this->assertSame('0', $config->field('flag')?->default);
+  }
+
+  public function testReorderToleratesDirtyDefault(): void {
+    $config = Form::create('T')
+      ->panel('p', 'P', function (PanelBuilder $p): void {
+        $p->reorder('rk')->option('a')->option('b')->default('notalist');
+        $p->reorder('rk2')->option('a')->option('b')->default(['b', 42, 'a']);
+      })
+      ->build();
+
+    // A non-list default falls back to the full declared order.
+    $this->assertSame(['a', 'b'], $config->field('rk')?->default);
+    // Non-string entries are ignored; the remaining values still complete it.
+    $this->assertSame(['b', 'a'], $config->field('rk2')?->default);
+  }
+
+  public function testReorderWithFewerThanTwoOptionsThrows(): void {
+    $this->expectException(ConfigException::class);
+    $this->expectExceptionMessage('Reorder field "r" must have at least two options, 1 given.');
+
+    Form::create('T')
+      ->panel('p', 'P', fn(PanelBuilder $p): FieldBuilder => $p->reorder('r')->option('only'))
+      ->build();
+  }
+
+  public function testReorderWithStructuralOptionThrows(): void {
+    $this->expectException(ConfigException::class);
+    $this->expectExceptionMessage('Reorder field "r" allows only plain options - no headings, separators or disabled rows.');
+
+    Form::create('T')
+      ->panel('p', 'P', fn(PanelBuilder $p): FieldBuilder => $p->reorder('r')->option('a')->separator()->option('b'))
+      ->build();
   }
 
   public function testDefaultKeymapWhenUnset(): void {

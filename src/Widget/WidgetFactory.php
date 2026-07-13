@@ -54,6 +54,7 @@ class WidgetFactory {
       FieldType::Select => new SelectWidget($field->options, is_string($current) ? $current : '', pageSize: $field->pageSize),
       FieldType::MultiSelect => new MultiSelectWidget($field->options, $this->toList($current), pageSize: $field->pageSize),
       FieldType::MultiSearch => new MultiSearchWidget($field->options, $this->toList($current), pageSize: $field->pageSize),
+      FieldType::Reorder => new ReorderWidget($field->options, $this->toList($current), pageSize: $field->pageSize),
       FieldType::Suggest => new SuggestWidget($field->selectableValues(), is_string($current) ? $current : '', pageSize: $field->pageSize),
       FieldType::Search => new SearchWidget($field->options, is_string($current) ? $current : '', pageSize: $field->pageSize),
       FieldType::FilePicker => new FilePickerWidget($field->pickerStart, is_string($current) ? $current : '', $field->pickerMode, $field->pickerExtensions, $field->pickerShowHidden),

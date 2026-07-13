@@ -23,6 +23,7 @@ enum FieldType: string {
   case Password = 'password';
   case Search = 'search';
   case MultiSearch = 'multisearch';
+  case Reorder = 'reorder';
   case FilePicker = 'filepicker';
   case MultiFilePicker = 'multifilepicker';
   case Pause = 'pause';
@@ -36,7 +37,14 @@ enum FieldType: string {
    *   TRUE for the option-constrained choice types.
    */
   public function constrainsToOptions(): bool {
-    return in_array($this, [self::Select, self::Search, self::Toggle, self::MultiSelect, self::MultiSearch], TRUE);
+    return in_array($this, [
+      self::Select,
+      self::Search,
+      self::Toggle,
+      self::MultiSelect,
+      self::MultiSearch,
+      self::Reorder,
+    ], TRUE);
   }
 
   /**
@@ -46,7 +54,7 @@ enum FieldType: string {
    *   TRUE for the multi-choice types.
    */
   public function isMulti(): bool {
-    return in_array($this, [self::MultiSelect, self::MultiSearch], TRUE);
+    return in_array($this, [self::MultiSelect, self::MultiSearch, self::Reorder], TRUE);
   }
 
 }
