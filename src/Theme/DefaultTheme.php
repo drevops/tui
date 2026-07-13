@@ -547,7 +547,7 @@ class DefaultTheme implements ThemeInterface {
       $lines[] = $this->renderFieldLine($field, $answers, $index === $cursor);
 
       if ($verbose && $field->description !== '') {
-        $lines[] = $this->renderDescriptionLine($field->description, $index === $cursor);
+        $lines[] = $this->renderDescriptionLine(t($field->description), $index === $cursor);
       }
 
       $index++;
@@ -565,7 +565,7 @@ class DefaultTheme implements ThemeInterface {
       $lines[] = $this->renderPanelLine($subpanel, $index === $cursor);
 
       if ($verbose && $subpanel->description !== '') {
-        $lines[] = $this->renderDescriptionLine($subpanel->description, $index === $cursor);
+        $lines[] = $this->renderDescriptionLine(t($subpanel->description), $index === $cursor);
       }
 
       $summary = $verbose ? $this->summarizePanel($subpanel, $answers) : '';
@@ -593,14 +593,14 @@ class DefaultTheme implements ThemeInterface {
    *   The row.
    */
   public function renderFieldLine(Field $field, Answers $answers, bool $selected): string {
-    $left = $this->marker($selected) . ' ' . $this->label($field->label, $selected) . '  ' . $this->value($this->renderFieldValue($field, $answers->value($field->id)), $selected);
+    $left = $this->marker($selected) . ' ' . $this->label(t($field->label), $selected) . '  ' . $this->value($this->renderFieldValue($field, $answers->value($field->id)), $selected);
 
     $provenance = $answers->provenanceOf($field->id);
     if ($provenance === Provenance::Default) {
       return $left;
     }
 
-    return Ansi::alignRight($left, $this->badge(' ' . $provenance->value . ' ', $selected), $this->width);
+    return Ansi::alignRight($left, $this->badge(' ' . t($provenance->value) . ' ', $selected), $this->width);
   }
 
   /**
@@ -615,7 +615,7 @@ class DefaultTheme implements ThemeInterface {
    *   The row.
    */
   public function renderPanelLine(Panel $panel, bool $selected): string {
-    return $this->marker($selected) . ' ' . $this->label($panel->title, $selected) . ' ' . $this->description($this->arrow(), $selected);
+    return $this->marker($selected) . ' ' . $this->label(t($panel->title), $selected) . ' ' . $this->description($this->arrow(), $selected);
   }
 
   /**
@@ -691,7 +691,7 @@ class DefaultTheme implements ThemeInterface {
    *   The breadcrumb line.
    */
   public function renderBreadcrumbLine(Navigator $navigator): string {
-    return $this->breadcrumb(implode(' ' . $this->separator() . ' ', $navigator->breadcrumb()));
+    return $this->breadcrumb(implode(' ' . $this->separator() . ' ', array_map(t(...), $navigator->breadcrumb())));
   }
 
   /**

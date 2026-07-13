@@ -303,7 +303,7 @@ class PanelController {
     }
 
     if ($this->editor instanceof WidgetInterface) {
-      $label = $this->editing instanceof Field ? $this->editing->label : '';
+      $label = $this->editing instanceof Field ? t($this->editing->label) : '';
       $keys = $this->editing instanceof Field ? $this->keymap->forField($this->editing->type) : $this->nav;
       $hints = $this->config->footer ? $this->editor->hints() : [];
 
@@ -324,7 +324,7 @@ class PanelController {
         $cursor_line = count($body);
       }
 
-      $body[] = $this->theme->renderButtonBar([$this->config->submitLabel, $this->config->cancelLabel], $selected);
+      $body[] = $this->theme->renderButtonBar([t($this->config->submitLabel), t($this->config->cancelLabel)], $selected);
     }
 
     $total = count($body);
