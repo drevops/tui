@@ -2,7 +2,11 @@
 
 /**
  * @file
- * Interactive multi file picker: Space toggles, arrows move, Enter accepts.
+ * Multi file picker field on a form, collected through the Tui facade.
+ *
+ * Space toggles, arrows move, Enter accepts. The form points the picker at a
+ * small fixture tree with `->start()` and lets several entries be chosen,
+ * instead of invoking the widget directly.
  *
  * Usage:
  *   php 3-widgets/widget-multifilepicker.php
@@ -12,41 +16,21 @@
 
 declare(strict_types=1);
 
-use DrevOps\Tui\Input\KeyParser;
-use DrevOps\Tui\Render\Terminal;
-use DrevOps\Tui\Theme\DefaultTheme;
-use DrevOps\Tui\Widget\FilePickerWidget;
+use DrevOps\Tui\Builder\Form;
+use DrevOps\Tui\Builder\PanelBuilder;
+use DrevOps\Tui\Tui;
 
 require __DIR__ . '/../../vendor/autoload.php';
 
 // Forcing the mode with a flag shows the textual (ASCII) or no-colour
 // rendering without changing the terminal locale.
 $opts = getopt('', ['no-unicode', 'no-ansi']);
-$theme = new DefaultTheme(76, ['color' => !isset($opts['no-ansi']), 'unicode' => !isset($opts['no-unicode'])]);
 
-// Browse a small fixture tree, choosing several entries.
-$widget = new FilePickerWidget(__DIR__ . '/filepicker-tree', multiple: TRUE);
+$form = Form::create('Multi file picker widget')
+  ->color(isset($opts['no-ansi']) ? FALSE : NULL)
+  ->unicode(isset($opts['no-unicode']) ? FALSE : NULL)
+  ->panel('main', 'Multi file picker', function (PanelBuilder $p): void {
+    $p->multiFilePicker('files', 'Multi file picker')->start(__DIR__ . '/filepicker-tree');
+  });
 
-$terminal = new Terminal();
-$parser = new KeyParser();
-$terminal->setup();
-
-try {
-  // The picker renders its own key-hint line, so no extra hint is added here.
-  while (!$widget->isComplete() && !$widget->isCancelled()) {
-    $terminal->render(implode("\n", [
-      $theme->renderEditorHeader('Multi file picker widget'),
-      '',
-      $widget->view($theme),
-    ]));
-
-    foreach ($parser->parse($terminal->read()) as $key) {
-      $widget->handle($key);
-    }
-  }
-}
-finally {
-  $terminal->restore();
-}
-
-echo 'Multi file picker: ' . ($widget->isCancelled() ? '(cancelled)' : (string) json_encode($widget->value())) . PHP_EOL;
+echo (new Tui($form))->run()->toJson() . "\n";

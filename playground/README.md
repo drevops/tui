@@ -36,14 +36,16 @@ composer install
   php playground/2-custom-theme/run.php
   ```
 
-- **[`3-widgets/`](3-widgets)** - interact with each widget on its own, or all
-  in turn. Widgets pull their glyphs from the theme, and the mode flags force
-  textual (ASCII) or no-colour rendering so you can see either without changing
-  your terminal locale (mirrors prompty's `--no-unicode` / `--no-ansi`):
+- **[`3-widgets/`](3-widgets)** - each widget shown as a field on a form and
+  collected through the `Tui` facade: one widget per file, or every widget on a
+  single form. Widgets pull their glyphs from the theme, and the mode flags
+  force textual (ASCII) or no-colour rendering so you can see either without
+  changing your terminal locale (mirrors prompty's `--no-unicode` /
+  `--no-ansi`):
 
   ```bash
-  php playground/3-widgets/widget-select.php               # one widget
-  php playground/3-widgets/widgets.php                     # every widget in turn
+  php playground/3-widgets/widget-select.php               # one widget, as a form
+  php playground/3-widgets/widgets.php                     # every widget on one form
   php playground/3-widgets/widget-select.php --no-unicode  # textual glyphs
   php playground/3-widgets/widget-select.php --no-ansi     # no colour
   php playground/3-widgets/show.php                        # static, both modes side by side
