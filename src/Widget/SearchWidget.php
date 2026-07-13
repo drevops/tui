@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Widget;
 
-use DrevOps\Tui\Config\OptionKind;
+use DrevOps\Tui\Config\Option;
 use DrevOps\Tui\Input\Action;
-use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Theme\ThemeInterface;
 
 /**
  * A single-choice list with fuzzy type-to-filter over the option labels.
  *
+ * The select widget plus a query line: printable characters narrow the list,
+ * ranked by fuzzy relevance, and the matched characters are highlighted.
+ *
  * @package DrevOps\Tui\Widget
  */
-class SearchWidget extends AbstractWidget {
-
-  use ChoiceListTrait;
+class SearchWidget extends SelectWidget {
 
   /**
    * The current type-to-filter text.
@@ -25,62 +25,11 @@ class SearchWidget extends AbstractWidget {
   protected string $filter = '';
 
   /**
-   * The highlighted index within the visible (filtered) options.
-   */
-  protected int $cursor = 0;
-
-  /**
-   * Construct a search widget.
-   *
-   * @param array<int|string,\DrevOps\Tui\Config\Option|string> $options
-   *   Option rows in display order - a list of options or the value => label
-   *   shorthand map.
-   * @param string $default
-   *   The initially highlighted value.
-   * @param \Closure|null $validate
-   *   Optional validator (see AbstractWidget).
-   * @param \Closure|null $transform
-   *   Optional transformer (see AbstractWidget).
-   * @param int|null $pageSize
-   *   The number of option rows shown at once before the list pages; NULL uses
-   *   the default.
-   */
-  public function __construct(array $options, string $default = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL, ?int $pageSize = NULL) {
-    parent::__construct($validate, $transform);
-    $this->initOptions($options);
-    $this->cursor = $this->cursorForDefault($this->options, $default);
-    $this->pageSize = $this->resolvePageSize($pageSize);
-  }
-
-  /**
    * {@inheritdoc}
    */
+  #[\Override]
   public function handle(Key $key): void {
     $keys = $this->keys();
-
-    if ($this->handleCancel($key)) {
-      return;
-    }
-
-    if ($keys->matches($key, Action::Accept)) {
-      if ($this->currentSelectable()) {
-        $this->accept($this->liveValue());
-      }
-
-      return;
-    }
-
-    if ($keys->matches($key, Action::MoveUp)) {
-      $this->cursor = $this->stepCursor($this->visible(), $this->cursor, -1);
-
-      return;
-    }
-
-    if ($keys->matches($key, Action::MoveDown)) {
-      $this->cursor = $this->stepCursor($this->visible(), $this->cursor, 1);
-
-      return;
-    }
 
     if ($keys->matches($key, Action::DeleteBack)) {
       $this->filter = substr($this->filter, 0, -1);
@@ -99,7 +48,11 @@ class SearchWidget extends AbstractWidget {
     if ($key->isChar()) {
       $this->filter .= $key->char ?? '';
       $this->resetFilterCursor();
+
+      return;
     }
+
+    parent::handle($key);
   }
 
   /**
@@ -111,15 +64,13 @@ class SearchWidget extends AbstractWidget {
   }
 
   /**
-   * The rows currently visible under the filter.
+   * {@inheritdoc}
    *
    * With no filter every row shows in declared order; once filtering, only
    * matching options show, ranked by fuzzy relevance - structural headings and
    * separators drop away so the result reads as a flat relevance list.
-   *
-   * @return list<\DrevOps\Tui\Config\Option>
-   *   The visible rows.
    */
+  #[\Override]
   protected function visible(): array {
     if ($this->filter === '') {
       return $this->options;
@@ -129,65 +80,23 @@ class SearchWidget extends AbstractWidget {
   }
 
   /**
-   * Whether the highlighted visible row is a selectable option.
-   *
-   * @return bool
-   *   TRUE when the cursor rests on a selectable option.
-   */
-  protected function currentSelectable(): bool {
-    return ($this->visible()[$this->cursor] ?? NULL)?->selectable() ?? FALSE;
-  }
-
-  /**
    * {@inheritdoc}
    */
-  protected function liveValue(): mixed {
-    return $this->currentSelectable() ? $this->visible()[$this->cursor]->value : '';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
+  #[\Override]
   public function view(ThemeInterface $theme): string {
-    $lines = [$this->filter . $theme->caret()];
+    return $this->filter . $theme->caret() . "\n" . parent::view($theme);
+  }
 
-    $visible = $this->visible();
-    $viewport = $this->pageViewport(count($visible), $this->cursor);
-
-    if ($viewport->has_above) {
-      $lines[] = $theme->indicator('  ' . $theme->indicatorUp());
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  protected function renderOptionRow(ThemeInterface $theme, Option $option, bool $current): string {
+    if ($option->disabled) {
+      return $theme->radio(FALSE) . ' ' . $this->renderDisabledLabel($theme, $option);
     }
 
-    foreach (array_slice($visible, $viewport->offset, $this->pageSize) as $slot => $option) {
-      $index = $viewport->offset + $slot;
-
-      if ($option->kind === OptionKind::Heading) {
-        $lines[] = $this->renderHeadingRow($theme, $option);
-
-        continue;
-      }
-
-      if ($option->kind === OptionKind::Separator) {
-        $lines[] = $this->renderSeparatorRow($theme);
-
-        continue;
-      }
-
-      if ($option->disabled) {
-        $lines[] = $theme->radio(FALSE) . ' ' . $this->renderDisabledLabel($theme, $option);
-
-        continue;
-      }
-
-      $current = $index === $this->cursor;
-      $lines[] = $theme->radio($current) . ' ' . $this->renderMatchedLabel($theme, $option->label, $this->positionsFor($option->label), $current);
-    }
-
-    if ($viewport->has_below) {
-      $lines[] = $theme->indicator('  ' . $theme->indicatorDown());
-    }
-
-    return implode("\n", $lines);
+    return $theme->radio($current) . ' ' . $this->renderMatchedLabel($theme, $option->label, $this->matchPositions($option->label), $current);
   }
 
   /**
@@ -199,16 +108,8 @@ class SearchWidget extends AbstractWidget {
    * @return list<int>
    *   The matched indices, or an empty list when not filtering.
    */
-  protected function positionsFor(string $label): array {
+  protected function matchPositions(string $label): array {
     return $this->filter === '' ? [] : $this->matcher()->positions($label, $this->filter);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  #[\Override]
-  public function hints(): array {
-    return [new Hint('move', Action::MoveUp, Action::MoveDown), ...parent::hints()];
   }
 
 }

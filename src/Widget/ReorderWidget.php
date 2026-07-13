@@ -153,24 +153,16 @@ class ReorderWidget extends AbstractWidget {
    * {@inheritdoc}
    */
   public function view(ThemeInterface $theme): string {
-    $lines = [];
-
     $viewport = $this->pageViewport(count($this->items), $this->cursor);
 
-    if ($viewport->has_above) {
-      $lines[] = $theme->indicator('  ' . $theme->indicatorUp());
-    }
+    $rows = [];
 
     foreach (array_slice($this->items, $viewport->offset, $this->pageSize) as $slot => $option) {
       $current = $viewport->offset + $slot === $this->cursor;
-      $lines[] = $this->marker($theme, $current) . ' ' . $this->highlightLabel($theme, $option->label, $current);
+      $rows[] = $this->marker($theme, $current) . ' ' . $this->highlightLabel($theme, $option->label, $current);
     }
 
-    if ($viewport->has_below) {
-      $lines[] = $theme->indicator('  ' . $theme->indicatorDown());
-    }
-
-    return implode("\n", $lines);
+    return implode("\n", $this->wrapScrolled($theme, $rows, $viewport));
   }
 
   /**

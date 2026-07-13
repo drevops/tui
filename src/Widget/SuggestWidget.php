@@ -19,7 +19,7 @@ class SuggestWidget extends AbstractWidget {
   /**
    * The highlighted suggestion index, or -1 for none.
    */
-  protected int $highlight = -1;
+  protected int $cursor = -1;
 
   /**
    * Construct a suggest widget.
@@ -58,13 +58,13 @@ class SuggestWidget extends AbstractWidget {
     }
 
     if ($keys->matches($key, Action::MoveDown)) {
-      $this->highlight = min(count($this->matches()) - 1, $this->highlight + 1);
+      $this->cursor = min(count($this->visible()) - 1, $this->cursor + 1);
 
       return;
     }
 
     if ($keys->matches($key, Action::MoveUp)) {
-      $this->highlight = max(-1, $this->highlight - 1);
+      $this->cursor = max(-1, $this->cursor - 1);
 
       return;
     }
@@ -93,7 +93,7 @@ class SuggestWidget extends AbstractWidget {
    * Reset the highlight and paging when the query changes.
    */
   protected function resetFilterCursor(): void {
-    $this->highlight = -1;
+    $this->cursor = -1;
     $this->offset = 0;
   }
 
@@ -103,7 +103,7 @@ class SuggestWidget extends AbstractWidget {
    * @return list<string>
    *   The matching suggestion values, most relevant first.
    */
-  protected function matches(): array {
+  protected function visible(): array {
     if ($this->buffer === '') {
       return $this->values;
     }
@@ -115,10 +115,10 @@ class SuggestWidget extends AbstractWidget {
    * {@inheritdoc}
    */
   protected function liveValue(): mixed {
-    if ($this->highlight >= 0) {
-      $matches = $this->matches();
+    if ($this->cursor >= 0) {
+      $visible = $this->visible();
 
-      return $matches[$this->highlight] ?? $this->buffer;
+      return $visible[$this->cursor] ?? $this->buffer;
     }
 
     return $this->buffer;
@@ -128,26 +128,17 @@ class SuggestWidget extends AbstractWidget {
    * {@inheritdoc}
    */
   public function view(ThemeInterface $theme): string {
-    $lines = [$this->buffer . $theme->caret()];
+    $visible = $this->visible();
+    $viewport = $this->pageViewport(count($visible), $this->cursor);
 
-    $matches = $this->matches();
-    $viewport = $this->pageViewport(count($matches), $this->highlight);
+    $rows = [];
 
-    if ($viewport->has_above) {
-      $lines[] = $theme->indicator('  ' . $theme->indicatorUp());
+    foreach (array_slice($visible, $viewport->offset, $this->pageSize) as $slot => $value) {
+      $current = $viewport->offset + $slot === $this->cursor;
+      $rows[] = $theme->marker($current) . ' ' . $this->renderMatchedLabel($theme, $value, $this->matchPositions($value), $current);
     }
 
-    foreach (array_slice($matches, $viewport->offset, $this->pageSize) as $slot => $value) {
-      $index = $viewport->offset + $slot;
-      $current = $index === $this->highlight;
-      $lines[] = $theme->marker($current) . ' ' . $this->renderMatchedLabel($theme, $value, $this->positionsFor($value), $current);
-    }
-
-    if ($viewport->has_below) {
-      $lines[] = $theme->indicator('  ' . $theme->indicatorDown());
-    }
-
-    return implode("\n", $lines);
+    return implode("\n", [$this->buffer . $theme->caret(), ...$this->wrapScrolled($theme, $rows, $viewport)]);
   }
 
   /**
@@ -159,7 +150,7 @@ class SuggestWidget extends AbstractWidget {
    * @return list<int>
    *   The matched indices, or an empty list when not filtering.
    */
-  protected function positionsFor(string $value): array {
+  protected function matchPositions(string $value): array {
     return $this->buffer === '' ? [] : $this->matcher()->positions($value, $this->buffer);
   }
 

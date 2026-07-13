@@ -267,6 +267,35 @@ abstract class AbstractWidget implements WidgetInterface {
   }
 
   /**
+   * Wrap rendered rows with the scroll indicators for a paging window.
+   *
+   * @param \DrevOps\Tui\Theme\ThemeInterface $theme
+   *   The theme.
+   * @param list<string> $rows
+   *   The rendered visible rows.
+   * @param \DrevOps\Tui\Render\Viewport $viewport
+   *   The paging window.
+   *
+   * @return list<string>
+   *   The rows, with an indicator line for each scrolled-off side.
+   */
+  protected function wrapScrolled(ThemeInterface $theme, array $rows, Viewport $viewport): array {
+    $lines = [];
+
+    if ($viewport->has_above) {
+      $lines[] = $theme->indicator('  ' . $theme->indicatorUp());
+    }
+
+    $lines = array_merge($lines, $rows);
+
+    if ($viewport->has_below) {
+      $lines[] = $theme->indicator('  ' . $theme->indicatorDown());
+    }
+
+    return $lines;
+  }
+
+  /**
    * Style an option label, emphasising the query-matched characters.
    *
    * The label is split into runs of matched and unmatched characters, each run

@@ -137,7 +137,8 @@ class PasswordWidget extends TextWidget {
   /**
    * {@inheritdoc}
    *
-   * The reveal toggle is only offered when the widget is revealable.
+   * The reveal toggle is the non-obvious action, so it leads when the widget
+   * is revealable; otherwise the base accept/cancel hints stand alone.
    */
   #[\Override]
   public function hints(): array {
@@ -145,7 +146,7 @@ class PasswordWidget extends TextWidget {
       return parent::hints();
     }
 
-    return [new Hint('accept', Action::Accept), new Hint('reveal', Action::Reveal), new Hint('cancel', Action::Cancel)];
+    return [new Hint('reveal', Action::Reveal), ...parent::hints()];
   }
 
   /**

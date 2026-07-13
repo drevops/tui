@@ -405,11 +405,11 @@ final class FieldBuilder {
   }
 
   /**
-   * Choice widgets only: bound the visible option list to a page size.
+   * List widgets only: bound the visible option list to a page size.
    *
    * Longer lists page around the cursor rather than overflowing the viewport.
-   * Honoured by the select, multiselect, suggest, search and multisearch
-   * widgets; ignored by other types.
+   * Honoured by the select, multiselect, suggest, search, multisearch,
+   * reorder and file picker widgets; ignored by other types.
    *
    * @param int $size
    *   The number of option rows shown at once; must be positive.

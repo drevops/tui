@@ -276,45 +276,31 @@ class MultiSelectWidget extends AbstractWidget {
    * {@inheritdoc}
    */
   public function view(ThemeInterface $theme): string {
-    $lines = [];
-
     $visible = $this->visible();
     $viewport = $this->pageViewport(count($visible), $this->cursor);
 
-    if ($viewport->has_above) {
-      $lines[] = $theme->indicator('  ' . $theme->indicatorUp());
+    return implode("\n", $this->renderListRows($theme, $visible, $viewport, fn(Option $option, int $index): string => $this->renderOptionRow($theme, $option, $index === $this->cursor)));
+  }
+
+  /**
+   * Render one option row: marker, checkbox and the (possibly disabled) label.
+   *
+   * @param \DrevOps\Tui\Theme\ThemeInterface $theme
+   *   The theme.
+   * @param \DrevOps\Tui\Config\Option $option
+   *   The option row.
+   * @param bool $current
+   *   Whether the row holds the cursor.
+   *
+   * @return string
+   *   The rendered row.
+   */
+  protected function renderOptionRow(ThemeInterface $theme, Option $option, bool $current): string {
+    if ($option->disabled) {
+      return $theme->marker(FALSE) . ' ' . $theme->check(FALSE) . ' ' . $this->renderDisabledLabel($theme, $option);
     }
 
-    foreach (array_slice($visible, $viewport->offset, $this->pageSize) as $slot => $option) {
-      $index = $viewport->offset + $slot;
-
-      if ($option->kind === OptionKind::Heading) {
-        $lines[] = $this->renderHeadingRow($theme, $option);
-
-        continue;
-      }
-
-      if ($option->kind === OptionKind::Separator) {
-        $lines[] = $this->renderSeparatorRow($theme);
-
-        continue;
-      }
-
-      if ($option->disabled) {
-        $lines[] = $theme->marker(FALSE) . ' ' . $theme->check(FALSE) . ' ' . $this->renderDisabledLabel($theme, $option);
-
-        continue;
-      }
-
-      $current = $index === $this->cursor;
-      $lines[] = $theme->marker($current) . ' ' . $theme->check(isset($this->selected[$option->value])) . ' ' . $this->renderMatchedLabel($theme, $option->label, $this->matchPositions($option->label), $current);
-    }
-
-    if ($viewport->has_below) {
-      $lines[] = $theme->indicator('  ' . $theme->indicatorDown());
-    }
-
-    return implode("\n", $lines);
+    return $theme->marker($current) . ' ' . $theme->check(isset($this->selected[$option->value])) . ' ' . $this->renderMatchedLabel($theme, $option->label, $this->matchPositions($option->label), $current);
   }
 
   /**

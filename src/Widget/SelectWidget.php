@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Widget;
 
-use DrevOps\Tui\Config\OptionKind;
+use DrevOps\Tui\Config\Option;
 use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
@@ -58,13 +58,13 @@ class SelectWidget extends AbstractWidget {
     }
 
     if ($keys->matches($key, Action::MoveUp)) {
-      $this->cursor = $this->stepCursor($this->options, $this->cursor, -1);
+      $this->cursor = $this->stepCursor($this->visible(), $this->cursor, -1);
 
       return;
     }
 
     if ($keys->matches($key, Action::MoveDown)) {
-      $this->cursor = $this->stepCursor($this->options, $this->cursor, 1);
+      $this->cursor = $this->stepCursor($this->visible(), $this->cursor, 1);
 
       return;
     }
@@ -75,63 +75,64 @@ class SelectWidget extends AbstractWidget {
   }
 
   /**
-   * Whether the highlighted row is a selectable option.
+   * The rows currently shown.
+   *
+   * The base select shows every declared row; a filtering subclass narrows
+   * this to the rows matching its query.
+   *
+   * @return list<\DrevOps\Tui\Config\Option>
+   *   The visible rows.
+   */
+  protected function visible(): array {
+    return $this->options;
+  }
+
+  /**
+   * Whether the highlighted visible row is a selectable option.
    *
    * @return bool
    *   TRUE when the cursor rests on a selectable option.
    */
   protected function currentSelectable(): bool {
-    return ($this->options[$this->cursor] ?? NULL)?->selectable() ?? FALSE;
+    return ($this->visible()[$this->cursor] ?? NULL)?->selectable() ?? FALSE;
   }
 
   /**
    * {@inheritdoc}
    */
   protected function liveValue(): mixed {
-    return $this->currentSelectable() ? $this->options[$this->cursor]->value : '';
+    return $this->currentSelectable() ? $this->visible()[$this->cursor]->value : '';
   }
 
   /**
    * {@inheritdoc}
    */
   public function view(ThemeInterface $theme): string {
-    $lines = [];
+    $visible = $this->visible();
+    $viewport = $this->pageViewport(count($visible), $this->cursor);
 
-    $viewport = $this->pageViewport(count($this->options), $this->cursor);
+    return implode("\n", $this->renderListRows($theme, $visible, $viewport, fn(Option $option, int $index): string => $this->renderOptionRow($theme, $option, $index === $this->cursor)));
+  }
 
-    if ($viewport->has_above) {
-      $lines[] = $theme->indicator('  ' . $theme->indicatorUp());
+  /**
+   * Render one option row: the radio glyph and the (possibly disabled) label.
+   *
+   * @param \DrevOps\Tui\Theme\ThemeInterface $theme
+   *   The theme.
+   * @param \DrevOps\Tui\Config\Option $option
+   *   The option row.
+   * @param bool $current
+   *   Whether the row holds the cursor.
+   *
+   * @return string
+   *   The rendered row.
+   */
+  protected function renderOptionRow(ThemeInterface $theme, Option $option, bool $current): string {
+    if ($option->disabled) {
+      return $theme->radio(FALSE) . ' ' . $this->renderDisabledLabel($theme, $option);
     }
 
-    foreach (array_slice($this->options, $viewport->offset, $this->pageSize) as $slot => $option) {
-      $index = $viewport->offset + $slot;
-
-      if ($option->kind === OptionKind::Heading) {
-        $lines[] = $this->renderHeadingRow($theme, $option);
-
-        continue;
-      }
-
-      if ($option->kind === OptionKind::Separator) {
-        $lines[] = $this->renderSeparatorRow($theme);
-
-        continue;
-      }
-
-      if ($option->disabled) {
-        $lines[] = $theme->radio(FALSE) . ' ' . $this->renderDisabledLabel($theme, $option);
-
-        continue;
-      }
-
-      $lines[] = $this->renderRadioRow($theme, $option->label, $index === $this->cursor);
-    }
-
-    if ($viewport->has_below) {
-      $lines[] = $theme->indicator('  ' . $theme->indicatorDown());
-    }
-
-    return implode("\n", $lines);
+    return $this->renderRadioRow($theme, $option->label, $current);
   }
 
   /**

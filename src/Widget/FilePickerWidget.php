@@ -12,7 +12,6 @@ use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Render\Ansi;
-use DrevOps\Tui\Render\Scroller;
 use DrevOps\Tui\Theme\ThemeInterface;
 use DrevOps\Tui\Translation\Translator;
 
@@ -31,11 +30,6 @@ use DrevOps\Tui\Translation\Translator;
  * @package DrevOps\Tui\Widget
  */
 class FilePickerWidget extends AbstractWidget {
-
-  /**
-   * The number of entry rows shown at once before the list scrolls.
-   */
-  protected const int WINDOW = 10;
 
   /**
    * The start directory: where the browser opens and the floor it cannot pass.
@@ -72,16 +66,6 @@ class FilePickerWidget extends AbstractWidget {
   protected int $cursor = 0;
 
   /**
-   * The first visible entry index (the scroll offset).
-   */
-  protected int $offset = 0;
-
-  /**
-   * The scroller keeping the highlighted entry inside the window.
-   */
-  protected Scroller $scroller;
-
-  /**
    * Construct a file picker widget.
    *
    * @param string $start
@@ -104,6 +88,9 @@ class FilePickerWidget extends AbstractWidget {
    *   Optional validator (see AbstractWidget).
    * @param \Closure|null $transform
    *   Optional transformer (see AbstractWidget).
+   * @param int|null $pageSize
+   *   The number of entry rows shown at once before the list pages; NULL uses
+   *   the default.
    */
   public function __construct(
     string $start = '',
@@ -114,12 +101,13 @@ class FilePickerWidget extends AbstractWidget {
     protected bool $multiple = FALSE,
     ?\Closure $validate = NULL,
     ?\Closure $transform = NULL,
+    ?int $pageSize = NULL,
   ) {
     parent::__construct($validate, $transform);
 
     $this->root = $this->trimTrailingSlash($start !== '' ? $start : (string) getcwd());
     $this->cwd = $this->root;
-    $this->scroller = new Scroller();
+    $this->pageSize = $this->resolvePageSize($pageSize);
 
     $this->extensions = array_values(array_filter(array_map(
       static fn(string $extension): string => strtolower(ltrim($extension, '.')),
@@ -231,23 +219,15 @@ class FilePickerWidget extends AbstractWidget {
       $lines[] = $theme->description(Translator::t('(empty)'));
     }
 
-    $viewport = $this->scroller->compute(count($entries), self::WINDOW, $this->cursor, $this->offset);
-    $this->offset = $viewport->offset;
+    $viewport = $this->pageViewport(count($entries), $this->cursor);
 
-    if ($viewport->has_above) {
-      $lines[] = $theme->indicator('  ' . $theme->indicatorUp());
+    $rows = [];
+
+    foreach (array_slice($entries, $viewport->offset, $this->pageSize) as $slot => $name) {
+      $rows[] = $this->renderRow($theme, $name, $viewport->offset + $slot === $this->cursor);
     }
 
-    $last = min(count($entries), $viewport->offset + self::WINDOW);
-    for ($index = $viewport->offset; $index < $last; $index++) {
-      $lines[] = $this->renderRow($theme, $entries[$index], $index === $this->cursor);
-    }
-
-    if ($viewport->has_below) {
-      $lines[] = $theme->indicator('  ' . $theme->indicatorDown());
-    }
-
-    return implode("\n", $lines);
+    return implode("\n", array_merge($lines, $this->wrapScrolled($theme, $rows, $viewport)));
   }
 
   /**
