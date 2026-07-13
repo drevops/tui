@@ -606,7 +606,7 @@ class DefaultTheme implements ThemeInterface {
       return $left;
     }
 
-    return Ansi::alignRight($left, $this->badge(' ' . Translator::t($provenance->value) . ' ', $selected), $this->width);
+    return Ansi::alignRight($left, $this->badge(' ' . $provenance->label() . ' ', $selected), $this->width);
   }
 
   /**

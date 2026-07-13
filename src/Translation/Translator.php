@@ -119,6 +119,12 @@ final class Translator {
    * fallback path so a translated and an untranslated string interpolate
    * identically.
    *
+   * A placeholder value may itself be an already-translated phrase (as the
+   * bounds `describe()` methods and the schema validator compose one message
+   * inside another); this concatenation cannot honour every locale's word order
+   * or grammatical agreement, so a language needing those would supply
+   * full-sentence catalog keys rather than relying on composition.
+   *
    * @param string $message
    *   The message, possibly carrying @name placeholders.
    * @param array<string,string|int|float|\Stringable> $args

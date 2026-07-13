@@ -86,7 +86,7 @@ class SummaryFormatter {
    *   The badge suffix.
    */
   protected function badge(Provenance $provenance): string {
-    return $provenance === Provenance::Default ? '' : ' (' . Translator::t($provenance->value) . ')';
+    return $provenance === Provenance::Default ? '' : ' (' . $provenance->label() . ')';
   }
 
 }
