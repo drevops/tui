@@ -55,6 +55,7 @@ final class TranslatorTest extends TestCase {
     yield 'mixed catalog keeps string entry' => ['es', ['translations-mixed'], 'Valid', [], 'Valido'];
     yield 'mixed catalog drops non-string value' => ['es', ['translations-mixed'], 'Integer value', [], 'Integer value'];
     yield 'missing directory ignored' => ['es', ['translations-absent'], 'Submit', [], 'Submit'];
+    yield 'path traversal locale is rejected' => ['../../etc/passwd', ['translations'], 'Submit', [], 'Submit'];
   }
 
   public function testCatalogLoadsOnce(): void {

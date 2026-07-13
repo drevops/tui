@@ -224,17 +224,22 @@ final class Translator {
   /**
    * The catalog filenames to try for a locale, most specific first.
    *
+   * A candidate becomes part of a `require`d file path, so anything that is not
+   * a plain locale identifier is dropped: this keeps a path separator or a
+   * traversal segment out of the filename and leaves such a locale with no
+   * catalog (English).
+   *
    * @param string $language
    *   The locale (e.g. "es" or "es_ES"; a hyphen is normalized to underscore).
    *
    * @return list<string>
-   *   The candidate language codes, e.g. ["es_ES", "es"] or ["es"].
+   *   The valid candidate language codes, e.g. ["es_ES", "es"] or ["es"].
    */
   protected static function candidates(string $language): array {
     $normalized = str_replace('-', '_', $language);
     $primary = explode('_', $normalized)[0];
 
-    return array_values(array_unique([$normalized, $primary]));
+    return array_values(array_filter(array_unique([$normalized, $primary]), static fn(string $candidate): bool => preg_match('/^[A-Za-z0-9_]+$/', $candidate) === 1));
   }
 
 }
