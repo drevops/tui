@@ -20,7 +20,7 @@
         "php": ">=8.3",
         "ext-mbstring": "*",
         "alexskrypnyk/str2name": "^1.5.0",
-        "symfony/console": "^7.4.14"
+        "symfony/console": "^7.4.14 || ^8.1"
     },
     "require-dev": {
         "alexskrypnyk/phpunit-helpers": "^0.16.0",
