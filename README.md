@@ -74,9 +74,11 @@ Read the [full guide at tui.drevops.com](https://tui.drevops.com) and browse [`p
 
 ## Maintenance
 
-    composer install
-    composer lint
-    composer test
+```bash
+composer install
+composer lint
+composer test
+```
 
 See the [Contributing guide](https://tui.drevops.com/contributing) for the full development workflow.
 

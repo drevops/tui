@@ -6,8 +6,9 @@ sidebar_position: 15
 # Toggle
 
 An inline switch between two labeled values. Arrows or Space flip, the first
-letter of each label sets the choice directly, Enter accepts. Pass `default` (an
-option value) to start on the other value.
+letter of each label sets the choice directly, Enter accepts. The first option is
+shown by default; pass `default` (an option value) to start on a specific one
+instead.
 
 ```php
 $p->toggle('telemetry', 'Telemetry')->options(['enabled' => 'Enabled', 'disabled' => 'Disabled'])->default('enabled');
