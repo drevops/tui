@@ -11,6 +11,7 @@ module.exports = {
   },
   collectCoverageFrom: [
     'src/components/**/*.{js,jsx}',
+    'util/derive-dark-diagram.js',
     '!tests/**',
     '!src/**/*.test.{js,jsx}',
     '!src/**/*.spec.{js,jsx}',

@@ -6,7 +6,10 @@ This is a walkthrough of the `drevops/tui` engine - what you assemble to build a
 
 At the centre is the **Engine**. Everything else is either something you hand it (a configuration, a set of handlers, a theme) or something it produces (validated answers, a JSON schema). The packages below mirror the `src/` subdirectories, and the arrows are the main dependencies.
 
-![Component architecture](architecture.svg)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="architecture-dark.svg">
+  <img alt="Component architecture" src="architecture.svg">
+</picture>
 
 Read it in three bands:
 
@@ -26,7 +29,10 @@ Most fields need no code. When one does - a dynamic default, discovery, validati
 
 `Engine::collect()` turns the config plus whatever the caller supplied into a settled set of answers. This is the heart of the engine:
 
-![Headless collection](dataflow-collect.svg)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="dataflow-collect-dark.svg">
+  <img alt="Headless collection" src="dataflow-collect.svg">
+</picture>
 
 Walking the sequence:
 
@@ -41,7 +47,10 @@ The same lifecycle runs whether the caller is a human at the TUI or a script pas
 
 For interactive use, `PanelController::run()` seeds itself with the engine's resolved answers and drives a panel TUI until the user is done:
 
-![Interactive panel TUI](dataflow-tui.svg)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="dataflow-tui-dark.svg">
+  <img alt="Interactive panel TUI" src="dataflow-tui.svg">
+</picture>
 
 The theme instance comes from `ThemeManager` - a registry keyed by name ("dark", "light", or a registered custom class) that also detects the terminal's colour and Unicode capabilities and, when no theme is named, picks light or dark from the terminal background (an OSC 11 query answered by the `Terminal`, then `COLORFGBG`, then a dark default). Each turn the controller asks the **Theme** to compose a frame (the theme owns colours, glyphs and layout), computes the visible window with the `Navigator` and `Scroller`, and renders it to the `Terminal`. A key press is parsed by `KeyParser` into a `Key`, which a **KeyMap** resolves to a semantic action (move, accept, toggle, quit...) rather than a fixed key - the bindings behind each action are configurable per widget type, ship a vim preset alongside the default, and are validated when the form is built. Armed with the action, the controller either moves the cursor / drills into a sub-panel, or opens a widget to edit a field - the widget consults the same key map, and both render themselves through the theme, under a theme-composed underlined label header. Editing writes the new value back and marks it "edited". When the user finishes, it returns the same `Answers` object the headless path produces.
 
@@ -51,8 +60,9 @@ Collecting produces answers; acting on them - writing files, renaming directorie
 
 ## Regenerating this document
 
-The diagrams are PlantUML (`.puml`) rendered to `.svg`. After editing a source, re-render and keep this walkthrough in step with any structural change:
+The diagrams are PlantUML (`.puml`) rendered to a light `.svg`, each with a dark `-dark.svg` variant derived from it. After editing a source, re-render and re-derive, and keep this walkthrough in step with any structural change:
 
     plantuml -tsvg docs/architecture/*.puml
+    node docs/util/derive-dark-diagram.js docs/architecture/*.svg
 
 The [`render-tui-diagrams`](../../.claude/skills/render-tui-diagrams/SKILL.md) skill covers rendering, adding a new data-flow diagram, and keeping this walkthrough current.

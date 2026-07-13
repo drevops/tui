@@ -3,6 +3,9 @@ title: Architecture
 sidebar_position: 14
 ---
 
+import ThemedImage from '@theme/ThemedImage';
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
 # How the TUI works
 
 A walkthrough of the `drevops/tui` engine - what you assemble to build a form, and
@@ -19,7 +22,7 @@ answers, a JSON schema). The packages below mirror the `src/` subdirectories, an
 the arrows are the main dependencies.
 
 <p align="center">
-  <img src="/architecture.svg" width="100%" alt="Component architecture" />
+  <ThemedImage alt="Component architecture" sources={{light: useBaseUrl('/architecture.svg'), dark: useBaseUrl('/architecture-dark.svg')}} width="100%" />
 </p>
 
 Read it in three bands:
@@ -54,7 +57,7 @@ fallback; the field declaration wins when both exist.
 settled set of answers. This is the heart of the engine:
 
 <p align="center">
-  <img src="/dataflow-collect.svg" width="100%" alt="Headless collection" />
+  <ThemedImage alt="Headless collection" sources={{light: useBaseUrl('/dataflow-collect.svg'), dark: useBaseUrl('/dataflow-collect-dark.svg')}} width="100%" />
 </p>
 
 Walking the sequence:
@@ -73,7 +76,7 @@ For interactive use, `PanelController::run()` seeds itself with the engine's
 resolved answers and drives a panel TUI until the user is done:
 
 <p align="center">
-  <img src="/dataflow-tui.svg" width="100%" alt="Interactive panel TUI" />
+  <ThemedImage alt="Interactive panel TUI" sources={{light: useBaseUrl('/dataflow-tui.svg'), dark: useBaseUrl('/dataflow-tui-dark.svg')}} width="100%" />
 </p>
 
 The theme instance comes from `ThemeManager` - a registry keyed by name ("dark",
