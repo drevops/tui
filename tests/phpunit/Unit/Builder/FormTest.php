@@ -37,6 +37,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Form::class)]
 #[CoversClass(PanelBuilder::class)]
 #[CoversClass(FieldBuilder::class)]
+#[CoversClass(Translator::class)]
 #[Group('config')]
 final class FormTest extends TestCase {
 
