@@ -2,11 +2,12 @@
 
 /**
  * @file
- * Every core widget as fields on one form, collected through the Tui facade.
+ * Most widgets as fields on one form, collected through the Tui facade.
  *
  * The single-widget examples each declare a one-field form; this gathers them
  * into one multi-field form and drives it once through the panel TUI, instead
- * of invoking each widget directly.
+ * of invoking each widget directly. The file pickers, which browse a fixture
+ * tree, keep their standalone examples.
  *
  * Usage:
  *   php 3-widgets/widgets.php
