@@ -1,0 +1,43 @@
+---
+title: Textarea
+sidebar_position: 4
+---
+
+# Textarea
+
+Multi-line text input: Enter inserts a newline, Up/Down move between lines keeping
+the column, Tab accepts.
+
+```php
+$p->textarea('notes', 'Provisioning notes')->default("Redis for cache\nSolr for search");
+```
+
+Call `->externalEditor()` to let the field hand off to the user's `$EDITOR` (or
+`$VISUAL`) for composing long or structured text. Pressing `Ctrl-E` while editing
+suspends the TUI, opens the editor seeded with the current value, and captures
+the saved buffer on return - saving and exiting commits it as the field value,
+while an aborted edit (a non-zero editor exit) keeps the inline value. When no
+editor is available the option is silently ignored and the field behaves as a
+plain inline textarea.
+
+```php
+$p->textarea('notes', 'Provisioning notes')->externalEditor();
+```
+
+<table>
+  <tr>
+    <td></td>
+    <td align="center"><strong>ANSI</strong></td>
+    <td align="center"><strong>No ANSI</strong></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>Unicode</strong></td>
+    <td><img src="/widget-textarea.svg" alt="Textarea: Unicode + ANSI" /></td>
+    <td><img src="/widget-textarea-no-ansi.svg" alt="Textarea: Unicode + No ANSI" /></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>ASCII</strong></td>
+    <td><img src="/widget-textarea-ascii.svg" alt="Textarea: ASCII + ANSI" /></td>
+    <td><img src="/widget-textarea-ascii-no-ansi.svg" alt="Textarea: ASCII + No ANSI" /></td>
+  </tr>
+</table>

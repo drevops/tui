@@ -1,0 +1,47 @@
+---
+title: Text
+sidebar_position: 1
+---
+
+# Text
+
+Single-line text input with a movable caret. Type to insert, Left/Right move the
+caret, Backspace deletes, Enter accepts.
+
+```php
+$p->text('name', 'Site name')->default('Acme Site')->required();
+```
+
+Add `complete()` for inline ghost-text autocomplete: as you type, the
+best-matching candidate is shown dimmed after the caret and accepted with Tab or
+Right-arrow (at the end of the line). This is distinct from the `suggest`
+widget's dropdown - ghost-text keeps the eye on the input line. The source is a
+static list or a closure over the answers collected so far; the match is a
+case-insensitive prefix, with no match the field behaves as a plain input, and
+the ghost-text is suppressed when colour is off.
+
+```php
+// Static candidates.
+$p->text('timezone', 'Timezone')->complete(['UTC', 'Europe/London', 'Australia/Sydney']);
+
+// Candidates computed from prior answers.
+$p->text('repo', 'Repository')->complete(fn(array $answers): array => [$answers['owner'] . '/site']);
+```
+
+<table>
+  <tr>
+    <td></td>
+    <td align="center"><strong>ANSI</strong></td>
+    <td align="center"><strong>No ANSI</strong></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>Unicode</strong></td>
+    <td><img src="/widget-text.svg" alt="Text: Unicode + ANSI" /></td>
+    <td><img src="/widget-text-no-ansi.svg" alt="Text: Unicode + No ANSI" /></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>ASCII</strong></td>
+    <td><img src="/widget-text-ascii.svg" alt="Text: ASCII + ANSI" /></td>
+    <td><img src="/widget-text-ascii-no-ansi.svg" alt="Text: ASCII + No ANSI" /></td>
+  </tr>
+</table>

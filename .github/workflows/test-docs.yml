@@ -1,0 +1,65 @@
+name: Test Docs
+
+on:
+  schedule:
+    - cron: '23 4 * * *'
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+      - 'feature/**'
+
+concurrency:
+  group: test-docs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-docs:
+    name: Test documentation
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pull-requests: write # 'actions-netlify' posts the deploy preview as a PR comment.
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: '${{ github.workspace }}/docs'
+
+      - name: Build documentation site
+        run: npm run build
+        working-directory: '${{ github.workspace }}/docs'
+
+      - name: Run tests
+        run: npm run test
+        working-directory: '${{ github.workspace }}/docs'
+
+      - name: Deploy to Netlify
+        uses: nwtgck/actions-netlify@d22a32a27c918fe470bbc562e984f80ec48c2668 # v4.0
+        if: ${{ env.NETLIFY_AUTH_TOKEN != '' && env.NETLIFY_SITE_ID != '' && github.event_name != 'schedule' }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          publish-dir: 'docs/build'
+          production-branch: main
+          deploy-message: "Deploy from GitHub Actions"
+          enable-pull-request-comment: true
+          enable-commit-comment: true
+          overwrites-pull-request-comment: true
+        env:
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        timeout-minutes: 5

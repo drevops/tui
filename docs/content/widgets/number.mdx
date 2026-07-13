@@ -1,0 +1,42 @@
+---
+title: Number
+sidebar_position: 2
+---
+
+# Number
+
+Integer input: digits with an optional leading minus, accepted as an `int`.
+
+```php
+$p->number('port', 'HTTP port')->default(8080);
+```
+
+Declare optional `min`, `max` and `step` to bound the value and enable keyboard
+adjustment. Up and Down then adjust the value by the step (defaulting to `1`),
+clamped to the range, and an entry outside the range is rejected inline with a
+clear message. The bounds are enforced headlessly too - a `--prompts` or
+environment value outside the range is rejected - and are reflected in the JSON
+schema as `min`, `max` and `step` on the prompt. With none declared the field
+stays a plain integer entry with the arrow keys inert.
+
+```php
+$p->number('port', 'HTTP port')->min(1)->max(65535)->step(1)->default(8080);
+```
+
+<table>
+  <tr>
+    <td></td>
+    <td align="center"><strong>ANSI</strong></td>
+    <td align="center"><strong>No ANSI</strong></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>Unicode</strong></td>
+    <td><img src="/widget-number.svg" alt="Number: Unicode + ANSI" /></td>
+    <td><img src="/widget-number-no-ansi.svg" alt="Number: Unicode + No ANSI" /></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>ASCII</strong></td>
+    <td><img src="/widget-number-ascii.svg" alt="Number: ASCII + ANSI" /></td>
+    <td><img src="/widget-number-ascii-no-ansi.svg" alt="Number: ASCII + No ANSI" /></td>
+  </tr>
+</table>

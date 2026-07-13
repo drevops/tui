@@ -1,0 +1,34 @@
+---
+title: Suggest
+sidebar_position: 8
+---
+
+# Suggest
+
+Free text with autocomplete over a fixed option set: as you type, the suggestions
+are fuzzy-matched and ranked by relevance with the matched characters
+highlighted; Up/Down highlight a suggestion, Enter accepts the highlighted
+suggestion or the typed text as-is. Long lists page around the cursor - set the
+window with `->pageSize()`.
+
+```php
+$p->suggest('php_version', 'PHP version')->default('8.4')->options(['8.1' => '8.1', '8.2' => '8.2', '8.3' => '8.3', '8.4' => '8.4']);
+```
+
+<table>
+  <tr>
+    <td></td>
+    <td align="center"><strong>ANSI</strong></td>
+    <td align="center"><strong>No ANSI</strong></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>Unicode</strong></td>
+    <td><img src="/widget-suggest.svg" alt="Suggest: Unicode + ANSI" /></td>
+    <td><img src="/widget-suggest-no-ansi.svg" alt="Suggest: Unicode + No ANSI" /></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>ASCII</strong></td>
+    <td><img src="/widget-suggest-ascii.svg" alt="Suggest: ASCII + ANSI" /></td>
+    <td><img src="/widget-suggest-ascii-no-ansi.svg" alt="Suggest: ASCII + No ANSI" /></td>
+  </tr>
+</table>

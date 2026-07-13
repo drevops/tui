@@ -1,0 +1,75 @@
+---
+title: Configuration
+sidebar_position: 5
+---
+
+# Configuration
+
+A form is a tree of panels, each holding fields, built fluently. Rules are
+named-argument spec objects, so the IDE completes them and a typo fails at
+declaration time:
+
+```php
+use DrevOps\Tui\Builder\Form;
+use DrevOps\Tui\Builder\PanelBuilder;
+use DrevOps\Tui\Condition\Condition;
+use DrevOps\Tui\Derive\Derive;
+
+$form = Form::create('My form')
+  ->panel('general', 'General', function (PanelBuilder $p): void {
+    // text | select | multiselect | suggest | confirm
+    // number | textarea | password | search | multisearch | pause
+    $p->text('name', 'Project name')->required();
+
+    // Compute one field from others.
+    $p->text('machine_name', 'Machine name')->derive(new Derive('{{name}}', transform: 'machine'));
+
+    $p->select('profile', 'Profile')
+      ->default('standard')
+      ->options(['standard' => 'Standard', 'custom' => 'Custom']);
+
+    // Shown only when the condition holds; compose with Condition::all()/any()/not().
+    $p->text('profile_custom', 'Custom profile')->when(new Condition('profile', eq: 'custom'));
+  });
+```
+
+Each field builder chains `->description()`, `->default()`, `->required()`,
+`->weight()`, `->options()` / `->option()` (with per-option descriptions and
+optional `disabled` state), `->heading()` / `->separator()` (non-selectable
+option-list structure), `->when(new Condition(...))`, `->derive(new Derive(...))`,
+`->discover(...)`, `->validate(...)` and `->transform(...)`.
+
+Form-level methods tune the interactive TUI: `->theme()` names a theme,
+auto-detected from the terminal background when unset (see [Themes](/themes)),
+`->banner()` sets a start banner, `->buttons()` controls the submit/cancel
+buttons, `->clearOnExit()` keeps or clears the final frame, and `->color()` /
+`->unicode()` force a [display mode](/display-modes).
+
+## Derived values
+
+A `Derive` computes a field from other answers: a template with `{{field}}`
+placeholders plus a transform. A transform is any
+[str2name](https://github.com/AlexSkrypnyk/str2name) conversion (`machine`,
+`kebab`, `pascal`, ...) plus `host`, `lower`, `upper` and `initials` - an unknown
+name throws when the form is declared. Chains of derives settle to a fixpoint:
+
+```php
+$p->text('machine_name', 'Machine name')->derive(new Derive('{{name}}', 'machine'));
+$p->text('package', 'Composer package')->derive(new Derive('{{vendor}}/{{machine_name}}', 'lower'));
+$p->text('namespace', 'PHP namespace')->derive(new Derive('{{name}}', 'pascal'));
+```
+
+## Conditional fields
+
+A `->when()` rule shows or hides a field based on other answers, with operators
+`eq` / `ne` / `in` / `contains`, composable with `Condition::all()`,
+`Condition::any()` and `Condition::not()`:
+
+```php
+$p->text('docker_image', 'Docker base image')->default('php:8.4-cli')->when(new Condition('features', contains: 'docker'));
+$p->confirm('docker_compose', 'Generate a docker-compose.yml?')->when(Condition::all(new Condition('features', contains: 'docker'), new Condition('type', eq: 'application')));
+```
+
+A form-level `->fixup(new Fixup(set: ..., to: ..., when: ...))` reconciles
+dependent answers on every settle pass, so an answer that no longer makes sense
+after another change is corrected instead of leaking through.

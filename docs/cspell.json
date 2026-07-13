@@ -1,0 +1,73 @@
+{
+    "dictionaries": [
+        "bash",
+        "misc",
+        "node",
+        "php",
+        "softwareTerms"
+    ],
+    "words": [
+        "Cobertura",
+        "asciicast",
+        "asciinema",
+        "autoloader",
+        "behaviour",
+        "calver",
+        "cobertura",
+        "clsx",
+        "colour",
+        "colours",
+        "COLORFGBG",
+        "docusaurus",
+        "Docusaurus",
+        "Dotenv",
+        "drevops",
+        "DrevOps",
+        "drillable",
+        "envprefix",
+        "filepicker",
+        "fixpoint",
+        "fixup",
+        "fixups",
+        "headlessly",
+        "Infima",
+        "jsdelivr",
+        "keymap",
+        "multifilepicker",
+        "multisearch",
+        "multiselect",
+        "netlify",
+        "Netlify",
+        "normalisation",
+        "questionnaires",
+        "renderable",
+        "scaffolder",
+        "Skrypnyk",
+        "str2name",
+        "subpanel",
+        "textarea",
+        "themeable",
+        "tmate",
+        "uppercased",
+        "Vortex",
+        "Webroot",
+        "weekstart"
+    ],
+    "overrides": [
+        {
+            "filename": "**/*.mdx",
+            "languageId": [
+                "mdx",
+                "markdown"
+            ]
+        }
+    ],
+    "languageSettings": [
+        {
+            "languageId": "markdown",
+            "ignoreRegExpList": [
+                "/^\\s*```(.|\\n)+?^\\s*```/gm"
+            ]
+        }
+    ]
+}

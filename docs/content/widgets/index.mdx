@@ -1,0 +1,43 @@
+---
+title: Widgets
+---
+
+# Widgets
+
+Fifteen widget types cover text entry, choices, filesystem browsing and gates.
+Every field of the form opens its widget in an editor; the same widgets also run
+standalone (see [`playground/3-widgets/`](https://github.com/drevops/tui/tree/main/playground/3-widgets)).
+Widgets pull their glyphs and colours from the theme, so each one is shown in all
+four display modes.
+
+<p align="center">
+  <img src="/widgets.svg" width="100%" alt="All widgets, one after another" />
+</p>
+
+## Text entry
+
+- [Text](/widgets/text) - single-line input, with optional ghost-text autocomplete.
+- [Number](/widgets/number) - integer input with optional bounds and step keys.
+- [Date](/widgets/date) - a month calendar returning an ISO date.
+- [Textarea](/widgets/textarea) - multi-line input with optional external-editor handoff.
+- [Password](/widgets/password) - masked input with optional reveal and confirm.
+
+## Choices
+
+- [Select](/widgets/select) - single choice from a list.
+- [MultiSelect](/widgets/multiselect) - multiple choice from a checkbox list.
+- [Suggest](/widgets/suggest) - free text with autocomplete over a fixed set.
+- [Search](/widgets/search) - single choice with a filter line.
+- [MultiSearch](/widgets/multisearch) - multi-select with a filter line.
+- [Option groups](/widgets/option-groups) - headings, separators and disabled options.
+
+## Filesystem
+
+- [FilePicker](/widgets/filepicker) - browse for a single path.
+- [MultiFilePicker](/widgets/multifilepicker) - browse for several paths.
+
+## Toggles and gates
+
+- [Confirm](/widgets/confirm) - a Yes/No toggle.
+- [Toggle](/widgets/toggle) - an inline switch between two labelled values.
+- [Pause](/widgets/pause) - an acknowledgement gate.

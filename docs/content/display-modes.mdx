@@ -1,0 +1,30 @@
+---
+title: Display modes
+sidebar_position: 12
+---
+
+# Display modes
+
+The TUI adapts to the terminal: glyphs follow the locale (a `UTF` locale in
+`LC_ALL`, `LC_CTYPE` or `LANG` enables Unicode, anything else falls back to ASCII)
+and colour honours [`NO_COLOR`](https://no-color.org/) and `TERM=dumb`. Force
+either on the form with `->unicode(TRUE|FALSE)` and `->color(TRUE|FALSE)`. Here is
+the same scaffolder in each combination:
+
+<table align="center">
+  <tr>
+    <td></td>
+    <td align="center"><strong>ANSI</strong></td>
+    <td align="center"><strong>No ANSI</strong></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>Unicode</strong></td>
+    <td><img src="/scaffolder.svg" width="100%" alt="Scaffolder: Unicode + ANSI" /></td>
+    <td><img src="/scaffolder-no-ansi.svg" width="100%" alt="Scaffolder: Unicode + No ANSI" /></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>ASCII</strong></td>
+    <td><img src="/scaffolder-ascii.svg" width="100%" alt="Scaffolder: ASCII + ANSI" /></td>
+    <td><img src="/scaffolder-ascii-no-ansi.svg" width="100%" alt="Scaffolder: ASCII + No ANSI" /></td>
+  </tr>
+</table>
