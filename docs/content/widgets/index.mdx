@@ -4,7 +4,7 @@ title: Widgets
 
 # Widgets
 
-Sixteen widget types cover text entry, choices, filesystem browsing and gates.
+The widgets cover text entry, choices, filesystem browsing and gates.
 Every field of the form opens its widget in an editor; the same widgets also run
 standalone (see [`playground/3-widgets/`](https://github.com/drevops/tui/tree/main/playground/3-widgets)).
 Widgets pull their glyphs and colours from the theme, so each one is shown in all
@@ -16,21 +16,21 @@ four display modes.
 
 ## Text entry
 
-- [Text](/widgets/text) - single-line input, with optional ghost-text autocomplete.
-- [Number](/widgets/number) - integer input with optional bounds and step keys.
 - [Calendar](/widgets/calendar) - a month calendar returning an ISO date.
-- [Textarea](/widgets/textarea) - multi-line input with optional external-editor handoff.
+- [Number](/widgets/number) - integer input with optional bounds and step keys.
 - [Password](/widgets/password) - masked input with optional reveal and confirm.
+- [Text](/widgets/text) - single-line input, with optional ghost-text autocomplete.
+- [Textarea](/widgets/textarea) - multi-line input with optional external-editor handoff.
 
 ## Choices
 
-- [Select](/widgets/select) - single choice from a list.
-- [MultiSelect](/widgets/multiselect) - multiple choice from a checkbox list.
-- [Reorder](/widgets/reorder) - rank a list by moving items into order.
-- [Suggest](/widgets/suggest) - free text with autocomplete over a fixed set.
-- [Search](/widgets/search) - single choice with a filter line.
 - [MultiSearch](/widgets/multisearch) - multi-select with a filter line.
+- [MultiSelect](/widgets/multiselect) - multiple choice from a checkbox list.
 - [Option groups](/widgets/option-groups) - headings, separators and disabled options.
+- [Reorder](/widgets/reorder) - rank a list by moving items into order.
+- [Search](/widgets/search) - single choice with a filter line.
+- [Select](/widgets/select) - single choice from a list.
+- [Suggest](/widgets/suggest) - free text with autocomplete over a fixed set.
 
 ## Filesystem
 
@@ -40,5 +40,5 @@ four display modes.
 ## Toggles and gates
 
 - [Confirm](/widgets/confirm) - a Yes/No toggle.
-- [Toggle](/widgets/toggle) - an inline switch between two labelled values.
 - [Pause](/widgets/pause) - an acknowledgement gate.
+- [Toggle](/widgets/toggle) - an inline switch between two labelled values.

@@ -6,12 +6,12 @@
     "authors": [
         {
             "name": "Alex Skrypnyk",
-            "email": "tui@drevops.com",
+            "email": "alex@drevops.com",
             "homepage": "https://drevops.com",
             "role": "Maintainer"
         }
     ],
-    "homepage": "https://github.com/drevops/tui",
+    "homepage": "https://phptui.dev/",
     "support": {
         "issues": "https://github.com/drevops/tui/issues",
         "source": "https://github.com/drevops/tui"
@@ -44,10 +44,7 @@
     "autoload-dev": {
         "psr-4": {
             "DrevOps\\Tui\\Tests\\": "tests/phpunit"
-        },
-        "classmap": [
-            "tests/phpunit"
-        ]
+        }
     },
     "config": {
         "allow-plugins": {

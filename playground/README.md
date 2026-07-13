@@ -112,6 +112,16 @@ composer install
   php playground/8-key-bindings/run.php --keys=custom
   ```
 
+- **[`9-bordered-panels/`](9-bordered-panels)** - the panel browser wrapped in a
+  rounded border. The border is a theme option (`none`, `line`, `rounded` or
+  `double`), set as a plain string alongside the spacing, and every drill-in
+  sub-panel keeps it.
+
+  ```bash
+  php playground/9-bordered-panels/run.php                     # TUI
+  php playground/9-bordered-panels/run.php --prompts='{"name":"api"}'
+  ```
+
 ## How a form picks a theme
 
 Set it on the builder with `->theme(...)`, lowest friction first:

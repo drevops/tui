@@ -1,6 +1,6 @@
 # TUI documentation site
 
-The [tui.drevops.com](https://tui.drevops.com) documentation site, built with
+The [phptui.dev](https://phptui.dev) documentation site, built with
 [Docusaurus](https://docusaurus.io/).
 
 The documentation content lives in [`content/`](content) as `.mdx` pages; the

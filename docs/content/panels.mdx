@@ -57,3 +57,29 @@ $form = Form::create('Site settings')
 <p align="center">
   <img src="/nested-panels.svg" width="100%" alt="Nested panels demo" />
 </p>
+
+## Bordered panels
+
+The whole panel browser can be wrapped in a border. The border is a theme option -
+`none` (the default), `line`, `rounded` or `double` - passed as a plain string
+alongside the spacing; the hub, breadcrumb header, fields and the key-hint footer
+all sit inside it, and every drill-in sub-panel keeps it:
+
+```php
+$form = Form::create('New service')
+  ->theme('default', ['border' => 'rounded', 'spacing' => 'padded'])
+  ->buttons(TRUE, 'Create', 'Cancel')
+  ->panel('basics', 'Basics', function (PanelBuilder $p): void {
+    $p->text('name', 'Service name')->default('api')->required();
+    $p->select('runtime', 'Runtime')->default('php')->options(['php' => 'PHP', 'node' => 'Node.js', 'python' => 'Python']);
+    $p->number('port', 'Port')->default(8080)->min(1)->max(65535);
+  })
+  ->panel('deploy', 'Deployment', function (PanelBuilder $p): void {
+    $p->select('environment', 'Environment')->default('dev')->option('dev', 'Development')->option('prod', 'Production');
+    $p->confirm('autoscale', 'Enable autoscaling?')->default(FALSE);
+  });
+```
+
+<p align="center">
+  <img src="/bordered-panels.svg" width="100%" alt="Panel browser with a rounded border" />
+</p>

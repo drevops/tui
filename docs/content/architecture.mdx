@@ -101,5 +101,5 @@ defines its own processor contract with a `process()` hook, resolves each
 processor class by field id through the `HandlerRegistry`, and orders the work by
 the per-field `weight` metadata (ties in reverse declaration order). One class per
 field can carry both its `process()` and the reusable static
-`validate()`/`transform()` the engine discovers. This is exactly what the Vortex
-CLI does with its `ProcessorInterface` and `Processor`.
+`validate()`/`transform()` the engine discovers. This is the pattern a consumer
+CLI follows with its own `ProcessorInterface` and `Processor`.
