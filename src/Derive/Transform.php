@@ -9,10 +9,9 @@ use AlexSkrypnyk\Str2Name\Str2Name;
 /**
  * Value transforms for derive rules.
  *
- * Extends str2name so every str2name conversion (machine, kebab, pascal,
- * host, initials, ...) is usable as a derive transform by name. A config
- * derive rule names a transform; the engine validates the name against
- * supports().
+ * Exposes an allowlisted subset of str2name conversions (machine, kebab,
+ * pascal, host, initials, ...) as derive transforms. {@see Derive} validates
+ * a declared name against supports() at declaration time.
  *
  * @package DrevOps\Tui\Derive
  */
@@ -89,7 +88,7 @@ class Transform extends Str2Name {
    * The supported transform names.
    *
    * @return list<string>
-   *   All transform names (str2name conversions plus the TUI extras).
+   *   The allowlisted str2name conversion names.
    */
   public static function names(): array {
     return array_values(static::STR2NAME);

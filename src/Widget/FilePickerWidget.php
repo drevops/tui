@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Widget;
 
+use DrevOps\Tui\Config\Field;
 use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\FilePickerMode;
 use DrevOps\Tui\Input\Action;
@@ -275,7 +276,7 @@ class FilePickerWidget extends AbstractWidget {
    *   The default path or paths.
    */
   protected function seed(string|array $default): void {
-    $paths = is_array($default) ? array_values(array_filter($default, is_string(...))) : ($default === '' ? [] : [$default]);
+    $paths = is_array($default) ? Field::stringList($default) : ($default === '' ? [] : [$default]);
 
     if ($this->multiple) {
       foreach ($paths as $path) {

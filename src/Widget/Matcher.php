@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Widget;
 
+use DrevOps\Tui\Config\Option;
 use DrevOps\Tui\Config\OptionKind;
 
 /**
@@ -90,24 +91,7 @@ final class Matcher {
    *   The matching values, most relevant first; ties keep their input order.
    */
   public function rankValues(array $values, string $needle): array {
-    $scores = [];
-    foreach ($values as $index => $value) {
-      $result = $this->match($value, $needle);
-      if ($result instanceof MatchResult) {
-        $scores[$index] = $result->score;
-      }
-    }
-
-    // Sort by score, best first; uasort is stable, so equal scores keep their
-    // insertion order - which is the input order.
-    uasort($scores, static fn(int $left_score, int $right_score): int => $right_score <=> $left_score);
-
-    $ranked = [];
-    foreach (array_keys($scores) as $index) {
-      $ranked[] = $values[$index];
-    }
-
-    return $ranked;
+    return $this->rank($values, static fn(string $value): string => $value, $needle);
   }
 
   /**
@@ -126,25 +110,46 @@ final class Matcher {
    *   The matching options, most relevant first; ties keep their input order.
    */
   public function rankOptions(array $options, string $needle): array {
+    return $this->rank($options, static fn(Option $option): ?string => $option->kind === OptionKind::Option ? $option->label : NULL, $needle);
+  }
+
+  /**
+   * Filter and rank items by the relevance of their text, best first.
+   *
+   * @template T
+   *
+   * @param list<T> $items
+   *   The candidate items.
+   * @param \Closure(T): ?string $text
+   *   Extracts an item's matchable text; NULL excludes the item outright.
+   * @param string $needle
+   *   The query.
+   *
+   * @return list<T>
+   *   The matching items, most relevant first; ties keep their input order.
+   */
+  protected function rank(array $items, \Closure $text, string $needle): array {
     $scores = [];
-    foreach ($options as $index => $option) {
-      if ($option->kind !== OptionKind::Option) {
+
+    foreach ($items as $index => $item) {
+      $label = $text($item);
+      if ($label === NULL) {
         continue;
       }
 
-      $result = $this->match($option->label, $needle);
+      $result = $this->match($label, $needle);
       if ($result instanceof MatchResult) {
         $scores[$index] = $result->score;
       }
     }
 
     // Sort by score, best first; uasort is stable, so equal scores keep their
-    // insertion order - which is the declaration order.
+    // insertion order - which is the input order.
     uasort($scores, static fn(int $left_score, int $right_score): int => $right_score <=> $left_score);
 
     $ranked = [];
     foreach (array_keys($scores) as $index) {
-      $ranked[] = $options[$index];
+      $ranked[] = $items[$index];
     }
 
     return $ranked;

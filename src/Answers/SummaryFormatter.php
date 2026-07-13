@@ -19,6 +19,11 @@ use DrevOps\Tui\Translation\Translator;
 class SummaryFormatter {
 
   /**
+   * The fixed mask length for secret values, concealing their real length.
+   */
+  public const int MASK_LENGTH = 8;
+
+  /**
    * Format the answers grouped by their panel trails.
    *
    * @param \DrevOps\Tui\Answers\Answers $answers
@@ -62,7 +67,7 @@ class SummaryFormatter {
 
     // Secrets never print: a fixed-length mask hides both value and length.
     if ($answer->type === FieldType::Password) {
-      return is_string($value) && $value !== '' ? str_repeat('*', 8) : '';
+      return is_string($value) && $value !== '' ? str_repeat('*', self::MASK_LENGTH) : '';
     }
 
     if (is_bool($value)) {

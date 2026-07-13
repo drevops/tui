@@ -85,4 +85,21 @@ final readonly class Key {
     return $this->name instanceof KeyName ? 'name:' . $this->name->name : 'char:' . $this->char;
   }
 
+  /**
+   * A readable label for the key, for error messages and key hints.
+   *
+   * @return string
+   *   The key name for a named key; a control character rendered as
+   *   "ctrl-<letter>"; otherwise the character itself.
+   */
+  public function label(): string {
+    if ($this->name instanceof KeyName) {
+      return $this->name->name;
+    }
+
+    $char = (string) $this->char;
+
+    return $char !== '' && ord($char) < 0x20 ? 'ctrl-' . strtolower(chr(ord($char) + 0x40)) : $char;
+  }
+
 }

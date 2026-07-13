@@ -28,6 +28,8 @@ class Deriver {
    *   The values with derived fields recomputed.
    */
   public function derive(array $rules, array $values, array $overridden): array {
+    // A derive chain advances one link per pass, so rule-count passes settle
+    // the longest chain; the extra pass verifies nothing changed before exit.
     $limit = count($rules) + 1;
 
     for ($i = 0; $i <= $limit; $i++) {

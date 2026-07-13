@@ -26,20 +26,24 @@ class VimKeyMap extends DefaultKeyMap {
    */
   #[\Override]
   public function bindings(): array {
-    return array_merge(parent::bindings(), [
+    $bindings = [
       new Binding(Scope::navigation(), Action::MoveUp, 'k', KeyName::Up),
       new Binding(Scope::navigation(), Action::MoveDown, 'j', KeyName::Down),
       new Binding(Scope::navigation(), Action::MoveLeft, 'h', KeyName::Left),
       new Binding(Scope::navigation(), Action::MoveRight, 'l', KeyName::Right),
+    ];
 
-      new Binding(Scope::field(FieldType::Select), Action::MoveUp, 'k', KeyName::Up),
-      new Binding(Scope::field(FieldType::Select), Action::MoveDown, 'j', KeyName::Down),
+    // k/j apply wherever typed input cannot swallow them; the calendar also
+    // takes h/l for day movement.
+    foreach ([FieldType::Select, FieldType::Calendar] as $type) {
+      $bindings[] = new Binding(Scope::field($type), Action::MoveUp, 'k', KeyName::Up);
+      $bindings[] = new Binding(Scope::field($type), Action::MoveDown, 'j', KeyName::Down);
+    }
 
-      new Binding(Scope::field(FieldType::Calendar), Action::MoveUp, 'k', KeyName::Up),
-      new Binding(Scope::field(FieldType::Calendar), Action::MoveDown, 'j', KeyName::Down),
-      new Binding(Scope::field(FieldType::Calendar), Action::MoveLeft, 'h', KeyName::Left),
-      new Binding(Scope::field(FieldType::Calendar), Action::MoveRight, 'l', KeyName::Right),
-    ]);
+    $bindings[] = new Binding(Scope::field(FieldType::Calendar), Action::MoveLeft, 'h', KeyName::Left);
+    $bindings[] = new Binding(Scope::field(FieldType::Calendar), Action::MoveRight, 'l', KeyName::Right);
+
+    return array_merge(parent::bindings(), $bindings);
   }
 
 }

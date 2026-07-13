@@ -201,7 +201,7 @@ class MultiSelectWidget extends AbstractWidget {
   }
 
   /**
-   * The selectable values, as a value => label map for filtering and display.
+   * The selectable option values, in display order.
    *
    * @return list<string>
    *   The selectable option values.

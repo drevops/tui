@@ -9,7 +9,7 @@ namespace DrevOps\Tui\Input;
  *
  * The inverse of {@see KeyParser}: it turns a Key into the canonical byte
  * sequence a real terminal would emit for that keypress, so scripted input can
- * be pushed onto a terminal's input pipe and read back through the production
+ * be delivered through a terminal's read() and decoded back by the production
  * parser.
  *
  * @package DrevOps\Tui\Input

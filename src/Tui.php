@@ -16,6 +16,7 @@ use DrevOps\Tui\Schema\SchemaGenerator;
 use DrevOps\Tui\Schema\SchemaValidator;
 use DrevOps\Tui\Render\PanelController;
 use DrevOps\Tui\Render\Terminal;
+use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Theme\ThemeInterface;
 use DrevOps\Tui\Theme\ThemeManager;
 use DrevOps\Tui\Translation\Translator;
@@ -188,7 +189,7 @@ final class Tui {
 
     return new PanelController(
       $this->config,
-      ThemeManager::create($this->resolveTheme($theme), 76, $options),
+      ThemeManager::create($this->resolveTheme($theme), DefaultTheme::DEFAULT_WIDTH, $options),
       $answers->values,
       $answers->provenance,
       $banner_text,

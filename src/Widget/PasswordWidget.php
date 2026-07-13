@@ -131,11 +131,7 @@ class PasswordWidget extends TextWidget {
       $rows[] = $theme->footer(Translator::t('re-enter to confirm'));
     }
 
-    if ($this->error !== NULL) {
-      $rows[] = $theme->error($this->error);
-    }
-
-    return implode("\n", $rows);
+    return $this->withError($theme, implode("\n", $rows));
   }
 
   /**

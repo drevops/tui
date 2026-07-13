@@ -10,7 +10,7 @@ namespace DrevOps\Tui\Input;
  * This is the declaration unit a preset ships and a consumer overrides with.
  * Keys are given in their most convenient form - a {@see KeyName} for a named
  * key, a single-character string for a printable key, or a ready {@see Key} -
- * and {@see KeyMap} normalises them to {@see Key} when it resolves. Two
+ * and {@see KeyMap} normalizes them to {@see Key} when it resolves. Two
  * bindings for the same scope and action do not merge: the later one wins, so a
  * consumer replaces a preset's binding by re-declaring it.
  *

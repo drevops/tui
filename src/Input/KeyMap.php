@@ -126,7 +126,7 @@ final class KeyMap {
     foreach ($bindings as $binding) {
       $layers[$binding->scope->token()][$binding->action->name] = [
         'action' => $binding->action,
-        'keys' => $this->normalise($binding->keys, $binding->scope),
+        'keys' => $this->normalize($binding->keys, $binding->scope),
       ];
     }
 
@@ -183,7 +183,7 @@ final class KeyMap {
         $token = $key->token();
 
         if (isset($inverted[$token]) && $inverted[$token]['action'] !== $entry['action']) {
-          throw new \InvalidArgumentException(sprintf('Key "%s" is bound to both %s and %s in the %s scope.', $this->keyLabel($key), $inverted[$token]['action']->name, $entry['action']->name, $scope->label()));
+          throw new \InvalidArgumentException(sprintf('Key "%s" is bound to both %s and %s in the %s scope.', $key->label(), $inverted[$token]['action']->name, $entry['action']->name, $scope->label()));
         }
 
         $inverted[$token] = ['key' => $key, 'action' => $entry['action']];
@@ -238,10 +238,10 @@ final class KeyMap {
       }
 
       if ($scope->fieldType instanceof FieldType) {
-        throw new \InvalidArgumentException(sprintf('The %s scope consumes typed characters, so the printable character "%s" cannot be bound to an action there.', $scope->label(), $this->keyLabel($entry['key'])));
+        throw new \InvalidArgumentException(sprintf('The %s scope consumes typed characters, so the printable character "%s" cannot be bound to an action there.', $scope->label(), $entry['key']->label()));
       }
 
-      throw new \InvalidArgumentException(sprintf('The base scope may not bind the printable character "%s"; it would be un-typeable in text widgets. Bind it in a specific non-text scope instead.', $this->keyLabel($entry['key'])));
+      throw new \InvalidArgumentException(sprintf('The base scope may not bind the printable character "%s"; it would be un-typeable in text widgets. Bind it in a specific non-text scope instead.', $entry['key']->label()));
     }
   }
 
@@ -259,7 +259,7 @@ final class KeyMap {
   }
 
   /**
-   * Normalise authored keys to Key objects.
+   * Normalize authored keys to Key objects.
    *
    * @param list<\DrevOps\Tui\Input\Key|\DrevOps\Tui\Input\KeyName|string> $keys
    *   The authored keys.
@@ -267,12 +267,12 @@ final class KeyMap {
    *   The scope, for the error message.
    *
    * @return list<\DrevOps\Tui\Input\Key>
-   *   The normalised keys.
+   *   The normalized keys.
    *
    * @throws \InvalidArgumentException
    *   When a character binding is not exactly one character.
    */
-  protected function normalise(array $keys, Scope $scope): array {
+  protected function normalize(array $keys, Scope $scope): array {
     $out = [];
 
     foreach ($keys as $key) {
@@ -291,25 +291,6 @@ final class KeyMap {
     }
 
     return $out;
-  }
-
-  /**
-   * A readable label for a key, for error messages.
-   *
-   * @param \DrevOps\Tui\Input\Key $key
-   *   The key.
-   *
-   * @return string
-   *   The label.
-   */
-  protected function keyLabel(Key $key): string {
-    if ($key->name instanceof KeyName) {
-      return $key->name->name;
-    }
-
-    $char = (string) $key->char;
-
-    return $this->isControl($char) ? 'ctrl-' . strtolower(chr(ord($char) + 0x40)) : $char;
   }
 
 }

@@ -41,8 +41,11 @@ class SchemaValidator {
    */
   public function validate(array $answers): array {
     $errors = [];
+    $known = [];
 
     foreach ($this->config->fields() as $field) {
+      $known[$field->id] = TRUE;
+
       if ($field->when !== NULL && !$field->when->matches($answers)) {
         continue;
       }
@@ -62,7 +65,7 @@ class SchemaValidator {
     }
 
     foreach (array_keys($answers) as $id) {
-      if (!$this->config->field((string) $id) instanceof Field) {
+      if (!isset($known[(string) $id])) {
         $errors[] = Translator::t('Unknown question "@id".', ['@id' => (string) $id]);
       }
     }
@@ -83,10 +86,7 @@ class SchemaValidator {
    */
   protected function validateValue(Field $field, mixed $value): ?string {
     if (!$this->isType($field->type, $value)) {
-      return Translator::t('Question "@id" must be @constraint.', [
-        '@id' => $field->id,
-        '@constraint' => $this->typeName($field->type),
-      ]);
+      return $this->constraintMessage($field, $this->typeName($field->type));
     }
 
     if ($field->required && $this->isEmpty($value)) {
@@ -98,16 +98,11 @@ class SchemaValidator {
       return $bounds_error;
     }
 
-    $date_error = $this->checkDateBounds($field, $value);
-    if ($date_error !== NULL) {
-      return $date_error;
-    }
-
     return $this->checkOptions($field, $value);
   }
 
   /**
-   * Check a number value against its declared bounds.
+   * Check a value against the field's declared number or date bounds.
    *
    * @param \DrevOps\Tui\Config\Field $field
    *   The field.
@@ -118,32 +113,24 @@ class SchemaValidator {
    *   An error, or NULL when in range (or when the field declares no bounds).
    */
   protected function checkBounds(Field $field, mixed $value): ?string {
-    $violation = $field->bounds?->violation($value);
+    $violation = $field->bounds?->violation($value) ?? $field->dateBounds?->violation($value);
 
-    return $violation === NULL ? NULL : Translator::t('Question "@id" must be @constraint.', [
-      '@id' => $field->id,
-      '@constraint' => $violation,
-    ]);
+    return $violation === NULL ? NULL : $this->constraintMessage($field, $violation);
   }
 
   /**
-   * Check a date value against its declared range.
+   * Frame a constraint fragment as a question-scoped error message.
    *
    * @param \DrevOps\Tui\Config\Field $field
    *   The field.
-   * @param mixed $value
-   *   The value.
+   * @param string $constraint
+   *   The constraint fragment (e.g. "a string", "between 1 and 10").
    *
-   * @return string|null
-   *   An error, or NULL when in range (or when the field declares no range).
+   * @return string
+   *   The framed message.
    */
-  protected function checkDateBounds(Field $field, mixed $value): ?string {
-    $violation = $field->dateBounds?->violation($value);
-
-    return $violation === NULL ? NULL : Translator::t('Question "@id" must be @constraint.', [
-      '@id' => $field->id,
-      '@constraint' => $violation,
-    ]);
+  protected function constraintMessage(Field $field, string $constraint): string {
+    return Translator::t('Question "@id" must be @constraint.', ['@id' => $field->id, '@constraint' => $constraint]);
   }
 
   /**

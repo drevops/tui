@@ -192,9 +192,7 @@ class TextWidget extends AbstractWidget {
    * {@inheritdoc}
    */
   public function view(ThemeInterface $theme): string {
-    $line = $this->caretLine($theme);
-
-    return $this->error === NULL ? $line : $line . "\n" . $theme->error($this->error);
+    return $this->withError($theme, $this->caretLine($theme));
   }
 
   /**

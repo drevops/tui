@@ -93,7 +93,7 @@ class Engine {
     foreach ($fields as $field) {
       if ($field->derive !== NULL) {
         $derive_rules[$field->id] = $field->derive;
-        $pinned[$field->id] = in_array($sources[$field->id] ?? Source::Default, [Source::Input, Source::Detected], TRUE);
+        $pinned[$field->id] = in_array($sources[$field->id], [Source::Input, Source::Detected], TRUE);
       }
     }
 
@@ -107,25 +107,17 @@ class Engine {
       // Only supplied inputs pass through the guards: defaults, discovered
       // and derived values are the configuration's own. Transform first so
       // validation sees the normalized value.
-      if (($sources[$field->id] ?? Source::Default) !== Source::Input) {
+      if ($sources[$field->id] !== Source::Input) {
         continue;
       }
 
       $values[$field->id] = $this->transformValue($field, $values[$field->id]);
 
-      $error = $this->validateValue($field, $values[$field->id]);
+      $error = $this->validateValue($field, $values[$field->id]) ?? $field->optionError($values[$field->id]);
       if ($error !== NULL) {
         throw new EngineException(Translator::t('Invalid value for field "@id": @error', [
           '@id' => $field->id,
           '@error' => $error,
-        ]));
-      }
-
-      $option_error = $field->optionError($values[$field->id]);
-      if ($option_error !== NULL) {
-        throw new EngineException(Translator::t('Invalid value for field "@id": @error', [
-          '@id' => $field->id,
-          '@error' => $option_error,
         ]));
       }
     }
@@ -276,6 +268,9 @@ class Engine {
       $active[$field->id] = TRUE;
     }
 
+    // A settled state exits below, so the bound only guards a non-converging
+    // cycle: field-count passes cover the longest possible chain, plus two for
+    // the activation and fix-up interplay.
     $limit = count($fields) + 2;
     for ($i = 0; $i <= $limit; $i++) {
       $derived = $this->deriver->derive($derive_rules, $values, $pinned);
@@ -321,7 +316,7 @@ class Engine {
         continue;
       }
 
-      $source = $sources[$field->id] ?? Source::Default;
+      $source = $sources[$field->id];
       $provenance[$field->id] = match (TRUE) {
         $source === Source::Detected => Provenance::Detected,
         $field->derive !== NULL && $source === Source::Input => Provenance::Override,

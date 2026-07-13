@@ -263,6 +263,31 @@ final readonly class Field {
   }
 
   /**
+   * Coerce a value to a list of strings, dropping every non-string item.
+   *
+   * @param mixed $value
+   *   The value.
+   *
+   * @return list<string>
+   *   The string items, in order; empty when the value is not an array.
+   */
+  public static function stringList(mixed $value): array {
+    if (!is_array($value)) {
+      return [];
+    }
+
+    $out = [];
+
+    foreach ($value as $item) {
+      if (is_string($item)) {
+        $out[] = $item;
+      }
+    }
+
+    return $out;
+  }
+
+  /**
    * Order a set of values, completing and de-duplicating a desired ordering.
    *
    * The desired values that belong to the allowed set come first - in the

@@ -6,6 +6,7 @@ namespace DrevOps\Tui\Theme;
 
 use DrevOps\Tui\Answers\Answers;
 use DrevOps\Tui\Answers\Provenance;
+use DrevOps\Tui\Answers\SummaryFormatter;
 use DrevOps\Tui\Config\Field;
 use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\Panel;
@@ -50,6 +51,11 @@ use DrevOps\Tui\Translation\Translator;
 class DefaultTheme implements ThemeInterface {
 
   /**
+   * The default frame width, used when a caller does not specify one.
+   */
+  public const int DEFAULT_WIDTH = 76;
+
+  /**
    * Whether colour (ANSI) is enabled, resolved from the "color" option.
    */
   protected bool $color;
@@ -80,7 +86,7 @@ class DefaultTheme implements ThemeInterface {
    *   on), "spacing" (a SPACING_* value), "border" (a BORDER_* value), plus any
    *   option a concrete theme declares.
    */
-  public function __construct(protected int $width = 76, protected array $options = []) {
+  public function __construct(protected int $width = self::DEFAULT_WIDTH, protected array $options = []) {
     $this->validateOptions();
 
     $this->color = is_bool($this->options['color'] ?? NULL) ? $this->options['color'] : TRUE;
@@ -878,10 +884,7 @@ class DefaultTheme implements ThemeInterface {
     $name = $key->name;
 
     if (!$name instanceof KeyName) {
-      $char = (string) $key->char;
-
-      // Render a control character (e.g. Ctrl-E) as "ctrl-e".
-      return $char !== '' && ord($char) < 0x20 ? 'ctrl-' . strtolower(chr(ord($char) + 0x40)) : $char;
+      return $key->label();
     }
 
     return match ($name) {
@@ -1073,7 +1076,7 @@ class DefaultTheme implements ThemeInterface {
    */
   protected function renderFieldValue(Field $field, mixed $value): string {
     if ($field->type === FieldType::Password) {
-      return is_string($value) && $value !== '' ? str_repeat($this->mask(), 8) : '';
+      return is_string($value) && $value !== '' ? str_repeat($this->mask(), SummaryFormatter::MASK_LENGTH) : '';
     }
 
     return $this->renderValue($value);

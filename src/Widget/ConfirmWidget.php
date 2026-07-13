@@ -85,12 +85,10 @@ class ConfirmWidget extends AbstractWidget {
    * {@inheritdoc}
    */
   public function view(ThemeInterface $theme): string {
-    $marker_on = $theme->radio(TRUE);
-    $marker_off = $theme->radio(FALSE);
     $yes_label = $this->highlightLabel($theme, Translator::t('Yes'), $this->current);
     $no_label = $this->highlightLabel($theme, Translator::t('No'), !$this->current);
 
-    return $this->current ? $marker_on . ' ' . $yes_label . '  ' . $marker_off . ' ' . $no_label : $marker_off . ' ' . $yes_label . '  ' . $marker_on . ' ' . $no_label;
+    return $theme->radio($this->current) . ' ' . $yes_label . '  ' . $theme->radio(!$this->current) . ' ' . $no_label;
   }
 
   /**

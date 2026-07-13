@@ -17,9 +17,9 @@ use DrevOps\Tui\Tui;
  * Drives a form's interactive panel TUI from scripted keystrokes.
  *
  * The form-level companion to {@see \DrevOps\Tui\Widget\WidgetRunner}: it
- * pushes keystrokes onto a terminal's input pipe and runs the real panel
- * loop, so a consumer can assert on the collected answers and on what was
- * rendered - without a real TTY. Keystrokes are supplied as raw byte
+ * feeds keystrokes through a scripted terminal's read() and runs the real
+ * panel loop, so a consumer can assert on the collected answers and on what
+ * was rendered - without a real TTY. Keystrokes are supplied as raw byte
  * strings (e.g. the output of a keystroke helper) and/or Key objects, which
  * are encoded to their canonical bytes.
  *
@@ -174,7 +174,7 @@ final class TuiTester {
   }
 
   /**
-   * Run the form, pushing the given keystrokes onto the input pipe.
+   * Run the form, feeding it the given scripted keystrokes.
    *
    * @param string|\DrevOps\Tui\Input\Key ...$items
    *   The scripted input: each item is either raw keystroke bytes (a string,

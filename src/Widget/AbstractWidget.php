@@ -335,6 +335,21 @@ abstract class AbstractWidget implements WidgetInterface {
   }
 
   /**
+   * Append the themed validation error line to a rendered view, when one is set.
+   *
+   * @param \DrevOps\Tui\Theme\ThemeInterface $theme
+   *   The theme.
+   * @param string $view
+   *   The rendered view.
+   *
+   * @return string
+   *   The view, with the error line appended when an error is present.
+   */
+  protected function withError(ThemeInterface $theme, string $view): string {
+    return $this->error === NULL ? $view : $view . "\n" . $theme->error($this->error);
+  }
+
+  /**
    * Validate and, when valid, transform a value and complete the widget.
    *
    * @param mixed $value

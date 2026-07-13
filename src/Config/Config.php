@@ -85,7 +85,13 @@ final readonly class Config {
    *   The field id to find.
    */
   public function field(string $id): ?Field {
-    return $this->findField($this->panels, $id);
+    foreach ($this->fields() as $field) {
+      if ($field->id === $id) {
+        return $field;
+      }
+    }
+
+    return NULL;
   }
 
   /**
@@ -117,31 +123,6 @@ final readonly class Config {
 
       $this->collectFields($panel->panels, $fields);
     }
-  }
-
-  /**
-   * Recursively search panels for a field by id.
-   *
-   * @param \DrevOps\Tui\Config\Panel[] $panels
-   *   Panels to search.
-   * @param string $id
-   *   The field id to find.
-   */
-  protected function findField(array $panels, string $id): ?Field {
-    foreach ($panels as $panel) {
-      foreach ($panel->fields as $field) {
-        if ($field->id === $id) {
-          return $field;
-        }
-      }
-
-      $found = $this->findField($panel->panels, $id);
-      if ($found instanceof Field) {
-        return $found;
-      }
-    }
-
-    return NULL;
   }
 
 }

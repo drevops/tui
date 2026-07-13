@@ -59,17 +59,19 @@ class DefaultKeyMap {
       // The textarea hands off to the user's $EDITOR on Ctrl-E.
       new Binding(Scope::field(FieldType::Textarea), Action::ExternalEdit, Key::char("\x05")),
 
-      new Binding(Scope::field(FieldType::Confirm), Action::Toggle, KeyName::Left, KeyName::Right, KeyName::Space, KeyName::Up, KeyName::Down),
       new Binding(Scope::field(FieldType::Confirm), Action::Yes, 'y', 'Y'),
       new Binding(Scope::field(FieldType::Confirm), Action::No, 'n', 'N'),
-
-      new Binding(Scope::field(FieldType::Toggle), Action::Toggle, KeyName::Left, KeyName::Right, KeyName::Space, KeyName::Up, KeyName::Down),
 
       // The password reveal toggle cycles the display mode on Tab.
       new Binding(Scope::field(FieldType::Password), Action::Reveal, KeyName::Tab),
 
       new Binding(Scope::field(FieldType::Pause), Action::Accept, KeyName::Enter, KeyName::Space),
     ];
+
+    // A two-state switch flips on any directional key or Space.
+    foreach ([FieldType::Confirm, FieldType::Toggle] as $type) {
+      $bindings[] = new Binding(Scope::field($type), Action::Toggle, KeyName::Left, KeyName::Right, KeyName::Space, KeyName::Up, KeyName::Down);
+    }
 
     // The checkbox and the searchable checkbox share one set of list bindings.
     foreach ([FieldType::MultiSelect, FieldType::MultiSearch] as $type) {
@@ -81,8 +83,10 @@ class DefaultKeyMap {
     // Both pickers reveal hidden entries on Tab (Left/Right browse in and out,
     // inherited from the base); the multiple picker also toggles the
     // highlighted entry on Space.
-    $bindings[] = new Binding(Scope::field(FieldType::FilePicker), Action::Reveal, KeyName::Tab);
-    $bindings[] = new Binding(Scope::field(FieldType::MultiFilePicker), Action::Reveal, KeyName::Tab);
+    foreach ([FieldType::FilePicker, FieldType::MultiFilePicker] as $type) {
+      $bindings[] = new Binding(Scope::field($type), Action::Reveal, KeyName::Tab);
+    }
+
     $bindings[] = new Binding(Scope::field(FieldType::MultiFilePicker), Action::Toggle, KeyName::Space);
 
     // The reorder widget picks up and drops the highlighted item on Space;

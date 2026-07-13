@@ -731,14 +731,7 @@ final class FieldBuilder {
       }
     }
 
-    $desired = [];
-    if ($this->hasDefault && is_array($this->default)) {
-      foreach ($this->default as $item) {
-        if (is_string($item)) {
-          $desired[] = $item;
-        }
-      }
-    }
+    $desired = $this->hasDefault ? Field::stringList($this->default) : [];
 
     return Field::canonicalOrder($values, $desired);
   }

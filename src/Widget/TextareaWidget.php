@@ -166,7 +166,7 @@ class TextareaWidget extends TextWidget {
   public function view(ThemeInterface $theme): string {
     $text = substr($this->buffer, 0, $this->cursor) . $theme->caret() . substr($this->buffer, $this->cursor);
 
-    return $this->error === NULL ? $text : $text . "\n" . $theme->error($this->error);
+    return $this->withError($theme, $text);
   }
 
   /**

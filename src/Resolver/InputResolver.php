@@ -27,7 +27,7 @@ class InputResolver {
    * @param string $env_prefix
    *   The prefix for per-question env variable names (e.g. "APP_").
    */
-  public function __construct(protected string $env_prefix = '') {
+  public function __construct(protected string $envPrefix = '') {
   }
 
   /**
@@ -70,7 +70,7 @@ class InputResolver {
    *   The env variable name (prefix + uppercased id).
    */
   public function envName(string $id): string {
-    return $this->env_prefix . strtoupper($id);
+    return $this->envPrefix . strtoupper($id);
   }
 
   /**

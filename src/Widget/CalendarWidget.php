@@ -162,11 +162,7 @@ class CalendarWidget extends AbstractWidget {
   public function view(ThemeInterface $theme): string {
     $rows = array_merge([$this->heading($theme), $this->weekdayRow($theme)], $this->weekRows($theme));
 
-    if ($this->error !== NULL) {
-      $rows[] = $theme->error($this->error);
-    }
-
-    return implode("\n", $rows);
+    return $this->withError($theme, implode("\n", $rows));
   }
 
   /**

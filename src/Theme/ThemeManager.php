@@ -72,7 +72,7 @@ final class ThemeManager {
    * @throws \InvalidArgumentException
    *   When the name is neither registered nor a theme class name.
    */
-  public static function create(string $name = 'default', int $width = 76, array $options = []): DefaultTheme {
+  public static function create(string $name = 'default', int $width = DefaultTheme::DEFAULT_WIDTH, array $options = []): DefaultTheme {
     $name = $name === '' ? 'default' : $name;
 
     $class = self::$registry[$name] ?? (is_a($name, DefaultTheme::class, TRUE) ? $name : NULL);

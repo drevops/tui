@@ -54,19 +54,19 @@ class WidgetFactory {
       FieldType::Confirm => new ConfirmWidget((bool) $current),
       FieldType::Toggle => new ToggleWidget($this->labels($field), is_string($current) ? $current : ''),
       FieldType::Select => new SelectWidget($this->options($field), is_string($current) ? $current : '', pageSize: $field->pageSize),
-      FieldType::MultiSelect => new MultiSelectWidget($this->options($field), $this->toList($current), pageSize: $field->pageSize),
-      FieldType::MultiSearch => new MultiSearchWidget($this->options($field), $this->toList($current), pageSize: $field->pageSize),
-      FieldType::Reorder => new ReorderWidget($this->options($field), $this->toList($current), pageSize: $field->pageSize),
+      FieldType::MultiSelect => new MultiSelectWidget($this->options($field), Field::stringList($current), pageSize: $field->pageSize),
+      FieldType::MultiSearch => new MultiSearchWidget($this->options($field), Field::stringList($current), pageSize: $field->pageSize),
+      FieldType::Reorder => new ReorderWidget($this->options($field), Field::stringList($current), pageSize: $field->pageSize),
       FieldType::Suggest => new SuggestWidget($field->selectableValues(), is_string($current) ? $current : '', pageSize: $field->pageSize),
       FieldType::Search => new SearchWidget($this->options($field), is_string($current) ? $current : '', pageSize: $field->pageSize),
       FieldType::FilePicker => new FilePickerWidget($field->pickerStart, is_string($current) ? $current : '', $field->pickerMode, $field->pickerExtensions, $field->pickerShowHidden),
-      FieldType::MultiFilePicker => new FilePickerWidget($field->pickerStart, $this->toList($current), $field->pickerMode, $field->pickerExtensions, $field->pickerShowHidden, multiple: TRUE),
+      FieldType::MultiFilePicker => new FilePickerWidget($field->pickerStart, Field::stringList($current), $field->pickerMode, $field->pickerExtensions, $field->pickerShowHidden, multiple: TRUE),
       FieldType::Number => new NumberWidget(is_int($current) || is_float($current) ? (string) (int) $current : '', bounds: $field->bounds),
       FieldType::Calendar => new CalendarWidget(is_string($current) ? $current : '', bounds: $field->dateBounds),
       FieldType::Textarea => new TextareaWidget(is_string($current) ? $current : '', externalEdit: $field->externalEditor && $this->externalEditorAvailable),
       FieldType::Password => new PasswordWidget(is_string($current) ? $current : '', revealable: $field->revealable, confirm: $field->confirm),
       FieldType::Pause => new PauseWidget(),
-      default => new TextWidget(is_string($current) ? $current : '', completions: $this->completionsFor($field, $answers)),
+      FieldType::Text => new TextWidget(is_string($current) ? $current : '', completions: $this->completionsFor($field, $answers)),
     };
 
     return $widget->setKeys($this->keymap->forField($field->type));
@@ -90,14 +90,7 @@ class WidgetFactory {
   protected function completionsFor(Field $field, array $answers): array {
     $source = $field->completion instanceof \Closure ? ($field->completion)($answers) : $field->completion;
 
-    $out = [];
-    foreach (is_array($source) ? $source : [] as $item) {
-      if (is_string($item)) {
-        $out[] = $item;
-      }
-    }
-
-    return $out;
+    return Field::stringList($source);
   }
 
   /**
@@ -143,30 +136,6 @@ class WidgetFactory {
       $option->disabled,
       $option->disabledReason !== '' ? Translator::t($option->disabledReason) : '',
     ), $field->options);
-  }
-
-  /**
-   * Coerce a value to a list of strings.
-   *
-   * @param mixed $value
-   *   The value.
-   *
-   * @return list<string>
-   *   The list of strings.
-   */
-  protected function toList(mixed $value): array {
-    if (!is_array($value)) {
-      return [];
-    }
-
-    $out = [];
-    foreach ($value as $item) {
-      if (is_string($item)) {
-        $out[] = $item;
-      }
-    }
-
-    return $out;
   }
 
 }
