@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Tests\Unit\Render;
 
 use DrevOps\Tui\Render\Terminal;
-use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Theme\Mode;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
@@ -134,7 +134,7 @@ final class TerminalTest extends TestCase {
   }
 
   #[DataProvider('dataProviderDetectMode')]
-  public function testDetectMode(?string $osc_response, ?string $colorfgbg, string $expected): void {
+  public function testDetectMode(?string $osc_response, ?string $colorfgbg, Mode $expected): void {
     $restore = getenv('COLORFGBG');
     is_string($colorfgbg) ? putenv('COLORFGBG=' . $colorfgbg) : putenv('COLORFGBG');
 
@@ -147,8 +147,8 @@ final class TerminalTest extends TestCase {
   }
 
   public static function dataProviderDetectMode(): \Iterator {
-    $dark = ThemeInterface::MODE_DARK;
-    $light = ThemeInterface::MODE_LIGHT;
+    $dark = Mode::Dark;
+    $light = Mode::Light;
 
     yield 'osc black is dark' => ["\033]11;rgb:0000/0000/0000\007", NULL, $dark];
     yield 'osc white is light' => ["\033]11;rgb:ffff/ffff/ffff\007", NULL, $light];

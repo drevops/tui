@@ -69,6 +69,13 @@ final class ConfigModelTest extends TestCase {
     $this->assertCount(4, $config->fields());
   }
 
+  public function testPanelItemCount(): void {
+    $panel = new Panel('p', 'P', '', [new Field('a', 'A', '', FieldType::Text, '')], [new Panel('s', 'S', '')]);
+
+    $this->assertSame(2, $panel->itemCount());
+    $this->assertSame(0, (new Panel('empty', 'E', ''))->itemCount());
+  }
+
   public function testTypeDefaults(): void {
     $config = Form::create('T')
       ->panel('p', 'p', function (PanelBuilder $p): void {

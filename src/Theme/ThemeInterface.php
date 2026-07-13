@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Theme;
 
-use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Key;
-use DrevOps\Tui\Input\ScopedKeyMap;
 
 /**
  * A theme's look: one method per themeable element.
@@ -24,58 +22,14 @@ use DrevOps\Tui\Input\ScopedKeyMap;
  * }
  * @endcode
  *
- * The option constants (MODE_*, SPACING_*, BORDER_*) are the values a consumer
- * passes in the theme options array. How the styled pieces are arranged into
- * rows and frames is the render*() layer on {@see DefaultTheme}.
+ * The {@see Mode}, {@see Spacing} and {@see Border} enums carry the display
+ * options a consumer passes in the theme options array (as enum cases or
+ * their string values). How the styled pieces are arranged into rows and
+ * frames is the render*() layer on {@see DefaultTheme}.
  *
  * @package DrevOps\Tui\Theme
  */
 interface ThemeInterface {
-
-  /**
-   * Colour mode: bright foregrounds for a dark terminal background.
-   */
-  public const string MODE_DARK = 'dark';
-
-  /**
-   * Colour mode: darker foregrounds for a light terminal background.
-   */
-  public const string MODE_LIGHT = 'light';
-
-  /**
-   * Spacing option: labels and values only, no descriptions, no gaps.
-   */
-  public const string SPACING_COMPACT = 'compact';
-
-  /**
-   * Spacing option: descriptions under each item, no gaps (the default).
-   */
-  public const string SPACING_NORMAL = 'normal';
-
-  /**
-   * Spacing option: descriptions plus a blank line between items.
-   */
-  public const string SPACING_PADDED = 'padded';
-
-  /**
-   * Border option: no box (the default).
-   */
-  public const string BORDER_NONE = 'none';
-
-  /**
-   * Border option: a single-line box.
-   */
-  public const string BORDER_LINE = 'line';
-
-  /**
-   * Border option: a single-line box with rounded corners.
-   */
-  public const string BORDER_ROUNDED = 'rounded';
-
-  /**
-   * Border option: a double-line box.
-   */
-  public const string BORDER_DOUBLE = 'double';
 
   /**
    * A heading or an editor label.
@@ -259,24 +213,5 @@ interface ThemeInterface {
    *   The glyph, respecting the theme's Unicode mode.
    */
   public function keyHint(Key $key): string;
-
-  /**
-   * Render a hint fragment: the primary keys of one or more actions, labelled.
-   *
-   * The glyphs are drawn from the live bindings, so a hint never contradicts a
-   * remapped key. An action with no bound key contributes nothing, and when no
-   * action is bound the fragment is empty.
-   *
-   * @param \DrevOps\Tui\Input\ScopedKeyMap $keys
-   *   The scope's bindings.
-   * @param string $label
-   *   The label describing what the keys do (e.g. "move", "accept").
-   * @param \DrevOps\Tui\Input\Action ...$actions
-   *   The actions whose primary keys lead the fragment.
-   *
-   * @return string
-   *   The fragment (e.g. "↑/↓ move"), or an empty string when nothing is bound.
-   */
-  public function keysHint(ScopedKeyMap $keys, string $label, Action ...$actions): string;
 
 }

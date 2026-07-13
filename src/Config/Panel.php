@@ -34,4 +34,14 @@ final readonly class Panel {
   ) {
   }
 
+  /**
+   * The number of navigable items: fields plus sub-panels.
+   *
+   * @return int
+   *   The item count.
+   */
+  public function itemCount(): int {
+    return count($this->fields) + count($this->panels);
+  }
+
 }

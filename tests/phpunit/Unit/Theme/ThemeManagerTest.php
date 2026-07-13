@@ -6,7 +6,7 @@ namespace DrevOps\Tui\Tests\Unit\Theme;
 
 use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Theme\DefaultTheme;
-use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Theme\Mode;
 use DrevOps\Tui\Theme\ThemeManager;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -32,8 +32,8 @@ final class ThemeManagerTest extends TestCase {
     yield 'default is dark' => ['default', [], static fn(DefaultTheme $t): string => $t->title('X'), '1;36'];
     yield 'empty is dark' => ['', [], static fn(DefaultTheme $t): string => $t->title('X'), '1;36'];
     // The dark/light palette is a mode option, not a separate theme.
-    yield 'light mode' => ['default', ['mode' => ThemeInterface::MODE_LIGHT], static fn(DefaultTheme $t): string => $t->title('X'), '1;34'];
-    yield 'light mode indicator' => ['default', ['mode' => ThemeInterface::MODE_LIGHT], static fn(DefaultTheme $t): string => $t->indicator('X'), '35'];
+    yield 'light mode' => ['default', ['mode' => Mode::Light], static fn(DefaultTheme $t): string => $t->title('X'), '1;34'];
+    yield 'light mode indicator' => ['default', ['mode' => Mode::Light], static fn(DefaultTheme $t): string => $t->indicator('X'), '35'];
   }
 
   public function testCreateUnknownThrows(): void {

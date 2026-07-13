@@ -185,7 +185,7 @@ class OceanTheme extends DefaultTheme {
    * {@inheritdoc}
    */
   #[\Override]
-  public function renderFieldLine(Field $field, Answers $answers, bool $selected): string {
+  protected function renderFieldLine(Field $field, Answers $answers, bool $selected): string {
     return $this->marker($selected) . ' ' . $this->label($field->label) . ': ' . $this->value($this->renderFieldValue($field, $answers->value($field->id)));
   }
 
@@ -193,7 +193,7 @@ class OceanTheme extends DefaultTheme {
    * {@inheritdoc}
    */
   #[\Override]
-  public function renderPanelLine(Panel $panel, bool $selected): string {
+  protected function renderPanelLine(Panel $panel, bool $selected): string {
     $count = count($panel->fields) + count($panel->panels);
 
     return $this->marker($selected) . ' ' . $this->title($panel->title) . '  ' . $this->description($this->arrow() . ' ' . $count . ' item' . ($count === 1 ? '' : 's'));
@@ -203,7 +203,7 @@ class OceanTheme extends DefaultTheme {
    * {@inheritdoc}
    */
   #[\Override]
-  public function renderDescriptionLine(string $description, bool $selected): string {
+  protected function renderDescriptionLine(string $description, bool $selected): string {
     return '    ' . $this->description($this->dot() . ' ' . $description, $selected);
   }
 
@@ -211,7 +211,7 @@ class OceanTheme extends DefaultTheme {
    * {@inheritdoc}
    */
   #[\Override]
-  public function summarizePanel(Panel $panel, Answers $answers): string {
+  protected function summarizePanel(Panel $panel, Answers $answers): string {
     $parts = [];
 
     foreach ($panel->fields as $field) {
@@ -227,7 +227,7 @@ class OceanTheme extends DefaultTheme {
    * {@inheritdoc}
    */
   #[\Override]
-  public function renderSummaryLine(string $summary, bool $selected): string {
+  protected function renderSummaryLine(string $summary, bool $selected): string {
     return '    ' . $this->description($this->arrow() . ' ' . $summary, $selected);
   }
 

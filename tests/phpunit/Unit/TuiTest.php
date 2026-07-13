@@ -12,7 +12,7 @@ use DrevOps\Tui\Render\PanelController;
 use DrevOps\Tui\Render\Terminal;
 use DrevOps\Tui\Testing\BufferedTerminal;
 use DrevOps\Tui\Tests\Traits\ResetsTranslatorTrait;
-use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Theme\Mode;
 use DrevOps\Tui\Translation\Translator;
 use DrevOps\Tui\Tui;
 use DrevOps\Tui\Engine\Engine;
@@ -129,7 +129,7 @@ final class TuiTest extends TestCase {
   }
 
   public function testController(): void {
-    $controller = $this->tui()->controller(['color' => FALSE, 'unicode' => TRUE, 'mode' => ThemeInterface::MODE_DARK]);
+    $controller = $this->tui()->controller(['color' => FALSE, 'unicode' => TRUE, 'mode' => Mode::Dark]);
 
     $this->assertInstanceOf(PanelController::class, $controller);
     // The engine's resolved answers seed the controller.
@@ -168,7 +168,7 @@ final class TuiTest extends TestCase {
   }
 
   #[DataProvider('dataProviderResolveThemeOptionsDetectsMode')]
-  public function testResolveThemeOptionsDetectsMode(bool $color, ?string $osc, string $expected_mode): void {
+  public function testResolveThemeOptionsDetectsMode(bool $color, ?string $osc, Mode $expected_mode): void {
     $restore = getenv('COLORFGBG');
     putenv('COLORFGBG');
 
@@ -187,11 +187,11 @@ final class TuiTest extends TestCase {
 
   public static function dataProviderResolveThemeOptionsDetectsMode(): \Iterator {
     // With colour on, the mode follows the terminal background.
-    yield 'colour on detects light' => [TRUE, "\033]11;rgb:ffff/ffff/ffff\007", 'light'];
-    yield 'colour on detects dark' => [TRUE, "\033]11;rgb:0000/0000/0000\007", 'dark'];
-    yield 'colour on no reply defaults dark' => [TRUE, NULL, 'dark'];
+    yield 'colour on detects light' => [TRUE, "\033]11;rgb:ffff/ffff/ffff\007", Mode::Light];
+    yield 'colour on detects dark' => [TRUE, "\033]11;rgb:0000/0000/0000\007", Mode::Dark];
+    yield 'colour on no reply defaults dark' => [TRUE, NULL, Mode::Dark];
     // With colour off, the background query is skipped and mode is dark.
-    yield 'colour off skips detection' => [FALSE, "\033]11;rgb:ffff/ffff/ffff\007", 'dark'];
+    yield 'colour off skips detection' => [FALSE, "\033]11;rgb:ffff/ffff/ffff\007", Mode::Dark];
   }
 
   public function testResolveThemeOptionsRespectsConsumerOptions(): void {

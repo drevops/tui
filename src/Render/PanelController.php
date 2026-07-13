@@ -313,7 +313,7 @@ class PanelController {
     [$body, $cursor_line] = $this->theme->renderBody($panel, $this->answers(), $this->cursor);
 
     if ($this->buttonsVisible()) {
-      $base = $this->theme->itemCount($panel);
+      $base = $panel->itemCount();
       $selected = $this->cursor >= $base ? $this->cursor - $base : -1;
 
       // The action row always detaches from the items above it.
@@ -411,7 +411,7 @@ class PanelController {
     }
 
     $this->followCursor = TRUE;
-    $count = $this->theme->itemCount($this->navigator->current()) + ($this->buttonsVisible() ? 2 : 0);
+    $count = $this->navigator->current()->itemCount() + ($this->buttonsVisible() ? 2 : 0);
 
     if ($this->nav->matches($key, Action::MoveUp)) {
       $this->cursor = max(0, $this->cursor - 1);
@@ -421,7 +421,7 @@ class PanelController {
     }
     elseif ($this->nav->matches($key, Action::MoveLeft) || $this->nav->matches($key, Action::MoveRight)) {
       // The submit/cancel buttons are inline, so Left/Right moves between them.
-      $base = $this->theme->itemCount($this->navigator->current());
+      $base = $this->navigator->current()->itemCount();
       if ($this->buttonsVisible() && $this->cursor >= $base) {
         $this->cursor = max($base, min($count - 1, $this->cursor + ($this->nav->matches($key, Action::MoveRight) ? 1 : -1)));
       }

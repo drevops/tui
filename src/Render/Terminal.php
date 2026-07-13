@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Render;
 
-use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Theme\Mode;
 use Symfony\Component\Console\Terminal as ConsoleTerminal;
 
 /**
@@ -221,26 +221,25 @@ class Terminal {
    * Detect the colour mode that best matches the terminal background.
    *
    * Resolves in order: the OSC 11 background reply (when one was captured),
-   * then the COLORFGBG environment variable, then a dark default. Always
-   * returns a MODE_* value.
+   * then the COLORFGBG environment variable, then a dark default.
    *
    * @param string|null $osc_response
    *   The raw OSC 11 reply bytes, or NULL when the terminal was not queried or
    *   did not answer.
    *
-   * @return string
-   *   ThemeInterface::MODE_DARK or ThemeInterface::MODE_LIGHT.
+   * @return \DrevOps\Tui\Theme\Mode
+   *   The detected mode.
    */
-  public static function detectMode(?string $osc_response = NULL): string {
+  public static function detectMode(?string $osc_response = NULL): Mode {
     if (is_string($osc_response)) {
       $mode = self::modeFromOsc($osc_response);
 
-      if ($mode !== NULL) {
+      if ($mode instanceof Mode) {
         return $mode;
       }
     }
 
-    return self::modeFromColorFgBg() ?? ThemeInterface::MODE_DARK;
+    return self::modeFromColorFgBg() ?? Mode::Dark;
   }
 
   /**
@@ -253,17 +252,17 @@ class Terminal {
    * @param string $response
    *   The raw reply bytes.
    *
-   * @return string|null
-   *   A MODE_* value, or NULL when the reply holds no parseable colour.
+   * @return \DrevOps\Tui\Theme\Mode|null
+   *   The mode, or NULL when the reply holds no parseable colour.
    */
-  protected static function modeFromOsc(string $response): ?string {
+  protected static function modeFromOsc(string $response): ?Mode {
     if (preg_match('#rgba?:([0-9a-f]{1,4})/([0-9a-f]{1,4})/([0-9a-f]{1,4})#i', $response, $matches) !== 1) {
       return NULL;
     }
 
     $is_dark = self::luminanceIsDark(self::channel($matches[1]), self::channel($matches[2]), self::channel($matches[3]));
 
-    return $is_dark ? ThemeInterface::MODE_DARK : ThemeInterface::MODE_LIGHT;
+    return $is_dark ? Mode::Dark : Mode::Light;
   }
 
   /**
@@ -308,11 +307,11 @@ class Terminal {
    * The background is the last field; indices 0-6 and 8 are the dark half of
    * the standard sixteen-colour palette, the rest light.
    *
-   * @return string|null
-   *   A MODE_* value, or NULL when COLORFGBG is unset or its background is not
-   *   a palette index.
+   * @return \DrevOps\Tui\Theme\Mode|null
+   *   The mode, or NULL when COLORFGBG is unset or its background is not a
+   *   palette index.
    */
-  protected static function modeFromColorFgBg(): ?string {
+  protected static function modeFromColorFgBg(): ?Mode {
     $value = getenv('COLORFGBG');
 
     if (!is_string($value) || $value === '') {
@@ -326,7 +325,7 @@ class Terminal {
       return NULL;
     }
 
-    return in_array((int) $background, [0, 1, 2, 3, 4, 5, 6, 8], TRUE) ? ThemeInterface::MODE_DARK : ThemeInterface::MODE_LIGHT;
+    return in_array((int) $background, [0, 1, 2, 3, 4, 5, 6, 8], TRUE) ? Mode::Dark : Mode::Light;
   }
 
   /**

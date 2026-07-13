@@ -6,7 +6,7 @@ namespace DrevOps\Tui\Tests\Unit\Theme;
 
 use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Theme\DefaultTheme;
-use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Theme\Mode;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
@@ -146,7 +146,7 @@ final class ThemeTest extends TestCase {
    *   The theme.
    */
   protected static function light(): DefaultTheme {
-    return new DefaultTheme(76, ['mode' => ThemeInterface::MODE_LIGHT]);
+    return new DefaultTheme(76, ['mode' => Mode::Light]);
   }
 
 }

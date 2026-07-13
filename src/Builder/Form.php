@@ -142,8 +142,8 @@ final class Form {
    *   the terminal background.
    * @param array<string,mixed> $options
    *   Display options for the theme, keyed by name - e.g.
-   *   `['spacing' => ThemeInterface::SPACING_PADDED, 'border' =>
-   *   ThemeInterface::BORDER_ROUNDED]` - plus any a custom theme reads.
+   *   `['spacing' => Spacing::Padded, 'border' => Border::Rounded]` - plus any
+   *   a custom theme reads.
    *
    * @return $this
    *   The builder.

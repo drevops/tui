@@ -17,7 +17,7 @@ use DrevOps\Tui\Schema\SchemaValidator;
 use DrevOps\Tui\Render\PanelController;
 use DrevOps\Tui\Render\Terminal;
 use DrevOps\Tui\Theme\DefaultTheme;
-use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Theme\Mode;
 use DrevOps\Tui\Theme\ThemeManager;
 use DrevOps\Tui\Translation\Translator;
 
@@ -305,7 +305,7 @@ final class Tui {
     }
 
     if (!isset($options['mode'])) {
-      $options['mode'] = $options['color'] ? Terminal::detectMode($terminal->queryBackground()) : ThemeInterface::MODE_DARK;
+      $options['mode'] = $options['color'] ? Terminal::detectMode($terminal->queryBackground()) : Mode::Dark;
     }
 
     return $options;

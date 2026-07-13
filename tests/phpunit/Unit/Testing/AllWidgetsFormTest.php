@@ -10,7 +10,7 @@ use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Testing\TuiTester;
 use DrevOps\Tui\Tests\Fixtures\Form\AllWidgetsForm;
 use DrevOps\Tui\Tests\Fixtures\Theme\OceanTheme;
-use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Theme\Mode;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -97,10 +97,10 @@ final class AllWidgetsFormTest extends TestCase {
   }
 
   public static function dataProviderRendersEveryWidgetAcrossThemes(): \Iterator {
-    yield 'default dark' => ['', ['mode' => ThemeInterface::MODE_DARK, 'color' => TRUE, 'unicode' => TRUE]];
-    yield 'default light' => ['', ['mode' => ThemeInterface::MODE_LIGHT, 'color' => TRUE, 'unicode' => TRUE]];
-    yield 'ascii no color' => ['', ['mode' => ThemeInterface::MODE_DARK, 'color' => FALSE, 'unicode' => FALSE]];
-    yield 'custom theme class' => [OceanTheme::class, ['mode' => ThemeInterface::MODE_DARK, 'color' => TRUE, 'unicode' => TRUE]];
+    yield 'default dark' => ['', ['mode' => Mode::Dark, 'color' => TRUE, 'unicode' => TRUE]];
+    yield 'default light' => ['', ['mode' => Mode::Light, 'color' => TRUE, 'unicode' => TRUE]];
+    yield 'ascii no color' => ['', ['mode' => Mode::Dark, 'color' => FALSE, 'unicode' => FALSE]];
+    yield 'custom theme class' => [OceanTheme::class, ['mode' => Mode::Dark, 'color' => TRUE, 'unicode' => TRUE]];
   }
 
   /**

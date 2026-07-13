@@ -91,12 +91,12 @@ class DefaultTheme implements ThemeInterface {
 
     $this->color = is_bool($this->options['color'] ?? NULL) ? $this->options['color'] : TRUE;
     $this->unicode = is_bool($this->options['unicode'] ?? NULL) ? $this->options['unicode'] : TRUE;
-    $this->isDark = $this->mode() === self::MODE_DARK;
+    $this->isDark = $this->mode() === Mode::Dark;
     $this->outerWidth = $this->width;
 
     // A border consumes two frame columns plus a one-column gutter each side.
     // Lay rows out that much narrower to keep right-aligned badges inside it.
-    if ($this->borderStyle() !== self::BORDER_NONE) {
+    if ($this->borderStyle() !== Border::None) {
       $this->width = max(1, $this->width - 4);
     }
   }
@@ -118,9 +118,12 @@ class DefaultTheme implements ThemeInterface {
         ]));
       }
 
-      if (!in_array($value, $schema[$key], TRUE)) {
+      // An enum case and its backing value are interchangeable as an option.
+      $candidate = $value instanceof \BackedEnum ? $value->value : $value;
+
+      if (!in_array($candidate, $schema[$key], TRUE)) {
         throw new \InvalidArgumentException(Translator::t('@value is not a valid "@key". Allowed: @allowed.', [
-          '@value' => $this->showValue($value),
+          '@value' => $this->showValue($candidate),
           '@key' => $key,
           '@allowed' => implode(', ', array_map($this->showValue(...), $schema[$key])),
         ]));
@@ -139,11 +142,11 @@ class DefaultTheme implements ThemeInterface {
    */
   protected function optionSchema(): array {
     return [
-      'mode' => [self::MODE_DARK, self::MODE_LIGHT],
+      'mode' => array_column(Mode::cases(), 'value'),
       'color' => [TRUE, FALSE],
       'unicode' => [TRUE, FALSE],
-      'spacing' => [self::SPACING_COMPACT, self::SPACING_NORMAL, self::SPACING_PADDED],
-      'border' => [self::BORDER_NONE, self::BORDER_LINE, self::BORDER_ROUNDED, self::BORDER_DOUBLE],
+      'spacing' => array_column(Spacing::cases(), 'value'),
+      'border' => array_column(Border::cases(), 'value'),
     ];
   }
 
@@ -184,11 +187,17 @@ class DefaultTheme implements ThemeInterface {
   /**
    * The colour-mode option.
    *
-   * @return string
-   *   MODE_DARK or MODE_LIGHT.
+   * @return \DrevOps\Tui\Theme\Mode
+   *   The mode; dark when unset.
    */
-  protected function mode(): string {
-    return $this->option('mode', self::MODE_DARK) === self::MODE_LIGHT ? self::MODE_LIGHT : self::MODE_DARK;
+  protected function mode(): Mode {
+    $value = $this->options['mode'] ?? NULL;
+
+    if ($value instanceof Mode) {
+      return $value;
+    }
+
+    return is_string($value) ? (Mode::tryFrom($value) ?? Mode::Dark) : Mode::Dark;
   }
 
   /**
@@ -197,28 +206,40 @@ class DefaultTheme implements ThemeInterface {
    * @return int
    *   The width.
    */
-  public function width(): int {
+  protected function width(): int {
     return $this->width;
   }
 
   /**
-   * The vertical spacing option, for the renderer.
+   * The vertical spacing option.
    *
-   * @return string
-   *   One of the SPACING_* values.
+   * @return \DrevOps\Tui\Theme\Spacing
+   *   The spacing; normal when unset.
    */
-  public function spacing(): string {
-    return $this->option('spacing', self::SPACING_NORMAL);
+  protected function spacing(): Spacing {
+    $value = $this->options['spacing'] ?? NULL;
+
+    if ($value instanceof Spacing) {
+      return $value;
+    }
+
+    return is_string($value) ? (Spacing::tryFrom($value) ?? Spacing::Normal) : Spacing::Normal;
   }
 
   /**
-   * The border-style option, for the renderer.
+   * The border-style option.
    *
-   * @return string
-   *   One of the BORDER_* values.
+   * @return \DrevOps\Tui\Theme\Border
+   *   The border style; none when unset.
    */
-  public function borderStyle(): string {
-    return $this->option('border', self::BORDER_NONE);
+  protected function borderStyle(): Border {
+    $value = $this->options['border'] ?? NULL;
+
+    if ($value instanceof Border) {
+      return $value;
+    }
+
+    return is_string($value) ? (Border::tryFrom($value) ?? Border::None) : Border::None;
   }
 
   /**
@@ -259,6 +280,19 @@ class DefaultTheme implements ThemeInterface {
   }
 
   /**
+   * The accent SGR code: the theme's primary colour, resolved for the mode.
+   *
+   * The single knob behind every accent-coloured atom (title, highlight,
+   * marker, radio, caret), so a theme restyles its accent in one override.
+   *
+   * @return string
+   *   The SGR parameters.
+   */
+  protected function accentSgr(): string {
+    return $this->isDark ? '1;36' : '1;34';
+  }
+
+  /**
    * Add bold to an SGR code when an item is selected.
    *
    * @param string $sgr
@@ -285,7 +319,7 @@ class DefaultTheme implements ThemeInterface {
    * {@inheritdoc}
    */
   public function title(string $text): string {
-    return $this->paint($this->isDark ? '1;36' : '1;34', $text);
+    return $this->paint($this->accentSgr(), $text);
   }
 
   /**
@@ -348,7 +382,7 @@ class DefaultTheme implements ThemeInterface {
    * {@inheritdoc}
    */
   public function highlight(string $text): string {
-    return $this->paint($this->isDark ? '1;36' : '1;34', $text);
+    return $this->paint($this->accentSgr(), $text);
   }
 
   /**
@@ -404,7 +438,7 @@ class DefaultTheme implements ThemeInterface {
    * {@inheritdoc}
    */
   public function marker(bool $selected): string {
-    return $selected ? $this->paint($this->isDark ? '1;36' : '1;34', $this->unicode ? '❯' : '>') : ' ';
+    return $selected ? $this->paint($this->accentSgr(), $this->unicode ? '❯' : '>') : ' ';
   }
 
   /**
@@ -481,7 +515,7 @@ class DefaultTheme implements ThemeInterface {
    * {@inheritdoc}
    */
   public function radio(bool $on): string {
-    return $on ? $this->paint($this->isDark ? '1;36' : '1;34', $this->unicode ? '●' : '(*)') : ($this->unicode ? '○' : '( )');
+    return $on ? $this->paint($this->accentSgr(), $this->unicode ? '●' : '(*)') : ($this->unicode ? '○' : '( )');
   }
 
   /**
@@ -495,7 +529,7 @@ class DefaultTheme implements ThemeInterface {
    * {@inheritdoc}
    */
   public function caret(): string {
-    return $this->paint($this->isDark ? '1;36' : '1;34', $this->unicode ? '█' : '|');
+    return $this->paint($this->accentSgr(), $this->unicode ? '█' : '|');
   }
 
   /**
@@ -510,19 +544,6 @@ class DefaultTheme implements ThemeInterface {
    */
   public function mask(): string {
     return $this->unicode ? '•' : '*';
-  }
-
-  /**
-   * The number of navigable items in a panel (fields + sub-panels).
-   *
-   * @param \DrevOps\Tui\Config\Panel $panel
-   *   The panel.
-   *
-   * @return int
-   *   The item count.
-   */
-  public function itemCount(Panel $panel): int {
-    return count($panel->fields) + count($panel->panels);
   }
 
   /**
@@ -544,8 +565,8 @@ class DefaultTheme implements ThemeInterface {
     $index = 0;
 
     $spacing = $this->spacing();
-    $gap = $spacing === self::SPACING_PADDED ? 1 : 0;
-    $verbose = $spacing !== self::SPACING_COMPACT;
+    $gap = $spacing === Spacing::Padded ? 1 : 0;
+    $verbose = $spacing !== Spacing::Compact;
 
     foreach ($panel->fields as $field) {
       if ($index > 0 && $gap > 0) {
@@ -604,7 +625,7 @@ class DefaultTheme implements ThemeInterface {
    * @return string
    *   The row.
    */
-  public function renderFieldLine(Field $field, Answers $answers, bool $selected): string {
+  protected function renderFieldLine(Field $field, Answers $answers, bool $selected): string {
     $left = $this->marker($selected) . ' ' . $this->label(Translator::t($field->label), $selected) . '  ' . $this->value($this->renderFieldValue($field, $answers->value($field->id)), $selected);
 
     $provenance = $answers->provenanceOf($field->id);
@@ -626,7 +647,7 @@ class DefaultTheme implements ThemeInterface {
    * @return string
    *   The row.
    */
-  public function renderPanelLine(Panel $panel, bool $selected): string {
+  protected function renderPanelLine(Panel $panel, bool $selected): string {
     return $this->marker($selected) . ' ' . $this->label(Translator::t($panel->title), $selected) . ' ' . $this->description($this->arrow(), $selected);
   }
 
@@ -641,7 +662,7 @@ class DefaultTheme implements ThemeInterface {
    * @return string
    *   The row.
    */
-  public function renderDescriptionLine(string $description, bool $selected): string {
+  protected function renderDescriptionLine(string $description, bool $selected): string {
     return '    ' . $this->description($description, $selected);
   }
 
@@ -656,7 +677,7 @@ class DefaultTheme implements ThemeInterface {
    * @return string
    *   The summary, or an empty string when the panel has no active fields.
    */
-  public function summarizePanel(Panel $panel, Answers $answers): string {
+  protected function summarizePanel(Panel $panel, Answers $answers): string {
     $parts = [];
 
     foreach ($panel->fields as $field) {
@@ -688,7 +709,7 @@ class DefaultTheme implements ThemeInterface {
    * @return string
    *   The row.
    */
-  public function renderSummaryLine(string $summary, bool $selected): string {
+  protected function renderSummaryLine(string $summary, bool $selected): string {
     $max = max(1, $this->width - 4);
     $clipped = mb_strlen($summary) > $max ? mb_substr($summary, 0, $max - 1) . '…' : $summary;
 
@@ -726,25 +747,13 @@ class DefaultTheme implements ThemeInterface {
    *   The composed frame.
    */
   public function renderFrame(array $header, array $body, array $footer, Viewport $viewport, int $height): string {
-    if ($this->borderStyle() === self::BORDER_NONE) {
+    if ($this->borderStyle() === Border::None) {
       return $this->renderBorderless($header, $body, $footer, $viewport, $height);
     }
 
     $chars = Box::chars($this->borderStyle(), $this->unicode);
-    $visible = (new Scroller())->slice($body, $viewport->offset, $height);
-
-    $middle = [];
-    if ($viewport->has_above) {
-      $middle[] = $this->indicator('  ' . $this->indicatorUp());
-    }
-
-    $middle = array_merge($middle, $visible);
-
-    if ($viewport->has_below) {
-      $middle[] = $this->indicator('  ' . $this->indicatorDown());
-    }
-
-    $pad = $this->spacing() === self::SPACING_PADDED;
+    $middle = $this->scrolledBody($body, $viewport, $height);
+    $pad = $this->spacing() === Spacing::Padded;
 
     $out = [$this->borderRule($chars['tl'], $chars['tr'], $chars['h'])];
 
@@ -797,24 +806,42 @@ class DefaultTheme implements ThemeInterface {
    *   The composed frame.
    */
   protected function renderBorderless(array $header, array $body, array $footer, Viewport $viewport, int $height): string {
-    $visible = (new Scroller())->slice($body, $viewport->offset, $height);
+    $lines = array_merge($header, $this->scrolledBody($body, $viewport, $height));
 
-    $lines = $header;
+    if ($this->spacing() !== Spacing::Compact) {
+      $lines[] = '';
+    }
+
+    return implode("\n", array_merge($lines, $footer));
+  }
+
+  /**
+   * The visible body window, wrapped with the scroll indicators.
+   *
+   * @param list<string> $body
+   *   The full body lines.
+   * @param \DrevOps\Tui\Render\Viewport $viewport
+   *   The computed viewport.
+   * @param int $height
+   *   The body viewport height.
+   *
+   * @return list<string>
+   *   The visible lines, with an indicator line for each hidden side.
+   */
+  protected function scrolledBody(array $body, Viewport $viewport, int $height): array {
+    $lines = [];
+
     if ($viewport->has_above) {
       $lines[] = $this->indicator('  ' . $this->indicatorUp());
     }
 
-    $lines = array_merge($lines, $visible);
+    $lines = array_merge($lines, (new Scroller())->slice($body, $viewport->offset, $height));
 
     if ($viewport->has_below) {
       $lines[] = $this->indicator('  ' . $this->indicatorDown());
     }
 
-    if ($this->spacing() !== self::SPACING_COMPACT) {
-      $lines[] = '';
-    }
-
-    return implode("\n", array_merge($lines, $footer));
+    return $lines;
   }
 
   /**
@@ -906,9 +933,23 @@ class DefaultTheme implements ThemeInterface {
   }
 
   /**
-   * {@inheritdoc}
+   * Render a hint fragment: the primary keys of one or more actions, labelled.
+   *
+   * The glyphs are drawn from the live bindings, so a hint never contradicts a
+   * remapped key. An action with no bound key contributes nothing, and when no
+   * action is bound the fragment is empty.
+   *
+   * @param \DrevOps\Tui\Input\ScopedKeyMap $keys
+   *   The scope's bindings.
+   * @param string $label
+   *   The label describing what the keys do (e.g. "move", "accept").
+   * @param \DrevOps\Tui\Input\Action ...$actions
+   *   The actions whose primary keys lead the fragment.
+   *
+   * @return string
+   *   The fragment (e.g. "↑/↓ move"), or an empty string when nothing is bound.
    */
-  public function keysHint(ScopedKeyMap $keys, string $label, Action ...$actions): string {
+  protected function keysHint(ScopedKeyMap $keys, string $label, Action ...$actions): string {
     $glyphs = [];
 
     foreach ($actions as $action) {
@@ -961,7 +1002,7 @@ class DefaultTheme implements ThemeInterface {
    * @return string
    *   The themed hint line.
    */
-  public function renderHintLine(string ...$hints): string {
+  protected function renderHintLine(string ...$hints): string {
     return $this->footer(implode(' ' . $this->dot() . ' ', array_filter($hints)));
   }
 
@@ -974,7 +1015,7 @@ class DefaultTheme implements ThemeInterface {
    * @return string
    *   The two-line themed header.
    */
-  public function renderEditorHeader(string $label): string {
+  protected function renderEditorHeader(string $label): string {
     $underline = str_repeat($this->unicode ? '─' : '-', max(1, mb_strlen($label)));
 
     return $this->title($label) . "\n" . $this->rule($underline);
@@ -1000,7 +1041,7 @@ class DefaultTheme implements ThemeInterface {
     $hint = $keys instanceof ScopedKeyMap ? $this->renderHints($keys, ...$hints) : '';
     $footer = $hint === '' ? [] : [$hint];
 
-    if ($this->borderStyle() !== self::BORDER_NONE) {
+    if ($this->borderStyle() !== Border::None) {
       $body = explode("\n", $view);
 
       return $this->renderFrame([$this->title($label)], $body, $footer, new Viewport(0, FALSE, FALSE), count($body));

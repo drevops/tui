@@ -10,7 +10,7 @@ use DrevOps\Tui\Config\Config;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyEncoder;
 use DrevOps\Tui\Render\Ansi;
-use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Theme\Mode;
 use DrevOps\Tui\Tui;
 
 /**
@@ -47,7 +47,7 @@ final class TuiTester {
    *
    * @var array<string,mixed>
    */
-  protected array $options = ['color' => FALSE, 'unicode' => TRUE, 'mode' => ThemeInterface::MODE_DARK];
+  protected array $options = ['color' => FALSE, 'unicode' => TRUE, 'mode' => Mode::Dark];
 
   /**
    * The theme name or class (empty selects the default theme).
