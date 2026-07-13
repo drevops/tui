@@ -18,6 +18,7 @@ enum FieldType: string {
   case Toggle = 'toggle';
   case Suggest = 'suggest';
   case Number = 'number';
+  case Date = 'date';
   case Textarea = 'textarea';
   case Password = 'password';
   case Search = 'search';

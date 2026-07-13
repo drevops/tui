@@ -6,12 +6,14 @@ namespace DrevOps\Tui\Builder;
 
 use DrevOps\Tui\Condition\ConditionInterface;
 use DrevOps\Tui\Config\ConfigException;
+use DrevOps\Tui\Config\DateBounds;
 use DrevOps\Tui\Config\Field;
 use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\FilePickerMode;
 use DrevOps\Tui\Config\NumberBounds;
 use DrevOps\Tui\Config\Option;
 use DrevOps\Tui\Config\OptionKind;
+use DrevOps\Tui\Config\Weekday;
 use DrevOps\Tui\Derive\Derive;
 use DrevOps\Tui\Discovery\DiscoverInterface;
 
@@ -142,6 +144,21 @@ final class FieldBuilder {
    * Choice widgets only: the visible page size, when declared.
    */
   protected ?int $pageSize = NULL;
+
+  /**
+   * The date field's inclusive earliest date (ISO `Y-m-d`), when declared.
+   */
+  protected ?string $minDate = NULL;
+
+  /**
+   * The date field's inclusive latest date (ISO `Y-m-d`), when declared.
+   */
+  protected ?string $maxDate = NULL;
+
+  /**
+   * The date field's week-start day, when declared.
+   */
+  protected ?Weekday $weekStart = NULL;
 
   /**
    * Construct a field builder.
@@ -414,6 +431,51 @@ final class FieldBuilder {
   }
 
   /**
+   * Date only: set the inclusive earliest selectable date.
+   *
+   * @param string $date
+   *   The earliest date, as an ISO `Y-m-d` string.
+   *
+   * @return $this
+   *   The builder.
+   */
+  public function minDate(string $date): self {
+    $this->minDate = $date;
+
+    return $this;
+  }
+
+  /**
+   * Date only: set the inclusive latest selectable date.
+   *
+   * @param string $date
+   *   The latest date, as an ISO `Y-m-d` string.
+   *
+   * @return $this
+   *   The builder.
+   */
+  public function maxDate(string $date): self {
+    $this->maxDate = $date;
+
+    return $this;
+  }
+
+  /**
+   * Date only: set the day the calendar week begins on.
+   *
+   * @param \DrevOps\Tui\Config\Weekday $weekday
+   *   The week-start day.
+   *
+   * @return $this
+   *   The builder.
+   */
+  public function weekStart(Weekday $weekday): self {
+    $this->weekStart = $weekday;
+
+    return $this;
+  }
+
+  /**
    * Set the conditional-visibility rule.
    *
    * @param \DrevOps\Tui\Condition\ConditionInterface $condition
@@ -622,6 +684,7 @@ final class FieldBuilder {
       $this->pickerShowHidden,
       $this->pageSize,
       $this->completion,
+      $this->buildDateBounds(),
     );
   }
 
@@ -670,6 +733,55 @@ final class FieldBuilder {
     }
 
     return new NumberBounds($this->min, $this->max, $this->step);
+  }
+
+  /**
+   * Assemble the date bounds for a date field from the declared min/max/start.
+   *
+   * @return \DrevOps\Tui\Config\DateBounds|null
+   *   The bounds for a date field, or NULL for any other field type.
+   *
+   * @throws \DrevOps\Tui\Config\ConfigException
+   *   When a declared date is not a valid `Y-m-d` date, or min is after max.
+   */
+  protected function buildDateBounds(): ?DateBounds {
+    if ($this->fieldType !== FieldType::Date) {
+      return NULL;
+    }
+
+    $min = $this->parseBoundDate($this->minDate);
+    $max = $this->parseBoundDate($this->maxDate);
+
+    if ($min instanceof \DateTimeImmutable && $max instanceof \DateTimeImmutable && $min > $max) {
+      throw new ConfigException(sprintf('Field "%s" declares min date %s after max date %s.', $this->id, $min->format('Y-m-d'), $max->format('Y-m-d')));
+    }
+
+    return new DateBounds($min, $max, $this->weekStart ?? Weekday::Monday);
+  }
+
+  /**
+   * Strictly parse a declared bound date, failing loudly on a bad value.
+   *
+   * @param string|null $value
+   *   The declared date string, or NULL when the bound is open.
+   *
+   * @return \DateTimeImmutable|null
+   *   The parsed date, or NULL when none was declared.
+   *
+   * @throws \DrevOps\Tui\Config\ConfigException
+   *   When the value is not a valid `Y-m-d` date.
+   */
+  protected function parseBoundDate(?string $value): ?\DateTimeImmutable {
+    if ($value === NULL) {
+      return NULL;
+    }
+
+    $date = DateBounds::parse($value);
+    if (!$date instanceof \DateTimeImmutable) {
+      throw new ConfigException(sprintf('Field "%s" declares an invalid date "%s".', $this->id, $value));
+    }
+
+    return $date;
   }
 
   /**

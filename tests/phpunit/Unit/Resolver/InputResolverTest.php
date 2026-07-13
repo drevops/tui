@@ -77,6 +77,12 @@ final class InputResolverTest extends TestCase {
     $this->assertSame('FromFile', $inputs['name']);
   }
 
+  public function testDateCoercionPassesThroughString(): void {
+    $inputs = (new InputResolver('VORTEX_'))->resolve($this->fields(), '', ['VORTEX_DUE' => '2026-07-15']);
+
+    $this->assertSame('2026-07-15', $inputs['due']);
+  }
+
   public function testEnvName(): void {
     $this->assertSame('VORTEX_MACHINE_NAME', (new InputResolver('VORTEX_'))->envName('machine_name'));
   }
@@ -121,6 +127,7 @@ final class InputResolverTest extends TestCase {
       new Field('vis', 'Visibility', '', FieldType::Toggle, 'public'),
       new Field('paths', 'Paths', '', FieldType::MultiFilePicker, []),
       new Field('cfg', 'Config', '', FieldType::FilePicker, ''),
+      new Field('due', 'Due', '', FieldType::Date, ''),
     ];
   }
 

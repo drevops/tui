@@ -82,6 +82,18 @@ final class EngineDeclaredBehaviourTest extends TestCase {
     $engine->collect(['port' => 50.5], new Context());
   }
 
+  public function testDateBoundsRejectOutOfRange(): void {
+    $engine = $this->engine(function (PanelBuilder $p): void {
+      $p->date('due')->minDate('2026-01-01')->maxDate('2026-12-31');
+    });
+
+    $this->assertSame(['due' => '2026-06-15'], $engine->collect(['due' => '2026-06-15'], new Context()));
+
+    $this->expectException(EngineException::class);
+    $this->expectExceptionMessage('Invalid value for field "due": must be between 2026-01-01 and 2026-12-31.');
+    $engine->collect(['due' => '2027-01-01'], new Context());
+  }
+
   public function testDeclaredTransformApplies(): void {
     $engine = $this->engine(function (PanelBuilder $p): void {
       $p->text('name')->transform(fn (mixed $v): mixed => is_string($v) ? trim($v) : $v);

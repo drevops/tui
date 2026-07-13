@@ -90,6 +90,9 @@ final readonly class Field {
    *   strings, or a `fn (array<string,mixed> $answers): list<string>` closure
    *   over the answers collected so far. Empty disables ghost-text; ignored by
    *   other types.
+   * @param \DrevOps\Tui\Config\DateBounds|null $dateBounds
+   *   Date only: the min/max range and week-start day; NULL for non-date
+   *   fields.
    */
   public function __construct(
     public string $id,
@@ -115,6 +118,7 @@ final readonly class Field {
     public bool $pickerShowHidden = FALSE,
     public ?int $pageSize = NULL,
     public array|\Closure $completion = [],
+    public ?DateBounds $dateBounds = NULL,
   ) {
     $this->options = Option::list($options);
   }

@@ -9,12 +9,14 @@ use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Builder\PanelBuilder;
 use DrevOps\Tui\Condition\Condition;
 use DrevOps\Tui\Config\ConfigException;
+use DrevOps\Tui\Config\DateBounds;
 use DrevOps\Tui\Config\Field;
 use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\FilePickerMode;
 use DrevOps\Tui\Config\Fixup;
 use DrevOps\Tui\Config\NumberBounds;
 use DrevOps\Tui\Config\OptionKind;
+use DrevOps\Tui\Config\Weekday;
 use DrevOps\Tui\Derive\Derive;
 use DrevOps\Tui\Discovery\Dotenv;
 use DrevOps\Tui\Input\Action;
@@ -142,6 +144,7 @@ final class FormTest extends TestCase {
         $panel->confirm('c');
         $panel->suggest('g');
         $panel->number('n');
+        $panel->date('dt');
         $panel->textarea('ta');
         $panel->password('pw');
         $panel->search('se')->option('a');
@@ -160,6 +163,8 @@ final class FormTest extends TestCase {
     $this->assertFalse($config->field('c')?->default);
     $this->assertSame('', $config->field('g')?->default);
     $this->assertSame(0, $config->field('n')?->default);
+    // A date with no explicit default is empty; the widget opens on today.
+    $this->assertSame('', $config->field('dt')?->default);
     $this->assertSame('', $config->field('ta')?->default);
     $this->assertSame('', $config->field('pw')?->default);
     // The password options are opt-in, so they default off.
@@ -257,6 +262,57 @@ final class FormTest extends TestCase {
 
     // A number with nothing declared carries no bounds - behaviour unchanged.
     $this->assertNotInstanceOf(NumberBounds::class, $config->field('plain')?->bounds);
+  }
+
+  public function testDateBoundsAssembled(): void {
+    $config = Form::create('T')
+      ->panel('p', 'P', function (PanelBuilder $panel): void {
+        $panel->date('birthday', 'Birthday')->minDate('2000-01-01')->maxDate('2030-12-31')->weekStart(Weekday::Sunday);
+        $panel->date('plain', 'Plain');
+      })
+      ->build();
+
+    $birthday = $config->field('birthday');
+    $this->assertInstanceOf(Field::class, $birthday);
+    $this->assertInstanceOf(DateBounds::class, $birthday->dateBounds);
+    $this->assertSame('2000-01-01', $birthday->dateBounds->min?->format('Y-m-d'));
+    $this->assertSame('2030-12-31', $birthday->dateBounds->max?->format('Y-m-d'));
+    $this->assertSame(Weekday::Sunday, $birthday->dateBounds->weekStart);
+
+    // A date with nothing declared still carries bounds, defaulting to a
+    // Monday-first, open range.
+    $plain = $config->field('plain');
+    $this->assertInstanceOf(DateBounds::class, $plain?->dateBounds);
+    $this->assertNotInstanceOf(\DateTimeImmutable::class, $plain->dateBounds->min);
+    $this->assertNotInstanceOf(\DateTimeImmutable::class, $plain->dateBounds->max);
+    $this->assertSame(Weekday::Monday, $plain->dateBounds->weekStart);
+  }
+
+  public function testDateInvalidBoundThrows(): void {
+    $this->expectException(ConfigException::class);
+    $this->expectExceptionMessage('Field "d" declares an invalid date "2026-13-01".');
+
+    Form::create('T')
+      ->panel('p', 'P', fn(PanelBuilder $p): FieldBuilder => $p->date('d')->minDate('2026-13-01'))
+      ->build();
+  }
+
+  public function testDateMinAfterMaxThrows(): void {
+    $this->expectException(ConfigException::class);
+    $this->expectExceptionMessage('Field "d" declares min date 2026-12-31 after max date 2026-01-01.');
+
+    Form::create('T')
+      ->panel('p', 'P', fn(PanelBuilder $p): FieldBuilder => $p->date('d')->minDate('2026-12-31')->maxDate('2026-01-01'))
+      ->build();
+  }
+
+  public function testDateBoundsIgnoredOnNonDateField(): void {
+    $config = Form::create('T')
+      ->panel('p', 'P', fn(PanelBuilder $p): FieldBuilder => $p->text('t')->minDate('2020-01-01')->weekStart(Weekday::Sunday))
+      ->build();
+
+    // The date setters are inert on a non-date field: no bounds are attached.
+    $this->assertNotInstanceOf(DateBounds::class, $config->field('t')?->dateBounds);
   }
 
   public function testNumberMinGreaterThanMaxThrows(): void {

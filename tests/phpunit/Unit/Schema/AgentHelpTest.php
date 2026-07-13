@@ -54,6 +54,26 @@ final class AgentHelpTest extends TestCase {
     $this->assertStringContainsString('plain [number] - Plain', $help);
   }
 
+  public function testDateRangeAnnotation(): void {
+    $config = Form::create('T')
+      ->panel('p', 'p', function (PanelBuilder $p): void {
+        $p->date('due', 'Due date')->minDate('2026-01-01')->maxDate('2026-12-31');
+        $p->date('any', 'Any date');
+        $p->date('start_only', 'Start only')->minDate('2026-06-01');
+        $p->date('end_only', 'End only')->maxDate('2026-06-30');
+      })
+      ->build();
+
+    $help = (new AgentHelp($config))->generate();
+
+    $this->assertStringContainsString('due [date] - Due date (between 2026-01-01 and 2026-12-31)', $help);
+    // With no range declared, the format itself is the annotation.
+    $this->assertStringContainsString('any [date] - Any date (YYYY-MM-DD)', $help);
+    // A one-sided range annotates only that edge.
+    $this->assertStringContainsString('start_only [date] - Start only (on or after 2026-06-01)', $help);
+    $this->assertStringContainsString('end_only [date] - End only (on or before 2026-06-30)', $help);
+  }
+
   public function testNoEnvPrefixOmitsEnvLine(): void {
     $config = Form::create('T')
       ->panel('p', 'p', function (PanelBuilder $p): void {

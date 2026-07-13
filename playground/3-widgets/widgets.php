@@ -16,6 +16,7 @@ use DrevOps\Tui\Input\KeyParser;
 use DrevOps\Tui\Render\Terminal;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\ConfirmWidget;
+use DrevOps\Tui\Widget\DateWidget;
 use DrevOps\Tui\Widget\MultiSearchWidget;
 use DrevOps\Tui\Widget\MultiSelectWidget;
 use DrevOps\Tui\Widget\NumberWidget;
@@ -46,12 +47,17 @@ $interact = static function (WidgetInterface $widget, string $label, array $hint
 
   try {
     while (!$widget->isComplete() && !$widget->isCancelled()) {
-      $terminal->render(implode("\n", [
-        $theme->renderEditorHeader($label . ' widget'),
-        $theme->renderHintLine(...$hints),
-        '',
-        $widget->view($theme),
-      ]));
+      $lines = [$theme->renderEditorHeader($label . ' widget')];
+
+      // A widget that draws its own key hints (like the date calendar) gets no
+      // generic hint line, so the two cannot contradict.
+      if (!$widget->rendersHint()) {
+        $lines[] = $theme->renderHintLine(...$hints);
+      }
+
+      $lines[] = '';
+      $lines[] = $widget->view($theme);
+      $terminal->render(implode("\n", $lines));
 
       foreach ($parser->parse($terminal->read()) as $key) {
         $widget->handle($key);
@@ -67,6 +73,7 @@ $interact = static function (WidgetInterface $widget, string $label, array $hint
 
 $interact(new TextWidget('Acme Site'), 'Text');
 $interact(new NumberWidget('8080'), 'Number');
+$interact(new DateWidget('2026-07-15'), 'Date');
 $interact(new TextareaWidget("Redis for cache\nSolr for search"), 'Textarea', ['edit', 'Tab accept', 'Esc cancel']);
 $interact(new PasswordWidget('hunter2'), 'Password');
 $interact(new SelectWidget(['standard' => 'Standard', 'minimal' => 'Minimal', 'demo_umami' => 'Demo Umami'], 'minimal'), 'Select');
