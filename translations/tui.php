@@ -1,0 +1,81 @@
+<?php
+
+/**
+ * @file
+ * Canonical English chrome strings, one per Translator::t() literal.
+ *
+ * Copy this file to a locale (e.g. "es.php") and translate the values; the
+ * keys are the English source strings the library looks up. Placeholders
+ * such as "@count" must be kept verbatim in a translation.
+ */
+
+declare(strict_types=1);
+
+return [
+  ' (required)' => ' (required)',
+  '(empty)' => '(empty)',
+  '- Pass --no-interaction to resolve every question from defaults, discovery and derivation without prompting.' => '- Pass --no-interaction to resolve every question from defaults, discovery and derivation without prompting.',
+  '- Pass --prompts with a JSON object (or a path to a JSON file) of answers keyed by question id; these take the highest precedence.' => '- Pass --prompts with a JSON object (or a path to a JSON file) of answers keyed by question id; these take the highest precedence.',
+  '- Precedence: --prompts > environment > discovered > derived > default.' => '- Precedence: --prompts > environment > discovered > derived > default.',
+  '- Set per-question environment variables named @prefix<ID> (the uppercased question id); these win over discovery but lose to --prompts.' => '- Set per-question environment variables named @prefix<ID> (the uppercased question id); these win over discovery but lose to --prompts.',
+  '@count selected' => '@count selected',
+  '@value is not a valid "@key". Allowed: @allowed.' => '@value is not a valid "@key". Allowed: @allowed.',
+  'Date bounds declare a minimum of @min after the maximum of @max.' => 'Date bounds declare a minimum of @min after the maximum of @max.',
+  'Drive the form non-interactively:' => 'Drive the form non-interactively:',
+  'Duplicate field id "@id".' => 'Duplicate field id "@id".',
+  'Enter a number @constraint.' => 'Enter a number @constraint.',
+  'Fr' => 'Fr',
+  'Invalid value for field "@id": @error' => 'Invalid value for field "@id": @error',
+  'Keyboard help' => 'Keyboard help',
+  'Missing required question "@id".' => 'Missing required question "@id".',
+  'Mo' => 'Mo',
+  'Navigation' => 'Navigation',
+  'No' => 'No',
+  'Page size must be a positive integer, @size given.' => 'Page size must be a positive integer, @size given.',
+  'Passwords do not match.' => 'Passwords do not match.',
+  'Press @key to continue' => 'Press @key to continue',
+  'Press any key to continue...' => 'Press any key to continue...',
+  'Question "@id" is required.' => 'Question "@id" is required.',
+  'Question "@id" must be @constraint.' => 'Question "@id" must be @constraint.',
+  'Question "@id": @error.' => 'Question "@id": @error.',
+  'Questions:' => 'Questions:',
+  'Sa' => 'Sa',
+  'Su' => 'Su',
+  'Th' => 'Th',
+  'Toggle field "@id" default must be one of: @values.' => 'Toggle field "@id" default must be one of: @values.',
+  'Toggle field "@id" must have exactly two options, @count given.' => 'Toggle field "@id" must have exactly two options, @count given.',
+  'Tu' => 'Tu',
+  'Unknown question "@id".' => 'Unknown question "@id".',
+  'Unknown theme option "@key". Known: @known.' => 'Unknown theme option "@key". Known: @known.',
+  'Version: @version' => 'Version: @version',
+  'We' => 'We',
+  'Yes' => 'Yes',
+  'a boolean' => 'a boolean',
+  'a date (YYYY-MM-DD)' => 'a date (YYYY-MM-DD)',
+  'a list' => 'a list',
+  'a number' => 'a number',
+  'a string' => 'a string',
+  'at least @min' => 'at least @min',
+  'at most @max' => 'at most @max',
+  'between @min and @max' => 'between @min and @max',
+  'bksp' => 'bksp',
+  'del' => 'del',
+  'end' => 'end',
+  'esc' => 'esc',
+  'home' => 'home',
+  'must be @constraint.' => 'must be @constraint.',
+  'no' => 'no',
+  'on or after @min' => 'on or after @min',
+  'on or before @max' => 'on or before @max',
+  'option "@value" is disabled' => 'option "@value" is disabled',
+  'option "@value" is disabled: @reason' => 'option "@value" is disabled: @reason',
+  'pgdn' => 'pgdn',
+  'pgup' => 'pgup',
+  're-enter to confirm' => 're-enter to confirm',
+  'space' => 'space',
+  'step @step' => 'step @step',
+  'tab' => 'tab',
+  'value "@value" is not one of: @options' => 'value "@value" is not one of: @options',
+  'value must be a list' => 'value must be a list',
+  'yes' => 'yes',
+];
