@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Theme;
 
+use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Key;
+use DrevOps\Tui\Input\ScopedKeyMap;
 
 /**
  * A theme's look: one method per themeable element.
@@ -213,5 +215,24 @@ interface ThemeInterface {
    *   The glyph, respecting the theme's Unicode mode.
    */
   public function keyHint(Key $key): string;
+
+  /**
+   * Render a hint fragment: the primary keys of one or more actions, labelled.
+   *
+   * The glyphs are drawn from the live bindings, so a hint never contradicts a
+   * remapped key. An action with no bound key contributes nothing, and when no
+   * action is bound the fragment is empty.
+   *
+   * @param \DrevOps\Tui\Input\ScopedKeyMap $keys
+   *   The scope's bindings.
+   * @param string $label
+   *   The label describing what the keys do (e.g. "move", "accept").
+   * @param \DrevOps\Tui\Input\Action ...$actions
+   *   The actions whose primary keys lead the fragment.
+   *
+   * @return string
+   *   The fragment (e.g. "↑/↓ move"), or an empty string when nothing is bound.
+   */
+  public function keysHint(ScopedKeyMap $keys, string $label, Action ...$actions): string;
 
 }

@@ -625,7 +625,7 @@ class DefaultTheme implements ThemeInterface {
    * @return string
    *   The row.
    */
-  protected function renderFieldLine(Field $field, Answers $answers, bool $selected): string {
+  public function renderFieldLine(Field $field, Answers $answers, bool $selected): string {
     $left = $this->marker($selected) . ' ' . $this->label(Translator::t($field->label), $selected) . '  ' . $this->value($this->renderFieldValue($field, $answers->value($field->id)), $selected);
 
     $provenance = $answers->provenanceOf($field->id);
@@ -647,7 +647,7 @@ class DefaultTheme implements ThemeInterface {
    * @return string
    *   The row.
    */
-  protected function renderPanelLine(Panel $panel, bool $selected): string {
+  public function renderPanelLine(Panel $panel, bool $selected): string {
     return $this->marker($selected) . ' ' . $this->label(Translator::t($panel->title), $selected) . ' ' . $this->description($this->arrow(), $selected);
   }
 
@@ -662,7 +662,7 @@ class DefaultTheme implements ThemeInterface {
    * @return string
    *   The row.
    */
-  protected function renderDescriptionLine(string $description, bool $selected): string {
+  public function renderDescriptionLine(string $description, bool $selected): string {
     return '    ' . $this->description($description, $selected);
   }
 
@@ -677,7 +677,7 @@ class DefaultTheme implements ThemeInterface {
    * @return string
    *   The summary, or an empty string when the panel has no active fields.
    */
-  protected function summarizePanel(Panel $panel, Answers $answers): string {
+  public function summarizePanel(Panel $panel, Answers $answers): string {
     $parts = [];
 
     foreach ($panel->fields as $field) {
@@ -709,7 +709,7 @@ class DefaultTheme implements ThemeInterface {
    * @return string
    *   The row.
    */
-  protected function renderSummaryLine(string $summary, bool $selected): string {
+  public function renderSummaryLine(string $summary, bool $selected): string {
     $max = max(1, $this->width - 4);
     $clipped = mb_strlen($summary, 'UTF-8') > $max ? mb_substr($summary, 0, $max - 1, 'UTF-8') . '…' : $summary;
 
@@ -933,23 +933,9 @@ class DefaultTheme implements ThemeInterface {
   }
 
   /**
-   * Render a hint fragment: the primary keys of one or more actions, labelled.
-   *
-   * The glyphs are drawn from the live bindings, so a hint never contradicts a
-   * remapped key. An action with no bound key contributes nothing, and when no
-   * action is bound the fragment is empty.
-   *
-   * @param \DrevOps\Tui\Input\ScopedKeyMap $keys
-   *   The scope's bindings.
-   * @param string $label
-   *   The label describing what the keys do (e.g. "move", "accept").
-   * @param \DrevOps\Tui\Input\Action ...$actions
-   *   The actions whose primary keys lead the fragment.
-   *
-   * @return string
-   *   The fragment (e.g. "↑/↓ move"), or an empty string when nothing is bound.
+   * {@inheritdoc}
    */
-  protected function keysHint(ScopedKeyMap $keys, string $label, Action ...$actions): string {
+  public function keysHint(ScopedKeyMap $keys, string $label, Action ...$actions): string {
     $glyphs = [];
 
     foreach ($actions as $action) {
@@ -1002,7 +988,7 @@ class DefaultTheme implements ThemeInterface {
    * @return string
    *   The themed hint line.
    */
-  protected function renderHintLine(string ...$hints): string {
+  public function renderHintLine(string ...$hints): string {
     return $this->footer(implode(' ' . $this->dot() . ' ', array_filter($hints)));
   }
 
@@ -1015,7 +1001,7 @@ class DefaultTheme implements ThemeInterface {
    * @return string
    *   The two-line themed header.
    */
-  protected function renderEditorHeader(string $label): string {
+  public function renderEditorHeader(string $label): string {
     $underline = str_repeat($this->unicode ? '─' : '-', max(1, mb_strlen($label, 'UTF-8')));
 
     return $this->title($label) . "\n" . $this->rule($underline);

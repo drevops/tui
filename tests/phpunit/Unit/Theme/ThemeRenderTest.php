@@ -18,7 +18,6 @@ use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Render\HelpSection;
 use DrevOps\Tui\Render\Navigator;
 use DrevOps\Tui\Render\Viewport;
-use DrevOps\Tui\Tests\Fixtures\Theme\ExposedTheme;
 use DrevOps\Tui\Theme\DefaultTheme;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -141,7 +140,7 @@ final class ThemeRenderTest extends TestCase {
   }
 
   public function testSelectedItemIsBold(): void {
-    $theme = new ExposedTheme(40);
+    $theme = new DefaultTheme(40);
     $field = new Field('name', 'Name', '', FieldType::Text, '');
     $answers = new Answers(['name' => 'Acme'], ['name' => Provenance::Default]);
 
@@ -259,7 +258,7 @@ final class ThemeRenderTest extends TestCase {
 
   public function testKeysHintDropsUnboundActions(): void {
     $nav = KeyMapManager::create()->navigation();
-    $theme = new ExposedTheme();
+    $theme = new DefaultTheme();
 
     $this->assertSame('↑/↓ move', $theme->keysHint($nav, 'move', Action::MoveUp, Action::MoveDown));
     // Newline is not bound in the navigation scope, so the fragment is empty.
@@ -287,28 +286,28 @@ final class ThemeRenderTest extends TestCase {
   }
 
   public function testHintLineJoinsWithDotGlyph(): void {
-    $line = (new ExposedTheme())->renderHintLine('enter accept', 'esc cancel');
+    $line = (new DefaultTheme())->renderHintLine('enter accept', 'esc cancel');
 
     $this->assertSame('enter accept · esc cancel', Ansi::strip($line));
     $this->assertStringContainsString("\033[90m", $line);
 
-    $ascii = (new ExposedTheme(76, ['unicode' => FALSE]))->renderHintLine('a', 'b');
+    $ascii = (new DefaultTheme(76, ['unicode' => FALSE]))->renderHintLine('a', 'b');
     $this->assertSame('a * b', Ansi::strip($ascii));
   }
 
   public function testEditorHeaderUnderlinesLabel(): void {
-    $header = (new ExposedTheme())->renderEditorHeader('Site name');
+    $header = (new DefaultTheme())->renderEditorHeader('Site name');
 
     // The label styled as a title, over a rule of the same visible width.
     $this->assertSame("Site name\n" . str_repeat('─', 9), Ansi::strip($header));
     $this->assertStringContainsString("\033[1;36mSite name\033[0m", $header);
     $this->assertStringContainsString("\033[90m", $header);
 
-    $ascii = (new ExposedTheme(76, ['color' => FALSE, 'unicode' => FALSE]))->renderEditorHeader('Site name');
+    $ascii = (new DefaultTheme(76, ['color' => FALSE, 'unicode' => FALSE]))->renderEditorHeader('Site name');
     $this->assertSame("Site name\n---------", $ascii);
 
     // An empty label still yields a visible rule.
-    $this->assertSame("\n─", Ansi::strip((new ExposedTheme())->renderEditorHeader('')));
+    $this->assertSame("\n─", Ansi::strip((new DefaultTheme())->renderEditorHeader('')));
   }
 
   public function testButtonBar(): void {
@@ -325,13 +324,13 @@ final class ThemeRenderTest extends TestCase {
   }
 
   /**
-   * A colourless theme of fixed width, with the render helpers exposed.
+   * A colourless theme of fixed width.
    *
-   * @return \DrevOps\Tui\Tests\Fixtures\Theme\ExposedTheme
+   * @return \DrevOps\Tui\Theme\DefaultTheme
    *   The theme.
    */
-  protected function theme(): ExposedTheme {
-    return new ExposedTheme(40, ['color' => FALSE]);
+  protected function theme(): DefaultTheme {
+    return new DefaultTheme(40, ['color' => FALSE]);
   }
 
 }
