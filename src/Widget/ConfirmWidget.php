@@ -17,7 +17,7 @@ use DrevOps\Tui\Translation\Translator;
  *
  * @package DrevOps\Tui\Widget
  */
-class ConfirmWidget extends AbstractWidget {
+class ConfirmWidget extends AbstractWidget implements StepCapableInterface {
 
   /**
    * Construct a confirm widget.
@@ -58,7 +58,7 @@ class ConfirmWidget extends AbstractWidget {
     }
 
     if ($keys->matches($key, Action::Toggle)) {
-      $this->current = !$this->current;
+      $this->stepBy(1);
 
       return;
     }
@@ -71,6 +71,17 @@ class ConfirmWidget extends AbstractWidget {
 
     if ($keys->matches($key, Action::No)) {
       $this->current = FALSE;
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * The domain is the yes/no pair, so any odd step flips the value.
+   */
+  public function stepBy(int $delta): void {
+    if ($delta % 2 !== 0) {
+      $this->current = !$this->current;
     }
   }
 

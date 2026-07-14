@@ -18,7 +18,7 @@ use DrevOps\Tui\Input\KeyParser;
 use DrevOps\Tui\Input\ScopedKeyMap;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Translation\Translator;
-use DrevOps\Tui\Widget\TextareaWidget;
+use DrevOps\Tui\Widget\ExternalEditCapableInterface;
 use DrevOps\Tui\Widget\WidgetFactory;
 use DrevOps\Tui\Widget\WidgetInterface;
 
@@ -414,7 +414,7 @@ class PanelController {
 
     $this->editor->handle($key);
 
-    if ($this->editor instanceof TextareaWidget && $this->editor->wantsExternalEdit()) {
+    if ($this->editor instanceof ExternalEditCapableInterface && $this->editor->wantsExternalEdit()) {
       $current = $this->editor->value();
       $captured = $this->externalEditor->edit(is_string($current) ? $current : '', $this->terminal);
       $this->editor->applyExternalEdit($captured);

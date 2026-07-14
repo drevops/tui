@@ -18,6 +18,7 @@ use DrevOps\Tui\Widget\ChoiceListTrait;
 use DrevOps\Tui\Widget\FuzzySearchTrait;
 use DrevOps\Tui\Widget\MultiChoiceTrait;
 use DrevOps\Tui\Widget\MultiSearchWidget;
+use DrevOps\Tui\Widget\PageableTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -30,6 +31,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(ChoiceFilterTrait::class)]
 #[CoversClass(FuzzySearchTrait::class)]
 #[CoversClass(ChoiceListTrait::class)]
+#[CoversClass(PageableTrait::class)]
 #[Group('widget')]
 final class MultiSearchWidgetTest extends TestCase {
 

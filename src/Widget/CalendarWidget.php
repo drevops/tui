@@ -28,7 +28,7 @@ use DrevOps\Tui\Translation\Translator;
  *
  * @package DrevOps\Tui\Widget
  */
-class CalendarWidget extends AbstractWidget {
+class CalendarWidget extends AbstractWidget implements StepCapableInterface {
 
   /**
    * The visible width of the seven-column grid, at four columns per day.
@@ -147,6 +147,15 @@ class CalendarWidget extends AbstractWidget {
     $first = $this->cursor->modify('first day of this month')->modify(sprintf('%+d months', $months));
 
     return $first->setDate((int) $first->format('Y'), (int) $first->format('n'), min($day, (int) $first->format('t')));
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * Each position is one day, clamped to the declared range.
+   */
+  public function stepBy(int $delta): void {
+    $this->cursor = $this->bounds->clamp($this->cursor->modify(sprintf('%+d days', $delta)));
   }
 
   /**

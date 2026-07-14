@@ -11,7 +11,7 @@ use DrevOps\Tui\Testing\ArrayKeyStream;
 use DrevOps\Tui\Testing\WidgetRunner;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\PasswordWidget;
-use DrevOps\Tui\Widget\TextWidget;
+use DrevOps\Tui\Widget\TextEditTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -20,7 +20,7 @@ use PHPUnit\Framework\TestCase;
  * Tests the password widget.
  */
 #[CoversClass(PasswordWidget::class)]
-#[CoversClass(TextWidget::class)]
+#[CoversClass(TextEditTrait::class)]
 #[Group('widget')]
 final class PasswordWidgetTest extends TestCase {
 
@@ -91,6 +91,22 @@ final class PasswordWidgetTest extends TestCase {
     // Tab neither revealed the value nor was inserted as a character.
     $this->assertSame(3, substr_count($widget->view($theme), '•'));
     $this->assertStringNotContainsString('abc', $widget->view($theme));
+  }
+
+  public function testCancel(): void {
+    $widget = new PasswordWidget('x');
+
+    WidgetRunner::run($widget, ArrayKeyStream::of(Key::named(KeyName::Escape)));
+
+    $this->assertTrue($widget->isCancelled());
+  }
+
+  public function testToggleRevealInertWhenNotRevealable(): void {
+    $widget = new PasswordWidget('secret');
+
+    $widget->toggleReveal();
+
+    $this->assertStringNotContainsString('secret', $widget->view(new DefaultTheme()));
   }
 
   public function testRevealDoesNotChangeAcceptedValue(): void {

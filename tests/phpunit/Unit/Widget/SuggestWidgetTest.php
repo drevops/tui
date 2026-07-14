@@ -13,6 +13,7 @@ use DrevOps\Tui\Testing\WidgetRunner;
 use DrevOps\Tui\Tests\Traits\AssertsPagingTrait;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\AbstractWidget;
+use DrevOps\Tui\Widget\PageableTrait;
 use DrevOps\Tui\Widget\SuggestWidget;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
@@ -23,6 +24,7 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass(SuggestWidget::class)]
 #[CoversClass(AbstractWidget::class)]
+#[CoversClass(PageableTrait::class)]
 #[Group('widget')]
 final class SuggestWidgetTest extends TestCase {
 
@@ -71,6 +73,14 @@ final class SuggestWidgetTest extends TestCase {
     $widget->handle(Key::char('b'));
     $widget->handle(Key::named(KeyName::Backspace));
     $this->assertSame('a', $widget->value());
+  }
+
+  public function testBufferExposesTheLiveQuery(): void {
+    $widget = new SuggestWidget(['alpha']);
+
+    $widget->handle(Key::char('a'));
+
+    $this->assertSame('a', $widget->buffer());
   }
 
   public function testCancel(): void {

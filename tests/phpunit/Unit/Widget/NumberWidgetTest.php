@@ -13,7 +13,7 @@ use DrevOps\Tui\Testing\ArrayKeyStream;
 use DrevOps\Tui\Testing\WidgetRunner;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\NumberWidget;
-use DrevOps\Tui\Widget\TextWidget;
+use DrevOps\Tui\Widget\TextEditTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -22,7 +22,7 @@ use PHPUnit\Framework\TestCase;
  * Tests the number widget.
  */
 #[CoversClass(NumberWidget::class)]
-#[CoversClass(TextWidget::class)]
+#[CoversClass(TextEditTrait::class)]
 #[Group('widget')]
 final class NumberWidgetTest extends TestCase {
 
@@ -94,6 +94,22 @@ final class NumberWidgetTest extends TestCase {
     // Without bounds it contributes only the shared accept/cancel hints.
     $labels = array_map(static fn(Hint $hint): string => $hint->label, $widget->hints());
     $this->assertSame(['accept', 'cancel'], $labels);
+  }
+
+  public function testStepByInertWithoutBounds(): void {
+    $widget = new NumberWidget('5');
+
+    $widget->stepBy(1);
+
+    $this->assertSame(5, $widget->value());
+  }
+
+  public function testCancel(): void {
+    $widget = new NumberWidget('5');
+
+    WidgetRunner::run($widget, ArrayKeyStream::of(Key::named(KeyName::Escape)));
+
+    $this->assertTrue($widget->isCancelled());
   }
 
   public function testUpDownStepByOneWithinBounds(): void {

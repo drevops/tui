@@ -29,7 +29,9 @@ use DrevOps\Tui\Translation\Translator;
  *
  * @package DrevOps\Tui\Widget
  */
-class FilePickerWidget extends AbstractWidget {
+class FilePickerWidget extends AbstractWidget implements FilterCapableInterface, RevealCapableInterface, PagingCapableInterface {
+
+  use PageableTrait;
 
   /**
    * The start directory: where the browser opens and the floor it cannot pass.
@@ -167,7 +169,7 @@ class FilePickerWidget extends AbstractWidget {
 
     // Reveal doubles as the show-hidden toggle, mirroring the password reveal.
     if ($keys->matches($key, Action::Reveal)) {
-      $this->toggleHidden();
+      $this->toggleReveal();
 
       return;
     }
@@ -186,8 +188,23 @@ class FilePickerWidget extends AbstractWidget {
 
     if ($key->isChar()) {
       $this->filter .= $key->char ?? '';
-      $this->cursor = 0;
+      $this->resetFilterCursor();
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function filter(): string {
+    return $this->filter;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function resetFilterCursor(): void {
+    $this->cursor = 0;
+    $this->offset = 0;
   }
 
   /**
@@ -311,7 +328,9 @@ class FilePickerWidget extends AbstractWidget {
    *   The current working directory.
    */
   protected function currentDirectory(): string {
+    // @codeCoverageIgnoreStart
     return (string) getcwd();
+    // @codeCoverageIgnoreEnd
   }
 
   /**
@@ -320,7 +339,7 @@ class FilePickerWidget extends AbstractWidget {
   protected function onBackspace(): void {
     if ($this->filter !== '') {
       $this->filter = mb_substr($this->filter, 0, -1, 'UTF-8');
-      $this->cursor = 0;
+      $this->resetFilterCursor();
 
       return;
     }
@@ -373,9 +392,12 @@ class FilePickerWidget extends AbstractWidget {
   }
 
   /**
-   * Toggle whether dot-entries are shown.
+   * {@inheritdoc}
+   *
+   * Toggles whether dot-entries are shown, landing back at the top of the
+   * refreshed listing.
    */
-  protected function toggleHidden(): void {
+  public function toggleReveal(): void {
     $this->showHidden = !$this->showHidden;
     $this->cursor = 0;
     $this->offset = 0;

@@ -8,6 +8,7 @@ use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Theme\DefaultTheme;
+use DrevOps\Tui\Widget\PagingCapableInterface;
 use DrevOps\Tui\Widget\WidgetInterface;
 
 /**
@@ -57,6 +58,8 @@ trait AssertsPagingTrait {
   protected function assertPagesAndFollowsCursor(\Closure $factory, int $downs = 2): void {
     $widget = $factory(2);
     $this->assertInstanceOf(WidgetInterface::class, $widget);
+    $this->assertInstanceOf(PagingCapableInterface::class, $widget);
+    $this->assertSame(2, $widget->pageSize());
 
     $view = Ansi::strip($widget->view(new DefaultTheme()));
 

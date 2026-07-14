@@ -19,6 +19,7 @@ use DrevOps\Tui\Widget\ChoiceFilterTrait;
 use DrevOps\Tui\Widget\ChoiceListTrait;
 use DrevOps\Tui\Widget\MultiChoiceTrait;
 use DrevOps\Tui\Widget\MultiSelectWidget;
+use DrevOps\Tui\Widget\PageableTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -31,6 +32,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(ChoiceListTrait::class)]
 #[CoversClass(MultiChoiceTrait::class)]
 #[CoversClass(ChoiceFilterTrait::class)]
+#[CoversClass(PageableTrait::class)]
 #[Group('widget')]
 final class MultiSelectWidgetTest extends TestCase {
 

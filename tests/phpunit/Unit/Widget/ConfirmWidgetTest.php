@@ -48,6 +48,20 @@ final class ConfirmWidgetTest extends TestCase {
     $this->assertFalse($widget->value());
   }
 
+  public function testStepByFlipsOnOddSteps(): void {
+    $widget = new ConfirmWidget();
+
+    $widget->stepBy(1);
+    $this->assertTrue($widget->value());
+
+    // An even step lands back on the same value.
+    $widget->stepBy(2);
+    $this->assertTrue($widget->value());
+
+    $widget->stepBy(-1);
+    $this->assertFalse($widget->value());
+  }
+
   public function testAccept(): void {
     $widget = new ConfirmWidget(TRUE);
 

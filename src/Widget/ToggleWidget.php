@@ -16,7 +16,7 @@ use DrevOps\Tui\Theme\ThemeInterface;
  *
  * @package DrevOps\Tui\Widget
  */
-class ToggleWidget extends AbstractWidget {
+class ToggleWidget extends AbstractWidget implements StepCapableInterface {
 
   /**
    * The option values in display order.
@@ -74,7 +74,7 @@ class ToggleWidget extends AbstractWidget {
     }
 
     if ($keys->matches($key, Action::Toggle)) {
-      $this->flip();
+      $this->stepBy(1);
 
       return;
     }
@@ -85,15 +85,17 @@ class ToggleWidget extends AbstractWidget {
   }
 
   /**
-   * Move the selection to the next value, wrapping at the end.
+   * {@inheritdoc}
+   *
+   * Each position moves to the adjacent value, wrapping at either end.
    */
-  protected function flip(): void {
+  public function stepBy(int $delta): void {
     $count = count($this->values);
     if ($count < 2) {
       return;
     }
 
-    $this->cursor = ($this->cursor + 1) % $count;
+    $this->cursor = (($this->cursor + $delta) % $count + $count) % $count;
   }
 
   /**

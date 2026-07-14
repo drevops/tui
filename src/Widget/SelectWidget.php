@@ -12,10 +12,11 @@ use DrevOps\Tui\Theme\ThemeInterface;
  *
  * @package DrevOps\Tui\Widget
  */
-class SelectWidget extends AbstractWidget {
+class SelectWidget extends AbstractWidget implements OptionsCapableInterface, SelectionCapableInterface, PagingCapableInterface {
 
   use ChoiceListTrait;
   use SingleChoiceTrait;
+  use PageableTrait;
 
   /**
    * Construct a select widget.
@@ -52,7 +53,7 @@ class SelectWidget extends AbstractWidget {
    * @return list<\DrevOps\Tui\Config\Option>
    *   The visible rows.
    */
-  protected function visible(): array {
+  public function visible(): array {
     return $this->options;
   }
 

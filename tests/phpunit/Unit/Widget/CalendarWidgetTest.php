@@ -132,6 +132,17 @@ final class CalendarWidgetTest extends TestCase {
     $this->assertSame('2026-07-20', $widget->value());
   }
 
+  public function testStepByMovesByDaysClampedToBounds(): void {
+    $bounds = new DateBounds(new \DateTimeImmutable('2026-07-10'), new \DateTimeImmutable('2026-07-20'));
+    $widget = new CalendarWidget('2026-07-15', bounds: $bounds);
+
+    $widget->stepBy(3);
+    $this->assertSame('2026-07-18', $widget->value());
+
+    $widget->stepBy(-30);
+    $this->assertSame('2026-07-10', $widget->value());
+  }
+
   public function testConstructionClampsSeedIntoBounds(): void {
     $bounds = new DateBounds(new \DateTimeImmutable('2026-07-10'), new \DateTimeImmutable('2026-07-20'));
 

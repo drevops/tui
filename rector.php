@@ -25,6 +25,7 @@ use Rector\Naming\Rector\ClassMethod\RenameVariableToMatchNewTypeRector;
 use Rector\Naming\Rector\Foreach_\RenameForeachValueVariableToMatchMethodCallReturnTypeRector;
 use Rector\Naming\Rector\ClassMethod\RenameParamToMatchTypeRector;
 use Rector\Php80\Rector\Switch_\ChangeSwitchToMatchRector;
+use Rector\Php81\Rector\FuncCall\NullToStrictStringFuncCallArgRector;
 use Rector\PHPUnit\Set\PHPUnitSetList;
 use Rector\Strict\Rector\Empty_\DisallowedEmptyRuleFixerRector;
 use Rector\TypeDeclaration\Rector\StmtsAwareInterface\DeclareStrictTypesRector;
@@ -65,6 +66,11 @@ return RectorConfig::configure()
     RenameForeachValueVariableToMatchMethodCallReturnTypeRector::class,
     // Conflicts with Drupal's snake_case parameter naming (enforced by PHPCS).
     RenameParamToMatchTypeRector::class,
+    // Rector analyses a trait file on its own, so it cannot see the composing
+    // class's list<string> property type and would cast strings to string.
+    NullToStrictStringFuncCallArgRector::class => [
+      __DIR__ . '/src/Widget/CompletableTrait.php',
+    ],
     RenameVariableToMatchMethodCallReturnTypeRector::class,
     RenameVariableToMatchNewTypeRector::class,
     SimplifyEmptyCheckOnEmptyArrayRector::class,

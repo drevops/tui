@@ -11,7 +11,7 @@ use DrevOps\Tui\Testing\ArrayKeyStream;
 use DrevOps\Tui\Testing\WidgetRunner;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\TextareaWidget;
-use DrevOps\Tui\Widget\TextWidget;
+use DrevOps\Tui\Widget\TextEditTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -20,7 +20,7 @@ use PHPUnit\Framework\TestCase;
  * Tests the textarea widget.
  */
 #[CoversClass(TextareaWidget::class)]
-#[CoversClass(TextWidget::class)]
+#[CoversClass(TextEditTrait::class)]
 #[Group('widget')]
 final class TextareaWidgetTest extends TestCase {
 

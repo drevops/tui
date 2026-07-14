@@ -38,7 +38,7 @@ trait FuzzySearchTrait {
    * @return list<int>
    *   The matched indices, or an empty list when not filtering.
    */
-  protected function matchPositions(string $label): array {
+  public function matchPositions(string $label): array {
     return $this->filter === '' ? [] : $this->matcher()->positions($label, $this->filter);
   }
 
@@ -51,7 +51,7 @@ trait FuzzySearchTrait {
    * @return string
    *   The query line.
    */
-  protected function queryLine(ThemeInterface $theme): string {
+  public function queryLine(ThemeInterface $theme): string {
     return $this->filter . $theme->caret();
   }
 

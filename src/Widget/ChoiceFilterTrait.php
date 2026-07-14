@@ -24,6 +24,16 @@ trait ChoiceFilterTrait {
   protected string $filter = '';
 
   /**
+   * The current type-to-filter text.
+   *
+   * @return string
+   *   The live query, empty when not filtering.
+   */
+  public function filter(): string {
+    return $this->filter;
+  }
+
+  /**
    * Filter the option rows to those matching the query.
    *
    * @param string $needle
@@ -64,7 +74,7 @@ trait ChoiceFilterTrait {
   /**
    * Land the cursor on the first match and reset paging on a query change.
    */
-  protected function resetFilterCursor(): void {
+  public function resetFilterCursor(): void {
     $this->cursor = $this->firstSelectable($this->visible());
     $this->offset = 0;
   }
@@ -79,7 +89,7 @@ trait ChoiceFilterTrait {
    * @return list<\DrevOps\Tui\Config\Option>
    *   The visible rows.
    */
-  protected function visible(): array {
+  public function visible(): array {
     if ($this->filter === '') {
       return $this->options;
     }

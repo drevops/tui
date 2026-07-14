@@ -14,7 +14,9 @@ use DrevOps\Tui\Theme\ThemeInterface;
  *
  * @package DrevOps\Tui\Widget
  */
-class SuggestWidget extends AbstractWidget {
+class SuggestWidget extends AbstractWidget implements SearchCapableInterface, TextEditCapableInterface, PagingCapableInterface {
+
+  use PageableTrait;
 
   /**
    * The highlighted suggestion index, or -1 for none.
@@ -70,23 +72,46 @@ class SuggestWidget extends AbstractWidget {
     }
 
     if ($keys->matches($key, Action::DeleteBack)) {
-      $this->buffer = mb_substr($this->buffer, 0, -1, 'UTF-8');
-      $this->resetFilterCursor();
+      $this->backspace();
 
       return;
     }
 
     if ($keys->matches($key, Action::InsertSpace)) {
-      $this->buffer .= ' ';
-      $this->resetFilterCursor();
+      $this->insert(' ');
 
       return;
     }
 
     if ($key->isChar()) {
-      $this->buffer .= $key->char ?? '';
-      $this->resetFilterCursor();
+      $this->insert($key->char ?? '');
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buffer(): string {
+    return $this->buffer;
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * The buffer is append-only - the query grows at its end - so the text is
+   * added there and the suggestion highlight resets.
+   */
+  public function insert(string $text): void {
+    $this->buffer .= $text;
+    $this->resetFilterCursor();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function backspace(): void {
+    $this->buffer = mb_substr($this->buffer, 0, -1, 'UTF-8');
+    $this->resetFilterCursor();
   }
 
   /**
@@ -138,20 +163,21 @@ class SuggestWidget extends AbstractWidget {
       $rows[] = $theme->marker($current) . ' ' . $this->renderMatchedLabel($theme, $value, $this->matchPositions($value), $current);
     }
 
-    return implode("\n", [$this->buffer . $theme->caret(), ...$this->wrapScrolled($theme, $rows, $viewport)]);
+    return implode("\n", [$this->queryLine($theme), ...$this->wrapScrolled($theme, $rows, $viewport)]);
   }
 
   /**
-   * The matched-character positions in a suggestion under the current buffer.
-   *
-   * @param string $value
-   *   The suggestion value.
-   *
-   * @return list<int>
-   *   The matched indices, or an empty list when not filtering.
+   * {@inheritdoc}
    */
-  protected function matchPositions(string $value): array {
-    return $this->buffer === '' ? [] : $this->matcher()->positions($value, $this->buffer);
+  public function queryLine(ThemeInterface $theme): string {
+    return $this->buffer . $theme->caret();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function matchPositions(string $label): array {
+    return $this->buffer === '' ? [] : $this->matcher()->positions($label, $this->buffer);
   }
 
   /**

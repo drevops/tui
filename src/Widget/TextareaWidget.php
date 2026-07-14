@@ -16,7 +16,9 @@ use DrevOps\Tui\Theme\ThemeInterface;
  *
  * @package DrevOps\Tui\Widget
  */
-class TextareaWidget extends TextWidget {
+class TextareaWidget extends AbstractWidget implements TextEditCapableInterface, ExternalEditCapableInterface {
+
+  use TextEditTrait;
 
   /**
    * Whether the external-editor handoff has been requested.
@@ -36,7 +38,8 @@ class TextareaWidget extends TextWidget {
    *   Whether the external-editor handoff is offered (an available $EDITOR).
    */
   public function __construct(string $buffer = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL, protected bool $externalEdit = FALSE) {
-    parent::__construct($buffer, $validate, $transform);
+    parent::__construct($validate, $transform);
+    $this->initTextBuffer($buffer);
   }
 
   /**
@@ -50,7 +53,6 @@ class TextareaWidget extends TextWidget {
   /**
    * {@inheritdoc}
    */
-  #[\Override]
   public function handle(Key $key): void {
     $keys = $this->keys();
 
@@ -82,9 +84,19 @@ class TextareaWidget extends TextWidget {
       return;
     }
 
-    // The parent handles the rest, including Accept, which this scope binds to
-    // Tab rather than Enter.
-    parent::handle($key);
+    if ($this->handleCancel($key)) {
+      return;
+    }
+
+    // Accept is checked here, after the newline branch, because this scope
+    // binds it to Tab rather than Enter.
+    if ($keys->matches($key, Action::Accept)) {
+      $this->accept($this->liveValue());
+
+      return;
+    }
+
+    $this->handleTextEditKey($key);
   }
 
   /**
@@ -125,27 +137,18 @@ class TextareaWidget extends TextWidget {
   }
 
   /**
-   * Whether the widget has requested the external-editor handoff.
-   *
-   * The driver reads this after handling a key and, when TRUE, launches the
-   * editor and feeds the result back through applyExternalEdit().
-   *
-   * @return bool
-   *   TRUE when a handoff was requested.
+   * {@inheritdoc}
    */
   public function wantsExternalEdit(): bool {
     return $this->externalEditRequested;
   }
 
   /**
-   * Apply the buffer captured from the external editor.
+   * {@inheritdoc}
    *
    * Clears the pending request. A non-NULL buffer replaces the value and is
    * accepted, so saving and exiting the editor commits the field. A NULL buffer
    * (the edit was aborted or unavailable) leaves the inline value untouched.
-   *
-   * @param string|null $content
-   *   The captured buffer, or NULL when the edit was aborted.
    */
   public function applyExternalEdit(?string $content): void {
     $this->externalEditRequested = FALSE;
@@ -162,11 +165,8 @@ class TextareaWidget extends TextWidget {
   /**
    * {@inheritdoc}
    */
-  #[\Override]
   public function view(ThemeInterface $theme): string {
-    $text = mb_substr($this->buffer, 0, $this->cursor, 'UTF-8') . $theme->caret() . mb_substr($this->buffer, $this->cursor, NULL, 'UTF-8');
-
-    return $this->withError($theme, $text);
+    return $this->withError($theme, $this->renderCaretLine($theme));
   }
 
   /**

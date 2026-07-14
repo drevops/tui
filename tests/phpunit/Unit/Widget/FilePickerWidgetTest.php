@@ -15,6 +15,7 @@ use DrevOps\Tui\Testing\WidgetRunner;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\AbstractWidget;
 use DrevOps\Tui\Widget\FilePickerWidget;
+use DrevOps\Tui\Widget\PageableTrait;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
@@ -25,6 +26,7 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass(FilePickerWidget::class)]
 #[CoversClass(AbstractWidget::class)]
+#[CoversClass(PageableTrait::class)]
 #[Group('widget')]
 final class FilePickerWidgetTest extends TestCase {
 
@@ -188,6 +190,7 @@ final class FilePickerWidgetTest extends TestCase {
     }
 
     // Only README.md contains "read".
+    $this->assertSame('read', $widget->filter());
     $this->assertSame($this->root . '/README.md', $widget->value());
     $this->assertStringContainsString('README.md', $this->render($widget));
 

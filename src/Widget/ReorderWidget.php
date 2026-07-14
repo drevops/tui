@@ -23,7 +23,9 @@ use DrevOps\Tui\Theme\ThemeInterface;
  *
  * @package DrevOps\Tui\Widget
  */
-class ReorderWidget extends AbstractWidget {
+class ReorderWidget extends AbstractWidget implements OptionsCapableInterface, PagingCapableInterface {
+
+  use PageableTrait;
 
   /**
    * The items in their current arrangement.
@@ -150,19 +152,46 @@ class ReorderWidget extends AbstractWidget {
   }
 
   /**
+   * The rows currently shown: the full arrangement, in its current order.
+   *
+   * @return list<\DrevOps\Tui\Config\Option>
+   *   The visible rows.
+   */
+  public function visible(): array {
+    return $this->items;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function view(ThemeInterface $theme): string {
-    $viewport = $this->pageViewport(count($this->items), $this->cursor);
+    $visible = $this->visible();
+    $viewport = $this->pageViewport(count($visible), $this->cursor);
 
     $rows = [];
 
-    foreach (array_slice($this->items, $viewport->offset, $this->pageSize) as $slot => $option) {
-      $current = $viewport->offset + $slot === $this->cursor;
-      $rows[] = $this->marker($theme, $current) . ' ' . $this->highlightLabel($theme, $option->label, $current);
+    foreach (array_slice($visible, $viewport->offset, $this->pageSize) as $slot => $option) {
+      $rows[] = $this->renderOptionRow($theme, $option, $viewport->offset + $slot === $this->cursor);
     }
 
     return implode("\n", $this->wrapScrolled($theme, $rows, $viewport));
+  }
+
+  /**
+   * Render one row: the marker cell and the (possibly held) item's label.
+   *
+   * @param \DrevOps\Tui\Theme\ThemeInterface $theme
+   *   The theme.
+   * @param \DrevOps\Tui\Config\Option $option
+   *   The item row.
+   * @param bool $current
+   *   Whether the row holds the cursor.
+   *
+   * @return string
+   *   The rendered row.
+   */
+  public function renderOptionRow(ThemeInterface $theme, Option $option, bool $current): string {
+    return $this->marker($theme, $current) . ' ' . $this->highlightLabel($theme, $option->label, $current);
   }
 
   /**

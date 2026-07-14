@@ -76,7 +76,7 @@ trait SingleChoiceTrait {
    * @return bool
    *   TRUE when the cursor rests on a selectable option.
    */
-  protected function currentSelectable(): bool {
+  public function currentSelectable(): bool {
     return ($this->visible()[$this->cursor] ?? NULL)?->selectable() ?? FALSE;
   }
 
@@ -100,7 +100,7 @@ trait SingleChoiceTrait {
    * @return string
    *   The rendered row.
    */
-  protected function renderOptionRow(ThemeInterface $theme, Option $option, bool $current): string {
+  public function renderOptionRow(ThemeInterface $theme, Option $option, bool $current): string {
     if ($option->disabled) {
       return $theme->radio(FALSE) . ' ' . $this->renderDisabledLabel($theme, $option);
     }

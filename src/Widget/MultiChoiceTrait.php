@@ -149,7 +149,7 @@ trait MultiChoiceTrait {
    * @return list<string>
    *   The selectable option values.
    */
-  protected function selectableValues(): array {
+  public function selectableValues(): array {
     $out = [];
 
     foreach ($this->options as $option) {
@@ -164,7 +164,7 @@ trait MultiChoiceTrait {
   /**
    * Toggle the highlighted option when it is selectable.
    */
-  protected function toggleCurrent(): void {
+  public function toggleCurrent(): void {
     $option = $this->visible()[$this->cursor] ?? NULL;
 
     if (!$option instanceof Option || !$option->selectable()) {
@@ -185,7 +185,7 @@ trait MultiChoiceTrait {
    * @param bool $selected
    *   TRUE to select, FALSE to deselect.
    */
-  protected function setAllVisible(bool $selected): void {
+  public function setAllVisible(bool $selected): void {
     foreach ($this->visible() as $option) {
       if (!$option->selectable()) {
         continue;
@@ -228,7 +228,7 @@ trait MultiChoiceTrait {
    * @return string
    *   The rendered row.
    */
-  protected function renderOptionRow(ThemeInterface $theme, Option $option, bool $current): string {
+  public function renderOptionRow(ThemeInterface $theme, Option $option, bool $current): string {
     if ($option->disabled) {
       return $theme->marker(FALSE) . ' ' . $theme->check(FALSE) . ' ' . $this->renderDisabledLabel($theme, $option);
     }

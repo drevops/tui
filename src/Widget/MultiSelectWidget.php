@@ -16,11 +16,16 @@ use DrevOps\Tui\Theme\ThemeInterface;
  *
  * @package DrevOps\Tui\Widget
  */
-class MultiSelectWidget extends AbstractWidget {
+class MultiSelectWidget extends AbstractWidget implements
+  OptionsCapableInterface,
+  MultiSelectionCapableInterface,
+  FilterCapableInterface,
+  PagingCapableInterface {
 
   use ChoiceListTrait;
   use MultiChoiceTrait;
   use ChoiceFilterTrait;
+  use PageableTrait;
 
   /**
    * Construct a multiselect widget.

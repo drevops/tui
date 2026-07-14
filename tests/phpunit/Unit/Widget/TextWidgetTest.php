@@ -11,6 +11,8 @@ use DrevOps\Tui\Testing\ArrayKeyStream;
 use DrevOps\Tui\Testing\WidgetRunner;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\AbstractWidget;
+use DrevOps\Tui\Widget\CompletableTrait;
+use DrevOps\Tui\Widget\TextEditTrait;
 use DrevOps\Tui\Widget\TextWidget;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
@@ -21,6 +23,8 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass(TextWidget::class)]
 #[CoversClass(AbstractWidget::class)]
+#[CoversClass(TextEditTrait::class)]
+#[CoversClass(CompletableTrait::class)]
 #[CoversClass(WidgetRunner::class)]
 #[Group('widget')]
 final class TextWidgetTest extends TestCase {
@@ -89,6 +93,14 @@ final class TextWidgetTest extends TestCase {
     $widget->handle(Key::named(KeyName::Left));
     $widget->handle(Key::char('a'));
     $this->assertSame('aé', $widget->value());
+  }
+
+  public function testBufferExposesTheLiveInput(): void {
+    $widget = new TextWidget('ab');
+
+    $widget->handle(Key::char('c'));
+
+    $this->assertSame('abc', $widget->buffer());
   }
 
   public function testCancel(): void {

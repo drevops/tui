@@ -14,6 +14,7 @@ use DrevOps\Tui\Testing\WidgetRunner;
 use DrevOps\Tui\Tests\Traits\AssertsPagingTrait;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\AbstractWidget;
+use DrevOps\Tui\Widget\PageableTrait;
 use DrevOps\Tui\Widget\ReorderWidget;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
@@ -24,6 +25,7 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass(ReorderWidget::class)]
 #[CoversClass(AbstractWidget::class)]
+#[CoversClass(PageableTrait::class)]
 #[Group('widget')]
 final class ReorderWidgetTest extends TestCase {
 

@@ -17,12 +17,18 @@ use DrevOps\Tui\Theme\ThemeInterface;
  *
  * @package DrevOps\Tui\Widget
  */
-class SearchWidget extends AbstractWidget {
+class SearchWidget extends AbstractWidget implements
+  OptionsCapableInterface,
+  SelectionCapableInterface,
+  FilterCapableInterface,
+  SearchCapableInterface,
+  PagingCapableInterface {
 
   use ChoiceListTrait;
   use SingleChoiceTrait;
   use ChoiceFilterTrait;
   use FuzzySearchTrait;
+  use PageableTrait;
 
   /**
    * Construct a search widget.
@@ -78,7 +84,7 @@ class SearchWidget extends AbstractWidget {
    * @return string
    *   The rendered row.
    */
-  protected function renderOptionRow(ThemeInterface $theme, Option $option, bool $current): string {
+  public function renderOptionRow(ThemeInterface $theme, Option $option, bool $current): string {
     if ($option->disabled) {
       return $theme->radio(FALSE) . ' ' . $this->renderDisabledLabel($theme, $option);
     }

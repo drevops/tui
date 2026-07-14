@@ -11,12 +11,18 @@ use DrevOps\Tui\Theme\ThemeInterface;
  *
  * @package DrevOps\Tui\Widget
  */
-class MultiSearchWidget extends AbstractWidget {
+class MultiSearchWidget extends AbstractWidget implements
+  OptionsCapableInterface,
+  MultiSelectionCapableInterface,
+  FilterCapableInterface,
+  SearchCapableInterface,
+  PagingCapableInterface {
 
   use ChoiceListTrait;
   use MultiChoiceTrait;
   use ChoiceFilterTrait;
   use FuzzySearchTrait;
+  use PageableTrait;
 
   /**
    * Construct a multi-search widget.

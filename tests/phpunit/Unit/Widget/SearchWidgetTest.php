@@ -16,6 +16,7 @@ use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\ChoiceFilterTrait;
 use DrevOps\Tui\Widget\ChoiceListTrait;
 use DrevOps\Tui\Widget\FuzzySearchTrait;
+use DrevOps\Tui\Widget\PageableTrait;
 use DrevOps\Tui\Widget\SearchWidget;
 use DrevOps\Tui\Widget\SingleChoiceTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -30,6 +31,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(ChoiceFilterTrait::class)]
 #[CoversClass(FuzzySearchTrait::class)]
 #[CoversClass(ChoiceListTrait::class)]
+#[CoversClass(PageableTrait::class)]
 #[Group('widget')]
 final class SearchWidgetTest extends TestCase {
 
@@ -114,6 +116,7 @@ final class SearchWidgetTest extends TestCase {
     $this->assertStringContainsString('c█', $view);
     $this->assertStringContainsString('CircleCI', $view);
     $this->assertStringNotContainsString('None', $view);
+    $this->assertSame('c', $widget->filter());
   }
 
   public function testCancel(): void {

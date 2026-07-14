@@ -22,7 +22,9 @@ use DrevOps\Tui\Translation\Translator;
  *
  * @package DrevOps\Tui\Widget
  */
-class PasswordWidget extends TextWidget {
+class PasswordWidget extends AbstractWidget implements TextEditCapableInterface, RevealCapableInterface {
+
+  use TextEditTrait;
 
   /**
    * The current live display mode.
@@ -49,7 +51,8 @@ class PasswordWidget extends TextWidget {
    *   Whether confirmation mode is enabled.
    */
   public function __construct(string $buffer = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL, protected bool $revealable = FALSE, protected bool $confirm = FALSE) {
-    parent::__construct($buffer, $validate, $transform);
+    parent::__construct($validate, $transform);
+    $this->initTextBuffer($buffer);
   }
 
   /**
@@ -63,12 +66,11 @@ class PasswordWidget extends TextWidget {
   /**
    * {@inheritdoc}
    */
-  #[\Override]
   public function handle(Key $key): void {
     $keys = $this->keys();
 
     if ($this->revealable && $keys->matches($key, Action::Reveal)) {
-      $this->display = $this->display->next();
+      $this->toggleReveal();
 
       return;
     }
@@ -79,7 +81,31 @@ class PasswordWidget extends TextWidget {
       return;
     }
 
-    parent::handle($key);
+    if ($this->handleCancel($key)) {
+      return;
+    }
+
+    if ($keys->matches($key, Action::Accept)) {
+      $this->accept($this->liveValue());
+
+      return;
+    }
+
+    $this->handleTextEditKey($key);
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * Cycles the live display between hidden, masked and plaintext; inert unless
+   * the reveal toggle is enabled. The stored value is never affected.
+   */
+  public function toggleReveal(): void {
+    if (!$this->revealable) {
+      return;
+    }
+
+    $this->display = $this->display->next();
   }
 
   /**
@@ -123,7 +149,6 @@ class PasswordWidget extends TextWidget {
   /**
    * {@inheritdoc}
    */
-  #[\Override]
   public function view(ThemeInterface $theme): string {
     $rows = [$this->renderLine($theme)];
 
@@ -162,7 +187,7 @@ class PasswordWidget extends TextWidget {
     return match ($this->display) {
       PasswordDisplay::Hidden => $theme->caret(),
       PasswordDisplay::Masked => str_repeat($theme->mask(), $this->cursor) . $theme->caret() . str_repeat($theme->mask(), mb_strlen($this->buffer, 'UTF-8') - $this->cursor),
-      PasswordDisplay::Plaintext => mb_substr($this->buffer, 0, $this->cursor, 'UTF-8') . $theme->caret() . mb_substr($this->buffer, $this->cursor, NULL, 'UTF-8'),
+      PasswordDisplay::Plaintext => $this->renderCaretLine($theme),
     };
   }
 

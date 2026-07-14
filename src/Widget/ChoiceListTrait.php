@@ -111,7 +111,7 @@ trait ChoiceListTrait {
    * @return list<\DrevOps\Tui\Config\Option>
    *   The visible rows.
    */
-  abstract protected function visible(): array;
+  abstract public function visible(): array;
 
   /**
    * Render one option row.
@@ -126,7 +126,7 @@ trait ChoiceListTrait {
    * @return string
    *   The rendered row.
    */
-  abstract protected function renderOptionRow(ThemeInterface $theme, Option $option, bool $current): string;
+  abstract public function renderOptionRow(ThemeInterface $theme, Option $option, bool $current): string;
 
   /**
    * Render the visible rows as the widget's paged option-list body.
