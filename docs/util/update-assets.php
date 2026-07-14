@@ -1250,9 +1250,7 @@ function assetName(string $job, bool $static): string {
 function slowAnimation(string $svg, float $factor): string {
   return (string) preg_replace_callback(
     '/animation-duration:([0-9.]+)s/',
-    static function (array $matches) use ($factor): string {
-      return 'animation-duration:' . rtrim(rtrim(sprintf('%.3f', (float) $matches[1] * $factor), '0'), '.') . 's';
-    },
+    static fn(array $matches): string => 'animation-duration:' . rtrim(rtrim(sprintf('%.3f', (float) $matches[1] * $factor), '0'), '.') . 's',
     $svg
   );
 }

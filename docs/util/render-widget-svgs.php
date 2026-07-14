@@ -71,82 +71,82 @@ function widgetSpecs(string $tree): array {
 
   return [
     'text' => [
-      'form' => Form::create('Text widget')->panel('main', 'Text', fn(PanelBuilder $p) => $p->text('text', 'Text')->default('Acme Site')),
+      'form' => Form::create('Text widget')->panel('main', 'Text', function (PanelBuilder $p): void { $p->text('text', 'Text')->default('Acme Site'); }),
       'keys' => [...$open, $bs, $bs, $bs, $bs, 'C', 'o', 'r', 'p'],
       'rows' => 6,
     ],
     'number' => [
-      'form' => Form::create('Number widget')->panel('main', 'Number', fn(PanelBuilder $p) => $p->number('number', 'Number')->default(8080)),
+      'form' => Form::create('Number widget')->panel('main', 'Number', function (PanelBuilder $p): void { $p->number('number', 'Number')->default(8080); }),
       'keys' => [...$open, $bs, $bs, $bs, $bs, '3', '0', '0', '0'],
       'rows' => 6,
     ],
     'calendar' => [
-      'form' => Form::create('Calendar widget')->panel('main', 'Calendar', fn(PanelBuilder $p) => $p->calendar('date', 'Calendar')->default('2026-07-15')),
+      'form' => Form::create('Calendar widget')->panel('main', 'Calendar', function (PanelBuilder $p): void { $p->calendar('date', 'Calendar')->default('2026-07-15'); }),
       'keys' => [...$open, $down],
       'rows' => 14,
     ],
     'textarea' => [
-      'form' => Form::create('Textarea widget')->panel('main', 'Textarea', fn(PanelBuilder $p) => $p->textarea('textarea', 'Textarea')->default("Redis for cache\nSolr for search")),
+      'form' => Form::create('Textarea widget')->panel('main', 'Textarea', function (PanelBuilder $p): void { $p->textarea('textarea', 'Textarea')->default("Redis for cache\nSolr for search"); }),
       'keys' => [...$open, $enter, 'C', 'l', 'a', 'm', 'A', 'V'],
       'rows' => 8,
     ],
     'password' => [
-      'form' => Form::create('Password widget')->panel('main', 'Password', fn(PanelBuilder $p) => $p->password('password', 'Password')->default('hunter2')),
+      'form' => Form::create('Password widget')->panel('main', 'Password', function (PanelBuilder $p): void { $p->password('password', 'Password')->default('hunter2'); }),
       'keys' => [...$open, 's', '3', 'c', 'r', 'e', 't'],
       'rows' => 6,
     ],
     'select' => [
-      'form' => Form::create('Select widget')->panel('main', 'Select', fn(PanelBuilder $p) => $p->select('select', 'Select')->default('minimal')->options(['standard' => 'Standard', 'minimal' => 'Minimal', 'demo_umami' => 'Demo Umami'])),
+      'form' => Form::create('Select widget')->panel('main', 'Select', function (PanelBuilder $p): void { $p->select('select', 'Select')->default('minimal')->options(['standard' => 'Standard', 'minimal' => 'Minimal', 'demo_umami' => 'Demo Umami']); }),
       'keys' => [...$open, $down],
       'rows' => 8,
     ],
     'multiselect' => [
-      'form' => Form::create('MultiSelect widget')->panel('main', 'MultiSelect', fn(PanelBuilder $p) => $p->multiselect('multiselect', 'MultiSelect')->default(['redis'])->options(['redis' => 'Redis', 'solr' => 'Solr', 'clamav' => 'ClamAV'])),
+      'form' => Form::create('MultiSelect widget')->panel('main', 'MultiSelect', function (PanelBuilder $p): void { $p->multiselect('multiselect', 'MultiSelect')->default(['redis'])->options(['redis' => 'Redis', 'solr' => 'Solr', 'clamav' => 'ClamAV']); }),
       'keys' => [...$open, $down, $space],
       'rows' => 8,
     ],
     'reorder' => [
-      'form' => Form::create('Reorder widget')->panel('main', 'Reorder', fn(PanelBuilder $p) => $p->reorder('reorder', 'Reorder')->options(['redis' => 'Redis', 'solr' => 'Solr', 'clamav' => 'ClamAV'])),
+      'form' => Form::create('Reorder widget')->panel('main', 'Reorder', function (PanelBuilder $p): void { $p->reorder('reorder', 'Reorder')->options(['redis' => 'Redis', 'solr' => 'Solr', 'clamav' => 'ClamAV']); }),
       'keys' => [...$open, $space, $down, $space],
       'rows' => 12,
     ],
     'suggest' => [
-      'form' => Form::create('Suggest widget')->panel('main', 'Suggest', fn(PanelBuilder $p) => $p->suggest('suggest', 'Suggest')->options(['UTC' => 'UTC', 'Europe/London' => 'Europe/London', 'Europe/Paris' => 'Europe/Paris', 'Australia/Sydney' => 'Australia/Sydney'])),
+      'form' => Form::create('Suggest widget')->panel('main', 'Suggest', function (PanelBuilder $p): void { $p->suggest('suggest', 'Suggest')->options(['UTC' => 'UTC', 'Europe/London' => 'Europe/London', 'Europe/Paris' => 'Europe/Paris', 'Australia/Sydney' => 'Australia/Sydney']); }),
       'keys' => [...$open, 'E', 'u', 'r', $down],
       'rows' => 10,
     ],
     'search' => [
-      'form' => Form::create('Search widget')->panel('main', 'Search', fn(PanelBuilder $p) => $p->search('search', 'Search')->default('london')->options(['utc' => 'UTC', 'london' => 'Europe/London', 'paris' => 'Europe/Paris', 'sydney' => 'Australia/Sydney'])),
+      'form' => Form::create('Search widget')->panel('main', 'Search', function (PanelBuilder $p): void { $p->search('search', 'Search')->default('london')->options(['utc' => 'UTC', 'london' => 'Europe/London', 'paris' => 'Europe/Paris', 'sydney' => 'Australia/Sydney']); }),
       'keys' => [...$open, 'p', 'a', 'r'],
       'rows' => 10,
     ],
     'multisearch' => [
-      'form' => Form::create('MultiSearch widget')->panel('main', 'MultiSearch', fn(PanelBuilder $p) => $p->multisearch('multisearch', 'MultiSearch')->default(['redis'])->options(['redis' => 'Redis', 'solr' => 'Solr', 'clamav' => 'ClamAV', 'memcached' => 'Memcached'])),
+      'form' => Form::create('MultiSearch widget')->panel('main', 'MultiSearch', function (PanelBuilder $p): void { $p->multisearch('multisearch', 'MultiSearch')->default(['redis'])->options(['redis' => 'Redis', 'solr' => 'Solr', 'clamav' => 'ClamAV', 'memcached' => 'Memcached']); }),
       'keys' => [...$open, 'c', 'l', $space],
       'rows' => 10,
     ],
     'confirm' => [
-      'form' => Form::create('Confirm widget')->panel('main', 'Confirm', fn(PanelBuilder $p) => $p->confirm('confirm', 'Confirm')->default(TRUE)),
+      'form' => Form::create('Confirm widget')->panel('main', 'Confirm', function (PanelBuilder $p): void { $p->confirm('confirm', 'Confirm')->default(TRUE); }),
       'keys' => [...$open, 'n'],
       'rows' => 6,
     ],
     'toggle' => [
-      'form' => Form::create('Toggle widget')->panel('main', 'Toggle', fn(PanelBuilder $p) => $p->toggle('toggle', 'Toggle')->default('enabled')->options(['enabled' => 'Enabled', 'disabled' => 'Disabled'])),
+      'form' => Form::create('Toggle widget')->panel('main', 'Toggle', function (PanelBuilder $p): void { $p->toggle('toggle', 'Toggle')->default('enabled')->options(['enabled' => 'Enabled', 'disabled' => 'Disabled']); }),
       'keys' => [...$open, 'd'],
       'rows' => 6,
     ],
     'pause' => [
-      'form' => Form::create('Pause widget')->panel('main', 'Pause', fn(PanelBuilder $p) => $p->pause('pause', 'Pause')),
+      'form' => Form::create('Pause widget')->panel('main', 'Pause', function (PanelBuilder $p): void { $p->pause('pause', 'Pause'); }),
       'keys' => [$enter],
       'rows' => 6,
     ],
     'filepicker' => [
-      'form' => Form::create('File picker widget')->panel('main', 'File picker', fn(PanelBuilder $p) => $p->filePicker('file', 'File picker')->start($tree)->filesOnly()->extensions(['yml', 'yaml'])),
+      'form' => Form::create('File picker widget')->panel('main', 'File picker', function (PanelBuilder $p) use ($tree): void { $p->filePicker('file', 'File picker')->start($tree)->filesOnly()->extensions(['yml', 'yaml']); }),
       'keys' => [...$open, $down],
       'rows' => 8,
     ],
     'multifilepicker' => [
-      'form' => Form::create('Multi file picker widget')->panel('main', 'Multi file picker', fn(PanelBuilder $p) => $p->multiFilePicker('files', 'Multi file picker')->start($tree)),
+      'form' => Form::create('Multi file picker widget')->panel('main', 'Multi file picker', function (PanelBuilder $p) use ($tree): void { $p->multiFilePicker('files', 'Multi file picker')->start($tree); }),
       'keys' => [...$open, $space, $down, $space],
       'rows' => 10,
     ],
@@ -302,11 +302,7 @@ function renderCast(string $cast_file, string $svg_file, string $util_dir): void
 function slowAnimation(string $svg, float $factor): string {
   return (string) preg_replace_callback(
     '/animation-duration:([0-9.]+)s/',
-    static function (array $matches) use ($factor): string {
-      $scaled = (float) $matches[1] * $factor;
-
-      return 'animation-duration:' . rtrim(rtrim(sprintf('%.3f', $scaled), '0'), '.') . 's';
-    },
+    static fn(array $matches): string => 'animation-duration:' . rtrim(rtrim(sprintf('%.3f', (float) $matches[1] * $factor), '0'), '.') . 's',
     $svg
   );
 }
