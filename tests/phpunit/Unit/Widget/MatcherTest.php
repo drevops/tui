@@ -63,6 +63,9 @@ final class MatcherTest extends TestCase {
     yield 'earlier substring over later' => ['red', 'reddit', 'shredded'];
     yield 'contiguous over scattered' => ['abc', 'zabc', 'aXbXc'];
     yield 'tighter but later over looser but earlier' => ['ab', 'xxxxxab', 'axxxxxxb'];
+    // The tier folds the final sigma too, so "Ος" is exact - not just the
+    // subsequence the per-character match found.
+    yield 'final sigma exact over prefix' => ['ος', 'Ος', 'Οσμή'];
   }
 
   #[DataProvider('dataProviderMatchLocatesHighlightPositions')]
@@ -84,6 +87,9 @@ final class MatcherTest extends TestCase {
     // Lowercasing "İ" expands to two code points; positions must still
     // index the original string, so "sum" lands on original indices 2-4.
     yield 'length-changing fold keeps original offsets' => ['İpsum', 'sum', [2, 3, 4]];
+    // A capitalised query matches a label ending in the Greek final sigma:
+    // both fold to the regular sigma.
+    yield 'capital sigma matches final sigma' => ['Ος', 'ΟΣ', [0, 1]];
   }
 
   public function testRankValuesOrdersMatchesAndDropsMisses(): void {
