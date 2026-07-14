@@ -12,85 +12,72 @@ use DrevOps\Tui\Theme\ThemeInterface;
 /**
  * A single-choice list with fuzzy type-to-filter over the option labels.
  *
- * The select widget plus a query line: printable characters narrow the list,
+ * A radio list under a query line: printable characters narrow the list,
  * ranked by fuzzy relevance, and the matched characters are highlighted.
  *
  * @package DrevOps\Tui\Widget
  */
-class SearchWidget extends SelectWidget {
+class SearchWidget extends AbstractWidget {
+
+  use ChoiceListTrait;
+  use SingleChoiceTrait;
+  use ChoiceFilterTrait;
+  use FuzzySearchTrait;
 
   /**
-   * The current type-to-filter text.
+   * Construct a search widget.
+   *
+   * @param array<int|string,\DrevOps\Tui\Config\Option|string> $options
+   *   Option rows in display order - a list of options or the value => label
+   *   shorthand map.
+   * @param string $default
+   *   The initially highlighted value.
+   * @param \Closure|null $validate
+   *   Optional validator (see AbstractWidget).
+   * @param \Closure|null $transform
+   *   Optional transformer (see AbstractWidget).
+   * @param int|null $pageSize
+   *   The number of option rows shown at once before the list pages; NULL uses
+   *   the default.
    */
-  protected string $filter = '';
+  public function __construct(array $options, string $default = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL, ?int $pageSize = NULL) {
+    parent::__construct($validate, $transform);
+    $this->initSingleChoice($options, $default);
+    $this->pageSize = $this->resolvePageSize($pageSize);
+  }
 
   /**
    * {@inheritdoc}
    */
-  #[\Override]
   public function handle(Key $key): void {
-    $keys = $this->keys();
-
-    if ($keys->matches($key, Action::DeleteBack)) {
-      $this->filter = mb_substr($this->filter, 0, -1, 'UTF-8');
-      $this->resetFilterCursor();
-
-      return;
-    }
-
-    if ($keys->matches($key, Action::InsertSpace)) {
+    // Space is part of the query, so it cannot double as a select key here.
+    if ($this->keys()->matches($key, Action::InsertSpace)) {
       $this->filter .= ' ';
       $this->resetFilterCursor();
 
       return;
     }
 
-    if ($key->isChar()) {
-      $this->filter .= $key->char ?? '';
-      $this->resetFilterCursor();
-
+    if ($this->handleFilterKey($key)) {
       return;
     }
 
-    parent::handle($key);
+    $this->handleSingleChoiceKey($key);
   }
 
   /**
-   * Land the cursor on the first match and reset paging on a query change.
-   */
-  protected function resetFilterCursor(): void {
-    $this->cursor = $this->firstSelectable($this->visible());
-    $this->offset = 0;
-  }
-
-  /**
-   * {@inheritdoc}
+   * Render one option row: the radio glyph and the match-highlighted label.
    *
-   * With no filter every row shows in declared order; once filtering, only
-   * matching options show, ranked by fuzzy relevance - structural headings and
-   * separators drop away so the result reads as a flat relevance list.
+   * @param \DrevOps\Tui\Theme\ThemeInterface $theme
+   *   The theme.
+   * @param \DrevOps\Tui\Config\Option $option
+   *   The option row.
+   * @param bool $current
+   *   Whether the row holds the cursor.
+   *
+   * @return string
+   *   The rendered row.
    */
-  #[\Override]
-  protected function visible(): array {
-    if ($this->filter === '') {
-      return $this->options;
-    }
-
-    return $this->matcher()->rankOptions($this->options, $this->filter);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  #[\Override]
-  public function view(ThemeInterface $theme): string {
-    return $this->filter . $theme->caret() . "\n" . parent::view($theme);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  #[\Override]
   protected function renderOptionRow(ThemeInterface $theme, Option $option, bool $current): string {
     if ($option->disabled) {
       return $theme->radio(FALSE) . ' ' . $this->renderDisabledLabel($theme, $option);
@@ -100,16 +87,10 @@ class SearchWidget extends SelectWidget {
   }
 
   /**
-   * The matched-character positions in a label under the current filter.
-   *
-   * @param string $label
-   *   The option label.
-   *
-   * @return list<int>
-   *   The matched indices, or an empty list when not filtering.
+   * {@inheritdoc}
    */
-  protected function matchPositions(string $label): array {
-    return $this->filter === '' ? [] : $this->matcher()->positions($label, $this->filter);
+  public function view(ThemeInterface $theme): string {
+    return $this->queryLine($theme) . "\n" . $this->renderChoiceList($theme);
   }
 
 }

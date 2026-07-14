@@ -20,6 +20,7 @@ use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\AbstractWidget;
 use DrevOps\Tui\Widget\ChoiceListTrait;
 use DrevOps\Tui\Widget\SelectWidget;
+use DrevOps\Tui\Widget\SingleChoiceTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -30,6 +31,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(SelectWidget::class)]
 #[CoversClass(AbstractWidget::class)]
 #[CoversClass(ChoiceListTrait::class)]
+#[CoversClass(SingleChoiceTrait::class)]
 #[Group('widget')]
 final class SelectWidgetTest extends TestCase {
 

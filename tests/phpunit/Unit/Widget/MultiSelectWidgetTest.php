@@ -15,7 +15,9 @@ use DrevOps\Tui\Tests\Traits\AssertsPagingTrait;
 use DrevOps\Tui\Tests\Traits\MixedOptionsTrait;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\AbstractWidget;
+use DrevOps\Tui\Widget\ChoiceFilterTrait;
 use DrevOps\Tui\Widget\ChoiceListTrait;
+use DrevOps\Tui\Widget\MultiChoiceTrait;
 use DrevOps\Tui\Widget\MultiSelectWidget;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
@@ -27,6 +29,8 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(MultiSelectWidget::class)]
 #[CoversClass(AbstractWidget::class)]
 #[CoversClass(ChoiceListTrait::class)]
+#[CoversClass(MultiChoiceTrait::class)]
+#[CoversClass(ChoiceFilterTrait::class)]
 #[Group('widget')]
 final class MultiSelectWidgetTest extends TestCase {
 

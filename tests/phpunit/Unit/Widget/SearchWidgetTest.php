@@ -13,9 +13,11 @@ use DrevOps\Tui\Testing\WidgetRunner;
 use DrevOps\Tui\Tests\Traits\AssertsPagingTrait;
 use DrevOps\Tui\Tests\Traits\MixedOptionsTrait;
 use DrevOps\Tui\Theme\DefaultTheme;
+use DrevOps\Tui\Widget\ChoiceFilterTrait;
 use DrevOps\Tui\Widget\ChoiceListTrait;
+use DrevOps\Tui\Widget\FuzzySearchTrait;
 use DrevOps\Tui\Widget\SearchWidget;
-use DrevOps\Tui\Widget\SelectWidget;
+use DrevOps\Tui\Widget\SingleChoiceTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -24,7 +26,9 @@ use PHPUnit\Framework\TestCase;
  * Tests the search widget.
  */
 #[CoversClass(SearchWidget::class)]
-#[CoversClass(SelectWidget::class)]
+#[CoversClass(SingleChoiceTrait::class)]
+#[CoversClass(ChoiceFilterTrait::class)]
+#[CoversClass(FuzzySearchTrait::class)]
 #[CoversClass(ChoiceListTrait::class)]
 #[Group('widget')]
 final class SearchWidgetTest extends TestCase {

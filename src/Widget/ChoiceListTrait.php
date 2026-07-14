@@ -106,6 +106,45 @@ trait ChoiceListTrait {
   }
 
   /**
+   * The rows the widget currently shows.
+   *
+   * @return list<\DrevOps\Tui\Config\Option>
+   *   The visible rows.
+   */
+  abstract protected function visible(): array;
+
+  /**
+   * Render one option row.
+   *
+   * @param \DrevOps\Tui\Theme\ThemeInterface $theme
+   *   The theme.
+   * @param \DrevOps\Tui\Config\Option $option
+   *   The option row.
+   * @param bool $current
+   *   Whether the row holds the cursor.
+   *
+   * @return string
+   *   The rendered row.
+   */
+  abstract protected function renderOptionRow(ThemeInterface $theme, Option $option, bool $current): string;
+
+  /**
+   * Render the visible rows as the widget's paged option-list body.
+   *
+   * @param \DrevOps\Tui\Theme\ThemeInterface $theme
+   *   The theme.
+   *
+   * @return string
+   *   The list body: one line per visible row, scroll-wrapped.
+   */
+  protected function renderChoiceList(ThemeInterface $theme): string {
+    $visible = $this->visible();
+    $viewport = $this->pageViewport(count($visible), $this->cursor);
+
+    return implode("\n", $this->renderListRows($theme, $visible, $viewport, fn(Option $option, int $index): string => $this->renderOptionRow($theme, $option, $index === $this->cursor)));
+  }
+
+  /**
    * Render the visible option rows, dispatching structure rows centrally.
    *
    * Headings and separators render identically in every choice widget; the
