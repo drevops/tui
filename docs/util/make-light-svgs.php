@@ -44,7 +44,7 @@ $names = [
 $dir = __DIR__ . '/../../docs/assets';
 
 foreach ($names as $name) {
-  $src = $dir . '/' . $name . '.svg';
+  $src = $dir . '/' . $name . '-dark-animated.svg';
 
   if (!is_file($src)) {
     fwrite(STDERR, sprintf("MISSING: %s\n", $src));
@@ -53,6 +53,7 @@ foreach ($names as $name) {
 
   $dark = (string) file_get_contents($src);
   $light = strtr($dark, $map);
-  file_put_contents($dir . '/' . $name . '-light.svg', $light);
-  echo sprintf("%-24s -> %s-light.svg\n", $name, $name);
+  $out = $name . '-light-animated.svg';
+  file_put_contents($dir . '/' . $out, $light);
+  echo sprintf("%-24s -> %s\n", $name . '-dark-animated', $out);
 }

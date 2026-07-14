@@ -5,12 +5,18 @@
  * @file
  * Generate animated SVG assets from asciinema recordings.
  *
- * Records terminal sessions for the playground demos (the panel TUI runners
- * and the per-widget scripts), then converts the recordings to SVGs for use
- * in README.md: animated SVGs for the full demos, static frames for the
- * per-widget screenshots. Static frames are anchored to the moment the
- * demo's gate text first appears in the recording, and every generated SVG
- * is verified to contain the expected content before the job succeeds.
+ * Records terminal sessions for the playground demos (the panel TUI runners)
+ * and the per-widget display-mode variants, then converts the recordings to
+ * SVGs: animated SVGs for the full demos, static frames for the alternate
+ * display-mode screenshots. The unicode-colour per-widget hero cards README.md
+ * embeds are instead rendered deterministically by render-widget-svgs.php, and
+ * their light twins by make-light-svgs.php. Static frames are anchored to the
+ * moment the demo's gate text first appears in the recording; every animated
+ * SVG is slowed to ANIMATION_SLOWDOWN, and every generated SVG is verified to
+ * contain the expected content before the job succeeds.
+ *
+ * Output filenames follow the explicit convention shared with those sibling
+ * scripts: <subject>-<dark|light>-<animated|static>[-ascii][-no-ansi].svg.
  *
  * Supports parallel execution: when run without arguments, launches all
  * recordings as parallel worker processes for faster generation.
@@ -43,6 +49,11 @@ define('END_PAUSE', 10);
 // interactions pause for 1000ms after their gate matches, so half of that
 // lands safely inside the stable initial frame.
 define('FRAME_SETTLE_MS', 500);
+
+// Every animated SVG this project ships runs at this fraction of its recorded
+// speed. The same factor lives in render-widget-svgs.php, which renders the
+// per-widget hero cards.
+define('ANIMATION_SLOWDOWN', 1.25);
 
 /**
  * The expect snippets driving each widget demo, keyed by widget name.
@@ -596,6 +607,13 @@ EXPECT,
     $gate = $matches[1] ?? '';
 
     foreach ($flag_variants as $suffix => $flags) {
+      // The unicode, colour card README.md embeds is animated and rendered by
+      // render-widget-svgs.php; only the display-mode variants stay as static
+      // screenshots here.
+      if ($suffix === '') {
+        continue;
+      }
+
       $jobs['widget-' . $widget . $suffix] = [
         'command' => 'php ' . $project_dir . '/playground/3-widgets/widget-' . $widget . '.php' . $flags,
         'interact' => $interact,
@@ -611,6 +629,10 @@ EXPECT,
   // hub summary lists the lowercase option values, so the capital label appears
   // only once the reorder list is on screen.
   foreach ($flag_variants as $suffix => $flags) {
+    if ($suffix === '') {
+      continue;
+    }
+
     $jobs['widget-reorder' . $suffix]['at_needle'] = 'Redis';
   }
 
@@ -644,6 +666,12 @@ EXPECT,
     $gate = $matches[1] ?? '';
 
     foreach ($flag_variants as $suffix => $flags) {
+      // The unicode, colour card is animated (render-widget-svgs.php); only the
+      // display-mode variants stay as static screenshots here.
+      if ($suffix === '') {
+        continue;
+      }
+
       $jobs['widget-' . $widget . $suffix] = [
         'command' => 'php ' . $project_dir . '/playground/3-widgets/widget-' . $widget . '.php' . $flags,
         'interact' => $interact,
@@ -813,9 +841,10 @@ function processOne(string $name): void {
   }
 
   $job = $jobs[$name];
+  $static = isset($job['at_needle']) || isset($job['at']);
   $cast_file = $tmp_dir . '/' . $name . '.cast';
   $expect_script = $tmp_dir . '/' . $name . '.exp';
-  $svg_file = $assets_dir . '/' . $name . '.svg';
+  $svg_file = $assets_dir . '/' . assetName($name, $static);
   $rows = $job['rows'] ?? TERMINAL_ROWS;
   $cols = $job['cols'] ?? TERMINAL_COLS;
 
@@ -1176,6 +1205,56 @@ function convertToSvg(string $cast_file, string $svg_file, string $util_dir, ?in
   if (!file_exists($svg_file) || filesize($svg_file) === 0) {
     throw new \RuntimeException('Failed to convert cast to SVG: ' . $cast_file . "\n" . ($output ?? ''));
   }
+
+  // A static frame has no animation to slow; an animated render is scaled to
+  // the project-wide playback speed.
+  if ($at === NULL) {
+    file_put_contents($svg_file, slowAnimation((string) file_get_contents($svg_file), ANIMATION_SLOWDOWN));
+  }
+}
+
+/**
+ * The asset filename for a job under the explicit naming convention.
+ *
+ * The job key already carries the display-mode suffixes; this adds the theme
+ * (always dark here - light twins are derived by make-light-svgs.php) and the
+ * motion, yielding <subject>-dark-<motion>[-ascii][-no-ansi].svg.
+ *
+ * @param string $job
+ *   The job key.
+ * @param bool $static
+ *   Whether the job renders a single static frame.
+ *
+ * @return string
+ *   The asset filename.
+ */
+function assetName(string $job, bool $static): string {
+  $ascii = str_contains($job, '-ascii');
+  $noansi = str_contains($job, '-no-ansi');
+  $subject = str_replace(['-ascii', '-no-ansi'], '', $job);
+
+  return $subject . '-dark-' . ($static ? 'static' : 'animated') . ($ascii ? '-ascii' : '') . ($noansi ? '-no-ansi' : '') . '.svg';
+}
+
+/**
+ * Scale every animation duration in an SVG by a factor.
+ *
+ * @param string $svg
+ *   The SVG markup.
+ * @param float $factor
+ *   The multiplier; greater than one slows the animation down.
+ *
+ * @return string
+ *   The SVG with scaled durations.
+ */
+function slowAnimation(string $svg, float $factor): string {
+  return (string) preg_replace_callback(
+    '/animation-duration:([0-9.]+)s/',
+    static function (array $matches) use ($factor): string {
+      return 'animation-duration:' . rtrim(rtrim(sprintf('%.3f', (float) $matches[1] * $factor), '0'), '.') . 's';
+    },
+    $svg
+  );
 }
 
 /**
