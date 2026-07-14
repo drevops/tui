@@ -99,7 +99,7 @@ class TextareaWidget extends TextWidget {
     $line = 0;
     $column = $this->cursor;
     foreach ($lines as $index => $text) {
-      $length = mb_strlen($text);
+      $length = mb_strlen($text, 'UTF-8');
 
       if ($column <= $length) {
         $line = $index;
@@ -118,10 +118,10 @@ class TextareaWidget extends TextWidget {
 
     $offset = 0;
     for ($index = 0; $index < $target; $index++) {
-      $offset += mb_strlen($lines[$index]) + 1;
+      $offset += mb_strlen($lines[$index], 'UTF-8') + 1;
     }
 
-    $this->cursor = $offset + min($column, mb_strlen($lines[$target]));
+    $this->cursor = $offset + min($column, mb_strlen($lines[$target], 'UTF-8'));
   }
 
   /**
@@ -155,7 +155,7 @@ class TextareaWidget extends TextWidget {
     }
 
     $this->buffer = $content;
-    $this->cursor = mb_strlen($content);
+    $this->cursor = mb_strlen($content, 'UTF-8');
     $this->accept($content);
   }
 
@@ -164,7 +164,7 @@ class TextareaWidget extends TextWidget {
    */
   #[\Override]
   public function view(ThemeInterface $theme): string {
-    $text = mb_substr($this->buffer, 0, $this->cursor) . $theme->caret() . mb_substr($this->buffer, $this->cursor);
+    $text = mb_substr($this->buffer, 0, $this->cursor, 'UTF-8') . $theme->caret() . mb_substr($this->buffer, $this->cursor, NULL, 'UTF-8');
 
     return $this->withError($theme, $text);
   }

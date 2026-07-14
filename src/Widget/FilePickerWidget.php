@@ -105,7 +105,7 @@ class FilePickerWidget extends AbstractWidget {
   ) {
     parent::__construct($validate, $transform);
 
-    $this->root = $this->trimTrailingSlash($start !== '' ? $start : (string) getcwd());
+    $this->root = $this->trimTrailingSlash($start !== '' ? $start : $this->currentDirectory());
     $this->cwd = $this->root;
     $this->pageSize = $this->resolvePageSize($pageSize);
 
@@ -302,11 +302,24 @@ class FilePickerWidget extends AbstractWidget {
   }
 
   /**
+   * The directory the browser roots at when no start directory is declared.
+   *
+   * A seam so the fallback can come from somewhere other than the process
+   * working directory (e.g. a virtual filesystem).
+   *
+   * @return string
+   *   The current working directory.
+   */
+  protected function currentDirectory(): string {
+    return (string) getcwd();
+  }
+
+  /**
    * Delete the last filter character, or ascend when the filter is empty.
    */
   protected function onBackspace(): void {
     if ($this->filter !== '') {
-      $this->filter = substr($this->filter, 0, -1);
+      $this->filter = mb_substr($this->filter, 0, -1, 'UTF-8');
       $this->cursor = 0;
 
       return;
@@ -569,7 +582,7 @@ class FilePickerWidget extends AbstractWidget {
    *   The spacer.
    */
   protected function blankBox(ThemeInterface $theme): string {
-    return str_repeat(' ', mb_strlen(Ansi::strip($theme->check(FALSE))));
+    return str_repeat(' ', mb_strlen(Ansi::strip($theme->check(FALSE)), 'UTF-8'));
   }
 
   /**

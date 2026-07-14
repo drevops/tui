@@ -9,7 +9,7 @@ In update mode, `->discover()` rules detect defaults from an existing project
 directory: a `.env` key (`new Dotenv('KEY')`), a JSON dot-path (`new
 JsonValue('composer.json', 'name')`), a path check (`new
 PathExists('docker-compose.yml')`), a directory scan (`new Scan('modules', type:
-'dir')`), or a custom `fn(Context $c): mixed` closure:
+ScanType::Dir)`), or a custom `fn(Context $c): mixed` closure:
 
 ```php
 $p->text('name', 'Project name')->discover(new JsonValue('composer.json', 'name'));

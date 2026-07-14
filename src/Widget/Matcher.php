@@ -48,9 +48,10 @@ final class Matcher {
 
     // Fold each code point on its own, so a matched index maps straight back to
     // the original string even when lowercasing changes a character's length.
-    $chars = mb_str_split($haystack);
-    $folded = array_map(mb_strtolower(...), $chars);
-    $needle_folded = array_map(mb_strtolower(...), mb_str_split($needle));
+    $fold = static fn(string $char): string => mb_strtolower($char, 'UTF-8');
+    $chars = mb_str_split($haystack, 1, 'UTF-8');
+    $folded = array_map($fold, $chars);
+    $needle_folded = array_map($fold, mb_str_split($needle, 1, 'UTF-8'));
 
     $best = $this->bestSubsequence($folded, $needle_folded, $chars);
     if ($best === NULL) {
@@ -59,7 +60,7 @@ final class Matcher {
 
     [$positions, $refinement] = $best;
 
-    return new MatchResult($this->tier(mb_strtolower($haystack), mb_strtolower($needle))->weight() * self::TIER_WEIGHT + $refinement, $positions);
+    return new MatchResult($this->tier(mb_strtolower($haystack, 'UTF-8'), mb_strtolower($needle, 'UTF-8'))->weight() * self::TIER_WEIGHT + $refinement, $positions);
   }
 
   /**

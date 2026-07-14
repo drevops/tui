@@ -7,6 +7,7 @@ namespace DrevOps\Tui\Tests\Unit\Engine;
 use DrevOps\Tui\Answers\Provenance;
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Builder\PanelBuilder;
+use DrevOps\Tui\Condition\Condition;
 use DrevOps\Tui\Engine\Engine;
 use DrevOps\Tui\Engine\EngineException;
 use DrevOps\Tui\Handler\Context;
@@ -100,6 +101,19 @@ final class EngineDeclaredBehaviourTest extends TestCase {
     });
 
     $this->assertSame(['name' => 'Acme'], $engine->collect(['name' => '  Acme  '], new Context())->values);
+  }
+
+  public function testTransformedInputDrivesConditions(): void {
+    $engine = $this->engine(function (PanelBuilder $p): void {
+      $p->text('mode')->transform(fn (mixed $v): mixed => is_string($v) ? trim($v) : $v);
+      $p->text('extra')->default('on')->when(new Condition('mode', eq: 'custom'));
+    });
+
+    $answers = $engine->collect(['mode' => '  custom  '], new Context());
+
+    // Inputs normalize before stabilization, so the condition matches the
+    // trimmed value and activates the dependent field.
+    $this->assertSame(['mode' => 'custom', 'extra' => 'on'], $answers->values);
   }
 
   public function testDeclaredDiscoverClosure(): void {

@@ -23,7 +23,7 @@ use PHPUnit\Framework\TestCase;
 final class SchemaValidatorTest extends TestCase {
 
   /**
-   * An answer set yields no errors, or contains the one expected error.
+   * An answer set yields no errors, or exactly the one expected error.
    *
    * @param array<string,mixed> $answers
    *   The answers to validate.
@@ -34,13 +34,7 @@ final class SchemaValidatorTest extends TestCase {
   public function testValidate(array $answers, ?string $expected_error): void {
     $errors = (new SchemaValidator($this->config()))->validate($answers);
 
-    if ($expected_error === NULL) {
-      $this->assertSame([], $errors);
-
-      return;
-    }
-
-    $this->assertContains($expected_error, $errors);
+    $this->assertSame($expected_error === NULL ? [] : [$expected_error], $errors);
   }
 
   /**
@@ -100,7 +94,7 @@ final class SchemaValidatorTest extends TestCase {
 
     // A numeric-string value stays valid: values are compared as strings.
     $this->assertSame([], $validator->validate(['flag' => '1']));
-    $this->assertContains('Question "flag": value "2" is not one of: 0, 1.', $validator->validate(['flag' => '2']));
+    $this->assertSame(['Question "flag": value "2" is not one of: 0, 1.'], $validator->validate(['flag' => '2']));
   }
 
   /**

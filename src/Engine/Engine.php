@@ -19,9 +19,10 @@ use DrevOps\Tui\Translation\Translator;
  * Orchestrates the question lifecycle generically over a configuration.
  *
  * For each configured field the engine resolves a value (supplied input, else
- * a value detected in update mode, else the field default), runs its
- * validator and transformer, then settles derived values, conditional
- * activation and fix-ups to a fixpoint. Precedence per field is
+ * a value detected in update mode, else the field default) and normalizes the
+ * supplied inputs through their transformers, then settles derived values,
+ * conditional activation and fix-ups to a fixpoint, and finally validates the
+ * active supplied inputs. Precedence per field is
  * input > detected > derived > default. It never knows what any field means:
  * all behaviour comes from the form declaration, with the reusable static
  * validate()/transform() of a consumer class (resolved by field id) as the
@@ -66,9 +67,10 @@ class Engine {
     $fields = $this->config->fields();
 
     [$values, $sources] = $this->resolveAll($fields, $inputs, $context);
+    $values = $this->transformInputs($fields, $values, $sources);
     [$rules, $pinned] = $this->deriveRules($fields, $sources);
     [$active, $values] = $this->stabilize($fields, $values, $rules, $pinned);
-    $values = $this->guardInputs($fields, $values, $sources, $active);
+    $this->guardInputs($fields, $values, $sources, $active);
 
     return Answers::forConfig($this->config, $this->activeAnswers($fields, $values, $active), $this->provenanceFor($fields, $sources, $active));
   }
@@ -126,9 +128,38 @@ class Engine {
   }
 
   /**
-   * Transform and validate the supplied inputs, throwing on the first error.
+   * Transform the supplied inputs so every later stage sees normalized values.
    *
-   * Only supplied inputs pass through the guards: defaults and derived values
+   * Normalization happens before stabilization: conditions, derivations and
+   * fix-ups must evaluate against the transformed value (e.g. a trimmed
+   * string), not the raw input. Only supplied inputs transform: defaults and
+   * derived values are the configuration's own, and discovered values were
+   * validated (with a default fallback) at detection time.
+   *
+   * @param \DrevOps\Tui\Config\Field[] $fields
+   *   The fields, in order.
+   * @param array<string,mixed> $values
+   *   The resolved values keyed by field id.
+   * @param array<string,\DrevOps\Tui\Engine\Source> $sources
+   *   The initial source per field id.
+   *
+   * @return array<string,mixed>
+   *   The values, with the supplied inputs transformed.
+   */
+  protected function transformInputs(array $fields, array $values, array $sources): array {
+    foreach ($fields as $field) {
+      if ($sources[$field->id] === Source::Input) {
+        $values[$field->id] = $this->transformValue($field, $values[$field->id]);
+      }
+    }
+
+    return $values;
+  }
+
+  /**
+   * Validate the active supplied inputs, throwing on the first error.
+   *
+   * Only supplied inputs pass through the guard: defaults and derived values
    * are the configuration's own, and discovered values were validated (with a
    * default fallback) at detection time.
    *
@@ -141,13 +172,10 @@ class Engine {
    * @param array<string,bool> $active
    *   The active map.
    *
-   * @return array<string,mixed>
-   *   The values, with the supplied inputs transformed.
-   *
    * @throws \DrevOps\Tui\Engine\EngineException
    *   When a supplied input fails its type, bounds, validator or options.
    */
-  protected function guardInputs(array $fields, array $values, array $sources, array $active): array {
+  protected function guardInputs(array $fields, array $values, array $sources, array $active): void {
     foreach ($fields as $field) {
       if (!($active[$field->id] ?? FALSE)) {
         continue;
@@ -155,8 +183,6 @@ class Engine {
       if ($sources[$field->id] !== Source::Input) {
         continue;
       }
-      // Transform first so validation sees the normalized value.
-      $values[$field->id] = $this->transformValue($field, $values[$field->id]);
 
       $error = $this->validateValue($field, $values[$field->id]);
       if ($error !== NULL) {
@@ -166,8 +192,6 @@ class Engine {
         ]));
       }
     }
-
-    return $values;
   }
 
   /**

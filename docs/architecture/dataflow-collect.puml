@@ -1,6 +1,6 @@
 @startuml
 ' drevops/tui - data flow for headless collection.
-' Traced from src/Engine/Engine.php (collect -> resolveAll -> stabilize -> guardInputs).
+' Traced from src/Engine/Engine.php (collect -> resolveAll -> transformInputs -> stabilize -> guardInputs).
 ' Regenerate every SVG with:  plantuml -tsvg docs/architecture/*.puml
 !theme plain
 skinparam backgroundColor white
@@ -34,6 +34,12 @@ loop each field, in order
   note right of Eng: input > discovered > declared default > static default
 end
 
+loop each field with a supplied input
+  Eng -> B: transform(value)
+  B --> Eng: normalized value
+  note right of Eng: inputs normalize first, so derivation,\nactivation and fix-ups see the final value
+end
+
 Eng -> Der: derive(rules, values, pinned)
 activate Der
 Der --> Eng: derived values (fixpoint)
@@ -45,8 +51,6 @@ deactivate CE
 note right of Eng: apply fix-ups; repeat until stable
 
 loop each active field with a supplied input
-  Eng -> B: transform(value)
-  B --> Eng: normalized value
   Eng -> B: validate(value)
   B --> Eng: error or null
   note right of Eng: type and bounds checked first;\nthe first error throws

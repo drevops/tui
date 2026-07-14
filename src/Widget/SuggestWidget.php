@@ -70,7 +70,7 @@ class SuggestWidget extends AbstractWidget {
     }
 
     if ($keys->matches($key, Action::DeleteBack)) {
-      $this->buffer = substr($this->buffer, 0, -1);
+      $this->buffer = mb_substr($this->buffer, 0, -1, 'UTF-8');
       $this->resetFilterCursor();
 
       return;

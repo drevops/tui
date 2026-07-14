@@ -128,7 +128,7 @@ class MultiSelectWidget extends AbstractWidget {
     }
 
     if ($keys->matches($key, Action::DeleteBack)) {
-      $this->filter = substr($this->filter, 0, -1);
+      $this->filter = mb_substr($this->filter, 0, -1, 'UTF-8');
       $this->resetFilterCursor();
 
       return;
@@ -179,9 +179,9 @@ class MultiSelectWidget extends AbstractWidget {
    *   The matching option rows.
    */
   protected function filterOptions(string $needle): array {
-    $lower = mb_strtolower($needle);
+    $lower = mb_strtolower($needle, 'UTF-8');
 
-    return array_values(array_filter($this->options, static fn(Option $option): bool => $option->kind === OptionKind::Option && str_contains(mb_strtolower($option->label), $lower)));
+    return array_values(array_filter($this->options, static fn(Option $option): bool => $option->kind === OptionKind::Option && str_contains(mb_strtolower($option->label, 'UTF-8'), $lower)));
   }
 
   /**

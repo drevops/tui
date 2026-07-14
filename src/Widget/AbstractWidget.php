@@ -325,7 +325,7 @@ abstract class AbstractWidget implements WidgetInterface {
     $run = '';
     $run_matched = FALSE;
 
-    foreach (mb_str_split($label) as $index => $char) {
+    foreach (mb_str_split($label, 1, 'UTF-8') as $index => $char) {
       $is_matched = isset($matched[$index]);
 
       if ($run !== '' && $is_matched !== $run_matched) {

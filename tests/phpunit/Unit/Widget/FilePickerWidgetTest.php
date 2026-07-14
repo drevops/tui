@@ -419,24 +419,24 @@ final class FilePickerWidgetTest extends TestCase {
   }
 
   public function testDefaultsToWorkingDirectoryWhenStartEmpty(): void {
-    $scratch = dirname(__DIR__, 4) . '/.artifacts/tmp/filepicker-cwd';
-    if (!is_dir($scratch)) {
-      mkdir($scratch, 0777, TRUE);
-    }
+    $widget = new class($this->root . '/docs') extends FilePickerWidget {
 
-    $previous = (string) getcwd();
-    chdir($scratch);
+      public function __construct(protected string $directory) {
+        parent::__construct('');
+      }
 
-    try {
-      $widget = new FilePickerWidget('');
+      #[\Override]
+      protected function currentDirectory(): string {
+        return $this->directory;
+      }
 
-      // With no start the browser roots at the current working directory, so
-      // the breadcrumb is its basename.
-      $this->assertStringContainsString('filepicker-cwd', $this->render($widget));
-    }
-    finally {
-      chdir($previous);
-    }
+    };
+
+    // With no start the browser roots at the current working directory, so
+    // the breadcrumb is its basename and its entries are listed.
+    $view = $this->render($widget);
+    $this->assertStringContainsString('docs', $view);
+    $this->assertStringContainsString('guide.md', $view);
   }
 
   /**

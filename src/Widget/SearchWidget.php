@@ -32,7 +32,7 @@ class SearchWidget extends SelectWidget {
     $keys = $this->keys();
 
     if ($keys->matches($key, Action::DeleteBack)) {
-      $this->filter = substr($this->filter, 0, -1);
+      $this->filter = mb_substr($this->filter, 0, -1, 'UTF-8');
       $this->resetFilterCursor();
 
       return;

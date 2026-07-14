@@ -8,6 +8,7 @@ use DrevOps\Tui\Discovery\Dotenv;
 use DrevOps\Tui\Discovery\JsonValue;
 use DrevOps\Tui\Discovery\PathExists;
 use DrevOps\Tui\Discovery\Scan;
+use DrevOps\Tui\Discovery\ScanType;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
@@ -68,11 +69,11 @@ final class DiscoverSpecsTest extends TestCase {
   }
 
   public function testScan(): void {
-    $this->assertSame(['alpha', 'beta'], (new Scan('web/modules/custom', 'dir'))->discover($this->dir));
+    $this->assertSame(['alpha', 'beta'], (new Scan('web/modules/custom', ScanType::Dir))->discover($this->dir));
     $this->assertSame([], (new Scan('web/nope'))->discover($this->dir));
     // type=dir skips the file; type=file skips the directory.
-    $this->assertSame(['adir'], (new Scan('mixed', 'dir'))->discover($this->dir));
-    $this->assertSame(['afile.txt'], (new Scan('mixed', 'file'))->discover($this->dir));
+    $this->assertSame(['adir'], (new Scan('mixed', ScanType::Dir))->discover($this->dir));
+    $this->assertSame(['afile.txt'], (new Scan('mixed', ScanType::File))->discover($this->dir));
     $this->assertSame(['adir', 'afile.txt'], (new Scan('mixed'))->discover($this->dir));
   }
 
@@ -90,7 +91,7 @@ final class DiscoverSpecsTest extends TestCase {
     $this->assertSame(['dotenv' => 'TZ'], (new Dotenv('TZ'))->toArray());
     $this->assertSame(['json' => ['file' => 'composer.json', 'path' => 'name']], (new JsonValue('composer.json', 'name'))->toArray());
     $this->assertSame(['exists' => 'docker-compose.yml'], (new PathExists('docker-compose.yml'))->toArray());
-    $this->assertSame(['scan' => ['dir' => 'modules', 'type' => 'dir']], (new Scan('modules', 'dir'))->toArray());
+    $this->assertSame(['scan' => ['dir' => 'modules', 'type' => 'dir']], (new Scan('modules', ScanType::Dir))->toArray());
   }
 
 }

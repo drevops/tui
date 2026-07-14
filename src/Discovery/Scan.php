@@ -12,21 +12,14 @@ namespace DrevOps\Tui\Discovery;
 class Scan extends AbstractDiscover {
 
   /**
-   * The entry type to keep.
-   */
-  public readonly ScanType $type;
-
-  /**
    * Construct a scan discovery rule.
    *
    * @param string $dir
    *   The directory to scan, relative to the project directory.
-   * @param \DrevOps\Tui\Discovery\ScanType|string $type
-   *   The entry type to keep; a string value resolves through the enum, so a
-   *   typo fails at declaration time.
+   * @param \DrevOps\Tui\Discovery\ScanType $type
+   *   The entry type to keep.
    */
-  public function __construct(public readonly string $dir, ScanType|string $type = ScanType::Any) {
-    $this->type = $type instanceof ScanType ? $type : ScanType::from($type);
+  public function __construct(public readonly string $dir, public readonly ScanType $type = ScanType::Any) {
   }
 
   /**

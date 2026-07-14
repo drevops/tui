@@ -106,11 +106,11 @@ class ToggleWidget extends AbstractWidget {
    *   The typed character.
    */
   protected function applyChar(string $char): void {
-    $char = mb_strtolower($char);
+    $char = mb_strtolower($char, 'UTF-8');
 
     foreach ($this->values as $index => $value) {
       $label = $this->labels[$value] ?? $value;
-      if ($label !== '' && mb_strtolower(mb_substr($label, 0, 1)) === $char) {
+      if ($label !== '' && mb_strtolower(mb_substr($label, 0, 1, 'UTF-8'), 'UTF-8') === $char) {
         $this->cursor = $index;
 
         return;

@@ -37,7 +37,7 @@ class TextWidget extends AbstractWidget {
    */
   public function __construct(protected string $buffer = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL, protected array $completions = []) {
     parent::__construct($validate, $transform);
-    $this->cursor = mb_strlen($this->buffer);
+    $this->cursor = mb_strlen($this->buffer, 'UTF-8');
   }
 
   /**
@@ -89,7 +89,7 @@ class TextWidget extends AbstractWidget {
         $this->applyCompletion();
       }
       else {
-        $this->cursor = min(mb_strlen($this->buffer), $this->cursor + 1);
+        $this->cursor = min(mb_strlen($this->buffer, 'UTF-8'), $this->cursor + 1);
       }
 
       return;
@@ -113,8 +113,8 @@ class TextWidget extends AbstractWidget {
    *   The text to insert.
    */
   protected function insert(string $char): void {
-    $this->buffer = mb_substr($this->buffer, 0, $this->cursor) . $char . mb_substr($this->buffer, $this->cursor);
-    $this->cursor += mb_strlen($char);
+    $this->buffer = mb_substr($this->buffer, 0, $this->cursor, 'UTF-8') . $char . mb_substr($this->buffer, $this->cursor, NULL, 'UTF-8');
+    $this->cursor += mb_strlen($char, 'UTF-8');
   }
 
   /**
@@ -122,7 +122,7 @@ class TextWidget extends AbstractWidget {
    */
   protected function backspace(): void {
     if ($this->cursor > 0) {
-      $this->buffer = mb_substr($this->buffer, 0, $this->cursor - 1) . mb_substr($this->buffer, $this->cursor);
+      $this->buffer = mb_substr($this->buffer, 0, $this->cursor - 1, 'UTF-8') . mb_substr($this->buffer, $this->cursor, NULL, 'UTF-8');
       $this->cursor--;
     }
   }
@@ -139,17 +139,17 @@ class TextWidget extends AbstractWidget {
    *   The full candidate string, or NULL.
    */
   protected function bestMatch(): ?string {
-    if ($this->buffer === '' || $this->cursor !== mb_strlen($this->buffer)) {
+    if ($this->buffer === '' || $this->cursor !== mb_strlen($this->buffer, 'UTF-8')) {
       return NULL;
     }
 
     // Fold and measure by character, not byte, so non-ASCII candidates match
     // case-insensitively and the suffix never splits mid-character.
-    $needle = mb_strtolower($this->buffer);
-    $length = mb_strlen($this->buffer);
+    $needle = mb_strtolower($this->buffer, 'UTF-8');
+    $length = mb_strlen($this->buffer, 'UTF-8');
 
     foreach ($this->completions as $completion) {
-      if (mb_strlen($completion) > $length && str_starts_with(mb_strtolower($completion), $needle)) {
+      if (mb_strlen($completion, 'UTF-8') > $length && str_starts_with(mb_strtolower($completion, 'UTF-8'), $needle)) {
         return $completion;
       }
     }
@@ -166,7 +166,7 @@ class TextWidget extends AbstractWidget {
   protected function ghostSuffix(): string {
     $match = $this->bestMatch();
 
-    return $match === NULL ? '' : mb_substr($match, mb_strlen($this->buffer));
+    return $match === NULL ? '' : mb_substr($match, mb_strlen($this->buffer, 'UTF-8'), NULL, 'UTF-8');
   }
 
   /**
@@ -177,7 +177,7 @@ class TextWidget extends AbstractWidget {
 
     if ($match !== NULL) {
       $this->buffer = $match;
-      $this->cursor = mb_strlen($match);
+      $this->cursor = mb_strlen($match, 'UTF-8');
     }
   }
 
@@ -208,7 +208,7 @@ class TextWidget extends AbstractWidget {
     $suffix = $this->ghostSuffix();
     $ghost = $suffix === '' ? '' : $theme->ghost($suffix);
 
-    return mb_substr($this->buffer, 0, $this->cursor) . $theme->caret() . mb_substr($this->buffer, $this->cursor) . $ghost;
+    return mb_substr($this->buffer, 0, $this->cursor, 'UTF-8') . $theme->caret() . mb_substr($this->buffer, $this->cursor, NULL, 'UTF-8') . $ghost;
   }
 
 }

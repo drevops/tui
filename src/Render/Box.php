@@ -34,7 +34,7 @@ final class Box {
     $keys = ['tl', 'tr', 'bl', 'br', 'ml', 'mr', 'h', 'v'];
 
     if (!$unicode) {
-      return array_combine($keys, mb_str_split($style === Border::Double ? '++++++=|' : '++++++-|'));
+      return array_combine($keys, mb_str_split($style === Border::Double ? '++++++=|' : '++++++-|', 1, 'UTF-8'));
     }
 
     $set = match ($style) {
@@ -43,7 +43,7 @@ final class Box {
       Border::None, Border::Line => '┌┐└┘├┤─│',
     };
 
-    return array_combine($keys, mb_str_split($set));
+    return array_combine($keys, mb_str_split($set, 1, 'UTF-8'));
   }
 
   /**
@@ -82,7 +82,7 @@ final class Box {
     $width = Ansi::width($content);
 
     if ($width > $inner_width) {
-      $content = mb_substr(Ansi::strip($content), 0, $inner_width);
+      $content = mb_substr(Ansi::strip($content), 0, $inner_width, 'UTF-8');
       $width = Ansi::width($content);
     }
 

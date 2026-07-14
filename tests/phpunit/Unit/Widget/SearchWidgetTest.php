@@ -80,6 +80,19 @@ final class SearchWidgetTest extends TestCase {
     $this->assertSame('gha', $widget->value());
   }
 
+  public function testBackspaceRemovesWholeMultibyteCharacter(): void {
+    $widget = new SearchWidget($this->labels);
+
+    // One backspace removes the whole multibyte character, not one byte, so
+    // the cleared filter shows every option again instead of matching nothing.
+    $widget->handle(Key::char('é'));
+    $widget->handle(Key::named(KeyName::Backspace));
+    $widget->handle(Key::named(KeyName::Enter));
+
+    $this->assertTrue($widget->isComplete());
+    $this->assertSame('gha', $widget->value());
+  }
+
   public function testSpaceIsPartOfTheQuery(): void {
     $widget = new SearchWidget($this->labels);
 

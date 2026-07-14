@@ -191,7 +191,7 @@ class CalendarWidget extends AbstractWidget {
    */
   protected function heading(ThemeInterface $theme): string {
     $title = Translator::t($this->cursor->format('F')) . ' ' . $this->cursor->format('Y');
-    $left = max(0, intdiv(self::GRID_WIDTH - mb_strlen($title), 2));
+    $left = max(0, intdiv(self::GRID_WIDTH - mb_strlen($title, 'UTF-8'), 2));
 
     return str_repeat(' ', $left) . $theme->title($title);
   }

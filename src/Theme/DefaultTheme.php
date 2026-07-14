@@ -711,7 +711,7 @@ class DefaultTheme implements ThemeInterface {
    */
   protected function renderSummaryLine(string $summary, bool $selected): string {
     $max = max(1, $this->width - 4);
-    $clipped = mb_strlen($summary) > $max ? mb_substr($summary, 0, $max - 1) . '…' : $summary;
+    $clipped = mb_strlen($summary, 'UTF-8') > $max ? mb_substr($summary, 0, $max - 1, 'UTF-8') . '…' : $summary;
 
     return '    ' . $this->value($clipped, $selected);
   }
@@ -1016,7 +1016,7 @@ class DefaultTheme implements ThemeInterface {
    *   The two-line themed header.
    */
   protected function renderEditorHeader(string $label): string {
-    $underline = str_repeat($this->unicode ? '─' : '-', max(1, mb_strlen($label)));
+    $underline = str_repeat($this->unicode ? '─' : '-', max(1, mb_strlen($label, 'UTF-8')));
 
     return $this->title($label) . "\n" . $this->rule($underline);
   }

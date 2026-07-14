@@ -54,7 +54,7 @@ final class Ansi {
    *   The visible width.
    */
   public static function width(string $text): int {
-    return mb_strlen(self::strip($text));
+    return mb_strlen(self::strip($text), 'UTF-8');
   }
 
   /**
