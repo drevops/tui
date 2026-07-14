@@ -27,12 +27,19 @@ final readonly class NumberBounds {
    *   The inclusive maximum, or NULL for an open upper bound.
    * @param int|null $step
    *   The Up/Down increment, or NULL to step by one.
+   *
+   * @throws \DrevOps\Tui\Config\ConfigException
+   *   When both bounds are declared and the minimum exceeds the maximum -
+   *   mirroring the {@see DateBounds} constructor guard.
    */
   public function __construct(
     public ?int $min = NULL,
     public ?int $max = NULL,
     public ?int $step = NULL,
   ) {
+    if ($this->min !== NULL && $this->max !== NULL && $this->min > $this->max) {
+      throw new ConfigException(sprintf('Number bounds declare a minimum of %d above the maximum of %d.', $this->min, $this->max));
+    }
   }
 
   /**

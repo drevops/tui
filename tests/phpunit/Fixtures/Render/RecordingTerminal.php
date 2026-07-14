@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\Tui\Tests\Unit\Render;
+namespace DrevOps\Tui\Tests\Fixtures\Render;
 
 use DrevOps\Tui\Render\Terminal;
 

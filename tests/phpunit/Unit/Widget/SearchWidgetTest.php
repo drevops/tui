@@ -4,16 +4,21 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Tests\Unit\Widget;
 
-use DrevOps\Tui\Input\ArrayKeyStream;
 use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Render\Ansi;
+use DrevOps\Tui\Testing\ArrayKeyStream;
+use DrevOps\Tui\Testing\WidgetRunner;
+use DrevOps\Tui\Tests\Traits\AssertsPagingTrait;
 use DrevOps\Tui\Tests\Traits\MixedOptionsTrait;
 use DrevOps\Tui\Theme\DefaultTheme;
-use DrevOps\Tui\Widget\ChoiceListTrait;
+use DrevOps\Tui\Widget\Capability\FilterCapableTrait;
+use DrevOps\Tui\Widget\Capability\OptionsCapableTrait;
+use DrevOps\Tui\Widget\Capability\SearchCapableTrait;
+use DrevOps\Tui\Widget\Capability\PagingCapableTrait;
 use DrevOps\Tui\Widget\SearchWidget;
-use DrevOps\Tui\Widget\WidgetRunner;
+use DrevOps\Tui\Widget\Capability\SelectionCapableTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -22,10 +27,15 @@ use PHPUnit\Framework\TestCase;
  * Tests the search widget.
  */
 #[CoversClass(SearchWidget::class)]
-#[CoversClass(ChoiceListTrait::class)]
+#[CoversClass(SelectionCapableTrait::class)]
+#[CoversClass(FilterCapableTrait::class)]
+#[CoversClass(SearchCapableTrait::class)]
+#[CoversClass(OptionsCapableTrait::class)]
+#[CoversClass(PagingCapableTrait::class)]
 #[Group('widget')]
 final class SearchWidgetTest extends TestCase {
 
+  use AssertsPagingTrait;
   use MixedOptionsTrait;
 
   /**
@@ -76,6 +86,19 @@ final class SearchWidgetTest extends TestCase {
     $this->assertSame('gha', $widget->value());
   }
 
+  public function testBackspaceRemovesWholeMultibyteCharacter(): void {
+    $widget = new SearchWidget($this->labels);
+
+    // One backspace removes the whole multibyte character, not one byte, so
+    // the cleared filter shows every option again instead of matching nothing.
+    $widget->handle(Key::char('é'));
+    $widget->handle(Key::named(KeyName::Backspace));
+    $widget->handle(Key::named(KeyName::Enter));
+
+    $this->assertTrue($widget->isComplete());
+    $this->assertSame('gha', $widget->value());
+  }
+
   public function testSpaceIsPartOfTheQuery(): void {
     $widget = new SearchWidget($this->labels);
 
@@ -93,6 +116,7 @@ final class SearchWidgetTest extends TestCase {
     $this->assertStringContainsString('c█', $view);
     $this->assertStringContainsString('CircleCI', $view);
     $this->assertStringNotContainsString('None', $view);
+    $this->assertSame('c', $widget->filter());
   }
 
   public function testCancel(): void {
@@ -203,33 +227,11 @@ final class SearchWidgetTest extends TestCase {
   }
 
   public function testRejectsNonPositivePageSize(): void {
-    $this->expectException(\InvalidArgumentException::class);
-    $this->expectExceptionMessage('Page size must be a positive integer, -2 given.');
-
-    new SearchWidget(['a' => 'A'], pageSize: -2);
+    $this->assertRejectsNonPositivePageSize(static fn(int $size): SearchWidget => new SearchWidget(['a' => 'A'], page_size: $size), -2);
   }
 
   public function testPagesLongOptionList(): void {
-    $widget = new SearchWidget(['a' => 'Apple', 'b' => 'Banana', 'c' => 'Cherry', 'd' => 'Date'], pageSize: 2);
-
-    $view = Ansi::strip($widget->view(new DefaultTheme()));
-
-    $this->assertStringContainsString('Apple', $view);
-    $this->assertStringContainsString('Banana', $view);
-    $this->assertStringNotContainsString('Cherry', $view);
-    $this->assertStringContainsString('▼', $view);
-  }
-
-  public function testPagingFollowsCursorDownTheList(): void {
-    $widget = new SearchWidget(['a' => 'Apple', 'b' => 'Banana', 'c' => 'Cherry', 'd' => 'Date'], pageSize: 2);
-
-    $widget->handle(Key::named(KeyName::Down));
-    $widget->handle(Key::named(KeyName::Down));
-    $view = Ansi::strip($widget->view(new DefaultTheme()));
-
-    $this->assertStringContainsString('Cherry', $view);
-    $this->assertStringContainsString('▲', $view);
-    $this->assertStringNotContainsString('Apple', $view);
+    $this->assertPagesAndFollowsCursor(static fn(int $size): SearchWidget => new SearchWidget(self::pagingOptions(), page_size: $size));
   }
 
   public function testHints(): void {

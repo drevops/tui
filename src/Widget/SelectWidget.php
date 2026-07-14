@@ -4,25 +4,25 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Widget;
 
-use DrevOps\Tui\Config\OptionKind;
-use DrevOps\Tui\Input\Action;
-use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Widget\Capability\OptionsCapableInterface;
+use DrevOps\Tui\Widget\Capability\OptionsCapableTrait;
+use DrevOps\Tui\Widget\Capability\PagingCapableInterface;
+use DrevOps\Tui\Widget\Capability\PagingCapableTrait;
+use DrevOps\Tui\Widget\Capability\SelectionCapableInterface;
+use DrevOps\Tui\Widget\Capability\SelectionCapableTrait;
 
 /**
  * A single-choice radio list.
  *
  * @package DrevOps\Tui\Widget
  */
-class SelectWidget extends AbstractWidget {
+class SelectWidget extends AbstractWidget implements OptionsCapableInterface, SelectionCapableInterface, PagingCapableInterface {
 
-  use ChoiceListTrait;
-
-  /**
-   * The highlighted option index.
-   */
-  protected int $cursor = 0;
+  use OptionsCapableTrait;
+  use SelectionCapableTrait;
+  use PagingCapableTrait;
 
   /**
    * Construct a select widget.
@@ -36,110 +36,38 @@ class SelectWidget extends AbstractWidget {
    *   Optional validator (see AbstractWidget).
    * @param \Closure|null $transform
    *   Optional transformer (see AbstractWidget).
-   * @param int|null $pageSize
+   * @param int|null $page_size
    *   The number of option rows shown at once before the list pages; NULL uses
    *   the default.
    */
-  public function __construct(array $options, string $default = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL, ?int $pageSize = NULL) {
+  public function __construct(array $options, string $default = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL, ?int $page_size = NULL) {
     parent::__construct($validate, $transform);
-    $this->initOptions($options);
-    $this->cursor = $this->cursorForDefault($this->options, $default);
-    $this->pageSize = $this->resolvePageSize($pageSize);
+    $this->initSingleChoice($options, $default);
+    $this->pageSize = $this->resolvePageSize($page_size);
   }
 
   /**
    * {@inheritdoc}
    */
   public function handle(Key $key): void {
-    $keys = $this->keys();
-
-    if ($this->handleCancel($key)) {
-      return;
-    }
-
-    if ($keys->matches($key, Action::MoveUp)) {
-      $this->cursor = $this->stepCursor($this->options, $this->cursor, -1);
-
-      return;
-    }
-
-    if ($keys->matches($key, Action::MoveDown)) {
-      $this->cursor = $this->stepCursor($this->options, $this->cursor, 1);
-
-      return;
-    }
-
-    if ($keys->matches($key, Action::Accept) && $this->currentSelectable()) {
-      $this->accept($this->liveValue());
-    }
+    $this->handleSingleChoiceKey($key);
   }
 
   /**
-   * Whether the highlighted row is a selectable option.
+   * The rows currently shown: a plain select shows every declared row.
    *
-   * @return bool
-   *   TRUE when the cursor rests on a selectable option.
+   * @return list<\DrevOps\Tui\Config\Option>
+   *   The visible rows.
    */
-  protected function currentSelectable(): bool {
-    return ($this->options[$this->cursor] ?? NULL)?->selectable() ?? FALSE;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function liveValue(): mixed {
-    return $this->currentSelectable() ? $this->options[$this->cursor]->value : '';
+  public function visible(): array {
+    return $this->options;
   }
 
   /**
    * {@inheritdoc}
    */
   public function view(ThemeInterface $theme): string {
-    $lines = [];
-
-    $viewport = $this->pageViewport(count($this->options), $this->cursor);
-
-    if ($viewport->has_above) {
-      $lines[] = $theme->indicator('  ' . $theme->indicatorUp());
-    }
-
-    foreach (array_slice($this->options, $viewport->offset, $this->pageSize) as $slot => $option) {
-      $index = $viewport->offset + $slot;
-
-      if ($option->kind === OptionKind::Heading) {
-        $lines[] = $this->renderHeadingRow($theme, $option);
-
-        continue;
-      }
-
-      if ($option->kind === OptionKind::Separator) {
-        $lines[] = $this->renderSeparatorRow($theme);
-
-        continue;
-      }
-
-      if ($option->disabled) {
-        $lines[] = $theme->radio(FALSE) . ' ' . $this->renderDisabledLabel($theme, $option);
-
-        continue;
-      }
-
-      $lines[] = $this->renderRadioRow($theme, $option->label, $index === $this->cursor);
-    }
-
-    if ($viewport->has_below) {
-      $lines[] = $theme->indicator('  ' . $theme->indicatorDown());
-    }
-
-    return implode("\n", $lines);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  #[\Override]
-  public function hints(): array {
-    return [new Hint('move', Action::MoveUp, Action::MoveDown), ...parent::hints()];
+    return $this->renderChoiceList($theme);
   }
 
 }

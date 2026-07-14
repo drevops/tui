@@ -2,17 +2,20 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\Tui\Input;
+namespace DrevOps\Tui\Testing;
+
+use DrevOps\Tui\Input\Key;
+use DrevOps\Tui\Input\KeyName;
 
 /**
  * Encodes a key into the terminal bytes a KeyParser decodes back into it.
  *
- * The inverse of {@see KeyParser}: it turns a Key into the canonical byte
- * sequence a real terminal would emit for that keypress, so scripted input can
- * be pushed onto a terminal's input pipe and read back through the production
- * parser.
+ * The inverse of {@see \DrevOps\Tui\Input\KeyParser}: it turns a Key into the
+ * canonical byte sequence a real terminal would emit for that keypress, so
+ * scripted input can be delivered through a terminal's read() and decoded
+ * back by the production parser.
  *
- * @package DrevOps\Tui\Input
+ * @package DrevOps\Tui\Testing
  */
 final class KeyEncoder {
 

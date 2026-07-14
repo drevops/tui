@@ -45,7 +45,7 @@ $form = Form::create('Key bindings demo')
       'design' => 'Designer',
     ]);
     $p->confirm('newsletter', 'Subscribe?')->default(TRUE);
-    $p->multiselect('langs', 'Languages')->options([
+    $p->multiSelect('langs', 'Languages')->options([
       'php' => 'PHP',
       'js' => 'JavaScript',
       'go' => 'Go',

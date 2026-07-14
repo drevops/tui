@@ -182,12 +182,6 @@ final class ThemeRenderTest extends TestCase {
     $this->assertStringNotContainsString('Version', Ansi::strip($this->theme()->renderBanner('LOGO', '')));
   }
 
-  public function testItemCount(): void {
-    $panel = new Panel('p', 'P', '', [new Field('a', 'A', '', FieldType::Text, '')], [new Panel('s', 'S', '')]);
-
-    $this->assertSame(2, $this->theme()->itemCount($panel));
-  }
-
   public function testHintsLineIsThemed(): void {
     $line = (new DefaultTheme())->renderHints(KeyMapManager::create()->navigation(), new Hint('move', Action::MoveUp, Action::MoveDown));
 
@@ -330,7 +324,7 @@ final class ThemeRenderTest extends TestCase {
   }
 
   /**
-   * A colourless theme of fixed width for stable assertions.
+   * A colourless theme of fixed width.
    *
    * @return \DrevOps\Tui\Theme\DefaultTheme
    *   The theme.

@@ -6,6 +6,7 @@ namespace DrevOps\Tui\Tests\Unit\Render;
 
 use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Render\Box;
+use DrevOps\Tui\Theme\Border;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
@@ -19,23 +20,23 @@ use PHPUnit\Framework\TestCase;
 final class BoxTest extends TestCase {
 
   #[DataProvider('dataProviderChars')]
-  public function testChars(string $style, bool $unicode, string $key, string $expected): void {
+  public function testChars(Border $style, bool $unicode, string $key, string $expected): void {
     $this->assertSame($expected, Box::chars($style, $unicode)[$key]);
   }
 
   public static function dataProviderChars(): \Iterator {
-    yield 'line top-left' => ['line', TRUE, 'tl', '┌'];
-    yield 'line horizontal' => ['line', TRUE, 'h', '─'];
-    yield 'line vertical' => ['line', TRUE, 'v', '│'];
-    yield 'line junction' => ['line', TRUE, 'ml', '├'];
-    yield 'rounded top-left' => ['rounded', TRUE, 'tl', '╭'];
-    yield 'rounded bottom-right' => ['rounded', TRUE, 'br', '╯'];
-    yield 'double top-left' => ['double', TRUE, 'tl', '╔'];
-    yield 'double horizontal' => ['double', TRUE, 'h', '═'];
-    yield 'ascii line corner' => ['line', FALSE, 'tl', '+'];
-    yield 'ascii line fill' => ['line', FALSE, 'h', '-'];
-    yield 'ascii line vertical' => ['line', FALSE, 'v', '|'];
-    yield 'ascii double fill' => ['double', FALSE, 'h', '='];
+    yield 'line top-left' => [Border::Line, TRUE, 'tl', '┌'];
+    yield 'line horizontal' => [Border::Line, TRUE, 'h', '─'];
+    yield 'line vertical' => [Border::Line, TRUE, 'v', '│'];
+    yield 'line junction' => [Border::Line, TRUE, 'ml', '├'];
+    yield 'rounded top-left' => [Border::Rounded, TRUE, 'tl', '╭'];
+    yield 'rounded bottom-right' => [Border::Rounded, TRUE, 'br', '╯'];
+    yield 'double top-left' => [Border::Double, TRUE, 'tl', '╔'];
+    yield 'double horizontal' => [Border::Double, TRUE, 'h', '═'];
+    yield 'ascii line corner' => [Border::Line, FALSE, 'tl', '+'];
+    yield 'ascii line fill' => [Border::Line, FALSE, 'h', '-'];
+    yield 'ascii line vertical' => [Border::Line, FALSE, 'v', '|'];
+    yield 'ascii double fill' => [Border::Double, FALSE, 'h', '='];
   }
 
   #[DataProvider('dataProviderRule')]

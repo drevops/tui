@@ -14,8 +14,10 @@ use DrevOps\Tui\Input\KeyMapManager;
 use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Render\Viewport;
 use DrevOps\Tui\Tests\Fixtures\Theme\AccentOptionTheme;
+use DrevOps\Tui\Theme\Border;
 use DrevOps\Tui\Theme\DefaultTheme;
-use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Theme\Mode;
+use DrevOps\Tui\Theme\Spacing;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
@@ -35,7 +37,7 @@ final class ThemeOptionsTest extends TestCase {
       new Panel('sub', 'Sub', 'panel help', [new Field('b', 'B', '', FieldType::Text, '')]),
     ]);
 
-    $theme = new DefaultTheme(40, ['color' => FALSE, 'spacing' => ThemeInterface::SPACING_COMPACT]);
+    $theme = new DefaultTheme(40, ['color' => FALSE, 'spacing' => Spacing::Compact]);
     [$lines] = $theme->renderBody($panel, new Answers(['b' => 'Beta'], []), 0);
     $body = Ansi::strip(implode("\n", $lines));
 
@@ -54,7 +56,7 @@ final class ThemeOptionsTest extends TestCase {
       new Field('b', 'B', '', FieldType::Text, ''),
     ]);
 
-    $theme = new DefaultTheme(40, ['color' => FALSE, 'spacing' => ThemeInterface::SPACING_PADDED]);
+    $theme = new DefaultTheme(40, ['color' => FALSE, 'spacing' => Spacing::Padded]);
     [$lines] = $theme->renderBody($panel, new Answers(), 0);
 
     // A blank line separates the two fields.
@@ -64,7 +66,7 @@ final class ThemeOptionsTest extends TestCase {
   }
 
   #[DataProvider('dataProviderBorderDrawsBox')]
-  public function testBorderDrawsBox(bool $unicode, string $border, string $expected): void {
+  public function testBorderDrawsBox(bool $unicode, Border $border, string $expected): void {
     $theme = new DefaultTheme(24, ['color' => FALSE, 'unicode' => $unicode, 'border' => $border]);
     $frame = $theme->renderFrame(['HEAD'], ['body'], ['FOOT'], new Viewport(0, FALSE, FALSE), 1);
 
@@ -75,15 +77,15 @@ final class ThemeOptionsTest extends TestCase {
   }
 
   public static function dataProviderBorderDrawsBox(): \Iterator {
-    yield 'line' => [TRUE, ThemeInterface::BORDER_LINE, '┌'];
-    yield 'rounded' => [TRUE, ThemeInterface::BORDER_ROUNDED, '╭'];
-    yield 'double' => [TRUE, ThemeInterface::BORDER_DOUBLE, '╔'];
-    yield 'ascii line corner' => [FALSE, ThemeInterface::BORDER_LINE, '+'];
-    yield 'ascii double fill' => [FALSE, ThemeInterface::BORDER_DOUBLE, '='];
+    yield 'line' => [TRUE, Border::Line, '┌'];
+    yield 'rounded' => [TRUE, Border::Rounded, '╭'];
+    yield 'double' => [TRUE, Border::Double, '╔'];
+    yield 'ascii line corner' => [FALSE, Border::Line, '+'];
+    yield 'ascii double fill' => [FALSE, Border::Double, '='];
   }
 
   public function testBorderedLinesAreExactlyOuterWidthAndClip(): void {
-    $theme = new DefaultTheme(12, ['color' => FALSE, 'border' => ThemeInterface::BORDER_LINE]);
+    $theme = new DefaultTheme(12, ['color' => FALSE, 'border' => Border::Line]);
 
     // Inner width is 12 - 4 = 8, so a 20-char body line must clip; every line
     // is exactly the outer width.
@@ -95,8 +97,8 @@ final class ThemeOptionsTest extends TestCase {
   }
 
   public function testPaddedBorderAddsInnerPadding(): void {
-    $padded = new DefaultTheme(20, ['color' => FALSE, 'spacing' => ThemeInterface::SPACING_PADDED, 'border' => ThemeInterface::BORDER_LINE]);
-    $plain = new DefaultTheme(20, ['color' => FALSE, 'border' => ThemeInterface::BORDER_LINE]);
+    $padded = new DefaultTheme(20, ['color' => FALSE, 'spacing' => Spacing::Padded, 'border' => Border::Line]);
+    $plain = new DefaultTheme(20, ['color' => FALSE, 'border' => Border::Line]);
 
     $args = [['H'], ['b'], ['F'], new Viewport(0, FALSE, FALSE), 1];
 
@@ -111,13 +113,13 @@ final class ThemeOptionsTest extends TestCase {
     $normal = explode("\n", Ansi::strip((new DefaultTheme(40, ['color' => FALSE]))->renderFrame(...$args)));
     $this->assertSame(['H', 'b', '', 'F'], $normal);
 
-    $compact = explode("\n", Ansi::strip((new DefaultTheme(40, ['color' => FALSE, 'spacing' => ThemeInterface::SPACING_COMPACT]))->renderFrame(...$args)));
+    $compact = explode("\n", Ansi::strip((new DefaultTheme(40, ['color' => FALSE, 'spacing' => Spacing::Compact]))->renderFrame(...$args)));
     $this->assertSame(['H', 'b', 'F'], $compact);
   }
 
   public function testEditorAdoptsBorder(): void {
     $plain = (new DefaultTheme(30, ['color' => FALSE]))->renderEditor('Name', 'Acme');
-    $boxed = (new DefaultTheme(30, ['color' => FALSE, 'border' => ThemeInterface::BORDER_LINE]))->renderEditor('Name', 'Acme');
+    $boxed = (new DefaultTheme(30, ['color' => FALSE, 'border' => Border::Line]))->renderEditor('Name', 'Acme');
 
     // Borderless keeps today's label-over-rule editor; a border boxes it.
     $this->assertStringContainsString("Name\n────", Ansi::strip($plain));
@@ -138,7 +140,7 @@ final class ThemeOptionsTest extends TestCase {
     $this->assertStringContainsString('accept', $plain->renderEditor('Name', 'body', [new Hint('accept', Action::Accept)], $keys));
 
     // Bordered: an empty hint list still closes the box with a single rule.
-    $boxed = new DefaultTheme(30, ['color' => FALSE, 'border' => ThemeInterface::BORDER_LINE]);
+    $boxed = new DefaultTheme(30, ['color' => FALSE, 'border' => Border::Line]);
     $frame = $boxed->renderEditor('Name', 'body', [], $keys);
     $this->assertStringNotContainsString('accept', $frame);
     $this->assertStringContainsString('body', Ansi::strip($frame));
@@ -149,10 +151,10 @@ final class ThemeOptionsTest extends TestCase {
 
     // The border is drawn in the mode's border colour - cyan in dark, blue in
     // light - not the editor-rule grey.
-    $dark = (new DefaultTheme(20, ['border' => ThemeInterface::BORDER_LINE]))->renderFrame(...$args);
+    $dark = (new DefaultTheme(20, ['border' => Border::Line]))->renderFrame(...$args);
     $this->assertStringContainsString("\033[36m", $dark);
 
-    $light = (new DefaultTheme(20, ['border' => ThemeInterface::BORDER_LINE, 'mode' => ThemeInterface::MODE_LIGHT]))->renderFrame(...$args);
+    $light = (new DefaultTheme(20, ['border' => Border::Line, 'mode' => Mode::Light]))->renderFrame(...$args);
     $this->assertStringContainsString("\033[34m", $light);
   }
 

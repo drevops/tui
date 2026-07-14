@@ -22,10 +22,10 @@ class AgentHelp {
    *
    * @param \DrevOps\Tui\Config\Config $config
    *   The configuration to describe.
-   * @param string $env_prefix
+   * @param string $envPrefix
    *   The prefix for per-question env variable names (e.g. "APP_").
    */
-  public function __construct(protected Config $config, protected string $env_prefix = '') {
+  public function __construct(protected Config $config, protected string $envPrefix = '') {
   }
 
   /**
@@ -42,9 +42,9 @@ class AgentHelp {
       Translator::t('- Pass --prompts with a JSON object (or a path to a JSON file) of answers keyed by question id; these take the highest precedence.'),
     ];
 
-    if ($this->env_prefix !== '') {
+    if ($this->envPrefix !== '') {
       $lines[] = Translator::t('- Set per-question environment variables named @prefix<ID> (the uppercased question id); these win over discovery but lose to --prompts.', [
-        '@prefix' => $this->env_prefix,
+        '@prefix' => $this->envPrefix,
       ]);
     }
 
@@ -85,7 +85,7 @@ class AgentHelp {
       $parts[] = Translator::t('step @step', ['@step' => $field->bounds->step]);
     }
 
-    return sprintf(' (%s)', implode(', ', $parts));
+    return $parts === [] ? '' : sprintf(' (%s)', implode(', ', $parts));
   }
 
   /**

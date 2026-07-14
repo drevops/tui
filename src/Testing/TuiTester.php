@@ -8,18 +8,17 @@ use DrevOps\Tui\Answers\Answers;
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Config\Config;
 use DrevOps\Tui\Input\Key;
-use DrevOps\Tui\Input\KeyEncoder;
 use DrevOps\Tui\Render\Ansi;
-use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Theme\Mode;
 use DrevOps\Tui\Tui;
 
 /**
  * Drives a form's interactive panel TUI from scripted keystrokes.
  *
- * The form-level companion to {@see \DrevOps\Tui\Widget\WidgetRunner}: it
- * pushes keystrokes onto a terminal's input pipe and runs the real panel
- * loop, so a consumer can assert on the collected answers and on what was
- * rendered - without a real TTY. Keystrokes are supplied as raw byte
+ * The form-level companion to {@see \DrevOps\Tui\Testing\WidgetRunner}: it
+ * feeds keystrokes through a scripted terminal's read() and runs the real
+ * panel loop, so a consumer can assert on the collected answers and on what
+ * was rendered - without a real TTY. Keystrokes are supplied as raw byte
  * strings (e.g. the output of a keystroke helper) and/or Key objects, which
  * are encoded to their canonical bytes.
  *
@@ -47,7 +46,7 @@ final class TuiTester {
    *
    * @var array<string,mixed>
    */
-  protected array $options = ['color' => FALSE, 'unicode' => TRUE, 'mode' => ThemeInterface::MODE_DARK];
+  protected array $options = ['color' => FALSE, 'unicode' => TRUE, 'mode' => Mode::Dark];
 
   /**
    * The theme name or class (empty selects the default theme).
@@ -174,7 +173,7 @@ final class TuiTester {
   }
 
   /**
-   * Run the form, pushing the given keystrokes onto the input pipe.
+   * Run the form, feeding it the given scripted keystrokes.
    *
    * @param string|\DrevOps\Tui\Input\Key ...$items
    *   The scripted input: each item is either raw keystroke bytes (a string,

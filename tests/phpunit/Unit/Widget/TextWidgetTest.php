@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Tests\Unit\Widget;
 
-use DrevOps\Tui\Input\ArrayKeyStream;
 use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
+use DrevOps\Tui\Testing\ArrayKeyStream;
+use DrevOps\Tui\Testing\WidgetRunner;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\AbstractWidget;
+use DrevOps\Tui\Widget\Capability\CompletionCapableTrait;
+use DrevOps\Tui\Widget\Capability\TextEditCapableTrait;
 use DrevOps\Tui\Widget\TextWidget;
-use DrevOps\Tui\Widget\WidgetRunner;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -21,6 +23,8 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass(TextWidget::class)]
 #[CoversClass(AbstractWidget::class)]
+#[CoversClass(TextEditCapableTrait::class)]
+#[CoversClass(CompletionCapableTrait::class)]
 #[CoversClass(WidgetRunner::class)]
 #[Group('widget')]
 final class TextWidgetTest extends TestCase {
@@ -72,6 +76,31 @@ final class TextWidgetTest extends TestCase {
 
     $widget->handle(Key::named(KeyName::Right));
     $this->assertStringContainsString('█', $widget->view(new DefaultTheme()));
+  }
+
+  public function testMultibyteEditingKeepsCharacterBoundaries(): void {
+    $widget = new TextWidget();
+
+    // One Backspace removes a whole multi-byte character, not one byte.
+    $widget->handle(Key::char('é'));
+    $widget->handle(Key::char('x'));
+    $widget->handle(Key::named(KeyName::Backspace));
+    $widget->handle(Key::named(KeyName::Backspace));
+    $this->assertSame('', $widget->value());
+
+    // Left moves over a whole character, so an insertion cannot split it.
+    $widget->handle(Key::char('é'));
+    $widget->handle(Key::named(KeyName::Left));
+    $widget->handle(Key::char('a'));
+    $this->assertSame('aé', $widget->value());
+  }
+
+  public function testBufferExposesTheLiveInput(): void {
+    $widget = new TextWidget('ab');
+
+    $widget->handle(Key::char('c'));
+
+    $this->assertSame('abc', $widget->buffer());
   }
 
   public function testCancel(): void {

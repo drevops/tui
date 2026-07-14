@@ -8,18 +8,24 @@ use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Widget\Capability\PagingCapableInterface;
+use DrevOps\Tui\Widget\Capability\PagingCapableTrait;
+use DrevOps\Tui\Widget\Capability\SearchCapableInterface;
+use DrevOps\Tui\Widget\Capability\TextEditCapableInterface;
 
 /**
  * An autocomplete text input fuzzy-filtering a fixed option set.
  *
  * @package DrevOps\Tui\Widget
  */
-class SuggestWidget extends AbstractWidget {
+class SuggestWidget extends AbstractWidget implements SearchCapableInterface, TextEditCapableInterface, PagingCapableInterface {
+
+  use PagingCapableTrait;
 
   /**
    * The highlighted suggestion index, or -1 for none.
    */
-  protected int $highlight = -1;
+  protected int $cursor = -1;
 
   /**
    * Construct a suggest widget.
@@ -32,13 +38,13 @@ class SuggestWidget extends AbstractWidget {
    *   Optional validator (see AbstractWidget).
    * @param \Closure|null $transform
    *   Optional transformer (see AbstractWidget).
-   * @param int|null $pageSize
+   * @param int|null $page_size
    *   The number of suggestions shown at once before the list pages; NULL uses
    *   the default.
    */
-  public function __construct(protected array $values, protected string $buffer = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL, ?int $pageSize = NULL) {
+  public function __construct(protected array $values, protected string $buffer = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL, ?int $page_size = NULL) {
     parent::__construct($validate, $transform);
-    $this->pageSize = $this->resolvePageSize($pageSize);
+    $this->pageSize = $this->resolvePageSize($page_size);
   }
 
   /**
@@ -58,42 +64,65 @@ class SuggestWidget extends AbstractWidget {
     }
 
     if ($keys->matches($key, Action::MoveDown)) {
-      $this->highlight = min(count($this->matches()) - 1, $this->highlight + 1);
+      $this->cursor = min(count($this->visible()) - 1, $this->cursor + 1);
 
       return;
     }
 
     if ($keys->matches($key, Action::MoveUp)) {
-      $this->highlight = max(-1, $this->highlight - 1);
+      $this->cursor = max(-1, $this->cursor - 1);
 
       return;
     }
 
     if ($keys->matches($key, Action::DeleteBack)) {
-      $this->buffer = substr($this->buffer, 0, -1);
-      $this->resetFilterCursor();
+      $this->backspace();
 
       return;
     }
 
     if ($keys->matches($key, Action::InsertSpace)) {
-      $this->buffer .= ' ';
-      $this->resetFilterCursor();
+      $this->insert(' ');
 
       return;
     }
 
     if ($key->isChar()) {
-      $this->buffer .= $key->char ?? '';
-      $this->resetFilterCursor();
+      $this->insert($key->char ?? '');
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buffer(): string {
+    return $this->buffer;
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * The buffer is append-only - the query grows at its end - so the text is
+   * added there and the suggestion highlight resets.
+   */
+  public function insert(string $text): void {
+    $this->buffer .= $text;
+    $this->resetFilterCursor();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function backspace(): void {
+    $this->buffer = mb_substr($this->buffer, 0, -1, 'UTF-8');
+    $this->resetFilterCursor();
   }
 
   /**
    * Reset the highlight and paging when the query changes.
    */
   protected function resetFilterCursor(): void {
-    $this->highlight = -1;
+    $this->cursor = -1;
     $this->offset = 0;
   }
 
@@ -103,7 +132,7 @@ class SuggestWidget extends AbstractWidget {
    * @return list<string>
    *   The matching suggestion values, most relevant first.
    */
-  protected function matches(): array {
+  protected function visible(): array {
     if ($this->buffer === '') {
       return $this->values;
     }
@@ -115,10 +144,10 @@ class SuggestWidget extends AbstractWidget {
    * {@inheritdoc}
    */
   protected function liveValue(): mixed {
-    if ($this->highlight >= 0) {
-      $matches = $this->matches();
+    if ($this->cursor >= 0) {
+      $visible = $this->visible();
 
-      return $matches[$this->highlight] ?? $this->buffer;
+      return $visible[$this->cursor] ?? $this->buffer;
     }
 
     return $this->buffer;
@@ -128,39 +157,31 @@ class SuggestWidget extends AbstractWidget {
    * {@inheritdoc}
    */
   public function view(ThemeInterface $theme): string {
-    $lines = [$this->buffer . $theme->caret()];
+    $visible = $this->visible();
+    $viewport = $this->pageViewport(count($visible), $this->cursor);
 
-    $matches = $this->matches();
-    $viewport = $this->pageViewport(count($matches), $this->highlight);
+    $rows = [];
 
-    if ($viewport->has_above) {
-      $lines[] = $theme->indicator('  ' . $theme->indicatorUp());
+    foreach (array_slice($visible, $viewport->offset, $this->pageSize) as $slot => $value) {
+      $current = $viewport->offset + $slot === $this->cursor;
+      $rows[] = $theme->marker($current) . ' ' . $this->renderMatchedLabel($theme, $value, $this->matchPositions($value), $current);
     }
 
-    foreach (array_slice($matches, $viewport->offset, $this->pageSize) as $slot => $value) {
-      $index = $viewport->offset + $slot;
-      $current = $index === $this->highlight;
-      $lines[] = $theme->marker($current) . ' ' . $this->renderMatchedLabel($theme, $value, $this->positionsFor($value), $current);
-    }
-
-    if ($viewport->has_below) {
-      $lines[] = $theme->indicator('  ' . $theme->indicatorDown());
-    }
-
-    return implode("\n", $lines);
+    return implode("\n", [$this->queryLine($theme), ...$this->wrapScrolled($theme, $rows, $viewport)]);
   }
 
   /**
-   * The matched-character positions in a suggestion under the current buffer.
-   *
-   * @param string $value
-   *   The suggestion value.
-   *
-   * @return list<int>
-   *   The matched indices, or an empty list when not filtering.
+   * {@inheritdoc}
    */
-  protected function positionsFor(string $value): array {
-    return $this->buffer === '' ? [] : $this->matcher()->positions($value, $this->buffer);
+  public function queryLine(ThemeInterface $theme): string {
+    return $this->buffer . $theme->caret();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function matchPositions(string $label): array {
+    return $this->buffer === '' ? [] : $this->matcher()->positions($label, $this->buffer);
   }
 
   /**

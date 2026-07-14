@@ -12,6 +12,9 @@ use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Widget\Capability\OptionsCapableInterface;
+use DrevOps\Tui\Widget\Capability\PagingCapableInterface;
+use DrevOps\Tui\Widget\Capability\PagingCapableTrait;
 
 /**
  * A ranking list: pick up the highlighted item and move it to reorder.
@@ -23,7 +26,9 @@ use DrevOps\Tui\Theme\ThemeInterface;
  *
  * @package DrevOps\Tui\Widget
  */
-class ReorderWidget extends AbstractWidget {
+class ReorderWidget extends AbstractWidget implements OptionsCapableInterface, PagingCapableInterface {
+
+  use PagingCapableTrait;
 
   /**
    * The items in their current arrangement.
@@ -55,13 +60,13 @@ class ReorderWidget extends AbstractWidget {
    *   Optional validator (see AbstractWidget).
    * @param \Closure|null $transform
    *   Optional transformer (see AbstractWidget).
-   * @param int|null $pageSize
+   * @param int|null $page_size
    *   The number of rows shown at once before the list pages; NULL uses the
    *   default.
    */
-  public function __construct(array $options, array $default = [], ?\Closure $validate = NULL, ?\Closure $transform = NULL, ?int $pageSize = NULL) {
+  public function __construct(array $options, array $default = [], ?\Closure $validate = NULL, ?\Closure $transform = NULL, ?int $page_size = NULL) {
     parent::__construct($validate, $transform);
-    $this->pageSize = $this->resolvePageSize($pageSize);
+    $this->pageSize = $this->resolvePageSize($page_size);
 
     $by_value = [];
     foreach (Option::list($options) as $row) {
@@ -150,27 +155,46 @@ class ReorderWidget extends AbstractWidget {
   }
 
   /**
+   * The rows currently shown: the full arrangement, in its current order.
+   *
+   * @return list<\DrevOps\Tui\Config\Option>
+   *   The visible rows.
+   */
+  public function visible(): array {
+    return $this->items;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function view(ThemeInterface $theme): string {
-    $lines = [];
+    $visible = $this->visible();
+    $viewport = $this->pageViewport(count($visible), $this->cursor);
 
-    $viewport = $this->pageViewport(count($this->items), $this->cursor);
+    $rows = [];
 
-    if ($viewport->has_above) {
-      $lines[] = $theme->indicator('  ' . $theme->indicatorUp());
+    foreach (array_slice($visible, $viewport->offset, $this->pageSize) as $slot => $option) {
+      $rows[] = $this->renderOptionRow($theme, $option, $viewport->offset + $slot === $this->cursor);
     }
 
-    foreach (array_slice($this->items, $viewport->offset, $this->pageSize) as $slot => $option) {
-      $current = $viewport->offset + $slot === $this->cursor;
-      $lines[] = $this->marker($theme, $current) . ' ' . $this->highlightLabel($theme, $option->label, $current);
-    }
+    return implode("\n", $this->wrapScrolled($theme, $rows, $viewport));
+  }
 
-    if ($viewport->has_below) {
-      $lines[] = $theme->indicator('  ' . $theme->indicatorDown());
-    }
-
-    return implode("\n", $lines);
+  /**
+   * Render one row: the marker cell and the (possibly held) item's label.
+   *
+   * @param \DrevOps\Tui\Theme\ThemeInterface $theme
+   *   The theme.
+   * @param \DrevOps\Tui\Config\Option $option
+   *   The item row.
+   * @param bool $current
+   *   Whether the row holds the cursor.
+   *
+   * @return string
+   *   The rendered row.
+   */
+  public function renderOptionRow(ThemeInterface $theme, Option $option, bool $current): string {
+    return $this->marker($theme, $current) . ' ' . $this->highlightLabel($theme, $option->label, $current);
   }
 
   /**

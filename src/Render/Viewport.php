@@ -16,15 +16,15 @@ final readonly class Viewport {
    *
    * @param int $offset
    *   The index of the first visible line.
-   * @param bool $has_above
+   * @param bool $hasAbove
    *   Whether there is content scrolled off above (▲).
-   * @param bool $has_below
+   * @param bool $hasBelow
    *   Whether there is content scrolled off below (▼).
    */
   public function __construct(
     public int $offset,
-    public bool $has_above,
-    public bool $has_below,
+    public bool $hasAbove,
+    public bool $hasBelow,
   ) {
   }
 

@@ -46,7 +46,7 @@ $form = Form::create('Site settings')
     // A nested sub-panel: rendered as a drillable row with a value summary.
     $p->panel('services', 'Services', function (PanelBuilder $sp): void {
       $sp->description('Optional backing services.');
-      $sp->multiselect('services', 'Enabled services')->options([
+      $sp->multiSelect('services', 'Enabled services')->options([
         'solr' => 'Solr',
         'redis' => 'Redis',
         'clamav' => 'ClamAV',

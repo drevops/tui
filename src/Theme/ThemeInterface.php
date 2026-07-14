@@ -24,58 +24,14 @@ use DrevOps\Tui\Input\ScopedKeyMap;
  * }
  * @endcode
  *
- * The option constants (MODE_*, SPACING_*, BORDER_*) are the values a consumer
- * passes in the theme options array. How the styled pieces are arranged into
- * rows and frames is the render*() layer on {@see DefaultTheme}.
+ * The {@see Mode}, {@see Spacing} and {@see Border} enums carry the display
+ * options a consumer passes in the theme options array (as enum cases or
+ * their string values). How the styled pieces are arranged into rows and
+ * frames is the render*() layer on {@see DefaultTheme}.
  *
  * @package DrevOps\Tui\Theme
  */
 interface ThemeInterface {
-
-  /**
-   * Colour mode: bright foregrounds for a dark terminal background.
-   */
-  public const string MODE_DARK = 'dark';
-
-  /**
-   * Colour mode: darker foregrounds for a light terminal background.
-   */
-  public const string MODE_LIGHT = 'light';
-
-  /**
-   * Spacing option: labels and values only, no descriptions, no gaps.
-   */
-  public const string SPACING_COMPACT = 'compact';
-
-  /**
-   * Spacing option: descriptions under each item, no gaps (the default).
-   */
-  public const string SPACING_NORMAL = 'normal';
-
-  /**
-   * Spacing option: descriptions plus a blank line between items.
-   */
-  public const string SPACING_PADDED = 'padded';
-
-  /**
-   * Border option: no box (the default).
-   */
-  public const string BORDER_NONE = 'none';
-
-  /**
-   * Border option: a single-line box.
-   */
-  public const string BORDER_LINE = 'line';
-
-  /**
-   * Border option: a single-line box with rounded corners.
-   */
-  public const string BORDER_ROUNDED = 'rounded';
-
-  /**
-   * Border option: a double-line box.
-   */
-  public const string BORDER_DOUBLE = 'double';
 
   /**
    * A heading or an editor label.

@@ -16,7 +16,8 @@ use DrevOps\Tui\Schema\SchemaGenerator;
 use DrevOps\Tui\Schema\SchemaValidator;
 use DrevOps\Tui\Render\PanelController;
 use DrevOps\Tui\Render\Terminal;
-use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Theme\DefaultTheme;
+use DrevOps\Tui\Theme\Mode;
 use DrevOps\Tui\Theme\ThemeManager;
 use DrevOps\Tui\Translation\Translator;
 
@@ -120,9 +121,8 @@ final class Tui {
    */
   public function collect(string $prompts = '', string $directory = '', bool $update = FALSE, string $version = ''): Answers {
     $inputs = (new InputResolver($this->envPrefix))->resolve($this->config->fields(), $prompts, getenv());
-    $this->engine->collect($inputs, $this->context($directory, $update, $version));
 
-    return $this->engine->answers();
+    return $this->engine->collect($inputs, $this->context($directory, $update, $version));
   }
 
   /**
@@ -179,16 +179,19 @@ final class Tui {
    *
    * @return \DrevOps\Tui\Render\PanelController
    *   The controller, ready to run against a terminal.
+   *
+   * @internal
+   *   Public for the {@see \DrevOps\Tui\Testing\TuiTester} harness; consumers
+   *   collect through run(), collect() or interact().
    */
   public function controller(array $options, string $theme = '', string $banner = '', string $version = '', string $directory = ''): PanelController {
-    $this->engine->collect([], $this->context($directory, FALSE, $version));
+    $answers = $this->engine->collect([], $this->context($directory, FALSE, $version));
 
     $banner_text = $banner !== '' ? $banner : $this->config->banner;
-    $answers = $this->engine->answers();
 
     return new PanelController(
       $this->config,
-      ThemeManager::create($this->resolveTheme($theme), 76, $options),
+      ThemeManager::create($this->resolveTheme($theme), DefaultTheme::DEFAULT_WIDTH, $options),
       $answers->values,
       $answers->provenance,
       $banner_text,
@@ -304,7 +307,7 @@ final class Tui {
     }
 
     if (!isset($options['mode'])) {
-      $options['mode'] = $options['color'] ? Terminal::detectMode($terminal->queryBackground()) : ThemeInterface::MODE_DARK;
+      $options['mode'] = $options['color'] ? Terminal::detectMode($terminal->queryBackground()) : Mode::Dark;
     }
 
     return $options;

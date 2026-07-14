@@ -4,30 +4,41 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Widget;
 
-use DrevOps\Tui\Config\OptionKind;
+use DrevOps\Tui\Config\Option;
 use DrevOps\Tui\Input\Action;
-use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Widget\Capability\FilterCapableInterface;
+use DrevOps\Tui\Widget\Capability\FilterCapableTrait;
+use DrevOps\Tui\Widget\Capability\OptionsCapableInterface;
+use DrevOps\Tui\Widget\Capability\OptionsCapableTrait;
+use DrevOps\Tui\Widget\Capability\PagingCapableInterface;
+use DrevOps\Tui\Widget\Capability\PagingCapableTrait;
+use DrevOps\Tui\Widget\Capability\SearchCapableInterface;
+use DrevOps\Tui\Widget\Capability\SearchCapableTrait;
+use DrevOps\Tui\Widget\Capability\SelectionCapableInterface;
+use DrevOps\Tui\Widget\Capability\SelectionCapableTrait;
 
 /**
  * A single-choice list with fuzzy type-to-filter over the option labels.
  *
+ * A radio list under a query line: printable characters narrow the list,
+ * ranked by fuzzy relevance, and the matched characters are highlighted.
+ *
  * @package DrevOps\Tui\Widget
  */
-class SearchWidget extends AbstractWidget {
+class SearchWidget extends AbstractWidget implements
+  OptionsCapableInterface,
+  SelectionCapableInterface,
+  FilterCapableInterface,
+  SearchCapableInterface,
+  PagingCapableInterface {
 
-  use ChoiceListTrait;
-
-  /**
-   * The current type-to-filter text.
-   */
-  protected string $filter = '';
-
-  /**
-   * The highlighted index within the visible (filtered) options.
-   */
-  protected int $cursor = 0;
+  use OptionsCapableTrait;
+  use SelectionCapableTrait;
+  use FilterCapableTrait;
+  use SearchCapableTrait;
+  use PagingCapableTrait;
 
   /**
    * Construct a search widget.
@@ -41,174 +52,61 @@ class SearchWidget extends AbstractWidget {
    *   Optional validator (see AbstractWidget).
    * @param \Closure|null $transform
    *   Optional transformer (see AbstractWidget).
-   * @param int|null $pageSize
+   * @param int|null $page_size
    *   The number of option rows shown at once before the list pages; NULL uses
    *   the default.
    */
-  public function __construct(array $options, string $default = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL, ?int $pageSize = NULL) {
+  public function __construct(array $options, string $default = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL, ?int $page_size = NULL) {
     parent::__construct($validate, $transform);
-    $this->initOptions($options);
-    $this->cursor = $this->cursorForDefault($this->options, $default);
-    $this->pageSize = $this->resolvePageSize($pageSize);
+    $this->initSingleChoice($options, $default);
+    $this->pageSize = $this->resolvePageSize($page_size);
   }
 
   /**
    * {@inheritdoc}
    */
   public function handle(Key $key): void {
-    $keys = $this->keys();
-
-    if ($this->handleCancel($key)) {
-      return;
-    }
-
-    if ($keys->matches($key, Action::Accept)) {
-      if ($this->currentSelectable()) {
-        $this->accept($this->liveValue());
-      }
-
-      return;
-    }
-
-    if ($keys->matches($key, Action::MoveUp)) {
-      $this->cursor = $this->stepCursor($this->visible(), $this->cursor, -1);
-
-      return;
-    }
-
-    if ($keys->matches($key, Action::MoveDown)) {
-      $this->cursor = $this->stepCursor($this->visible(), $this->cursor, 1);
-
-      return;
-    }
-
-    if ($keys->matches($key, Action::DeleteBack)) {
-      $this->filter = substr($this->filter, 0, -1);
-      $this->resetFilterCursor();
-
-      return;
-    }
-
-    if ($keys->matches($key, Action::InsertSpace)) {
+    // Space is part of the query, so it cannot double as a select key here.
+    if ($this->keys()->matches($key, Action::InsertSpace)) {
       $this->filter .= ' ';
       $this->resetFilterCursor();
 
       return;
     }
 
-    if ($key->isChar()) {
-      $this->filter .= $key->char ?? '';
-      $this->resetFilterCursor();
-    }
-  }
-
-  /**
-   * Land the cursor on the first match and reset paging on a query change.
-   */
-  protected function resetFilterCursor(): void {
-    $this->cursor = $this->firstSelectable($this->visible());
-    $this->offset = 0;
-  }
-
-  /**
-   * The rows currently visible under the filter.
-   *
-   * With no filter every row shows in declared order; once filtering, only
-   * matching options show, ranked by fuzzy relevance - structural headings and
-   * separators drop away so the result reads as a flat relevance list.
-   *
-   * @return list<\DrevOps\Tui\Config\Option>
-   *   The visible rows.
-   */
-  protected function visible(): array {
-    if ($this->filter === '') {
-      return $this->options;
+    if ($this->handleFilterKey($key)) {
+      return;
     }
 
-    return $this->matcher()->rankOptions($this->options, $this->filter);
+    $this->handleSingleChoiceKey($key);
   }
 
   /**
-   * Whether the highlighted visible row is a selectable option.
+   * Render one option row: the radio glyph and the match-highlighted label.
    *
-   * @return bool
-   *   TRUE when the cursor rests on a selectable option.
+   * @param \DrevOps\Tui\Theme\ThemeInterface $theme
+   *   The theme.
+   * @param \DrevOps\Tui\Config\Option $option
+   *   The option row.
+   * @param bool $current
+   *   Whether the row holds the cursor.
+   *
+   * @return string
+   *   The rendered row.
    */
-  protected function currentSelectable(): bool {
-    return ($this->visible()[$this->cursor] ?? NULL)?->selectable() ?? FALSE;
-  }
+  public function renderOptionRow(ThemeInterface $theme, Option $option, bool $current): string {
+    if ($option->disabled) {
+      return $theme->radio(FALSE) . ' ' . $this->renderDisabledLabel($theme, $option);
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function liveValue(): mixed {
-    return $this->currentSelectable() ? $this->visible()[$this->cursor]->value : '';
+    return $theme->radio($current) . ' ' . $this->renderMatchedLabel($theme, $option->label, $this->matchPositions($option->label), $current);
   }
 
   /**
    * {@inheritdoc}
    */
   public function view(ThemeInterface $theme): string {
-    $lines = [$this->filter . $theme->caret()];
-
-    $visible = $this->visible();
-    $viewport = $this->pageViewport(count($visible), $this->cursor);
-
-    if ($viewport->has_above) {
-      $lines[] = $theme->indicator('  ' . $theme->indicatorUp());
-    }
-
-    foreach (array_slice($visible, $viewport->offset, $this->pageSize) as $slot => $option) {
-      $index = $viewport->offset + $slot;
-
-      if ($option->kind === OptionKind::Heading) {
-        $lines[] = $this->renderHeadingRow($theme, $option);
-
-        continue;
-      }
-
-      if ($option->kind === OptionKind::Separator) {
-        $lines[] = $this->renderSeparatorRow($theme);
-
-        continue;
-      }
-
-      if ($option->disabled) {
-        $lines[] = $theme->radio(FALSE) . ' ' . $this->renderDisabledLabel($theme, $option);
-
-        continue;
-      }
-
-      $current = $index === $this->cursor;
-      $lines[] = $theme->radio($current) . ' ' . $this->renderMatchedLabel($theme, $option->label, $this->positionsFor($option->label), $current);
-    }
-
-    if ($viewport->has_below) {
-      $lines[] = $theme->indicator('  ' . $theme->indicatorDown());
-    }
-
-    return implode("\n", $lines);
-  }
-
-  /**
-   * The matched-character positions in a label under the current filter.
-   *
-   * @param string $label
-   *   The option label.
-   *
-   * @return list<int>
-   *   The matched indices, or an empty list when not filtering.
-   */
-  protected function positionsFor(string $label): array {
-    return $this->filter === '' ? [] : $this->matcher()->positions($label, $this->filter);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  #[\Override]
-  public function hints(): array {
-    return [new Hint('move', Action::MoveUp, Action::MoveDown), ...parent::hints()];
+    return $this->queryLine($theme) . "\n" . $this->renderChoiceList($theme);
   }
 
 }

@@ -4,16 +4,21 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Tests\Unit\Widget;
 
-use DrevOps\Tui\Input\ArrayKeyStream;
 use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Render\Ansi;
+use DrevOps\Tui\Testing\ArrayKeyStream;
+use DrevOps\Tui\Testing\WidgetRunner;
+use DrevOps\Tui\Tests\Traits\AssertsPagingTrait;
 use DrevOps\Tui\Tests\Traits\MixedOptionsTrait;
 use DrevOps\Tui\Theme\DefaultTheme;
-use DrevOps\Tui\Widget\ChoiceListTrait;
+use DrevOps\Tui\Widget\Capability\FilterCapableTrait;
+use DrevOps\Tui\Widget\Capability\OptionsCapableTrait;
+use DrevOps\Tui\Widget\Capability\SearchCapableTrait;
+use DrevOps\Tui\Widget\Capability\MultiSelectionCapableTrait;
 use DrevOps\Tui\Widget\MultiSearchWidget;
-use DrevOps\Tui\Widget\WidgetRunner;
+use DrevOps\Tui\Widget\Capability\PagingCapableTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -22,10 +27,15 @@ use PHPUnit\Framework\TestCase;
  * Tests the multi-search widget.
  */
 #[CoversClass(MultiSearchWidget::class)]
-#[CoversClass(ChoiceListTrait::class)]
+#[CoversClass(MultiSelectionCapableTrait::class)]
+#[CoversClass(FilterCapableTrait::class)]
+#[CoversClass(SearchCapableTrait::class)]
+#[CoversClass(OptionsCapableTrait::class)]
+#[CoversClass(PagingCapableTrait::class)]
 #[Group('widget')]
 final class MultiSearchWidgetTest extends TestCase {
 
+  use AssertsPagingTrait;
   use MixedOptionsTrait;
 
   /**
@@ -117,26 +127,7 @@ final class MultiSearchWidgetTest extends TestCase {
   }
 
   public function testPagesLongOptionList(): void {
-    $widget = new MultiSearchWidget(['a' => 'Apple', 'b' => 'Banana', 'c' => 'Cherry', 'd' => 'Date'], pageSize: 2);
-
-    $view = Ansi::strip($widget->view(new DefaultTheme()));
-
-    $this->assertStringContainsString('Apple', $view);
-    $this->assertStringContainsString('Banana', $view);
-    $this->assertStringNotContainsString('Cherry', $view);
-    $this->assertStringContainsString('▼', $view);
-  }
-
-  public function testPagingFollowsCursorDownTheList(): void {
-    $widget = new MultiSearchWidget(['a' => 'Apple', 'b' => 'Banana', 'c' => 'Cherry', 'd' => 'Date'], pageSize: 2);
-
-    $widget->handle(Key::named(KeyName::Down));
-    $widget->handle(Key::named(KeyName::Down));
-    $view = Ansi::strip($widget->view(new DefaultTheme()));
-
-    $this->assertStringContainsString('Cherry', $view);
-    $this->assertStringContainsString('▲', $view);
-    $this->assertStringNotContainsString('Apple', $view);
+    $this->assertPagesAndFollowsCursor(static fn(int $size): MultiSearchWidget => new MultiSearchWidget(self::pagingOptions(), page_size: $size));
   }
 
 }

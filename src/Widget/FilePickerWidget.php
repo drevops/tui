@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Widget;
 
+use DrevOps\Tui\Config\Field;
 use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\FilePickerMode;
 use DrevOps\Tui\Input\Action;
@@ -11,9 +12,12 @@ use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Render\Ansi;
-use DrevOps\Tui\Render\Scroller;
 use DrevOps\Tui\Theme\ThemeInterface;
 use DrevOps\Tui\Translation\Translator;
+use DrevOps\Tui\Widget\Capability\FilterCapableInterface;
+use DrevOps\Tui\Widget\Capability\PagingCapableInterface;
+use DrevOps\Tui\Widget\Capability\PagingCapableTrait;
+use DrevOps\Tui\Widget\Capability\RevealCapableInterface;
 
 /**
  * A filesystem browser that selects a path, or several in multiple mode.
@@ -29,12 +33,9 @@ use DrevOps\Tui\Translation\Translator;
  *
  * @package DrevOps\Tui\Widget
  */
-class FilePickerWidget extends AbstractWidget {
+class FilePickerWidget extends AbstractWidget implements FilterCapableInterface, RevealCapableInterface, PagingCapableInterface {
 
-  /**
-   * The number of entry rows shown at once before the list scrolls.
-   */
-  protected const int WINDOW = 10;
+  use PagingCapableTrait;
 
   /**
    * The start directory: where the browser opens and the floor it cannot pass.
@@ -71,16 +72,6 @@ class FilePickerWidget extends AbstractWidget {
   protected int $cursor = 0;
 
   /**
-   * The first visible entry index (the scroll offset).
-   */
-  protected int $offset = 0;
-
-  /**
-   * The scroller keeping the highlighted entry inside the window.
-   */
-  protected Scroller $scroller;
-
-  /**
    * Construct a file picker widget.
    *
    * @param string $start
@@ -103,6 +94,9 @@ class FilePickerWidget extends AbstractWidget {
    *   Optional validator (see AbstractWidget).
    * @param \Closure|null $transform
    *   Optional transformer (see AbstractWidget).
+   * @param int|null $page_size
+   *   The number of entry rows shown at once before the list pages; NULL uses
+   *   the default.
    */
   public function __construct(
     string $start = '',
@@ -113,12 +107,13 @@ class FilePickerWidget extends AbstractWidget {
     protected bool $multiple = FALSE,
     ?\Closure $validate = NULL,
     ?\Closure $transform = NULL,
+    ?int $page_size = NULL,
   ) {
     parent::__construct($validate, $transform);
 
-    $this->root = $this->trimTrailingSlash($start !== '' ? $start : (string) getcwd());
+    $this->root = $this->trimTrailingSlash($start !== '' ? $start : $this->currentDirectory());
     $this->cwd = $this->root;
-    $this->scroller = new Scroller();
+    $this->pageSize = $this->resolvePageSize($page_size);
 
     $this->extensions = array_values(array_filter(array_map(
       static fn(string $extension): string => strtolower(ltrim($extension, '.')),
@@ -178,7 +173,7 @@ class FilePickerWidget extends AbstractWidget {
 
     // Reveal doubles as the show-hidden toggle, mirroring the password reveal.
     if ($keys->matches($key, Action::Reveal)) {
-      $this->toggleHidden();
+      $this->toggleReveal();
 
       return;
     }
@@ -197,8 +192,23 @@ class FilePickerWidget extends AbstractWidget {
 
     if ($key->isChar()) {
       $this->filter .= $key->char ?? '';
-      $this->cursor = 0;
+      $this->resetFilterCursor();
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function filter(): string {
+    return $this->filter;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function resetFilterCursor(): void {
+    $this->cursor = 0;
+    $this->offset = 0;
   }
 
   /**
@@ -230,23 +240,15 @@ class FilePickerWidget extends AbstractWidget {
       $lines[] = $theme->description(Translator::t('(empty)'));
     }
 
-    $viewport = $this->scroller->compute(count($entries), self::WINDOW, $this->cursor, $this->offset);
-    $this->offset = $viewport->offset;
+    $viewport = $this->pageViewport(count($entries), $this->cursor);
 
-    if ($viewport->has_above) {
-      $lines[] = $theme->indicator('  ' . $theme->indicatorUp());
+    $rows = [];
+
+    foreach (array_slice($entries, $viewport->offset, $this->pageSize) as $slot => $name) {
+      $rows[] = $this->renderRow($theme, $name, $viewport->offset + $slot === $this->cursor);
     }
 
-    $last = min(count($entries), $viewport->offset + self::WINDOW);
-    for ($index = $viewport->offset; $index < $last; $index++) {
-      $lines[] = $this->renderRow($theme, $entries[$index], $index === $this->cursor);
-    }
-
-    if ($viewport->has_below) {
-      $lines[] = $theme->indicator('  ' . $theme->indicatorDown());
-    }
-
-    return implode("\n", $lines);
+    return implode("\n", array_merge($lines, $this->wrapScrolled($theme, $rows, $viewport)));
   }
 
   /**
@@ -275,7 +277,7 @@ class FilePickerWidget extends AbstractWidget {
    *   The default path or paths.
    */
   protected function seed(string|array $default): void {
-    $paths = is_array($default) ? array_values(array_filter($default, is_string(...))) : ($default === '' ? [] : [$default]);
+    $paths = is_array($default) ? Field::stringList($default) : ($default === '' ? [] : [$default]);
 
     if ($this->multiple) {
       foreach ($paths as $path) {
@@ -321,12 +323,27 @@ class FilePickerWidget extends AbstractWidget {
   }
 
   /**
+   * The directory the browser roots at when no start directory is declared.
+   *
+   * A seam so the fallback can come from somewhere other than the process
+   * working directory (e.g. a virtual filesystem).
+   *
+   * @return string
+   *   The current working directory.
+   */
+  protected function currentDirectory(): string {
+    // @codeCoverageIgnoreStart
+    return (string) getcwd();
+    // @codeCoverageIgnoreEnd
+  }
+
+  /**
    * Delete the last filter character, or ascend when the filter is empty.
    */
   protected function onBackspace(): void {
     if ($this->filter !== '') {
-      $this->filter = substr($this->filter, 0, -1);
-      $this->cursor = 0;
+      $this->filter = mb_substr($this->filter, 0, -1, 'UTF-8');
+      $this->resetFilterCursor();
 
       return;
     }
@@ -379,9 +396,12 @@ class FilePickerWidget extends AbstractWidget {
   }
 
   /**
-   * Toggle whether dot-entries are shown.
+   * {@inheritdoc}
+   *
+   * Toggles whether dot-entries are shown, landing back at the top of the
+   * refreshed listing.
    */
-  protected function toggleHidden(): void {
+  public function toggleReveal(): void {
     $this->showHidden = !$this->showHidden;
     $this->cursor = 0;
     $this->offset = 0;
@@ -588,7 +608,7 @@ class FilePickerWidget extends AbstractWidget {
    *   The spacer.
    */
   protected function blankBox(ThemeInterface $theme): string {
-    return str_repeat(' ', mb_strlen(Ansi::strip($theme->check(FALSE))));
+    return str_repeat(' ', mb_strlen(Ansi::strip($theme->check(FALSE)), 'UTF-8'));
   }
 
   /**

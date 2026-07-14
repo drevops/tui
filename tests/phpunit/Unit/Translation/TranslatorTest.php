@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Tests\Unit\Translation;
 
+use DrevOps\Tui\Tests\Traits\IsolatesEnvTrait;
 use DrevOps\Tui\Tests\Traits\ResetsTranslatorTrait;
 use DrevOps\Tui\Translation\Translator;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -18,7 +19,15 @@ use PHPUnit\Framework\TestCase;
 #[Group('tui')]
 final class TranslatorTest extends TestCase {
 
-  use ResetsTranslatorTrait;
+  use IsolatesEnvTrait;
+  use ResetsTranslatorTrait {
+    tearDown as translatorTearDown;
+  }
+
+  protected function tearDown(): void {
+    $this->restoreEnv();
+    $this->translatorTearDown();
+  }
 
   /**
    * The absolute path to a translation fixture directory.
@@ -61,16 +70,10 @@ final class TranslatorTest extends TestCase {
 
   #[DataProvider('dataProviderAuto')]
   public function testAuto(?string $lc_all, string $expected): void {
-    $restore = getenv('LC_ALL');
-    is_string($lc_all) ? putenv('LC_ALL=' . $lc_all) : putenv('LC_ALL');
+    $this->putEnv('LC_ALL', $lc_all);
 
-    try {
-      $translator = new Translator('auto', [$this->fixtures('translations')]);
-      $this->assertSame($expected, $translator->translate('Submit'));
-    }
-    finally {
-      is_string($restore) ? putenv('LC_ALL=' . $restore) : putenv('LC_ALL');
-    }
+    $translator = new Translator('auto', [$this->fixtures('translations')]);
+    $this->assertSame($expected, $translator->translate('Submit'));
   }
 
   public static function dataProviderAuto(): \Iterator {
@@ -80,20 +83,11 @@ final class TranslatorTest extends TestCase {
 
   #[DataProvider('dataProviderDetectLanguage')]
   public function testDetectLanguage(?string $lc_all, ?string $lc_messages, ?string $lang, string $expected): void {
-    $restore = [];
-    foreach (['LC_ALL' => $lc_all, 'LC_MESSAGES' => $lc_messages, 'LANG' => $lang] as $var => $value) {
-      $restore[$var] = getenv($var);
-      is_string($value) ? putenv($var . '=' . $value) : putenv($var);
-    }
+    $this->putEnv('LC_ALL', $lc_all);
+    $this->putEnv('LC_MESSAGES', $lc_messages);
+    $this->putEnv('LANG', $lang);
 
-    try {
-      $this->assertSame($expected, Translator::detectLanguage());
-    }
-    finally {
-      foreach ($restore as $var => $value) {
-        is_string($value) ? putenv($var . '=' . $value) : putenv($var);
-      }
-    }
+    $this->assertSame($expected, Translator::detectLanguage());
   }
 
   public static function dataProviderDetectLanguage(): \Iterator {

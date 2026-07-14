@@ -8,7 +8,6 @@ use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Binding;
 use DrevOps\Tui\Input\DefaultKeyMap;
-use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyMap;
 use DrevOps\Tui\Input\KeyMapManager;
@@ -16,6 +15,7 @@ use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Input\ScopedKeyMap;
 use DrevOps\Tui\Input\VimKeyMap;
+use DrevOps\Tui\Tests\Traits\ResetsRegistriesTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
@@ -26,7 +26,6 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass(Action::class)]
 #[CoversClass(Binding::class)]
-#[CoversClass(Hint::class)]
 #[CoversClass(Scope::class)]
 #[CoversClass(ScopedKeyMap::class)]
 #[CoversClass(KeyMap::class)]
@@ -35,6 +34,13 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(KeyMapManager::class)]
 #[Group('input')]
 final class KeyMapTest extends TestCase {
+
+  use ResetsRegistriesTrait;
+
+  protected function tearDown(): void {
+    $this->restoreRegistries();
+    parent::tearDown();
+  }
 
   #[DataProvider('dataProviderDefaultBindings')]
   public function testDefaultBindings(Scope $scope, Key $key, Action $action, bool $expected): void {
@@ -195,6 +201,7 @@ final class KeyMapTest extends TestCase {
   }
 
   public function testRegisterAndSelectByName(): void {
+    $this->snapshotRegistry(KeyMapManager::class);
     KeyMapManager::register('registered-vim', VimKeyMap::class);
 
     $map = KeyMapManager::create('registered-vim')->navigation();
@@ -243,13 +250,6 @@ final class KeyMapTest extends TestCase {
     $this->assertTrue($binding->scope->navigation);
     $this->assertSame(Action::Quit, $binding->action);
     $this->assertSame([KeyName::Escape, 'x'], $binding->keys);
-  }
-
-  public function testHintHoldsItsDeclaration(): void {
-    $hint = new Hint('none/all', Action::SelectNone, Action::SelectAll);
-
-    $this->assertSame('none/all', $hint->label);
-    $this->assertSame([Action::SelectNone, Action::SelectAll], $hint->actions);
   }
 
 }

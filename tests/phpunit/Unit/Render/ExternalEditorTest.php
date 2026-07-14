@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Tests\Unit\Render;
 
 use DrevOps\Tui\Render\ExternalEditor;
+use DrevOps\Tui\Tests\Fixtures\Render\RecordingTerminal;
+use DrevOps\Tui\Tests\Fixtures\Render\SpawnStubEditor;
+use DrevOps\Tui\Tests\Traits\IsolatesEnvTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
@@ -17,25 +20,10 @@ use PHPUnit\Framework\TestCase;
 #[Group('tui')]
 final class ExternalEditorTest extends TestCase {
 
-  /**
-   * The VISUAL value before the test, restored afterwards.
-   */
-  protected string|false $visual;
-
-  /**
-   * The EDITOR value before the test, restored afterwards.
-   */
-  protected string|false $editor;
-
-  protected function setUp(): void {
-    parent::setUp();
-    $this->visual = getenv('VISUAL');
-    $this->editor = getenv('EDITOR');
-  }
+  use IsolatesEnvTrait;
 
   protected function tearDown(): void {
-    $this->putEnv('VISUAL', $this->visual === FALSE ? NULL : $this->visual);
-    $this->putEnv('EDITOR', $this->editor === FALSE ? NULL : $this->editor);
+    $this->restoreEnv();
     parent::tearDown();
   }
 
@@ -165,18 +153,6 @@ final class ExternalEditorTest extends TestCase {
     yield 'interior newlines preserved' => ["a\n\nb\n", "a\n\nb"];
     yield 'no trailing newline unchanged' => ['plain', 'plain'];
     yield 'empty stays empty' => ['', ''];
-  }
-
-  /**
-   * Set or unset an environment variable.
-   *
-   * @param string $name
-   *   The variable name.
-   * @param string|null $value
-   *   The value, or NULL to unset.
-   */
-  protected function putEnv(string $name, ?string $value): void {
-    $value === NULL ? putenv($name) : putenv($name . '=' . $value);
   }
 
 }

@@ -16,10 +16,10 @@ class Scan extends AbstractDiscover {
    *
    * @param string $dir
    *   The directory to scan, relative to the project directory.
-   * @param string $type
-   *   The entry type to keep: "dir", "file" or "any".
+   * @param \DrevOps\Tui\Discovery\ScanType $type
+   *   The entry type to keep.
    */
-  public function __construct(public readonly string $dir, public readonly string $type = 'any') {
+  public function __construct(public readonly string $dir, public readonly ScanType $type = ScanType::Any) {
   }
 
   /**
@@ -48,10 +48,10 @@ class Scan extends AbstractDiscover {
         continue;
       }
       $path = $full . '/' . $entry;
-      if ($this->type === 'dir' && !is_dir($path)) {
+      if ($this->type === ScanType::Dir && !is_dir($path)) {
         continue;
       }
-      if ($this->type === 'file' && !is_file($path)) {
+      if ($this->type === ScanType::File && !is_file($path)) {
         continue;
       }
 
@@ -67,7 +67,7 @@ class Scan extends AbstractDiscover {
    * {@inheritdoc}
    */
   public function toArray(): array {
-    return ['scan' => ['dir' => $this->dir, 'type' => $this->type]];
+    return ['scan' => ['dir' => $this->dir, 'type' => $this->type->value]];
   }
 
 }

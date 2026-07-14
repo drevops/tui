@@ -35,23 +35,6 @@ final class KeyParserTest extends TestCase {
   }
 
   /**
-   * Describe a key for assertion.
-   *
-   * @param \DrevOps\Tui\Input\Key $key
-   *   The key.
-   *
-   * @return string
-   *   The description.
-   */
-  protected function describe(Key $key): string {
-    if ($key->isChar()) {
-      return 'char:' . ($key->char ?? '');
-    }
-
-    return $key->name instanceof KeyName ? $key->name->name : '?';
-  }
-
-  /**
    * Data provider for testParse().
    *
    * @return \Iterator<string,array{string,list<string>}>
@@ -78,12 +61,47 @@ final class KeyParserTest extends TestCase {
     yield 'bare escape' => ["\033", ['Escape']];
     yield 'escape then char' => ["\033x", ['Escape', 'char:x']];
     yield 'unknown csi degrades' => ["\033[Z", ['Escape']];
+    // Modifier parameters (Shift/Ctrl arrows) resolve to the unmodified key
+    // and never leak their parameter bytes as typed characters.
+    yield 'shift up' => ["\033[1;2A", ['Up']];
+    yield 'ctrl right' => ["\033[1;5C", ['Right']];
+    yield 'modified delete' => ["\033[3;5~", ['Delete']];
+    // SS3 (application cursor keys mode) mirrors the CSI finals.
+    yield 'ss3 up' => ["\033OA", ['Up']];
+    yield 'ss3 end' => ["\033OF", ['End']];
+    yield 'ss3 unknown degrades' => ["\033OZ", ['Escape']];
+    yield 'ss3 truncated degrades' => ["\033O", ['Escape']];
     yield 'mouse wheel up' => ["\033[<64;10;5M", ['MouseWheelUp']];
     yield 'mouse wheel down' => ["\033[<65;10;5M", ['MouseWheelDown']];
     yield 'mouse other ignored' => ["\033[<0;1;1M", []];
     yield 'combo' => ["a\033[Bb", ['char:a', 'Down', 'char:b']];
-    yield 'incomplete csi degrades' => ["\033[1", ['Escape', 'char:[', 'char:1']];
-    yield 'incomplete mouse degrades' => ["\033[<1", ['Escape', 'char:[', 'char:<', 'char:1']];
+    // A sequence truncated at a read boundary is swallowed whole rather than
+    // leaking its scanned prefix as typed characters.
+    yield 'truncated csi introducer degrades' => ["\033[", ['Escape']];
+    yield 'incomplete csi degrades' => ["\033[1", ['Escape']];
+    yield 'incomplete mouse degrades' => ["\033[<1", ['Escape']];
+    // A UTF-8 sequence is one typed character, not one key per byte.
+    yield 'multibyte char' => ['é', ['char:é']];
+    yield 'multibyte between ascii' => ['aéb', ['char:a', 'char:é', 'char:b']];
+    yield 'four byte emoji' => ['😀', ['char:😀']];
+    yield 'stray continuation byte stays a byte' => ["\x80", ["char:\x80"]];
+  }
+
+  /**
+   * Describe a key for assertion.
+   *
+   * @param \DrevOps\Tui\Input\Key $key
+   *   The key.
+   *
+   * @return string
+   *   The description.
+   */
+  protected function describe(Key $key): string {
+    if ($key->isChar()) {
+      return 'char:' . ($key->char ?? '');
+    }
+
+    return $key->name instanceof KeyName ? $key->name->name : '?';
   }
 
 }

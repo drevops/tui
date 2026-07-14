@@ -6,15 +6,16 @@ namespace DrevOps\Tui\Tests\Unit\Widget;
 
 use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\FilePickerMode;
-use DrevOps\Tui\Input\ArrayKeyStream;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyMapManager;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Render\Ansi;
+use DrevOps\Tui\Testing\ArrayKeyStream;
+use DrevOps\Tui\Testing\WidgetRunner;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\AbstractWidget;
 use DrevOps\Tui\Widget\FilePickerWidget;
-use DrevOps\Tui\Widget\WidgetRunner;
+use DrevOps\Tui\Widget\Capability\PagingCapableTrait;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
@@ -25,6 +26,7 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass(FilePickerWidget::class)]
 #[CoversClass(AbstractWidget::class)]
+#[CoversClass(PagingCapableTrait::class)]
 #[Group('widget')]
 final class FilePickerWidgetTest extends TestCase {
 
@@ -188,6 +190,7 @@ final class FilePickerWidgetTest extends TestCase {
     }
 
     // Only README.md contains "read".
+    $this->assertSame('read', $widget->filter());
     $this->assertSame($this->root . '/README.md', $widget->value());
     $this->assertStringContainsString('README.md', $this->render($widget));
 
@@ -419,11 +422,24 @@ final class FilePickerWidgetTest extends TestCase {
   }
 
   public function testDefaultsToWorkingDirectoryWhenStartEmpty(): void {
-    $widget = new FilePickerWidget('');
+    $widget = new class($this->root . '/docs') extends FilePickerWidget {
 
-    // With no start the browser roots at the current working directory, so the
-    // breadcrumb is its basename.
-    $this->assertStringContainsString(basename((string) getcwd()), $this->render($widget));
+      public function __construct(protected string $directory) {
+        parent::__construct('');
+      }
+
+      #[\Override]
+      protected function currentDirectory(): string {
+        return $this->directory;
+      }
+
+    };
+
+    // With no start the browser roots at the current working directory, so
+    // the breadcrumb is its basename and its entries are listed.
+    $view = $this->render($widget);
+    $this->assertStringContainsString('docs', $view);
+    $this->assertStringContainsString('guide.md', $view);
   }
 
   /**

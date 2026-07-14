@@ -8,15 +8,16 @@ use DrevOps\Tui\Answers\Answers;
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Builder\PanelBuilder;
 use DrevOps\Tui\Derive\Derive;
+use DrevOps\Tui\Engine\Engine;
+use DrevOps\Tui\Handler\HandlerRegistry;
 use DrevOps\Tui\Render\PanelController;
 use DrevOps\Tui\Render\Terminal;
 use DrevOps\Tui\Testing\BufferedTerminal;
+use DrevOps\Tui\Tests\Traits\IsolatesEnvTrait;
 use DrevOps\Tui\Tests\Traits\ResetsTranslatorTrait;
-use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Theme\Mode;
 use DrevOps\Tui\Translation\Translator;
 use DrevOps\Tui\Tui;
-use DrevOps\Tui\Engine\Engine;
-use DrevOps\Tui\Handler\HandlerRegistry;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
@@ -29,7 +30,15 @@ use PHPUnit\Framework\TestCase;
 #[Group('tui')]
 final class TuiTest extends TestCase {
 
-  use ResetsTranslatorTrait;
+  use IsolatesEnvTrait;
+  use ResetsTranslatorTrait {
+    tearDown as translatorTearDown;
+  }
+
+  protected function tearDown(): void {
+    $this->restoreEnv();
+    $this->translatorTearDown();
+  }
 
   public function testActivatesTranslator(): void {
     $this->assertNotInstanceOf(Translator::class, Translator::shared());
@@ -129,7 +138,7 @@ final class TuiTest extends TestCase {
   }
 
   public function testController(): void {
-    $controller = $this->tui()->controller(['color' => FALSE, 'unicode' => TRUE, 'mode' => ThemeInterface::MODE_DARK]);
+    $controller = $this->tui()->controller(['color' => FALSE, 'unicode' => TRUE, 'mode' => Mode::Dark]);
 
     $this->assertInstanceOf(PanelController::class, $controller);
     // The engine's resolved answers seed the controller.
@@ -168,30 +177,24 @@ final class TuiTest extends TestCase {
   }
 
   #[DataProvider('dataProviderResolveThemeOptionsDetectsMode')]
-  public function testResolveThemeOptionsDetectsMode(bool $color, ?string $osc, string $expected_mode): void {
-    $restore = getenv('COLORFGBG');
-    putenv('COLORFGBG');
+  public function testResolveThemeOptionsDetectsMode(bool $color, ?string $osc, Mode $expected_mode): void {
+    $this->putEnv('COLORFGBG', NULL);
 
-    try {
-      $tui = $this->colouredTui($color);
-      $options = (array) (new \ReflectionMethod($tui, 'resolveThemeOptions'))->invoke($tui, $this->terminalReturning($osc));
+    $tui = $this->colouredTui($color);
+    $options = (array) (new \ReflectionMethod($tui, 'resolveThemeOptions'))->invoke($tui, $this->terminalReturning($osc));
 
-      $this->assertSame($color, $options['color']);
-      $this->assertTrue($options['unicode']);
-      $this->assertSame($expected_mode, $options['mode']);
-    }
-    finally {
-      is_string($restore) ? putenv('COLORFGBG=' . $restore) : putenv('COLORFGBG');
-    }
+    $this->assertSame($color, $options['color']);
+    $this->assertTrue($options['unicode']);
+    $this->assertSame($expected_mode, $options['mode']);
   }
 
   public static function dataProviderResolveThemeOptionsDetectsMode(): \Iterator {
     // With colour on, the mode follows the terminal background.
-    yield 'colour on detects light' => [TRUE, "\033]11;rgb:ffff/ffff/ffff\007", 'light'];
-    yield 'colour on detects dark' => [TRUE, "\033]11;rgb:0000/0000/0000\007", 'dark'];
-    yield 'colour on no reply defaults dark' => [TRUE, NULL, 'dark'];
+    yield 'colour on detects light' => [TRUE, "\033]11;rgb:ffff/ffff/ffff\007", Mode::Light];
+    yield 'colour on detects dark' => [TRUE, "\033]11;rgb:0000/0000/0000\007", Mode::Dark];
+    yield 'colour on no reply defaults dark' => [TRUE, NULL, Mode::Dark];
     // With colour off, the background query is skipped and mode is dark.
-    yield 'colour off skips detection' => [FALSE, "\033]11;rgb:ffff/ffff/ffff\007", 'dark'];
+    yield 'colour off skips detection' => [FALSE, "\033]11;rgb:ffff/ffff/ffff\007", Mode::Dark];
   }
 
   public function testResolveThemeOptionsRespectsConsumerOptions(): void {

@@ -2,9 +2,11 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\Tui\Widget;
+namespace DrevOps\Tui\Widget\Capability;
 
 use DrevOps\Tui\Config\Option;
+use DrevOps\Tui\Config\OptionKind;
+use DrevOps\Tui\Render\Viewport;
 use DrevOps\Tui\Theme\ThemeInterface;
 
 /**
@@ -15,9 +17,9 @@ use DrevOps\Tui\Theme\ThemeInterface;
  * separators, headings and disabled options are skipped), and those
  * non-selectable rows render as visual-only structure.
  *
- * @package DrevOps\Tui\Widget
+ * @package DrevOps\Tui\Widget\Capability
  */
-trait ChoiceListTrait {
+trait OptionsCapableTrait {
 
   /**
    * The option rows in display order.
@@ -101,6 +103,86 @@ trait ChoiceListTrait {
     }
 
     return $from;
+  }
+
+  /**
+   * The rows the widget currently shows.
+   *
+   * @return list<\DrevOps\Tui\Config\Option>
+   *   The visible rows.
+   */
+  abstract public function visible(): array;
+
+  /**
+   * Render one option row.
+   *
+   * @param \DrevOps\Tui\Theme\ThemeInterface $theme
+   *   The theme.
+   * @param \DrevOps\Tui\Config\Option $option
+   *   The option row.
+   * @param bool $current
+   *   Whether the row holds the cursor.
+   *
+   * @return string
+   *   The rendered row.
+   */
+  abstract public function renderOptionRow(ThemeInterface $theme, Option $option, bool $current): string;
+
+  /**
+   * Render the visible rows as the widget's paged option-list body.
+   *
+   * @param \DrevOps\Tui\Theme\ThemeInterface $theme
+   *   The theme.
+   *
+   * @return string
+   *   The list body: one line per visible row, scroll-wrapped.
+   */
+  protected function renderChoiceList(ThemeInterface $theme): string {
+    $visible = $this->visible();
+    $viewport = $this->pageViewport(count($visible), $this->cursor);
+
+    return implode("\n", $this->renderListRows($theme, $visible, $viewport, fn(Option $option, int $index): string => $this->renderOptionRow($theme, $option, $index === $this->cursor)));
+  }
+
+  /**
+   * Render the visible option rows, dispatching structure rows centrally.
+   *
+   * Headings and separators render identically in every choice widget; the
+   * closure renders an option row (including its disabled state), receiving
+   * the option and its absolute index within the rows.
+   *
+   * @param \DrevOps\Tui\Theme\ThemeInterface $theme
+   *   The theme.
+   * @param list<\DrevOps\Tui\Config\Option> $rows
+   *   The rows the widget currently shows.
+   * @param \DrevOps\Tui\Render\Viewport $viewport
+   *   The paging window over the rows.
+   * @param \Closure $render
+   *   Renders one option row: `fn (Option $option, int $index): string`.
+   *
+   * @return list<string>
+   *   The rendered lines, wrapped with the scroll indicators.
+   */
+  protected function renderListRows(ThemeInterface $theme, array $rows, Viewport $viewport, \Closure $render): array {
+    $lines = [];
+
+    foreach (array_slice($rows, $viewport->offset, $this->pageSize) as $slot => $option) {
+      if ($option->kind === OptionKind::Heading) {
+        $lines[] = $this->renderHeadingRow($theme, $option);
+
+        continue;
+      }
+
+      if ($option->kind === OptionKind::Separator) {
+        $lines[] = $this->renderSeparatorRow($theme);
+
+        continue;
+      }
+
+      $lines[] = $render($option, $viewport->offset + $slot);
+    }
+
+    return $this->wrapScrolled($theme, $lines, $viewport);
   }
 
   /**

@@ -24,8 +24,8 @@ final readonly class Derive {
    * @param string $template
    *   The template with `{{field}}` tokens interpolated from current values.
    * @param string $transform
-   *   The transform normalizing the result: any str2name conversion, or one
-   *   of host / lower / upper / initials (empty for none).
+   *   The transform normalizing the result: one of the names in
+   *   {@see Transform::names()} (empty for none).
    */
   public function __construct(public string $template, public string $transform = '') {
     if ($this->transform !== '' && !Transform::supports($this->transform)) {

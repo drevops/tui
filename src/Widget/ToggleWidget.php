@@ -10,13 +10,14 @@ use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Widget\Capability\StepCapableInterface;
 
 /**
  * An inline switch between two labeled values.
  *
  * @package DrevOps\Tui\Widget
  */
-class ToggleWidget extends AbstractWidget {
+class ToggleWidget extends AbstractWidget implements StepCapableInterface {
 
   /**
    * The option values in display order.
@@ -74,7 +75,7 @@ class ToggleWidget extends AbstractWidget {
     }
 
     if ($keys->matches($key, Action::Toggle)) {
-      $this->flip();
+      $this->stepBy(1);
 
       return;
     }
@@ -85,15 +86,17 @@ class ToggleWidget extends AbstractWidget {
   }
 
   /**
-   * Move the selection to the next value, wrapping at the end.
+   * {@inheritdoc}
+   *
+   * Each position moves to the adjacent value, wrapping at either end.
    */
-  protected function flip(): void {
+  public function stepBy(int $delta): void {
     $count = count($this->values);
     if ($count < 2) {
       return;
     }
 
-    $this->cursor = ($this->cursor + 1) % $count;
+    $this->cursor = (($this->cursor + $delta) % $count + $count) % $count;
   }
 
   /**
@@ -106,11 +109,11 @@ class ToggleWidget extends AbstractWidget {
    *   The typed character.
    */
   protected function applyChar(string $char): void {
-    $char = mb_strtolower($char);
+    $char = mb_strtolower($char, 'UTF-8');
 
     foreach ($this->values as $index => $value) {
       $label = $this->labels[$value] ?? $value;
-      if ($label !== '' && mb_strtolower(mb_substr($label, 0, 1)) === $char) {
+      if ($label !== '' && mb_strtolower(mb_substr($label, 0, 1, 'UTF-8'), 'UTF-8') === $char) {
         $this->cursor = $index;
 
         return;

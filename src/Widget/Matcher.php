@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Widget;
 
+use DrevOps\Tui\Config\Option;
 use DrevOps\Tui\Config\OptionKind;
 
 /**
@@ -47,9 +48,9 @@ final class Matcher {
 
     // Fold each code point on its own, so a matched index maps straight back to
     // the original string even when lowercasing changes a character's length.
-    $chars = mb_str_split($haystack);
-    $folded = array_map(mb_strtolower(...), $chars);
-    $needle_folded = array_map(mb_strtolower(...), mb_str_split($needle));
+    $chars = mb_str_split($haystack, 1, 'UTF-8');
+    $folded = array_map($this->fold(...), $chars);
+    $needle_folded = array_map($this->fold(...), mb_str_split($needle, 1, 'UTF-8'));
 
     $best = $this->bestSubsequence($folded, $needle_folded, $chars);
     if ($best === NULL) {
@@ -58,7 +59,27 @@ final class Matcher {
 
     [$positions, $refinement] = $best;
 
-    return new MatchResult($this->tier(mb_strtolower($haystack), mb_strtolower($needle))->weight() * self::TIER_WEIGHT + $refinement, $positions);
+    // The tier compares the same folded characters the subsequence matched, so
+    // the two stages can never disagree on context-sensitive case mappings.
+    return new MatchResult($this->tier(implode('', $folded), implode('', $needle_folded))->weight() * self::TIER_WEIGHT + $refinement, $positions);
+  }
+
+  /**
+   * Case-fold one character for matching.
+   *
+   * Lowercases the code point and maps the Greek final sigma onto the regular
+   * sigma: lowercasing a capital sigma in isolation can never produce the
+   * final form, so without the mapping a query typed in capitals could not
+   * match a label ending in "ς".
+   *
+   * @param string $char
+   *   The character.
+   *
+   * @return string
+   *   The folded character.
+   */
+  protected function fold(string $char): string {
+    return str_replace('ς', 'σ', mb_strtolower($char, 'UTF-8'));
   }
 
   /**
@@ -90,24 +111,7 @@ final class Matcher {
    *   The matching values, most relevant first; ties keep their input order.
    */
   public function rankValues(array $values, string $needle): array {
-    $scores = [];
-    foreach ($values as $index => $value) {
-      $result = $this->match($value, $needle);
-      if ($result instanceof MatchResult) {
-        $scores[$index] = $result->score;
-      }
-    }
-
-    // Sort by score, best first; uasort is stable, so equal scores keep their
-    // insertion order - which is the input order.
-    uasort($scores, static fn(int $left_score, int $right_score): int => $right_score <=> $left_score);
-
-    $ranked = [];
-    foreach (array_keys($scores) as $index) {
-      $ranked[] = $values[$index];
-    }
-
-    return $ranked;
+    return $this->rank($values, static fn(string $value): string => $value, $needle);
   }
 
   /**
@@ -126,25 +130,46 @@ final class Matcher {
    *   The matching options, most relevant first; ties keep their input order.
    */
   public function rankOptions(array $options, string $needle): array {
+    return $this->rank($options, static fn(Option $option): ?string => $option->kind === OptionKind::Option ? $option->label : NULL, $needle);
+  }
+
+  /**
+   * Filter and rank items by the relevance of their text, best first.
+   *
+   * @param list<T> $items
+   *   The candidate items.
+   * @param \Closure(T): ?string $text
+   *   Extracts an item's matchable text; NULL excludes the item outright.
+   * @param string $needle
+   *   The query.
+   *
+   * @return list<T>
+   *   The matching items, most relevant first; ties keep their input order.
+   *
+   * @template T
+   */
+  protected function rank(array $items, \Closure $text, string $needle): array {
     $scores = [];
-    foreach ($options as $index => $option) {
-      if ($option->kind !== OptionKind::Option) {
+
+    foreach ($items as $index => $item) {
+      $label = $text($item);
+      if ($label === NULL) {
         continue;
       }
 
-      $result = $this->match($option->label, $needle);
+      $result = $this->match($label, $needle);
       if ($result instanceof MatchResult) {
         $scores[$index] = $result->score;
       }
     }
 
     // Sort by score, best first; uasort is stable, so equal scores keep their
-    // insertion order - which is the declaration order.
+    // insertion order - which is the input order.
     uasort($scores, static fn(int $left_score, int $right_score): int => $right_score <=> $left_score);
 
     $ranked = [];
     foreach (array_keys($scores) as $index) {
-      $ranked[] = $options[$index];
+      $ranked[] = $items[$index];
     }
 
     return $ranked;
@@ -154,9 +179,9 @@ final class Matcher {
    * The match tier: exact, prefix, substring or subsequence.
    *
    * @param string $haystack
-   *   The lowercased candidate.
+   *   The case-folded candidate.
    * @param string $needle
-   *   The lowercased query.
+   *   The case-folded query.
    *
    * @return \DrevOps\Tui\Widget\MatchTier
    *   The tier.

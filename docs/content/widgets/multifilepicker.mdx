@@ -10,7 +10,7 @@ highlighted entry and selections accumulate as you browse between directories,
 `Enter` accepts them all. It collects the list of chosen paths.
 
 ```php
-$p->multiFilePicker('assets', 'Asset files')->start(getcwd())->extensions(['png', 'svg']);
+$p->multiFilePicker('assets', 'Asset files')->startIn(getcwd())->extensions(['png', 'svg']);
 ```
 
 <table>

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Resolver;
 
 use DrevOps\Tui\Config\FieldType;
+use DrevOps\Tui\Translation\Translator;
 
 /**
  * Assembles the non-interactive input map from the external answer layers.
@@ -24,10 +25,10 @@ class InputResolver {
   /**
    * Construct a resolver.
    *
-   * @param string $env_prefix
+   * @param string $envPrefix
    *   The prefix for per-question env variable names (e.g. "APP_").
    */
-  public function __construct(protected string $env_prefix = '') {
+  public function __construct(protected string $envPrefix = '') {
   }
 
   /**
@@ -69,8 +70,8 @@ class InputResolver {
    * @return string
    *   The env variable name (prefix + uppercased id).
    */
-  public function envName(string $id): string {
-    return $this->env_prefix . strtoupper($id);
+  protected function envName(string $id): string {
+    return $this->envPrefix . strtoupper($id);
   }
 
   /**
@@ -85,10 +86,15 @@ class InputResolver {
    *   The coerced value.
    */
   protected function coerce(string $value, FieldType $type): mixed {
-    return match ($type) {
-      FieldType::Confirm, FieldType::Pause => in_array(strtolower(trim($value)), ['1', 'true', 'yes', 'on'], TRUE),
-      FieldType::MultiSelect, FieldType::MultiSearch, FieldType::MultiFilePicker, FieldType::Reorder => $this->splitList($value),
-      FieldType::Number => (int) trim($value),
+    $trimmed = trim($value);
+    $truthy = ['1', 'true', 'yes', 'on'];
+
+    return match (TRUE) {
+      $type === FieldType::Confirm, $type === FieldType::Pause => in_array(strtolower($trimmed), $truthy, TRUE),
+      $type->collectsList() => $this->splitList($value),
+      // Only an integral value coerces; anything else stays a string so the
+      // engine's type check rejects it instead of it silently becoming 0.
+      $type === FieldType::Number => preg_match('/^-?\d+$/', $trimmed) === 1 ? (int) $trimmed : $value,
       default => $value,
     };
   }
@@ -118,6 +124,10 @@ class InputResolver {
    *
    * @return array<string,mixed>
    *   The decoded map keyed by field id.
+   *
+   * @throws \InvalidArgumentException
+   *   When the operand decodes to anything but a JSON object - failing loudly
+   *   instead of silently discarding every supplied answer.
    */
   protected function parsePrompts(string $prompts): array {
     if ($prompts === '') {
@@ -127,7 +137,7 @@ class InputResolver {
     $json = is_file($prompts) ? (string) file_get_contents($prompts) : $prompts;
     $data = json_decode($json, TRUE);
     if (!is_array($data)) {
-      return [];
+      throw new \InvalidArgumentException(Translator::t('The --prompts value is neither a JSON object nor a path to one.'));
     }
 
     $out = [];

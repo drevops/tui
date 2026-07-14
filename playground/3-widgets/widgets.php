@@ -41,7 +41,7 @@ $form = Form::create('Widgets')
       'minimal' => 'Minimal',
       'demo_umami' => 'Demo Umami',
     ]);
-    $p->multiselect('multiselect', 'MultiSelect')->default(['redis'])->options([
+    $p->multiSelect('multiselect', 'MultiSelect')->default(['redis'])->options([
       'redis' => 'Redis',
       'solr' => 'Solr',
       'clamav' => 'ClamAV',
@@ -63,7 +63,7 @@ $form = Form::create('Widgets')
       'paris' => 'Europe/Paris',
       'sydney' => 'Australia/Sydney',
     ]);
-    $p->multisearch('multisearch', 'MultiSearch')->default(['redis'])->options([
+    $p->multiSearch('multisearch', 'MultiSearch')->default(['redis'])->options([
       'redis' => 'Redis',
       'solr' => 'Solr',
       'clamav' => 'ClamAV',

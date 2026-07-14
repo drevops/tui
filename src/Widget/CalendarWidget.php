@@ -15,6 +15,7 @@ use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Input\ScopedKeyMap;
 use DrevOps\Tui\Theme\ThemeInterface;
 use DrevOps\Tui\Translation\Translator;
+use DrevOps\Tui\Widget\Capability\StepCapableInterface;
 
 /**
  * A navigable month calendar returning a normalized ISO `Y-m-d` string.
@@ -28,7 +29,7 @@ use DrevOps\Tui\Translation\Translator;
  *
  * @package DrevOps\Tui\Widget
  */
-class CalendarWidget extends AbstractWidget {
+class CalendarWidget extends AbstractWidget implements StepCapableInterface {
 
   /**
    * The visible width of the seven-column grid, at four columns per day.
@@ -151,6 +152,15 @@ class CalendarWidget extends AbstractWidget {
 
   /**
    * {@inheritdoc}
+   *
+   * Each position is one day, clamped to the declared range.
+   */
+  public function stepBy(int $delta): void {
+    $this->cursor = $this->bounds->clamp($this->cursor->modify(sprintf('%+d days', $delta)));
+  }
+
+  /**
+   * {@inheritdoc}
    */
   protected function liveValue(): mixed {
     return $this->cursor->format('Y-m-d');
@@ -162,11 +172,7 @@ class CalendarWidget extends AbstractWidget {
   public function view(ThemeInterface $theme): string {
     $rows = array_merge([$this->heading($theme), $this->weekdayRow($theme)], $this->weekRows($theme));
 
-    if ($this->error !== NULL) {
-      $rows[] = $theme->error($this->error);
-    }
-
-    return implode("\n", $rows);
+    return $this->withError($theme, implode("\n", $rows));
   }
 
   /**
@@ -195,7 +201,7 @@ class CalendarWidget extends AbstractWidget {
    */
   protected function heading(ThemeInterface $theme): string {
     $title = Translator::t($this->cursor->format('F')) . ' ' . $this->cursor->format('Y');
-    $left = max(0, intdiv(self::GRID_WIDTH - mb_strlen($title), 2));
+    $left = max(0, intdiv(self::GRID_WIDTH - mb_strlen($title, 'UTF-8'), 2));
 
     return str_repeat(' ', $left) . $theme->title($title);
   }

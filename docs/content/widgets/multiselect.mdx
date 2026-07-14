@@ -12,7 +12,7 @@ options - ideal for opt-out lists. Long lists page around the cursor - set the
 window with `->pageSize()`.
 
 ```php
-$p->multiselect('services', 'Services')->default(['redis'])->options(['redis' => 'Redis', 'solr' => 'Solr', 'clamav' => 'ClamAV']);
+$p->multiSelect('services', 'Services')->default(['redis'])->options(['redis' => 'Redis', 'solr' => 'Solr', 'clamav' => 'ClamAV']);
 ```
 
 For headings, separators and disabled options, see [Option

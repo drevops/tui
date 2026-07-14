@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Schema;
 
 use DrevOps\Tui\Config\Config;
-use DrevOps\Tui\Config\DateBounds;
 use DrevOps\Tui\Config\Field;
-use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Translation\Translator;
 
 /**
@@ -41,8 +39,11 @@ class SchemaValidator {
    */
   public function validate(array $answers): array {
     $errors = [];
+    $known = [];
 
     foreach ($this->config->fields() as $field) {
+      $known[$field->id] = TRUE;
+
       if ($field->when !== NULL && !$field->when->matches($answers)) {
         continue;
       }
@@ -62,7 +63,7 @@ class SchemaValidator {
     }
 
     foreach (array_keys($answers) as $id) {
-      if (!$this->config->field((string) $id) instanceof Field) {
+      if (!isset($known[(string) $id])) {
         $errors[] = Translator::t('Unknown question "@id".', ['@id' => (string) $id]);
       }
     }
@@ -82,11 +83,8 @@ class SchemaValidator {
    *   The first error, or NULL when valid.
    */
   protected function validateValue(Field $field, mixed $value): ?string {
-    if (!$this->isType($field->type, $value)) {
-      return Translator::t('Question "@id" must be @constraint.', [
-        '@id' => $field->id,
-        '@constraint' => $this->typeName($field->type),
-      ]);
+    if (!$field->type->acceptsValue($value)) {
+      return $this->constraintMessage($field, $field->type->valueKind());
     }
 
     if ($field->required && $this->isEmpty($value)) {
@@ -98,16 +96,11 @@ class SchemaValidator {
       return $bounds_error;
     }
 
-    $date_error = $this->checkDateBounds($field, $value);
-    if ($date_error !== NULL) {
-      return $date_error;
-    }
-
     return $this->checkOptions($field, $value);
   }
 
   /**
-   * Check a number value against its declared bounds.
+   * Check a value against the field's declared number or date bounds.
    *
    * @param \DrevOps\Tui\Config\Field $field
    *   The field.
@@ -118,74 +111,24 @@ class SchemaValidator {
    *   An error, or NULL when in range (or when the field declares no bounds).
    */
   protected function checkBounds(Field $field, mixed $value): ?string {
-    $violation = $field->bounds?->violation($value);
+    $violation = $field->boundsViolation($value);
 
-    return $violation === NULL ? NULL : Translator::t('Question "@id" must be @constraint.', [
-      '@id' => $field->id,
-      '@constraint' => $violation,
-    ]);
+    return $violation === NULL ? NULL : $this->constraintMessage($field, $violation);
   }
 
   /**
-   * Check a date value against its declared range.
+   * Frame a constraint fragment as a question-scoped error message.
    *
    * @param \DrevOps\Tui\Config\Field $field
    *   The field.
-   * @param mixed $value
-   *   The value.
-   *
-   * @return string|null
-   *   An error, or NULL when in range (or when the field declares no range).
-   */
-  protected function checkDateBounds(Field $field, mixed $value): ?string {
-    $violation = $field->dateBounds?->violation($value);
-
-    return $violation === NULL ? NULL : Translator::t('Question "@id" must be @constraint.', [
-      '@id' => $field->id,
-      '@constraint' => $violation,
-    ]);
-  }
-
-  /**
-   * Whether the value matches the field type.
-   *
-   * @param \DrevOps\Tui\Config\FieldType $type
-   *   The field type.
-   * @param mixed $value
-   *   The value.
-   *
-   * @return bool
-   *   TRUE when the value matches.
-   */
-  protected function isType(FieldType $type, mixed $value): bool {
-    return match ($type) {
-      FieldType::Confirm, FieldType::Pause => is_bool($value),
-      FieldType::MultiSelect, FieldType::MultiSearch, FieldType::MultiFilePicker, FieldType::Reorder => is_array($value),
-      FieldType::Number => is_int($value) || is_float($value),
-      // An empty string is an unset date, left to the required check; any other
-      // value must be a strict `Y-m-d` calendar date.
-      FieldType::Calendar => is_string($value) && ($value === '' || DateBounds::parse($value) instanceof \DateTimeImmutable),
-      default => is_string($value),
-    };
-  }
-
-  /**
-   * A human name for a field type.
-   *
-   * @param \DrevOps\Tui\Config\FieldType $type
-   *   The field type.
+   * @param string $constraint
+   *   The constraint fragment (e.g. "a string", "between 1 and 10").
    *
    * @return string
-   *   The human name.
+   *   The framed message.
    */
-  protected function typeName(FieldType $type): string {
-    return match ($type) {
-      FieldType::Confirm, FieldType::Pause => Translator::t('a boolean'),
-      FieldType::MultiSelect, FieldType::MultiSearch, FieldType::MultiFilePicker, FieldType::Reorder => Translator::t('a list'),
-      FieldType::Number => Translator::t('a number'),
-      FieldType::Calendar => Translator::t('a date (YYYY-MM-DD)'),
-      default => Translator::t('a string'),
-    };
+  protected function constraintMessage(Field $field, string $constraint): string {
+    return Translator::t('Question "@id" must be @constraint.', ['@id' => $field->id, '@constraint' => $constraint]);
   }
 
   /**

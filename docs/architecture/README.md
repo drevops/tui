@@ -14,7 +14,7 @@ At the centre is the **Engine**. Everything else is either something you hand it
 Read it in three bands:
 
 - **Left - what you provide.** A **Config** (assembled by the fluent `Form` builder into `Config` -> `Panel` -> `Field`) and, optionally, **Handlers** (classes that carry behaviour). Together these declare the questions and how each one behaves.
-- **Middle - the Engine and its helpers.** The Engine drives collection, leaning on `InputResolver` (read a payload), `Discovery` (detect from the directory), `Deriver` + `Transform` (compute values), and `ConditionEvaluator` (decide what is shown).
+- **Middle - the Engine and its helpers.** The Engine drives collection, leaning on `InputResolver` (read a payload), `Discovery` (detect from the directory), `Deriver` + `Transform` (compute values), and the `Condition` rules (decide what is shown).
 - **Right - what comes out, and how it is shown.** `Answers` (plus a `SchemaGenerator` / `SchemaValidator` for agents and forms), and the **interactive TUI** - `PanelController` composing a `Theme` (resolved by name through `ThemeManager`), a `KeyMap` (resolved by preset through `KeyMapManager`), widgets, a `Navigator` and a `Terminal`.
 
 ## Step 1 - describe the questions
@@ -36,10 +36,11 @@ Most fields need no code. When one does - a dynamic default, discovery, validati
 
 Walking the sequence:
 
-1. **Resolve each field's starting value**, in priority order: an explicit input (from `--prompts` or the environment, via `InputResolver`) beats a discovered value (in update mode), which beats a handler's dynamic `default()`, which beats the static default in the config.
-2. **Settle the derived and conditional fields.** `Deriver` recomputes `derive` values (with `Transform`) until they stop changing, `ConditionEvaluator` decides which fields are active from their `when` rules, and fix-ups reconcile dependents - repeated until the whole set is stable.
-3. **Validate and transform** every active field through its handler.
-4. **Emit `Answers`** - the values plus their provenance (default, discovered, edited).
+1. **Resolve each field's starting value**, in priority order: an explicit input (from `--prompts` or the environment, via `InputResolver`) beats a discovered value (in update mode, adopted only when it passes the field's type, bounds and options), which beats a handler's dynamic `default()`, which beats the static default in the config.
+2. **Transform each supplied input** through its declared or handler behaviour, so derivation, activation and fix-ups all evaluate the normalized value. Defaults and derived values are the configuration's own and skip the transformers.
+3. **Settle the derived and conditional fields.** `Deriver` recomputes `derive` values (with `Transform`) until they stop changing, the `Condition` rules decide which fields are active from their `when` declarations, and fix-ups reconcile dependents - repeated until the whole set is stable.
+4. **Validate each active supplied input** - the type and bounds are checked first, and the first error throws.
+5. **Emit `Answers`** - the values plus their provenance (default, detected, edited, derived, override).
 
 The same lifecycle runs whether the caller is a human at the TUI or a script passing JSON, which is why the engine is testable without a terminal.
 
@@ -52,7 +53,9 @@ For interactive use, `PanelController::run()` seeds itself with the engine's res
   <img alt="Interactive panel TUI" src="dataflow-tui.svg">
 </picture>
 
-The theme instance comes from `ThemeManager` - a registry keyed by name ("dark", "light", or a registered custom class) that also detects the terminal's colour and Unicode capabilities and, when no theme is named, picks light or dark from the terminal background (an OSC 11 query answered by the `Terminal`, then `COLORFGBG`, then a dark default). Each turn the controller asks the **Theme** to compose a frame (the theme owns colours, glyphs and layout), computes the visible window with the `Navigator` and `Scroller`, and renders it to the `Terminal`. A key press is parsed by `KeyParser` into a `Key`, which a **KeyMap** resolves to a semantic action (move, accept, toggle, quit...) rather than a fixed key - the bindings behind each action are configurable per widget type, ship a vim preset alongside the default, and are validated when the form is built. Armed with the action, the controller either moves the cursor / drills into a sub-panel, or opens a widget to edit a field - the widget consults the same key map, and both render themselves through the theme, under a theme-composed underlined label header. Editing writes the new value back and marks it "edited". When the user finishes, it returns the same `Answers` object the headless path produces.
+The theme instance comes from `ThemeManager` - a registry keyed by name ("default", a registered short name, or a theme class name directly). Colour, Unicode and the dark/light mode are display options: anything the form leaves unset is detected from the terminal, with the mode picked from the terminal background (an OSC 11 query answered by the `Terminal`, then `COLORFGBG`, then a dark default). Each turn the controller asks the **Theme** to compose a frame (the theme owns colours, glyphs and layout), computes the visible window with the `Navigator` and `Scroller`, and renders it to the `Terminal`. A key press is parsed by `KeyParser` into a `Key`, which a **KeyMap** resolves to a semantic action (move, accept, toggle, quit...) rather than a fixed key - the bindings behind each action are configurable per widget type, ship a vim preset alongside the default, and are validated when the form is built. Armed with the action, the controller either moves the cursor / drills into a sub-panel, or opens a widget to edit a field - the widget consults the same key map, and both render themselves through the theme, under a theme-composed underlined label header. Editing writes the new value back and marks it "edited". When the user finishes, it returns the same `Answers` object the headless path produces.
+
+No widget extends another widget. Each one composes its behaviour from the capabilities in `Widget\Capability` - an interface per capability (`OptionsCapableInterface`, `SelectionCapableInterface`, `MultiSelectionCapableInterface`, `FilterCapableInterface`, `SearchCapableInterface`, `PagingCapableInterface`, `TextEditCapableInterface`, `CompletionCapableInterface`, `StepCapableInterface`, `RevealCapableInterface`, `ExternalEditCapableInterface`) paired with the trait carrying its default implementation (`OptionsCapableTrait`, `FilterCapableTrait`, ...) - so the controller and the tests interact with a capability - "is this widget filterable, can it page" - rather than a concrete class.
 
 ## Step 5 - apply the answers (the consumer's job)
 

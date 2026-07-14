@@ -18,7 +18,7 @@ use DrevOps\Tui\Input\KeyParser;
 use DrevOps\Tui\Input\ScopedKeyMap;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Translation\Translator;
-use DrevOps\Tui\Widget\TextareaWidget;
+use DrevOps\Tui\Widget\Capability\ExternalEditCapableInterface;
 use DrevOps\Tui\Widget\WidgetFactory;
 use DrevOps\Tui\Widget\WidgetInterface;
 
@@ -32,8 +32,22 @@ use DrevOps\Tui\Widget\WidgetInterface;
  * the new value shown and marked "edited".
  *
  * @package DrevOps\Tui\Render
+ *
+ * @internal
+ *   Consumers drive the TUI through the {@see \DrevOps\Tui\Tui} facade (or
+ *   {@see \DrevOps\Tui\Testing\TuiTester} in tests), not this class.
  */
 class PanelController {
+
+  /**
+   * The submit/cancel button pair appended after a root panel's items.
+   */
+  protected const int BUTTON_COUNT = 2;
+
+  /**
+   * The cancel button's index within the button pair.
+   */
+  protected const int CANCEL_BUTTON = 1;
 
   /**
    * The panel navigator.
@@ -288,7 +302,7 @@ class PanelController {
   }
 
   /**
-   * Render the current frame.
+   * Render the current frame: the help overlay, the editor or the panel hub.
    *
    * @param int $height
    *   The body viewport height.
@@ -296,24 +310,50 @@ class PanelController {
    * @return string
    *   The frame.
    */
-  public function frame(int $height = 12): string {
+  public function frame(int $height): string {
     if ($this->help) {
       return $this->theme->renderHelp($this->nav, ...$this->helpSections());
     }
 
     if ($this->editor instanceof WidgetInterface) {
-      $label = $this->editing instanceof Field ? Translator::t($this->editing->label) : '';
-      $keys = $this->editing instanceof Field ? $this->keymap->forField($this->editing->type) : $this->nav;
-      $hints = $this->config->footer ? $this->editor->hints() : [];
-
-      return $this->theme->renderEditor($label, $this->editor->view($this->theme), $hints, $keys);
+      return $this->editorFrame($this->editor);
     }
 
+    return $this->hubFrame($height);
+  }
+
+  /**
+   * Render the editor screen for the field being edited.
+   *
+   * @param \DrevOps\Tui\Widget\WidgetInterface $editor
+   *   The active editor widget.
+   *
+   * @return string
+   *   The editor frame.
+   */
+  protected function editorFrame(WidgetInterface $editor): string {
+    $label = $this->editing instanceof Field ? Translator::t($this->editing->label) : '';
+    $keys = $this->editing instanceof Field ? $this->keymap->forField($this->editing->type) : $this->nav;
+    $hints = $this->config->footer ? $editor->hints() : [];
+
+    return $this->theme->renderEditor($label, $editor->view($this->theme), $hints, $keys);
+  }
+
+  /**
+   * Render the panel hub: the body with buttons, scrolled, framed by chrome.
+   *
+   * @param int $height
+   *   The body viewport height.
+   *
+   * @return string
+   *   The hub frame.
+   */
+  protected function hubFrame(int $height): string {
     $panel = $this->navigator->current();
     [$body, $cursor_line] = $this->theme->renderBody($panel, $this->answers(), $this->cursor);
 
     if ($this->buttonsVisible()) {
-      $base = $this->theme->itemCount($panel);
+      $base = $panel->itemCount();
       $selected = $this->cursor >= $base ? $this->cursor - $base : -1;
 
       // The action row always detaches from the items above it.
@@ -329,21 +369,34 @@ class PanelController {
       ], $selected);
     }
 
-    $total = count($body);
-
-    if ($this->followCursor) {
-      $viewport = $this->scroller->compute($total, $height, $cursor_line, $this->offset);
-    }
-    else {
-      $offset = $this->scroller->scroll($this->offset, 0, $total, $height);
-      $viewport = new Viewport($offset, $offset > 0, $offset + $height < $total);
-    }
-
-    $this->offset = $viewport->offset;
+    $viewport = $this->resolveViewport(count($body), $cursor_line, $height);
     $header = [$this->theme->renderBreadcrumbLine($this->navigator)];
     $footer = $this->hubFooter();
 
     return $this->theme->renderFrame($header, $body, $footer, $viewport, $height);
+  }
+
+  /**
+   * Resolve and persist the scroll viewport for the hub body.
+   *
+   * Follows the cursor unless wheel scrolling has detached it; the resolved
+   * offset persists so the next frame scrolls from where this one settled.
+   *
+   * @param int $total
+   *   The total number of body lines.
+   * @param int $cursor_line
+   *   The line index of the selected item.
+   * @param int $height
+   *   The body viewport height.
+   *
+   * @return \DrevOps\Tui\Render\Viewport
+   *   The resolved viewport.
+   */
+  protected function resolveViewport(int $total, int $cursor_line, int $height): Viewport {
+    $viewport = $this->followCursor ? $this->scroller->follow($total, $height, $cursor_line, $this->offset) : $this->scroller->viewport($this->offset, $total, $height);
+    $this->offset = $viewport->offset;
+
+    return $viewport;
   }
 
   /**
@@ -361,7 +414,7 @@ class PanelController {
 
     $this->editor->handle($key);
 
-    if ($this->editor instanceof TextareaWidget && $this->editor->wantsExternalEdit()) {
+    if ($this->editor instanceof ExternalEditCapableInterface && $this->editor->wantsExternalEdit()) {
       $current = $this->editor->value();
       $captured = $this->externalEditor->edit(is_string($current) ? $current : '', $this->terminal);
       $this->editor->applyExternalEdit($captured);
@@ -411,7 +464,7 @@ class PanelController {
     }
 
     $this->followCursor = TRUE;
-    $count = $this->theme->itemCount($this->navigator->current()) + ($this->buttonsVisible() ? 2 : 0);
+    $count = $this->navigator->current()->itemCount() + ($this->buttonsVisible() ? self::BUTTON_COUNT : 0);
 
     if ($this->nav->matches($key, Action::MoveUp)) {
       $this->cursor = max(0, $this->cursor - 1);
@@ -421,9 +474,11 @@ class PanelController {
     }
     elseif ($this->nav->matches($key, Action::MoveLeft) || $this->nav->matches($key, Action::MoveRight)) {
       // The submit/cancel buttons are inline, so Left/Right moves between them.
-      $base = $this->theme->itemCount($this->navigator->current());
+      $base = $this->navigator->current()->itemCount();
+
       if ($this->buttonsVisible() && $this->cursor >= $base) {
-        $this->cursor = max($base, min($count - 1, $this->cursor + ($this->nav->matches($key, Action::MoveRight) ? 1 : -1)));
+        $delta = $this->nav->matches($key, Action::MoveRight) ? 1 : -1;
+        $this->cursor = max($base, min($count - 1, $this->cursor + $delta));
       }
     }
     elseif ($this->nav->matches($key, Action::Back)) {
@@ -508,7 +563,7 @@ class PanelController {
 
       $seen[] = $field->type;
       $widget = $this->widgets->create($field, $this->values[$field->id] ?? $field->default);
-      $sections[] = new HelpSection(Translator::t(ucfirst($field->type->value)), $this->keymap->forField($field->type), ...$widget->hints());
+      $sections[] = new HelpSection($field->type->label(), $this->keymap->forField($field->type), ...$widget->hints());
     }
 
     return $sections;
@@ -528,14 +583,14 @@ class PanelController {
   }
 
   /**
-   * Activate a submit (0) or cancel (1) button: finish, recording a cancel.
+   * Activate a button by its index in the pair: finish, recording a cancel.
    *
    * @param int $index
-   *   The button index.
+   *   The button index (submit first, cancel second).
    */
   protected function activateButton(int $index): void {
     $this->done = TRUE;
-    $this->cancelled = $index === 1;
+    $this->cancelled = $index === self::CANCEL_BUTTON;
   }
 
   /**

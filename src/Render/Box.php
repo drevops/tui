@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Render;
 
+use DrevOps\Tui\Theme\Border;
+
 /**
  * Pure box-drawing geometry: character sets and line/rule fitting.
  *
@@ -18,8 +20,9 @@ final class Box {
   /**
    * The corner, junction, horizontal and vertical glyphs for a border style.
    *
-   * @param string $style
-   *   A ThemeInterface BORDER_* value ("line", "rounded", "double").
+   * @param \DrevOps\Tui\Theme\Border $style
+   *   The border style; None shares the single-line set (a caller normally
+   *   skips boxing entirely for a borderless frame).
    * @param bool $unicode
    *   Whether Unicode glyphs are used; FALSE returns the ASCII fallback set.
    *
@@ -27,20 +30,20 @@ final class Box {
    *   Keyed by position: tl, tr, bl, br (corners), ml, mr (junctions), h
    *   (horizontal), v (vertical).
    */
-  public static function chars(string $style, bool $unicode): array {
+  public static function chars(Border $style, bool $unicode): array {
     $keys = ['tl', 'tr', 'bl', 'br', 'ml', 'mr', 'h', 'v'];
 
     if (!$unicode) {
-      return array_combine($keys, mb_str_split($style === 'double' ? '++++++=|' : '++++++-|'));
+      return array_combine($keys, mb_str_split($style === Border::Double ? '++++++=|' : '++++++-|', 1, 'UTF-8'));
     }
 
     $set = match ($style) {
-      'rounded' => '╭╮╰╯├┤─│',
-      'double' => '╔╗╚╝╠╣═║',
-      default => '┌┐└┘├┤─│',
+      Border::Rounded => '╭╮╰╯├┤─│',
+      Border::Double => '╔╗╚╝╠╣═║',
+      Border::None, Border::Line => '┌┐└┘├┤─│',
     };
 
-    return array_combine($keys, mb_str_split($set));
+    return array_combine($keys, mb_str_split($set, 1, 'UTF-8'));
   }
 
   /**
@@ -79,7 +82,7 @@ final class Box {
     $width = Ansi::width($content);
 
     if ($width > $inner_width) {
-      $content = mb_substr(Ansi::strip($content), 0, $inner_width);
+      $content = mb_substr(Ansi::strip($content), 0, $inner_width, 'UTF-8');
       $width = Ansi::width($content);
     }
 

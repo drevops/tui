@@ -29,7 +29,7 @@ $form = Form::create('MultiSearch widget')
   ->color(isset($opts['no-ansi']) ? FALSE : NULL)
   ->unicode(isset($opts['no-unicode']) ? FALSE : NULL)
   ->panel('main', 'MultiSearch', function (PanelBuilder $p): void {
-    $p->multisearch('multisearch', 'MultiSearch')->default(['redis'])->options([
+    $p->multiSearch('multisearch', 'MultiSearch')->default(['redis'])->options([
       'redis' => 'Redis',
       'solr' => 'Solr',
       'clamav' => 'ClamAV',

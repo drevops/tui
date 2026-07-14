@@ -10,10 +10,10 @@ directory and `←` returns to its parent (never above the start directory), typ
 filters the current directory and `Tab` reveals hidden entries; `Enter` selects
 the highlighted entry. Restrict what may be chosen with `filesOnly()` or
 `directoriesOnly()`, limit files with `extensions()`, and choose where browsing
-starts with `start()`. It collects the chosen path.
+starts with `startIn()`. It collects the chosen path.
 
 ```php
-$p->filePicker('config', 'Config file')->start(getcwd())->filesOnly()->extensions(['yml', 'yaml']);
+$p->filePicker('config', 'Config file')->startIn(getcwd())->filesOnly()->extensions(['yml', 'yaml']);
 ```
 
 <table>

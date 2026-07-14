@@ -23,6 +23,7 @@ use DrevOps\Tui\Discovery\Dotenv;
 use DrevOps\Tui\Discovery\JsonValue;
 use DrevOps\Tui\Discovery\PathExists;
 use DrevOps\Tui\Discovery\Scan;
+use DrevOps\Tui\Discovery\ScanType;
 use DrevOps\Tui\Engine\EngineException;
 use DrevOps\Tui\Tui;
 
@@ -41,8 +42,8 @@ $form = Form::create('Discovery demo', 'an existing project')
     $p->text('timezone', 'Timezone')->default('UTC')->discover(new Dotenv('TZ'));
     // Whether a path exists.
     $p->confirm('docker', 'Uses Docker?')->discover(new PathExists('docker-compose.yml'));
-    // List directory entries ("type" is dir / file / any).
-    $p->multiselect('modules', 'Custom modules')->options(['alpha' => 'Alpha', 'beta' => 'Beta', 'gamma' => 'Gamma'])->discover(new Scan('modules', type: 'dir'));
+    // List directory entries (the type keeps dirs, files or any entry).
+    $p->multiSelect('modules', 'Custom modules')->options(['alpha' => 'Alpha', 'beta' => 'Beta', 'gamma' => 'Gamma'])->discover(new Scan('modules', type: ScanType::Dir));
   });
 
 $tui = new Tui($form);

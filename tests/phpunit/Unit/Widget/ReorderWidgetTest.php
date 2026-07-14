@@ -5,15 +5,17 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Tests\Unit\Widget;
 
 use DrevOps\Tui\Input\Action;
-use DrevOps\Tui\Input\ArrayKeyStream;
 use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Render\Ansi;
+use DrevOps\Tui\Testing\ArrayKeyStream;
+use DrevOps\Tui\Testing\WidgetRunner;
+use DrevOps\Tui\Tests\Traits\AssertsPagingTrait;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\AbstractWidget;
+use DrevOps\Tui\Widget\Capability\PagingCapableTrait;
 use DrevOps\Tui\Widget\ReorderWidget;
-use DrevOps\Tui\Widget\WidgetRunner;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -23,18 +25,11 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass(ReorderWidget::class)]
 #[CoversClass(AbstractWidget::class)]
+#[CoversClass(PagingCapableTrait::class)]
 #[Group('widget')]
 final class ReorderWidgetTest extends TestCase {
 
-  /**
-   * The three-item fixture used across most cases.
-   *
-   * @return array<string,string>
-   *   The value => label option map.
-   */
-  protected static function options(): array {
-    return ['a' => 'Apple', 'b' => 'Banana', 'c' => 'Cherry'];
-  }
+  use AssertsPagingTrait;
 
   public function testGrabAndMoveDownAccepts(): void {
     $widget = new ReorderWidget(self::options());
@@ -234,28 +229,21 @@ final class ReorderWidgetTest extends TestCase {
   }
 
   public function testRejectsNonPositivePageSize(): void {
-    $this->expectException(\InvalidArgumentException::class);
-    $this->expectExceptionMessage('Page size must be a positive integer, -3 given.');
-
-    new ReorderWidget(self::options(), pageSize: -3);
+    $this->assertRejectsNonPositivePageSize(static fn(int $size): ReorderWidget => new ReorderWidget(self::options(), page_size: $size), -3);
   }
 
   public function testPagesLongList(): void {
-    $widget = new ReorderWidget(['a' => 'Apple', 'b' => 'Banana', 'c' => 'Cherry', 'd' => 'Date'], pageSize: 2);
+    $this->assertPagesAndFollowsCursor(static fn(int $size): ReorderWidget => new ReorderWidget(self::pagingOptions(), page_size: $size));
+  }
 
-    $view = Ansi::strip($widget->view(new DefaultTheme()));
-    $this->assertStringContainsString('Apple', $view);
-    $this->assertStringContainsString('Banana', $view);
-    $this->assertStringNotContainsString('Cherry', $view);
-    $this->assertStringContainsString('▼', $view);
-
-    $widget->handle(Key::named(KeyName::Down));
-    $widget->handle(Key::named(KeyName::Down));
-    $scrolled = Ansi::strip($widget->view(new DefaultTheme()));
-
-    $this->assertStringContainsString('Cherry', $scrolled);
-    $this->assertStringContainsString('▲', $scrolled);
-    $this->assertStringNotContainsString('Apple', $scrolled);
+  /**
+   * The three-item fixture used across most cases.
+   *
+   * @return array<string,string>
+   *   The value => label option map.
+   */
+  protected static function options(): array {
+    return ['a' => 'Apple', 'b' => 'Banana', 'c' => 'Cherry'];
   }
 
 }

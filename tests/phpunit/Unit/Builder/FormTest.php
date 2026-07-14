@@ -67,10 +67,10 @@ final class FormTest extends TestCase {
         $p->text('name', 'Site name')->description('The name.')->required()->weight(10)->default('Acme');
         $p->text('machine_name', 'Machine name')->derive(new Derive('{{ name }}'));
         $p->select('profile', 'Profile')->options(['standard' => 'Standard', 'minimal' => 'Minimal'])->default('standard');
-        $p->multiselect('services', 'Services')->option('solr', 'Solr', 'Search')->option('redis', 'Redis');
+        $p->multiSelect('services', 'Services')->option('solr', 'Solr', 'Search')->option('redis', 'Redis');
         $p->confirm('docs', 'Keep docs?')->default(TRUE)->when(new Condition('profile', eq: 'standard'));
         $p->toggle('visibility', 'Visibility')->options(['public' => 'Public', 'private' => 'Private'])->default('private');
-        $p->password('secret', 'Secret')->revealable()->confirm();
+        $p->password('secret', 'Secret')->revealable()->confirmation();
         $p->suggest('timezone', 'Timezone')->discover(new Dotenv('TZ'));
         $p->reorder('ranking', 'Priorities')->options(['fast' => 'Fast', 'cheap' => 'Cheap', 'good' => 'Good'])->default(['good', 'fast']);
         $p->panel('advanced', 'Advanced', function (PanelBuilder $sp): void {
@@ -162,7 +162,7 @@ final class FormTest extends TestCase {
       ->panel('p', 'P', function (PanelBuilder $panel): void {
         $panel->text('t');
         $panel->select('s')->option('a');
-        $panel->multiselect('m');
+        $panel->multiSelect('m');
         $panel->confirm('c');
         $panel->suggest('g');
         $panel->number('n');
@@ -170,7 +170,7 @@ final class FormTest extends TestCase {
         $panel->textarea('ta');
         $panel->password('pw');
         $panel->search('se')->option('a');
-        $panel->multisearch('ms')->option('a');
+        $panel->multiSearch('ms')->option('a');
         $panel->toggle('tg')->option('on', 'On')->option('off', 'Off');
         $panel->filePicker('fp');
         $panel->multiFilePicker('mfp');
@@ -385,7 +385,7 @@ final class FormTest extends TestCase {
   public function testFilePickerOptions(): void {
     $config = Form::create('T')
       ->panel('p', 'P', function (PanelBuilder $panel): void {
-        $panel->filePicker('config', 'Config')->start('/opt')->filesOnly()->extensions(['yml', 'yaml'])->showHidden();
+        $panel->filePicker('config', 'Config')->startIn('/opt')->filesOnly()->extensions(['yml', 'yaml'])->showHidden();
         $panel->multiFilePicker('assets', 'Assets')->directoriesOnly();
       })
       ->build();

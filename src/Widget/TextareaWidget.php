@@ -10,13 +10,18 @@ use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Widget\Capability\ExternalEditCapableInterface;
+use DrevOps\Tui\Widget\Capability\TextEditCapableInterface;
+use DrevOps\Tui\Widget\Capability\TextEditCapableTrait;
 
 /**
  * Multi-line text input: Enter inserts a newline, Tab accepts.
  *
  * @package DrevOps\Tui\Widget
  */
-class TextareaWidget extends TextWidget {
+class TextareaWidget extends AbstractWidget implements TextEditCapableInterface, ExternalEditCapableInterface {
+
+  use TextEditCapableTrait;
 
   /**
    * Whether the external-editor handoff has been requested.
@@ -36,7 +41,8 @@ class TextareaWidget extends TextWidget {
    *   Whether the external-editor handoff is offered (an available $EDITOR).
    */
   public function __construct(string $buffer = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL, protected bool $externalEdit = FALSE) {
-    parent::__construct($buffer, $validate, $transform);
+    parent::__construct($validate, $transform);
+    $this->initTextBuffer($buffer);
   }
 
   /**
@@ -50,7 +56,6 @@ class TextareaWidget extends TextWidget {
   /**
    * {@inheritdoc}
    */
-  #[\Override]
   public function handle(Key $key): void {
     $keys = $this->keys();
 
@@ -82,9 +87,19 @@ class TextareaWidget extends TextWidget {
       return;
     }
 
-    // The parent handles the rest, including Accept, which this scope binds to
-    // Tab rather than Enter.
-    parent::handle($key);
+    if ($this->handleCancel($key)) {
+      return;
+    }
+
+    // Accept is checked here, after the newline branch, because this scope
+    // binds it to Tab rather than Enter.
+    if ($keys->matches($key, Action::Accept)) {
+      $this->accept($this->liveValue());
+
+      return;
+    }
+
+    $this->handleTextEditKey($key);
   }
 
   /**
@@ -99,7 +114,7 @@ class TextareaWidget extends TextWidget {
     $line = 0;
     $column = $this->cursor;
     foreach ($lines as $index => $text) {
-      $length = strlen($text);
+      $length = mb_strlen($text, 'UTF-8');
 
       if ($column <= $length) {
         $line = $index;
@@ -118,34 +133,25 @@ class TextareaWidget extends TextWidget {
 
     $offset = 0;
     for ($index = 0; $index < $target; $index++) {
-      $offset += strlen($lines[$index]) + 1;
+      $offset += mb_strlen($lines[$index], 'UTF-8') + 1;
     }
 
-    $this->cursor = $offset + min($column, strlen($lines[$target]));
+    $this->cursor = $offset + min($column, mb_strlen($lines[$target], 'UTF-8'));
   }
 
   /**
-   * Whether the widget has requested the external-editor handoff.
-   *
-   * The driver reads this after handling a key and, when TRUE, launches the
-   * editor and feeds the result back through applyExternalEdit().
-   *
-   * @return bool
-   *   TRUE when a handoff was requested.
+   * {@inheritdoc}
    */
   public function wantsExternalEdit(): bool {
     return $this->externalEditRequested;
   }
 
   /**
-   * Apply the buffer captured from the external editor.
+   * {@inheritdoc}
    *
    * Clears the pending request. A non-NULL buffer replaces the value and is
    * accepted, so saving and exiting the editor commits the field. A NULL buffer
    * (the edit was aborted or unavailable) leaves the inline value untouched.
-   *
-   * @param string|null $content
-   *   The captured buffer, or NULL when the edit was aborted.
    */
   public function applyExternalEdit(?string $content): void {
     $this->externalEditRequested = FALSE;
@@ -155,18 +161,15 @@ class TextareaWidget extends TextWidget {
     }
 
     $this->buffer = $content;
-    $this->cursor = strlen($content);
+    $this->cursor = mb_strlen($content, 'UTF-8');
     $this->accept($content);
   }
 
   /**
    * {@inheritdoc}
    */
-  #[\Override]
   public function view(ThemeInterface $theme): string {
-    $text = substr($this->buffer, 0, $this->cursor) . $theme->caret() . substr($this->buffer, $this->cursor);
-
-    return $this->error === NULL ? $text : $text . "\n" . $theme->error($this->error);
+    return $this->withError($theme, $this->renderCaretLine($theme));
   }
 
   /**

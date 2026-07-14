@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\Tui\Widget;
+namespace DrevOps\Tui\Testing;
 
 use DrevOps\Tui\Input\Key;
-use DrevOps\Tui\Input\KeyStreamInterface;
+use DrevOps\Tui\Widget\WidgetInterface;
 
 /**
  * Drives a widget to completion from a key stream.
  *
- * @package DrevOps\Tui\Widget
+ * @package DrevOps\Tui\Testing
  */
 final class WidgetRunner {
 
@@ -19,7 +19,7 @@ final class WidgetRunner {
    *
    * @param \DrevOps\Tui\Widget\WidgetInterface $widget
    *   The widget to drive.
-   * @param \DrevOps\Tui\Input\KeyStreamInterface $keys
+   * @param \DrevOps\Tui\Testing\KeyStreamInterface $keys
    *   The key source.
    *
    * @return mixed

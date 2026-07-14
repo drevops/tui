@@ -9,18 +9,20 @@ use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Widget\Capability\CompletionCapableInterface;
+use DrevOps\Tui\Widget\Capability\CompletionCapableTrait;
+use DrevOps\Tui\Widget\Capability\TextEditCapableInterface;
+use DrevOps\Tui\Widget\Capability\TextEditCapableTrait;
 
 /**
  * Single-line text input with a movable cursor and optional ghost-text.
  *
  * @package DrevOps\Tui\Widget
  */
-class TextWidget extends AbstractWidget {
+class TextWidget extends AbstractWidget implements TextEditCapableInterface, CompletionCapableInterface {
 
-  /**
-   * The cursor offset within the buffer.
-   */
-  protected int $cursor;
+  use TextEditCapableTrait;
+  use CompletionCapableTrait;
 
   /**
    * Construct a text widget.
@@ -35,9 +37,9 @@ class TextWidget extends AbstractWidget {
    *   Inline ghost-text candidates: the buffer is completed to the first
    *   candidate it is a prefix of. Empty leaves a plain text field.
    */
-  public function __construct(protected string $buffer = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL, protected array $completions = []) {
+  public function __construct(string $buffer = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL, protected array $completions = []) {
     parent::__construct($validate, $transform);
-    $this->cursor = strlen($this->buffer);
+    $this->initTextBuffer($buffer);
   }
 
   /**
@@ -70,131 +72,22 @@ class TextWidget extends AbstractWidget {
       return;
     }
 
-    if ($keys->matches($key, Action::DeleteBack)) {
-      $this->backspace();
+    // At the line's end, Right accepts the ghost-text like Tab; elsewhere it
+    // falls through to the plain caret move.
+    if ($keys->matches($key, Action::MoveRight) && $this->bestMatch() !== NULL) {
+      $this->applyCompletion();
 
       return;
     }
 
-    if ($keys->matches($key, Action::MoveLeft)) {
-      $this->cursor = max(0, $this->cursor - 1);
-
-      return;
-    }
-
-    if ($keys->matches($key, Action::MoveRight)) {
-      // At the line's end, Right accepts the ghost-text like Tab; elsewhere
-      // it just advances the caret.
-      if ($this->bestMatch() !== NULL) {
-        $this->applyCompletion();
-      }
-      else {
-        $this->cursor = min(strlen($this->buffer), $this->cursor + 1);
-      }
-
-      return;
-    }
-
-    if ($keys->matches($key, Action::InsertSpace)) {
-      $this->insert(' ');
-
-      return;
-    }
-
-    if ($key->isChar()) {
-      $this->insert($key->char ?? '');
-    }
-  }
-
-  /**
-   * Insert text at the cursor.
-   *
-   * @param string $char
-   *   The text to insert.
-   */
-  protected function insert(string $char): void {
-    $this->buffer = substr($this->buffer, 0, $this->cursor) . $char . substr($this->buffer, $this->cursor);
-    $this->cursor += strlen($char);
-  }
-
-  /**
-   * Delete the character before the cursor.
-   */
-  protected function backspace(): void {
-    if ($this->cursor > 0) {
-      $this->buffer = substr($this->buffer, 0, $this->cursor - 1) . substr($this->buffer, $this->cursor);
-      $this->cursor--;
-    }
-  }
-
-  /**
-   * The best completion candidate for the current buffer, if any.
-   *
-   * A candidate qualifies only when the caret sits at the end of a non-empty
-   * buffer and the buffer is a case-insensitive prefix of a strictly longer
-   * candidate; the first such candidate in declared order wins. Returns NULL
-   * when nothing completes, so the field behaves as a plain text input.
-   *
-   * @return string|null
-   *   The full candidate string, or NULL.
-   */
-  protected function bestMatch(): ?string {
-    if ($this->buffer === '' || $this->cursor !== strlen($this->buffer)) {
-      return NULL;
-    }
-
-    // Fold and measure by character, not byte, so non-ASCII candidates match
-    // case-insensitively and the suffix never splits mid-character.
-    $needle = mb_strtolower($this->buffer);
-    $length = mb_strlen($this->buffer);
-
-    foreach ($this->completions as $completion) {
-      if (mb_strlen($completion) > $length && str_starts_with(mb_strtolower($completion), $needle)) {
-        return $completion;
-      }
-    }
-
-    return NULL;
-  }
-
-  /**
-   * The ghost-text suffix shown after the caret, or an empty string when none.
-   *
-   * @return string
-   *   The suffix of the best candidate beyond the typed buffer.
-   */
-  protected function ghostSuffix(): string {
-    $match = $this->bestMatch();
-
-    return $match === NULL ? '' : mb_substr($match, mb_strlen($this->buffer));
-  }
-
-  /**
-   * Fill the buffer with the current completion candidate, when one applies.
-   */
-  protected function applyCompletion(): void {
-    $match = $this->bestMatch();
-
-    if ($match !== NULL) {
-      $this->buffer = $match;
-      $this->cursor = strlen($match);
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function liveValue(): mixed {
-    return $this->buffer;
+    $this->handleTextEditKey($key);
   }
 
   /**
    * {@inheritdoc}
    */
   public function view(ThemeInterface $theme): string {
-    $line = $this->caretLine($theme);
-
-    return $this->error === NULL ? $line : $line . "\n" . $theme->error($this->error);
+    return $this->withError($theme, $this->caretLine($theme));
   }
 
   /**
@@ -210,7 +103,7 @@ class TextWidget extends AbstractWidget {
     $suffix = $this->ghostSuffix();
     $ghost = $suffix === '' ? '' : $theme->ghost($suffix);
 
-    return substr($this->buffer, 0, $this->cursor) . $theme->caret() . substr($this->buffer, $this->cursor) . $ghost;
+    return $this->renderCaretLine($theme) . $ghost;
   }
 
 }

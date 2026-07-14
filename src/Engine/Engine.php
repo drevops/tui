@@ -19,9 +19,10 @@ use DrevOps\Tui\Translation\Translator;
  * Orchestrates the question lifecycle generically over a configuration.
  *
  * For each configured field the engine resolves a value (supplied input, else
- * a value detected in update mode, else the field default), runs its
- * validator and transformer, then settles derived values, conditional
- * activation and fix-ups to a fixpoint. Precedence per field is
+ * a value detected in update mode, else the field default) and normalizes the
+ * supplied inputs through their transformers, then settles derived values,
+ * conditional activation and fix-ups to a fixpoint, and finally validates the
+ * active supplied inputs. Precedence per field is
  * input > detected > derived > default. It never knows what any field means:
  * all behaviour comes from the form declaration, with the reusable static
  * validate()/transform() of a consumer class (resolved by field id) as the
@@ -35,20 +36,6 @@ class Engine {
    * The deriver for computed field values.
    */
   protected Deriver $deriver;
-
-  /**
-   * The provenance of each active field from the most recent collect().
-   *
-   * @var array<string,\DrevOps\Tui\Answers\Provenance>
-   */
-  protected array $lastProvenance = [];
-
-  /**
-   * The active answers from the most recent collect().
-   *
-   * @var array<string,mixed>
-   */
-  protected array $lastAnswers = [];
 
   /**
    * Construct an engine.
@@ -73,45 +60,129 @@ class Engine {
    * @param \DrevOps\Tui\Handler\Context $context
    *   The run context (destination directory, update flag).
    *
-   * @return array<string,mixed>
-   *   The collected answers of the active fields, keyed by field id.
+   * @return \DrevOps\Tui\Answers\Answers
+   *   The self-describing answer set with values and provenance.
    */
-  public function collect(array $inputs, Context $context): array {
+  public function collect(array $inputs, Context $context): Answers {
     $fields = $this->config->fields();
 
+    [$values, $sources] = $this->resolveAll($fields, $inputs, $context);
+    $values = $this->transformInputs($fields, $values, $sources);
+    [$rules, $pinned] = $this->deriveRules($fields, $sources);
+    [$active, $values] = $this->stabilize($fields, $values, $rules, $pinned);
+    $this->guardInputs($fields, $values, $sources, $active);
+
+    return Answers::forConfig($this->config, $this->activeAnswers($fields, $values, $active), $this->provenanceFor($fields, $sources, $active));
+  }
+
+  /**
+   * Resolve every field's initial value and its source, in field order.
+   *
+   * @param \DrevOps\Tui\Config\Field[] $fields
+   *   The fields, in order.
+   * @param array<string,mixed> $inputs
+   *   Pre-supplied values keyed by field id.
+   * @param \DrevOps\Tui\Handler\Context $context
+   *   The run context.
+   *
+   * @return array{array<string,mixed>,array<string,\DrevOps\Tui\Engine\Source>}
+   *   The resolved values and their sources, each keyed by field id.
+   */
+  protected function resolveAll(array $fields, array $inputs, Context $context): array {
     $values = [];
     $sources = [];
+
     foreach ($fields as $field) {
-      $resolved = new Context($context->directory, $values, $context->update, $context->version, $context->destination);
+      $resolved = new Context($context->directory, $values, $context->update, $context->version);
       [$value, $source] = $this->resolveInitial($field, $inputs, $resolved);
       $sources[$field->id] = $source;
       $values[$field->id] = $value;
     }
 
-    $derive_rules = [];
+    return [$values, $sources];
+  }
+
+  /**
+   * The derive rules and the pinned map of externally-supplied derive targets.
+   *
+   * @param \DrevOps\Tui\Config\Field[] $fields
+   *   The fields, in order.
+   * @param array<string,\DrevOps\Tui\Engine\Source> $sources
+   *   The initial source per field id.
+   *
+   * @return array{array<string,\DrevOps\Tui\Derive\Derive>,array<string,bool>}
+   *   The derive rules and the pinned map, each keyed by field id.
+   */
+  protected function deriveRules(array $fields, array $sources): array {
+    $rules = [];
     $pinned = [];
+
     foreach ($fields as $field) {
       if ($field->derive !== NULL) {
-        $derive_rules[$field->id] = $field->derive;
-        $pinned[$field->id] = in_array($sources[$field->id] ?? Source::Default, [Source::Input, Source::Detected], TRUE);
+        $rules[$field->id] = $field->derive;
+        $pinned[$field->id] = in_array($sources[$field->id], [Source::Input, Source::Detected], TRUE);
       }
     }
 
-    [$active, $values] = $this->stabilize($fields, $values, $derive_rules, $pinned);
+    return [$rules, $pinned];
+  }
 
+  /**
+   * Transform the supplied inputs so every later stage sees normalized values.
+   *
+   * Normalization happens before stabilization: conditions, derivations and
+   * fix-ups must evaluate against the transformed value (e.g. a trimmed
+   * string), not the raw input. Only supplied inputs transform: defaults and
+   * derived values are the configuration's own, and discovered values were
+   * validated (with a default fallback) at detection time.
+   *
+   * @param \DrevOps\Tui\Config\Field[] $fields
+   *   The fields, in order.
+   * @param array<string,mixed> $values
+   *   The resolved values keyed by field id.
+   * @param array<string,\DrevOps\Tui\Engine\Source> $sources
+   *   The initial source per field id.
+   *
+   * @return array<string,mixed>
+   *   The values, with the supplied inputs transformed.
+   */
+  protected function transformInputs(array $fields, array $values, array $sources): array {
+    foreach ($fields as $field) {
+      if ($sources[$field->id] === Source::Input) {
+        $values[$field->id] = $this->transformValue($field, $values[$field->id]);
+      }
+    }
+
+    return $values;
+  }
+
+  /**
+   * Validate the active supplied inputs, throwing on the first error.
+   *
+   * Only supplied inputs pass through the guard: defaults and derived values
+   * are the configuration's own, and discovered values were validated (with a
+   * default fallback) at detection time.
+   *
+   * @param \DrevOps\Tui\Config\Field[] $fields
+   *   The fields, in order.
+   * @param array<string,mixed> $values
+   *   The settled values keyed by field id.
+   * @param array<string,\DrevOps\Tui\Engine\Source> $sources
+   *   The initial source per field id.
+   * @param array<string,bool> $active
+   *   The active map.
+   *
+   * @throws \DrevOps\Tui\Engine\EngineException
+   *   When a supplied input fails its type, bounds, validator or options.
+   */
+  protected function guardInputs(array $fields, array $values, array $sources, array $active): void {
     foreach ($fields as $field) {
       if (!($active[$field->id] ?? FALSE)) {
         continue;
       }
-
-      // Only supplied inputs pass through the guards: defaults, discovered
-      // and derived values are the configuration's own. Transform first so
-      // validation sees the normalized value.
-      if (($sources[$field->id] ?? Source::Default) !== Source::Input) {
+      if ($sources[$field->id] !== Source::Input) {
         continue;
       }
-
-      $values[$field->id] = $this->transformValue($field, $values[$field->id]);
 
       $error = $this->validateValue($field, $values[$field->id]);
       if ($error !== NULL) {
@@ -120,40 +191,7 @@ class Engine {
           '@error' => $error,
         ]));
       }
-
-      $option_error = $field->optionError($values[$field->id]);
-      if ($option_error !== NULL) {
-        throw new EngineException(Translator::t('Invalid value for field "@id": @error', [
-          '@id' => $field->id,
-          '@error' => $option_error,
-        ]));
-      }
     }
-
-    $this->lastProvenance = $this->provenanceFor($fields, $sources, $active);
-    $this->lastAnswers = $this->activeAnswers($fields, $values, $active);
-
-    return $this->lastAnswers;
-  }
-
-  /**
-   * The provenance of each active field from the most recent collect().
-   *
-   * @return array<string,\DrevOps\Tui\Answers\Provenance>
-   *   The provenance keyed by field id.
-   */
-  public function provenance(): array {
-    return $this->lastProvenance;
-  }
-
-  /**
-   * The collected answers of the most recent collect() as an Answers model.
-   *
-   * @return \DrevOps\Tui\Answers\Answers
-   *   The self-describing answer set with values and provenance.
-   */
-  public function answers(): Answers {
-    return Answers::forConfig($this->config, $this->lastAnswers, $this->lastProvenance);
   }
 
   /**
@@ -176,7 +214,7 @@ class Engine {
 
     if ($context->update) {
       $detected = $this->discoverValue($field, $context);
-      if ($detected !== NULL) {
+      if ($detected !== NULL && $this->acceptsDetected($field, $detected)) {
         return [$detected, Source::Detected];
       }
     }
@@ -189,7 +227,26 @@ class Engine {
   }
 
   /**
-   * Validate a value: the declared validator, else a reusable static one.
+   * Whether a discovered value is safe to adopt for a field.
+   *
+   * Discovered values come from arbitrary project files, not the declaration,
+   * so one that fails the field's type, bounds or options falls back to the
+   * default instead of poisoning the answers.
+   *
+   * @param \DrevOps\Tui\Config\Field $field
+   *   The field.
+   * @param mixed $value
+   *   The discovered value.
+   *
+   * @return bool
+   *   TRUE when the value passes the field's shape and constraints.
+   */
+  protected function acceptsDetected(Field $field, mixed $value): bool {
+    return $field->type->acceptsValue($value) && $field->boundsViolation($value) === NULL && $field->optionError($value) === NULL;
+  }
+
+  /**
+   * Validate a supplied value: type, bounds, validator, then options.
    *
    * @param \DrevOps\Tui\Config\Field $field
    *   The field.
@@ -200,19 +257,22 @@ class Engine {
    *   An error message, or NULL when the value is valid.
    */
   protected function validateValue(Field $field, mixed $value): ?string {
-    $violation = $field->bounds?->violation($value) ?? $field->dateBounds?->violation($value);
+    if (!$field->type->acceptsValue($value)) {
+      return Translator::t('must be @constraint.', ['@constraint' => $field->type->valueKind()]);
+    }
+
+    $violation = $field->boundsViolation($value);
     if ($violation !== NULL) {
       return Translator::t('must be @constraint.', ['@constraint' => $violation]);
     }
 
     $validator = $field->validate ?? $this->handlers->validator($field->id);
-    if (!$validator instanceof \Closure) {
-      return NULL;
+    $error = $validator instanceof \Closure ? $validator($value) : NULL;
+    if (is_string($error) && $error !== '') {
+      return $error;
     }
 
-    $error = $validator($value);
-
-    return is_string($error) && $error !== '' ? $error : NULL;
+    return $field->optionError($value);
   }
 
   /**
@@ -276,6 +336,9 @@ class Engine {
       $active[$field->id] = TRUE;
     }
 
+    // A settled state exits below, so the bound only guards a non-converging
+    // cycle: field-count passes cover the longest possible chain, plus two for
+    // the activation and fix-up interplay.
     $limit = count($fields) + 2;
     for ($i = 0; $i <= $limit; $i++) {
       $derived = $this->deriver->derive($derive_rules, $values, $pinned);
@@ -321,7 +384,7 @@ class Engine {
         continue;
       }
 
-      $source = $sources[$field->id] ?? Source::Default;
+      $source = $sources[$field->id];
       $provenance[$field->id] = match (TRUE) {
         $source === Source::Detected => Provenance::Detected,
         $field->derive !== NULL && $source === Source::Input => Provenance::Override,

@@ -63,10 +63,11 @@ final class InputResolverTest extends TestCase {
     $this->assertSame([], (new InputResolver('APP_'))->resolve($this->fields(), '', []));
   }
 
-  public function testMalformedPromptsIgnored(): void {
-    $inputs = (new InputResolver('APP_'))->resolve($this->fields(), 'not json', ['APP_NAME' => 'Acme']);
+  public function testMalformedPromptsThrows(): void {
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessage('--prompts');
 
-    $this->assertSame(['name' => 'Acme'], $inputs);
+    (new InputResolver('APP_'))->resolve($this->fields(), 'not json', ['APP_NAME' => 'Acme']);
   }
 
   public function testPromptsFromFile(): void {
@@ -83,8 +84,12 @@ final class InputResolverTest extends TestCase {
     $this->assertSame('2026-07-15', $inputs['due']);
   }
 
-  public function testEnvName(): void {
-    $this->assertSame('APP_MACHINE_NAME', (new InputResolver('APP_'))->envName('machine_name'));
+  public function testEnvNameUppercasesTheFieldId(): void {
+    $fields = [new Field('machine_name', 'Machine', '', FieldType::Text, '')];
+
+    $inputs = (new InputResolver('APP_'))->resolve($fields, '', ['APP_MACHINE_NAME' => 'x']);
+
+    $this->assertSame(['machine_name' => 'x'], $inputs);
   }
 
   public function testFilePickerCoercion(): void {

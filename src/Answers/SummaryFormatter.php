@@ -19,6 +19,11 @@ use DrevOps\Tui\Translation\Translator;
 class SummaryFormatter {
 
   /**
+   * The fixed mask length for secret values, concealing their real length.
+   */
+  public const int MASK_LENGTH = 8;
+
+  /**
    * Format the answers grouped by their panel trails.
    *
    * @param \DrevOps\Tui\Answers\Answers $answers
@@ -32,20 +37,40 @@ class SummaryFormatter {
     $trail = [];
 
     foreach ($answers->items as $item) {
-      $common = 0;
-      while ($common < count($trail) && isset($item->panels[$common]) && $trail[$common] === $item->panels[$common]) {
-        $common++;
-      }
-
-      foreach (array_slice($item->panels, $common) as $offset => $title) {
-        $lines[] = str_repeat('  ', $common + $offset) . Translator::t($title);
-      }
-
+      $lines = array_merge($lines, $this->openPanels($trail, $item->panels));
       $trail = $item->panels;
-      $lines[] = str_repeat('  ', count($item->panels)) . Translator::t($item->label) . ': ' . $this->renderValue($item) . $this->badge($item->provenance);
+
+      $indent = str_repeat('  ', count($item->panels));
+      $lines[] = $indent . Translator::t($item->label) . ': ' . $this->renderValue($item) . $this->badge($item->provenance);
     }
 
     return implode("\n", $lines);
+  }
+
+  /**
+   * The heading lines for the panels an item newly enters.
+   *
+   * @param list<string> $trail
+   *   The previous item's panel trail.
+   * @param list<string> $panels
+   *   The current item's panel trail.
+   *
+   * @return list<string>
+   *   One indented heading line per panel the trail does not already cover.
+   */
+  protected function openPanels(array $trail, array $panels): array {
+    $common = 0;
+    while ($common < count($trail) && isset($panels[$common]) && $trail[$common] === $panels[$common]) {
+      $common++;
+    }
+
+    $lines = [];
+
+    foreach (array_slice($panels, $common) as $offset => $title) {
+      $lines[] = str_repeat('  ', $common + $offset) . Translator::t($title);
+    }
+
+    return $lines;
   }
 
   /**
@@ -62,7 +87,7 @@ class SummaryFormatter {
 
     // Secrets never print: a fixed-length mask hides both value and length.
     if ($answer->type === FieldType::Password) {
-      return is_string($value) && $value !== '' ? str_repeat('*', 8) : '';
+      return is_string($value) && $value !== '' ? str_repeat('*', self::MASK_LENGTH) : '';
     }
 
     if (is_bool($value)) {

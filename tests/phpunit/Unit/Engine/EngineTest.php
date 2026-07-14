@@ -39,21 +39,10 @@ final class EngineTest extends TestCase {
     $answers = $engine->collect(['spy' => 'given'], new Context('project'));
 
     // The supplied input flows through the discovered static transform.
-    $this->assertSame('given!', $answers['spy']);
+    $this->assertSame('given!', $answers->value('spy'));
     // A field with no input keeps its default untouched by the guards.
-    $this->assertSame('', $answers['plain']);
+    $this->assertSame('', $answers->value('plain'));
     // Lifecycle order per field: normalize first, then validate.
-    $this->assertSame(['transform', 'validate'], Spy::$calls);
-  }
-
-  public function testSuppliedInputWins(): void {
-    $engine = $this->engine(function (PanelBuilder $p): void {
-      $p->text('spy');
-    });
-
-    $answers = $engine->collect(['spy' => 'given'], new Context('project'));
-
-    $this->assertSame('given!', $answers['spy']);
     $this->assertSame(['transform', 'validate'], Spy::$calls);
   }
 
@@ -75,7 +64,7 @@ final class EngineTest extends TestCase {
 
     $answers = $engine->collect(['machine_name' => 'ACME'], new Context('project'));
 
-    $this->assertSame('acme', $answers['machine_name']);
+    $this->assertSame('acme', $answers->value('machine_name'));
   }
 
   #[DataProvider('dataProviderCollectRejectsNonSelectableOption')]
@@ -92,35 +81,35 @@ final class EngineTest extends TestCase {
     yield 'select unknown' => [static fn(PanelBuilder $p): FieldBuilder => self::choiceOptions($p->select('choice')), 'bogus', 'Invalid value for field "choice": value "bogus" is not one of: standard, minimal'];
     yield 'search disabled' => [static fn(PanelBuilder $p): FieldBuilder => self::choiceOptions($p->search('choice')), 'demo', 'Invalid value for field "choice": option "demo" is disabled: unavailable'];
     yield 'search unknown' => [static fn(PanelBuilder $p): FieldBuilder => self::choiceOptions($p->search('choice')), 'bogus', 'Invalid value for field "choice": value "bogus" is not one of: standard, minimal'];
-    yield 'multiselect disabled' => [static fn(PanelBuilder $p): FieldBuilder => self::choiceOptions($p->multiselect('choice')), ['demo'], 'Invalid value for field "choice": option "demo" is disabled: unavailable'];
-    yield 'multiselect unknown' => [static fn(PanelBuilder $p): FieldBuilder => self::choiceOptions($p->multiselect('choice')), ['bogus'], 'Invalid value for field "choice": value "bogus" is not one of: standard, minimal'];
-    yield 'multisearch disabled' => [static fn(PanelBuilder $p): FieldBuilder => self::choiceOptions($p->multisearch('choice')), ['demo'], 'Invalid value for field "choice": option "demo" is disabled: unavailable'];
-    yield 'multisearch unknown' => [static fn(PanelBuilder $p): FieldBuilder => self::choiceOptions($p->multisearch('choice')), ['bogus'], 'Invalid value for field "choice": value "bogus" is not one of: standard, minimal'];
+    yield 'multiselect disabled' => [static fn(PanelBuilder $p): FieldBuilder => self::choiceOptions($p->multiSelect('choice')), ['demo'], 'Invalid value for field "choice": option "demo" is disabled: unavailable'];
+    yield 'multiselect unknown' => [static fn(PanelBuilder $p): FieldBuilder => self::choiceOptions($p->multiSelect('choice')), ['bogus'], 'Invalid value for field "choice": value "bogus" is not one of: standard, minimal'];
+    yield 'multisearch disabled' => [static fn(PanelBuilder $p): FieldBuilder => self::choiceOptions($p->multiSearch('choice')), ['demo'], 'Invalid value for field "choice": option "demo" is disabled: unavailable'];
+    yield 'multisearch unknown' => [static fn(PanelBuilder $p): FieldBuilder => self::choiceOptions($p->multiSearch('choice')), ['bogus'], 'Invalid value for field "choice": value "bogus" is not one of: standard, minimal'];
   }
 
   public function testCollectAcceptsSelectableOptions(): void {
     $engine = $this->engine(function (PanelBuilder $p): void {
       $p->select('profile')->option('standard')->option('minimal');
-      $p->multiselect('mods')->option('a')->option('b');
+      $p->multiSelect('mods')->option('a')->option('b');
       $p->search('engine')->option('solr')->option('none');
-      $p->multisearch('tags')->option('x')->option('y');
+      $p->multiSearch('tags')->option('x')->option('y');
     });
 
     $answers = $engine->collect(['profile' => 'standard', 'mods' => ['a', 'b'], 'engine' => 'solr', 'tags' => ['x']], new Context('project'));
 
-    $this->assertSame('standard', $answers['profile']);
-    $this->assertSame(['a', 'b'], $answers['mods']);
-    $this->assertSame('solr', $answers['engine']);
-    $this->assertSame(['x'], $answers['tags']);
+    $this->assertSame('standard', $answers->value('profile'));
+    $this->assertSame(['a', 'b'], $answers->value('mods'));
+    $this->assertSame('solr', $answers->value('engine'));
+    $this->assertSame(['x'], $answers->value('tags'));
   }
 
   public function testCollectRejectsNonArrayMultiValue(): void {
     $engine = $this->engine(function (PanelBuilder $p): void {
-      $p->multiselect('mods')->option('a')->option('b');
+      $p->multiSelect('mods')->option('a')->option('b');
     });
 
     $this->expectException(EngineException::class);
-    $this->expectExceptionMessage('Invalid value for field "mods": value must be a list');
+    $this->expectExceptionMessage('Invalid value for field "mods": must be a list');
     $engine->collect(['mods' => 'notalist'], new Context('project'));
   }
 

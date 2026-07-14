@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Tests\Unit\Widget;
 
-use DrevOps\Tui\Input\ArrayKeyStream;
 use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
+use DrevOps\Tui\Testing\ArrayKeyStream;
+use DrevOps\Tui\Testing\WidgetRunner;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\PasswordWidget;
-use DrevOps\Tui\Widget\WidgetRunner;
+use DrevOps\Tui\Widget\Capability\TextEditCapableTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -19,6 +20,7 @@ use PHPUnit\Framework\TestCase;
  * Tests the password widget.
  */
 #[CoversClass(PasswordWidget::class)]
+#[CoversClass(TextEditCapableTrait::class)]
 #[Group('widget')]
 final class PasswordWidgetTest extends TestCase {
 
@@ -28,6 +30,13 @@ final class PasswordWidgetTest extends TestCase {
     $value = WidgetRunner::run($widget, ArrayKeyStream::of('s3cret', Key::named(KeyName::Enter)));
 
     $this->assertSame('s3cret', $value);
+  }
+
+  public function testMaskedViewCountsCharactersNotBytes(): void {
+    $widget = new PasswordWidget('éé');
+
+    // Two characters mask as exactly two glyphs, whatever their byte length.
+    $this->assertSame('**|', $widget->view(new DefaultTheme(76, ['color' => FALSE, 'unicode' => FALSE])));
   }
 
   public function testViewMasksEveryCharacter(): void {
@@ -82,6 +91,22 @@ final class PasswordWidgetTest extends TestCase {
     // Tab neither revealed the value nor was inserted as a character.
     $this->assertSame(3, substr_count($widget->view($theme), '•'));
     $this->assertStringNotContainsString('abc', $widget->view($theme));
+  }
+
+  public function testCancel(): void {
+    $widget = new PasswordWidget('x');
+
+    WidgetRunner::run($widget, ArrayKeyStream::of(Key::named(KeyName::Escape)));
+
+    $this->assertTrue($widget->isCancelled());
+  }
+
+  public function testToggleRevealInertWhenNotRevealable(): void {
+    $widget = new PasswordWidget('secret');
+
+    $widget->toggleReveal();
+
+    $this->assertStringNotContainsString('secret', $widget->view(new DefaultTheme()));
   }
 
   public function testRevealDoesNotChangeAcceptedValue(): void {

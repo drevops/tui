@@ -11,6 +11,9 @@ use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Theme\ThemeInterface;
 use DrevOps\Tui\Translation\Translator;
+use DrevOps\Tui\Widget\Capability\RevealCapableInterface;
+use DrevOps\Tui\Widget\Capability\TextEditCapableInterface;
+use DrevOps\Tui\Widget\Capability\TextEditCapableTrait;
 
 /**
  * Single-line text input rendered masked; the accepted value stays plain.
@@ -22,7 +25,9 @@ use DrevOps\Tui\Translation\Translator;
  *
  * @package DrevOps\Tui\Widget
  */
-class PasswordWidget extends TextWidget {
+class PasswordWidget extends AbstractWidget implements TextEditCapableInterface, RevealCapableInterface {
+
+  use TextEditCapableTrait;
 
   /**
    * The current live display mode.
@@ -49,7 +54,8 @@ class PasswordWidget extends TextWidget {
    *   Whether confirmation mode is enabled.
    */
   public function __construct(string $buffer = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL, protected bool $revealable = FALSE, protected bool $confirm = FALSE) {
-    parent::__construct($buffer, $validate, $transform);
+    parent::__construct($validate, $transform);
+    $this->initTextBuffer($buffer);
   }
 
   /**
@@ -63,12 +69,11 @@ class PasswordWidget extends TextWidget {
   /**
    * {@inheritdoc}
    */
-  #[\Override]
   public function handle(Key $key): void {
     $keys = $this->keys();
 
     if ($this->revealable && $keys->matches($key, Action::Reveal)) {
-      $this->display = $this->display->next();
+      $this->toggleReveal();
 
       return;
     }
@@ -79,7 +84,31 @@ class PasswordWidget extends TextWidget {
       return;
     }
 
-    parent::handle($key);
+    if ($this->handleCancel($key)) {
+      return;
+    }
+
+    if ($keys->matches($key, Action::Accept)) {
+      $this->accept($this->liveValue());
+
+      return;
+    }
+
+    $this->handleTextEditKey($key);
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * Cycles the live display between hidden, masked and plaintext; inert unless
+   * the reveal toggle is enabled. The stored value is never affected.
+   */
+  public function toggleReveal(): void {
+    if (!$this->revealable) {
+      return;
+    }
+
+    $this->display = $this->display->next();
   }
 
   /**
@@ -123,7 +152,6 @@ class PasswordWidget extends TextWidget {
   /**
    * {@inheritdoc}
    */
-  #[\Override]
   public function view(ThemeInterface $theme): string {
     $rows = [$this->renderLine($theme)];
 
@@ -131,17 +159,14 @@ class PasswordWidget extends TextWidget {
       $rows[] = $theme->footer(Translator::t('re-enter to confirm'));
     }
 
-    if ($this->error !== NULL) {
-      $rows[] = $theme->error($this->error);
-    }
-
-    return implode("\n", $rows);
+    return $this->withError($theme, implode("\n", $rows));
   }
 
   /**
    * {@inheritdoc}
    *
-   * The reveal toggle is only offered when the widget is revealable.
+   * The reveal toggle is the non-obvious action, so it leads when the widget
+   * is revealable; otherwise the base accept/cancel hints stand alone.
    */
   #[\Override]
   public function hints(): array {
@@ -149,7 +174,7 @@ class PasswordWidget extends TextWidget {
       return parent::hints();
     }
 
-    return [new Hint('accept', Action::Accept), new Hint('reveal', Action::Reveal), new Hint('cancel', Action::Cancel)];
+    return [new Hint('reveal', Action::Reveal), ...parent::hints()];
   }
 
   /**
@@ -164,8 +189,8 @@ class PasswordWidget extends TextWidget {
   protected function renderLine(ThemeInterface $theme): string {
     return match ($this->display) {
       PasswordDisplay::Hidden => $theme->caret(),
-      PasswordDisplay::Masked => str_repeat($theme->mask(), $this->cursor) . $theme->caret() . str_repeat($theme->mask(), strlen($this->buffer) - $this->cursor),
-      PasswordDisplay::Plaintext => substr($this->buffer, 0, $this->cursor) . $theme->caret() . substr($this->buffer, $this->cursor),
+      PasswordDisplay::Masked => str_repeat($theme->mask(), $this->cursor) . $theme->caret() . str_repeat($theme->mask(), mb_strlen($this->buffer, 'UTF-8') - $this->cursor),
+      PasswordDisplay::Plaintext => $this->renderCaretLine($theme),
     };
   }
 

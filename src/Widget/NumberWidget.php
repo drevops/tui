@@ -10,7 +10,11 @@ use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\Scope;
+use DrevOps\Tui\Theme\ThemeInterface;
 use DrevOps\Tui\Translation\Translator;
+use DrevOps\Tui\Widget\Capability\StepCapableInterface;
+use DrevOps\Tui\Widget\Capability\TextEditCapableInterface;
+use DrevOps\Tui\Widget\Capability\TextEditCapableTrait;
 
 /**
  * Integer input: digits with an optional leading minus, accepted as an int.
@@ -21,7 +25,11 @@ use DrevOps\Tui\Translation\Translator;
  *
  * @package DrevOps\Tui\Widget
  */
-class NumberWidget extends TextWidget {
+class NumberWidget extends AbstractWidget implements TextEditCapableInterface, StepCapableInterface {
+
+  use TextEditCapableTrait {
+    insert as protected insertText;
+  }
 
   /**
    * Construct a number widget.
@@ -36,7 +44,8 @@ class NumberWidget extends TextWidget {
    *   Optional bounds and step; NULL for a plain integer entry.
    */
   public function __construct(string $buffer = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL, protected ?NumberBounds $bounds = NULL) {
-    parent::__construct($buffer, $validate, $transform);
+    parent::__construct($validate, $transform);
+    $this->initTextBuffer($buffer);
   }
 
   /**
@@ -50,50 +59,57 @@ class NumberWidget extends TextWidget {
   /**
    * {@inheritdoc}
    */
-  #[\Override]
   public function handle(Key $key): void {
-    $bounds = $this->bounds;
+    $keys = $this->keys();
 
-    if ($bounds instanceof NumberBounds) {
-      $keys = $this->keys();
-
+    if ($this->bounds instanceof NumberBounds) {
       if ($keys->matches($key, Action::Increment)) {
-        $this->adjust($bounds, 1);
+        $this->stepBy(1);
 
         return;
       }
 
       if ($keys->matches($key, Action::Decrement)) {
-        $this->adjust($bounds, -1);
+        $this->stepBy(-1);
 
         return;
       }
     }
 
-    parent::handle($key);
+    if ($this->handleCancel($key)) {
+      return;
+    }
+
+    if ($keys->matches($key, Action::Accept)) {
+      $this->accept($this->liveValue());
+
+      return;
+    }
+
+    $this->handleTextEditKey($key);
   }
 
   /**
    * {@inheritdoc}
+   *
+   * Only a digit, or a leading minus not yet present, enters the buffer.
    */
-  #[\Override]
-  protected function insert(string $char): void {
-    if ($char === '-') {
+  public function insert(string $text): void {
+    if ($text === '-') {
       if ($this->cursor !== 0 || str_contains($this->buffer, '-')) {
         return;
       }
     }
-    elseif (!ctype_digit($char)) {
+    elseif (!ctype_digit($text)) {
       return;
     }
 
-    parent::insert($char);
+    $this->insertText($text);
   }
 
   /**
    * {@inheritdoc}
    */
-  #[\Override]
   protected function liveValue(): mixed {
     return (int) $this->buffer;
   }
@@ -114,17 +130,26 @@ class NumberWidget extends TextWidget {
   }
 
   /**
-   * Step the value in a direction, clamped to the bounds, and show the result.
+   * {@inheritdoc}
    *
-   * @param \DrevOps\Tui\Config\NumberBounds $bounds
-   *   The bounds driving the step and clamp.
-   * @param int $direction
-   *   Either 1 to increment or -1 to decrement.
+   * Each position is one bounds step, clamped to the range; without bounds the
+   * value has no step to move by, so the call is inert.
    */
-  protected function adjust(NumberBounds $bounds, int $direction): void {
-    $this->buffer = (string) $bounds->step((int) $this->buffer, $direction);
-    $this->cursor = strlen($this->buffer);
+  public function stepBy(int $delta): void {
+    if (!$this->bounds instanceof NumberBounds || $delta === 0) {
+      return;
+    }
+
+    $this->buffer = (string) $this->bounds->step((int) $this->buffer, $delta);
+    $this->cursor = mb_strlen($this->buffer, 'UTF-8');
     $this->error = NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function view(ThemeInterface $theme): string {
+    return $this->withError($theme, $this->renderCaretLine($theme));
   }
 
   /**

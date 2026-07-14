@@ -40,6 +40,7 @@ final class TranslationRenderTest extends TestCase {
   use ResetsTranslatorTrait;
 
   protected function setUp(): void {
+    parent::setUp();
     Translator::setShared(new Translator('es', [dirname(__DIR__, 2) . '/Fixtures/translations-render']));
   }
 

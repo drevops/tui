@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Tests\Unit\Testing;
 
-use DrevOps\Tui\Answers\Answers;
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Builder\PanelBuilder;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Testing\TuiTester;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
@@ -74,30 +74,36 @@ final class TuiTesterTest extends TestCase {
       ->version('1.2.3')
       ->directory('somewhere');
 
-    $this->assertInstanceOf(TuiTester::class, $tester);
-
     $answers = $tester->run(Key::named(KeyName::Down), Key::named(KeyName::Down), Key::named(KeyName::Enter));
 
-    $this->assertInstanceOf(Answers::class, $answers);
-    $this->assertNotSame('', $tester->output());
+    $this->assertSame('', $answers->value('name'));
+    // The colour option flowed through: the captured output carries ANSI.
+    $this->assertStringContainsString("\033[", $tester->output());
   }
 
-  public function testAnswersBeforeRunThrows(): void {
+  /**
+   * Every result accessor guards against being read before run().
+   *
+   * @param \Closure $access
+   *   Reads one result accessor off a tester.
+   */
+  #[DataProvider('dataProviderAccessorBeforeRunThrows')]
+  public function testAccessorBeforeRunThrows(\Closure $access): void {
     $this->expectException(\LogicException::class);
 
-    (new TuiTester($this->form()))->answers();
+    $access(new TuiTester($this->form()));
   }
 
-  public function testOutputBeforeRunThrows(): void {
-    $this->expectException(\LogicException::class);
-
-    (new TuiTester($this->form()))->output();
-  }
-
-  public function testIsCancelledBeforeRunThrows(): void {
-    $this->expectException(\LogicException::class);
-
-    (new TuiTester($this->form()))->isCancelled();
+  /**
+   * Data provider for testAccessorBeforeRunThrows().
+   *
+   * @return \Iterator<string,array{\Closure}>
+   *   One accessor closure per case.
+   */
+  public static function dataProviderAccessorBeforeRunThrows(): \Iterator {
+    yield 'answers' => [static fn(TuiTester $tester): mixed => $tester->answers()];
+    yield 'output' => [static fn(TuiTester $tester): mixed => $tester->output()];
+    yield 'is cancelled' => [static fn(TuiTester $tester): mixed => $tester->isCancelled()];
   }
 
   /**

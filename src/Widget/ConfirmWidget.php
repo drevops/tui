@@ -11,13 +11,14 @@ use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Theme\ThemeInterface;
 use DrevOps\Tui\Translation\Translator;
+use DrevOps\Tui\Widget\Capability\StepCapableInterface;
 
 /**
  * A yes/no toggle.
  *
  * @package DrevOps\Tui\Widget
  */
-class ConfirmWidget extends AbstractWidget {
+class ConfirmWidget extends AbstractWidget implements StepCapableInterface {
 
   /**
    * Construct a confirm widget.
@@ -58,7 +59,7 @@ class ConfirmWidget extends AbstractWidget {
     }
 
     if ($keys->matches($key, Action::Toggle)) {
-      $this->current = !$this->current;
+      $this->stepBy(1);
 
       return;
     }
@@ -76,6 +77,17 @@ class ConfirmWidget extends AbstractWidget {
 
   /**
    * {@inheritdoc}
+   *
+   * The domain is the yes/no pair, so any odd step flips the value.
+   */
+  public function stepBy(int $delta): void {
+    if ($delta % 2 !== 0) {
+      $this->current = !$this->current;
+    }
+  }
+
+  /**
+   * {@inheritdoc}
    */
   protected function liveValue(): mixed {
     return $this->current;
@@ -85,12 +97,10 @@ class ConfirmWidget extends AbstractWidget {
    * {@inheritdoc}
    */
   public function view(ThemeInterface $theme): string {
-    $marker_on = $theme->radio(TRUE);
-    $marker_off = $theme->radio(FALSE);
     $yes_label = $this->highlightLabel($theme, Translator::t('Yes'), $this->current);
     $no_label = $this->highlightLabel($theme, Translator::t('No'), !$this->current);
 
-    return $this->current ? $marker_on . ' ' . $yes_label . '  ' . $marker_off . ' ' . $no_label : $marker_off . ' ' . $yes_label . '  ' . $marker_on . ' ' . $no_label;
+    return $theme->radio($this->current) . ' ' . $yes_label . '  ' . $theme->radio(!$this->current) . ' ' . $no_label;
   }
 
   /**

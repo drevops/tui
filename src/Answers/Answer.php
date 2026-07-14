@@ -38,11 +38,11 @@ final readonly class Answer {
   public function __construct(
     public string $id,
     public mixed $value,
-    public Provenance $provenance = Provenance::Default,
-    public string $label = '',
-    public FieldType $type = FieldType::Text,
-    public int $weight = 0,
-    public array $panels = [],
+    public Provenance $provenance,
+    public string $label,
+    public FieldType $type,
+    public int $weight,
+    public array $panels,
   ) {
   }
 

@@ -11,10 +11,10 @@ use DrevOps\Tui\Discovery\DiscoverInterface;
 /**
  * Generates a machine-readable schema of every configured question.
  *
- * The shape mirrors the installer's schema (`{prompts: [{id, type, label,
- * description, options, default, required, depends_on}]}`) and extends each
- * entry with the TUI's native `when`, `derive` and `discover` rules, so
- * existing tooling keeps working while richer rules are available.
+ * Each prompt entry carries `{id, type, label, description, options, default,
+ * required}` plus the declared bounds and the `when`, `derive` and `discover`
+ * rules, so external tooling can drive or validate the form without loading
+ * the PHP declaration.
  *
  * @package DrevOps\Tui\Schema
  */

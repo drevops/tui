@@ -259,7 +259,7 @@ final class FieldBuilder {
    * @return $this
    *   The builder.
    */
-  public function confirm(bool $confirm = TRUE): self {
+  public function confirmation(bool $confirm = TRUE): self {
     $this->confirm = $confirm;
 
     return $this;
@@ -341,7 +341,7 @@ final class FieldBuilder {
    * @return $this
    *   The builder.
    */
-  public function start(string $directory): self {
+  public function startIn(string $directory): self {
     $this->pickerStart = $directory;
 
     return $this;
@@ -405,11 +405,11 @@ final class FieldBuilder {
   }
 
   /**
-   * Choice widgets only: bound the visible option list to a page size.
+   * List widgets only: bound the visible option list to a page size.
    *
    * Longer lists page around the cursor rather than overflowing the viewport.
-   * Honoured by the select, multiselect, suggest, search and multisearch
-   * widgets; ignored by other types.
+   * Honoured by the select, multiselect, suggest, search, multisearch,
+   * reorder and file picker widgets; ignored by other types.
    *
    * @param int $size
    *   The number of option rows shown at once; must be positive.
@@ -731,14 +731,7 @@ final class FieldBuilder {
       }
     }
 
-    $desired = [];
-    if ($this->hasDefault && is_array($this->default)) {
-      foreach ($this->default as $item) {
-        if (is_string($item)) {
-          $desired[] = $item;
-        }
-      }
-    }
+    $desired = $this->hasDefault ? Field::stringList($this->default) : [];
 
     return Field::canonicalOrder($values, $desired);
   }
