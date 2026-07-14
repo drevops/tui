@@ -227,11 +227,11 @@ final class ReorderWidgetTest extends TestCase {
   }
 
   public function testRejectsNonPositivePageSize(): void {
-    $this->assertRejectsNonPositivePageSize(static fn(int $size): ReorderWidget => new ReorderWidget(self::options(), pageSize: $size), -3);
+    $this->assertRejectsNonPositivePageSize(static fn(int $size): ReorderWidget => new ReorderWidget(self::options(), page_size: $size), -3);
   }
 
   public function testPagesLongList(): void {
-    $this->assertPagesAndFollowsCursor(static fn(int $size): ReorderWidget => new ReorderWidget(self::pagingOptions(), pageSize: $size));
+    $this->assertPagesAndFollowsCursor(static fn(int $size): ReorderWidget => new ReorderWidget(self::pagingOptions(), page_size: $size));
   }
 
   /**

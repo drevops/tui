@@ -88,7 +88,7 @@ class FilePickerWidget extends AbstractWidget {
    *   Optional validator (see AbstractWidget).
    * @param \Closure|null $transform
    *   Optional transformer (see AbstractWidget).
-   * @param int|null $pageSize
+   * @param int|null $page_size
    *   The number of entry rows shown at once before the list pages; NULL uses
    *   the default.
    */
@@ -101,13 +101,13 @@ class FilePickerWidget extends AbstractWidget {
     protected bool $multiple = FALSE,
     ?\Closure $validate = NULL,
     ?\Closure $transform = NULL,
-    ?int $pageSize = NULL,
+    ?int $page_size = NULL,
   ) {
     parent::__construct($validate, $transform);
 
     $this->root = $this->trimTrailingSlash($start !== '' ? $start : $this->currentDirectory());
     $this->cwd = $this->root;
-    $this->pageSize = $this->resolvePageSize($pageSize);
+    $this->pageSize = $this->resolvePageSize($page_size);
 
     $this->extensions = array_values(array_filter(array_map(
       static fn(string $extension): string => strtolower(ltrim($extension, '.')),

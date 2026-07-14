@@ -233,11 +233,11 @@ final class MultiSelectWidgetTest extends TestCase {
   }
 
   public function testRejectsNonPositivePageSize(): void {
-    $this->assertRejectsNonPositivePageSize(static fn(int $size): MultiSelectWidget => new MultiSelectWidget(['a' => 'A'], pageSize: $size), -3);
+    $this->assertRejectsNonPositivePageSize(static fn(int $size): MultiSelectWidget => new MultiSelectWidget(['a' => 'A'], page_size: $size), -3);
   }
 
   public function testPagesLongOptionList(): void {
-    $this->assertPagesAndFollowsCursor(static fn(int $size): MultiSelectWidget => new MultiSelectWidget(self::pagingOptions(), pageSize: $size));
+    $this->assertPagesAndFollowsCursor(static fn(int $size): MultiSelectWidget => new MultiSelectWidget(self::pagingOptions(), page_size: $size));
   }
 
 }

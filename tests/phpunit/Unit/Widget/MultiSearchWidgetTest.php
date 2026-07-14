@@ -125,7 +125,7 @@ final class MultiSearchWidgetTest extends TestCase {
   }
 
   public function testPagesLongOptionList(): void {
-    $this->assertPagesAndFollowsCursor(static fn(int $size): MultiSearchWidget => new MultiSearchWidget(self::pagingOptions(), pageSize: $size));
+    $this->assertPagesAndFollowsCursor(static fn(int $size): MultiSearchWidget => new MultiSearchWidget(self::pagingOptions(), page_size: $size));
   }
 
 }

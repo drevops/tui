@@ -143,11 +143,11 @@ final class SelectWidgetTest extends TestCase {
   }
 
   public function testRejectsNonPositivePageSize(): void {
-    $this->assertRejectsNonPositivePageSize(static fn(int $size): SelectWidget => new SelectWidget(['a' => 'A'], pageSize: $size), 0);
+    $this->assertRejectsNonPositivePageSize(static fn(int $size): SelectWidget => new SelectWidget(['a' => 'A'], page_size: $size), 0);
   }
 
   public function testPagesLongOptionList(): void {
-    $this->assertPagesAndFollowsCursor(static fn(int $size): SelectWidget => new SelectWidget(self::pagingOptions(), pageSize: $size));
+    $this->assertPagesAndFollowsCursor(static fn(int $size): SelectWidget => new SelectWidget(self::pagingOptions(), page_size: $size));
   }
 
   public function testHints(): void {

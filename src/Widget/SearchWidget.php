@@ -36,14 +36,14 @@ class SearchWidget extends AbstractWidget {
    *   Optional validator (see AbstractWidget).
    * @param \Closure|null $transform
    *   Optional transformer (see AbstractWidget).
-   * @param int|null $pageSize
+   * @param int|null $page_size
    *   The number of option rows shown at once before the list pages; NULL uses
    *   the default.
    */
-  public function __construct(array $options, string $default = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL, ?int $pageSize = NULL) {
+  public function __construct(array $options, string $default = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL, ?int $page_size = NULL) {
     parent::__construct($validate, $transform);
     $this->initSingleChoice($options, $default);
-    $this->pageSize = $this->resolvePageSize($pageSize);
+    $this->pageSize = $this->resolvePageSize($page_size);
   }
 
   /**

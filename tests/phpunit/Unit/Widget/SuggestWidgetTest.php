@@ -125,12 +125,12 @@ final class SuggestWidgetTest extends TestCase {
   }
 
   public function testRejectsNonPositivePageSize(): void {
-    $this->assertRejectsNonPositivePageSize(static fn(int $size): SuggestWidget => new SuggestWidget(['x'], pageSize: $size), 0);
+    $this->assertRejectsNonPositivePageSize(static fn(int $size): SuggestWidget => new SuggestWidget(['x'], page_size: $size), 0);
   }
 
   public function testPagesLongSuggestionList(): void {
     // The highlight starts detached (-1), so three Downs reach the third item.
-    $this->assertPagesAndFollowsCursor(static fn(int $size): SuggestWidget => new SuggestWidget(array_values(self::pagingOptions()), pageSize: $size), 3);
+    $this->assertPagesAndFollowsCursor(static fn(int $size): SuggestWidget => new SuggestWidget(array_values(self::pagingOptions()), page_size: $size), 3);
   }
 
   public function testHints(): void {

@@ -229,7 +229,7 @@ abstract class AbstractWidget implements WidgetInterface {
    * The builder rejects a non-positive page size, but a widget may be
    * constructed directly, so the invariant is enforced here too.
    *
-   * @param int|null $pageSize
+   * @param int|null $page_size
    *   The declared page size, or NULL to use the default.
    *
    * @return int
@@ -238,14 +238,14 @@ abstract class AbstractWidget implements WidgetInterface {
    * @throws \InvalidArgumentException
    *   When a declared page size is not positive.
    */
-  protected function resolvePageSize(?int $pageSize): int {
-    if ($pageSize !== NULL && $pageSize < 1) {
+  protected function resolvePageSize(?int $page_size): int {
+    if ($page_size !== NULL && $page_size < 1) {
       throw new \InvalidArgumentException(Translator::t('Page size must be a positive integer, @size given.', [
-        '@size' => $pageSize,
+        '@size' => $page_size,
       ]));
     }
 
-    return $pageSize ?? self::DEFAULT_PAGE_SIZE;
+    return $page_size ?? self::DEFAULT_PAGE_SIZE;
   }
 
   /**
