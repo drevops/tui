@@ -17,19 +17,19 @@ final readonly class CompositeCondition implements ConditionInterface {
   /**
    * Construct a composite condition.
    *
-   * @param \DrevOps\Tui\Condition\CompositeOperator $operator
+   * @param \DrevOps\Tui\Condition\CompositeOperator $compositeOperator
    *   How the conditions combine.
    * @param list<\DrevOps\Tui\Condition\ConditionInterface> $conditions
    *   The combined conditions (exactly one for Not).
    */
-  public function __construct(protected CompositeOperator $operator, protected array $conditions) {
+  public function __construct(protected CompositeOperator $compositeOperator, protected array $conditions) {
   }
 
   /**
    * {@inheritdoc}
    */
   public function matches(array $answers): bool {
-    if ($this->operator === CompositeOperator::Not) {
+    if ($this->compositeOperator === CompositeOperator::Not) {
       $first = $this->conditions[0] ?? NULL;
 
       return !$first instanceof ConditionInterface || !$first->matches($answers);
@@ -38,16 +38,16 @@ final readonly class CompositeCondition implements ConditionInterface {
     foreach ($this->conditions as $condition) {
       $matched = $condition->matches($answers);
 
-      if ($this->operator === CompositeOperator::Any && $matched) {
+      if ($this->compositeOperator === CompositeOperator::Any && $matched) {
         return TRUE;
       }
 
-      if ($this->operator === CompositeOperator::All && !$matched) {
+      if ($this->compositeOperator === CompositeOperator::All && !$matched) {
         return FALSE;
       }
     }
 
-    return $this->operator === CompositeOperator::All;
+    return $this->compositeOperator === CompositeOperator::All;
   }
 
   /**
@@ -67,13 +67,13 @@ final readonly class CompositeCondition implements ConditionInterface {
    * {@inheritdoc}
    */
   public function toArray(): array {
-    if ($this->operator === CompositeOperator::Not) {
+    if ($this->compositeOperator === CompositeOperator::Not) {
       $first = $this->conditions[0] ?? NULL;
 
       return ['not' => $first instanceof ConditionInterface ? $first->toArray() : []];
     }
 
-    return [$this->operator->value => array_map(static fn(ConditionInterface $condition): array => $condition->toArray(), $this->conditions)];
+    return [$this->compositeOperator->value => array_map(static fn(ConditionInterface $condition): array => $condition->toArray(), $this->conditions)];
   }
 
 }

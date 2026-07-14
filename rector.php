@@ -24,6 +24,7 @@ use Rector\Naming\Rector\Assign\RenameVariableToMatchMethodCallReturnTypeRector;
 use Rector\Naming\Rector\ClassMethod\RenameVariableToMatchNewTypeRector;
 use Rector\Naming\Rector\Foreach_\RenameForeachValueVariableToMatchMethodCallReturnTypeRector;
 use Rector\Naming\Rector\ClassMethod\RenameParamToMatchTypeRector;
+use Rector\CodingStyle\Rector\ClassMethod\MakeInheritedMethodVisibilitySameAsParentRector;
 use Rector\Php80\Rector\Switch_\ChangeSwitchToMatchRector;
 use Rector\PHPUnit\Set\PHPUnitSetList;
 use Rector\Strict\Rector\Empty_\DisallowedEmptyRuleFixerRector;
@@ -65,6 +66,11 @@ return RectorConfig::configure()
     RenameForeachValueVariableToMatchMethodCallReturnTypeRector::class,
     // Conflicts with Drupal's snake_case parameter naming (enforced by PHPCS).
     RenameParamToMatchTypeRector::class,
+    // The fixture deliberately widens protected theme helpers to public so
+    // tests can exercise them directly; matching the parent would undo that.
+    MakeInheritedMethodVisibilitySameAsParentRector::class => [
+      __DIR__ . '/tests/phpunit/Fixtures/Theme/ExposedTheme.php',
+    ],
     RenameVariableToMatchMethodCallReturnTypeRector::class,
     RenameVariableToMatchNewTypeRector::class,
     SimplifyEmptyCheckOnEmptyArrayRector::class,

@@ -116,8 +116,6 @@ final class Matcher {
   /**
    * Filter and rank items by the relevance of their text, best first.
    *
-   * @template T
-   *
    * @param list<T> $items
    *   The candidate items.
    * @param \Closure(T): ?string $text
@@ -127,6 +125,8 @@ final class Matcher {
    *
    * @return list<T>
    *   The matching items, most relevant first; ties keep their input order.
+   *
+   * @template T
    */
   protected function rank(array $items, \Closure $text, string $needle): array {
     $scores = [];

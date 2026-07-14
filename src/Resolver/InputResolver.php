@@ -25,7 +25,7 @@ class InputResolver {
   /**
    * Construct a resolver.
    *
-   * @param string $env_prefix
+   * @param string $envPrefix
    *   The prefix for per-question env variable names (e.g. "APP_").
    */
   public function __construct(protected string $envPrefix = '') {
@@ -87,9 +87,10 @@ class InputResolver {
    */
   protected function coerce(string $value, FieldType $type): mixed {
     $trimmed = trim($value);
+    $truthy = ['1', 'true', 'yes', 'on'];
 
     return match (TRUE) {
-      $type === FieldType::Confirm, $type === FieldType::Pause => in_array(strtolower($trimmed), ['1', 'true', 'yes', 'on'], TRUE),
+      $type === FieldType::Confirm, $type === FieldType::Pause => in_array(strtolower($trimmed), $truthy, TRUE),
       $type->collectsList() => $this->splitList($value),
       // Only an integral value coerces; anything else stays a string so the
       // engine's type check rejects it instead of it silently becoming 0.

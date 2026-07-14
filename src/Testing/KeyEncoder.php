@@ -6,15 +6,14 @@ namespace DrevOps\Tui\Testing;
 
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
-use DrevOps\Tui\Input\KeyParser;
 
 /**
  * Encodes a key into the terminal bytes a KeyParser decodes back into it.
  *
- * The inverse of {@see KeyParser}: it turns a Key into the canonical byte
- * sequence a real terminal would emit for that keypress, so scripted input can
- * be delivered through a terminal's read() and decoded back by the production
- * parser.
+ * The inverse of {@see \DrevOps\Tui\Input\KeyParser}: it turns a Key into the
+ * canonical byte sequence a real terminal would emit for that keypress, so
+ * scripted input can be delivered through a terminal's read() and decoded
+ * back by the production parser.
  *
  * @package DrevOps\Tui\Testing
  */

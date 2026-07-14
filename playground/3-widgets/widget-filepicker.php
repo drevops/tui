@@ -31,7 +31,8 @@ $form = Form::create('File picker widget')
   ->color(isset($opts['no-ansi']) ? FALSE : NULL)
   ->unicode(isset($opts['no-unicode']) ? FALSE : NULL)
   ->panel('main', 'File picker', function (PanelBuilder $p): void {
-    $p->filePicker('file', 'File picker')->startIn(__DIR__ . '/filepicker-tree')->filesOnly()->extensions(['yml', 'yaml']);
+    $tree = __DIR__ . '/filepicker-tree';
+    $p->filePicker('file', 'File picker')->startIn($tree)->filesOnly()->extensions(['yml', 'yaml']);
   });
 
 echo (new Tui($form))->run()->toJson() . "\n";

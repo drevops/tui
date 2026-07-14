@@ -149,10 +149,12 @@ class Engine {
    */
   protected function guardInputs(array $fields, array $values, array $sources, array $active): array {
     foreach ($fields as $field) {
-      if (!($active[$field->id] ?? FALSE) || $sources[$field->id] !== Source::Input) {
+      if (!($active[$field->id] ?? FALSE)) {
         continue;
       }
-
+      if ($sources[$field->id] !== Source::Input) {
+        continue;
+      }
       // Transform first so validation sees the normalized value.
       $values[$field->id] = $this->transformValue($field, $values[$field->id]);
 

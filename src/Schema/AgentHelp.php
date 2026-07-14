@@ -22,7 +22,7 @@ class AgentHelp {
    *
    * @param \DrevOps\Tui\Config\Config $config
    *   The configuration to describe.
-   * @param string $env_prefix
+   * @param string $envPrefix
    *   The prefix for per-question env variable names (e.g. "APP_").
    */
   public function __construct(protected Config $config, protected string $envPrefix = '') {

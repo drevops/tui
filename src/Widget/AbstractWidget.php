@@ -364,7 +364,7 @@ abstract class AbstractWidget implements WidgetInterface {
   }
 
   /**
-   * Append the themed validation error line to a rendered view, when one is set.
+   * Append the themed validation error line to a view, when an error is set.
    *
    * @param \DrevOps\Tui\Theme\ThemeInterface $theme
    *   The theme.

@@ -22,6 +22,10 @@ use DrevOps\Tui\Theme\DefaultTheme;
  */
 final class ExposedTheme extends DefaultTheme {
 
+  // phpcs:disable Generic.CodeAnalysis.UselessOverridingMethod.Found
+  // Each override exists purely to widen a protected helper to public; the
+  // parent call is the entire point, not an oversight.
+
   /**
    * {@inheritdoc}
    */
