@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\Tui\Widget;
+namespace DrevOps\Tui\Widget\Capability;
 
 /**
  * A widget whose visible rows narrow under a typed query.
  *
  * The match strategy (substring, fuzzy, per-directory) is the widget's own;
- * {@see ChoiceFilterTrait} carries the default implementation for the choice
+ * {@see FilterCapableTrait} carries the default implementation for the choice
  * widgets.
  *
- * @package DrevOps\Tui\Widget
+ * @package DrevOps\Tui\Widget\Capability
  */
 interface FilterCapableInterface {
 

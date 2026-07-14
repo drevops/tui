@@ -15,11 +15,11 @@ use DrevOps\Tui\Tests\Traits\AssertsPagingTrait;
 use DrevOps\Tui\Tests\Traits\MixedOptionsTrait;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\AbstractWidget;
-use DrevOps\Tui\Widget\ChoiceFilterTrait;
-use DrevOps\Tui\Widget\ChoiceListTrait;
-use DrevOps\Tui\Widget\MultiChoiceTrait;
+use DrevOps\Tui\Widget\Capability\FilterCapableTrait;
+use DrevOps\Tui\Widget\Capability\OptionsCapableTrait;
+use DrevOps\Tui\Widget\Capability\MultiSelectionCapableTrait;
 use DrevOps\Tui\Widget\MultiSelectWidget;
-use DrevOps\Tui\Widget\PageableTrait;
+use DrevOps\Tui\Widget\Capability\PagingCapableTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -29,10 +29,10 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass(MultiSelectWidget::class)]
 #[CoversClass(AbstractWidget::class)]
-#[CoversClass(ChoiceListTrait::class)]
-#[CoversClass(MultiChoiceTrait::class)]
-#[CoversClass(ChoiceFilterTrait::class)]
-#[CoversClass(PageableTrait::class)]
+#[CoversClass(OptionsCapableTrait::class)]
+#[CoversClass(MultiSelectionCapableTrait::class)]
+#[CoversClass(FilterCapableTrait::class)]
+#[CoversClass(PagingCapableTrait::class)]
 #[Group('widget')]
 final class MultiSelectWidgetTest extends TestCase {
 

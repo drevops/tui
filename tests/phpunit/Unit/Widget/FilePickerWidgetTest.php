@@ -15,7 +15,7 @@ use DrevOps\Tui\Testing\WidgetRunner;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\AbstractWidget;
 use DrevOps\Tui\Widget\FilePickerWidget;
-use DrevOps\Tui\Widget\PageableTrait;
+use DrevOps\Tui\Widget\Capability\PagingCapableTrait;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
@@ -26,7 +26,7 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass(FilePickerWidget::class)]
 #[CoversClass(AbstractWidget::class)]
-#[CoversClass(PageableTrait::class)]
+#[CoversClass(PagingCapableTrait::class)]
 #[Group('widget')]
 final class FilePickerWidgetTest extends TestCase {
 

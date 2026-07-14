@@ -69,7 +69,7 @@ return RectorConfig::configure()
     // Rector analyses a trait file on its own, so it cannot see the composing
     // class's list<string> property type and would cast strings to string.
     NullToStrictStringFuncCallArgRector::class => [
-      __DIR__ . '/src/Widget/CompletableTrait.php',
+      __DIR__ . '/src/Widget/Capability/CompletionCapableTrait.php',
     ],
     RenameVariableToMatchMethodCallReturnTypeRector::class,
     RenameVariableToMatchNewTypeRector::class,

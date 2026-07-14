@@ -8,7 +8,7 @@ use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Theme\DefaultTheme;
-use DrevOps\Tui\Widget\PagingCapableInterface;
+use DrevOps\Tui\Widget\Capability\PagingCapableInterface;
 use DrevOps\Tui\Widget\WidgetInterface;
 
 /**

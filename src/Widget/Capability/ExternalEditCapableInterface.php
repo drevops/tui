@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\Tui\Widget;
+namespace DrevOps\Tui\Widget\Capability;
 
 /**
  * A widget that can hand its buffer to an external editor.
@@ -10,7 +10,7 @@ namespace DrevOps\Tui\Widget;
  * The widget only raises the request; the driver launches the editor and
  * feeds the captured result back.
  *
- * @package DrevOps\Tui\Widget
+ * @package DrevOps\Tui\Widget\Capability
  */
 interface ExternalEditCapableInterface {
 

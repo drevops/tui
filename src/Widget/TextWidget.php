@@ -9,6 +9,10 @@ use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Widget\Capability\CompletionCapableInterface;
+use DrevOps\Tui\Widget\Capability\CompletionCapableTrait;
+use DrevOps\Tui\Widget\Capability\TextEditCapableInterface;
+use DrevOps\Tui\Widget\Capability\TextEditCapableTrait;
 
 /**
  * Single-line text input with a movable cursor and optional ghost-text.
@@ -17,8 +21,8 @@ use DrevOps\Tui\Theme\ThemeInterface;
  */
 class TextWidget extends AbstractWidget implements TextEditCapableInterface, CompletionCapableInterface {
 
-  use TextEditTrait;
-  use CompletableTrait;
+  use TextEditCapableTrait;
+  use CompletionCapableTrait;
 
   /**
    * Construct a text widget.

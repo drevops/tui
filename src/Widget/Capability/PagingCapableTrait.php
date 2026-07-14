@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\Tui\Widget;
+namespace DrevOps\Tui\Widget\Capability;
 
 use DrevOps\Tui\Render\Scroller;
 use DrevOps\Tui\Render\Viewport;
@@ -12,9 +12,9 @@ use DrevOps\Tui\Translation\Translator;
 /**
  * Paging behaviour: window a long list to a page that follows the cursor.
  *
- * @package DrevOps\Tui\Widget
+ * @package DrevOps\Tui\Widget\Capability
  */
-trait PageableTrait {
+trait PagingCapableTrait {
 
   /**
    * The page size applied when a field declares none.

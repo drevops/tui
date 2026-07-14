@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\Tui\Widget;
+namespace DrevOps\Tui\Widget\Capability;
 
 /**
  * A widget that can toggle the display of concealed content.
@@ -10,7 +10,7 @@ namespace DrevOps\Tui\Widget;
  * Revealing only changes what is drawn - a masked value, hidden entries -
  * never the collected value itself.
  *
- * @package DrevOps\Tui\Widget
+ * @package DrevOps\Tui\Widget\Capability
  */
 interface RevealCapableInterface {
 

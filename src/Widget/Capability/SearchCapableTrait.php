@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\Tui\Widget;
+namespace DrevOps\Tui\Widget\Capability;
 
 use DrevOps\Tui\Theme\ThemeInterface;
 
@@ -12,9 +12,9 @@ use DrevOps\Tui\Theme\ThemeInterface;
  * Ranks the filtered rows by fuzzy relevance, highlights the matched
  * characters, and draws the typed query as a search line.
  *
- * @package DrevOps\Tui\Widget
+ * @package DrevOps\Tui\Widget\Capability
  */
-trait FuzzySearchTrait {
+trait SearchCapableTrait {
 
   /**
    * Rank the option rows by fuzzy relevance to the query.

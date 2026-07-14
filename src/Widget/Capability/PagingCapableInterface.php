@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\Tui\Widget;
+namespace DrevOps\Tui\Widget\Capability;
 
 /**
  * A widget that windows a long list to a page that follows the cursor.
  *
- * {@see PageableTrait} carries the default implementation.
+ * {@see PagingCapableTrait} carries the default implementation.
  *
- * @package DrevOps\Tui\Widget
+ * @package DrevOps\Tui\Widget\Capability
  */
 interface PagingCapableInterface {
 

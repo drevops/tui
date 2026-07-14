@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\Tui\Widget;
+namespace DrevOps\Tui\Widget\Capability;
 
 use DrevOps\Tui\Config\Option;
 use DrevOps\Tui\Config\OptionKind;
@@ -17,9 +17,9 @@ use DrevOps\Tui\Theme\ThemeInterface;
  * separators, headings and disabled options are skipped), and those
  * non-selectable rows render as visual-only structure.
  *
- * @package DrevOps\Tui\Widget
+ * @package DrevOps\Tui\Widget\Capability
  */
-trait ChoiceListTrait {
+trait OptionsCapableTrait {
 
   /**
    * The option rows in display order.

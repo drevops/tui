@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\Tui\Widget;
+namespace DrevOps\Tui\Widget\Capability;
 
 /**
  * A widget whose value advances through an ordered (or cyclic) domain.
@@ -10,7 +10,7 @@ namespace DrevOps\Tui\Widget;
  * The domain is the widget's own: bounded integers step by the declared step,
  * a date cursor steps by days, a fixed value set cycles.
  *
- * @package DrevOps\Tui\Widget
+ * @package DrevOps\Tui\Widget\Capability
  */
 interface StepCapableInterface {
 

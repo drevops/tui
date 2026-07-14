@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\Tui\Widget;
+namespace DrevOps\Tui\Widget\Capability;
 
 use DrevOps\Tui\Config\Option;
 use DrevOps\Tui\Input\Action;
@@ -13,13 +13,13 @@ use DrevOps\Tui\Theme\ThemeInterface;
 /**
  * Single-choice behaviour: one cursor over the rows, one accepted value.
  *
- * Composes with {@see ChoiceListTrait}: the cursor moves over the visible
+ * Composes with {@see OptionsCapableTrait}: the cursor moves over the visible
  * rows, only ever resting on a selectable one, and accepting commits the
  * highlighted option's value.
  *
- * @package DrevOps\Tui\Widget
+ * @package DrevOps\Tui\Widget\Capability
  */
-trait SingleChoiceTrait {
+trait SelectionCapableTrait {
 
   /**
    * The highlighted index within the visible rows.

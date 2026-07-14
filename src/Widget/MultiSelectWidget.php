@@ -7,6 +7,14 @@ namespace DrevOps\Tui\Widget;
 use DrevOps\Tui\Config\Option;
 use DrevOps\Tui\Config\OptionKind;
 use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Widget\Capability\FilterCapableInterface;
+use DrevOps\Tui\Widget\Capability\FilterCapableTrait;
+use DrevOps\Tui\Widget\Capability\MultiSelectionCapableInterface;
+use DrevOps\Tui\Widget\Capability\MultiSelectionCapableTrait;
+use DrevOps\Tui\Widget\Capability\OptionsCapableInterface;
+use DrevOps\Tui\Widget\Capability\OptionsCapableTrait;
+use DrevOps\Tui\Widget\Capability\PagingCapableInterface;
+use DrevOps\Tui\Widget\Capability\PagingCapableTrait;
 
 /**
  * A checkbox list with type-to-filter and select-all/none.
@@ -22,10 +30,10 @@ class MultiSelectWidget extends AbstractWidget implements
   FilterCapableInterface,
   PagingCapableInterface {
 
-  use ChoiceListTrait;
-  use MultiChoiceTrait;
-  use ChoiceFilterTrait;
-  use PageableTrait;
+  use OptionsCapableTrait;
+  use MultiSelectionCapableTrait;
+  use FilterCapableTrait;
+  use PagingCapableTrait;
 
   /**
    * Construct a multiselect widget.

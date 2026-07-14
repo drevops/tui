@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\Tui\Widget;
+namespace DrevOps\Tui\Widget\Capability;
 
 use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Key;
@@ -14,9 +14,9 @@ use DrevOps\Tui\Input\Key;
  * Backspace widens them again; the match strategy itself (substring, fuzzy)
  * is the widget's own.
  *
- * @package DrevOps\Tui\Widget
+ * @package DrevOps\Tui\Widget\Capability
  */
-trait ChoiceFilterTrait {
+trait FilterCapableTrait {
 
   /**
    * The current type-to-filter text.

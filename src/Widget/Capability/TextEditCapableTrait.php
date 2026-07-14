@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\Tui\Widget;
+namespace DrevOps\Tui\Widget\Capability;
 
 use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Key;
@@ -14,9 +14,9 @@ use DrevOps\Tui\Theme\ThemeInterface;
  * All arithmetic is by character, not byte, so multibyte input edits and
  * renders correctly.
  *
- * @package DrevOps\Tui\Widget
+ * @package DrevOps\Tui\Widget\Capability
  */
-trait TextEditTrait {
+trait TextEditCapableTrait {
 
   /**
    * The live input buffer.

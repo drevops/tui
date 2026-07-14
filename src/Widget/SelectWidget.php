@@ -6,6 +6,12 @@ namespace DrevOps\Tui\Widget;
 
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Widget\Capability\OptionsCapableInterface;
+use DrevOps\Tui\Widget\Capability\OptionsCapableTrait;
+use DrevOps\Tui\Widget\Capability\PagingCapableInterface;
+use DrevOps\Tui\Widget\Capability\PagingCapableTrait;
+use DrevOps\Tui\Widget\Capability\SelectionCapableInterface;
+use DrevOps\Tui\Widget\Capability\SelectionCapableTrait;
 
 /**
  * A single-choice radio list.
@@ -14,9 +20,9 @@ use DrevOps\Tui\Theme\ThemeInterface;
  */
 class SelectWidget extends AbstractWidget implements OptionsCapableInterface, SelectionCapableInterface, PagingCapableInterface {
 
-  use ChoiceListTrait;
-  use SingleChoiceTrait;
-  use PageableTrait;
+  use OptionsCapableTrait;
+  use SelectionCapableTrait;
+  use PagingCapableTrait;
 
   /**
    * Construct a select widget.

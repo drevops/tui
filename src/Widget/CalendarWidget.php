@@ -15,6 +15,7 @@ use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Input\ScopedKeyMap;
 use DrevOps\Tui\Theme\ThemeInterface;
 use DrevOps\Tui\Translation\Translator;
+use DrevOps\Tui\Widget\Capability\StepCapableInterface;
 
 /**
  * A navigable month calendar returning a normalized ISO `Y-m-d` string.

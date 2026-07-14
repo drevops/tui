@@ -11,6 +11,7 @@ use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Theme\ThemeInterface;
 use DrevOps\Tui\Translation\Translator;
+use DrevOps\Tui\Widget\Capability\StepCapableInterface;
 
 /**
  * A yes/no toggle.

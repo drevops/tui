@@ -18,7 +18,7 @@ use DrevOps\Tui\Input\KeyParser;
 use DrevOps\Tui\Input\ScopedKeyMap;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Translation\Translator;
-use DrevOps\Tui\Widget\ExternalEditCapableInterface;
+use DrevOps\Tui\Widget\Capability\ExternalEditCapableInterface;
 use DrevOps\Tui\Widget\WidgetFactory;
 use DrevOps\Tui\Widget\WidgetInterface;
 

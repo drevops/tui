@@ -8,6 +8,10 @@ use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Widget\Capability\PagingCapableInterface;
+use DrevOps\Tui\Widget\Capability\PagingCapableTrait;
+use DrevOps\Tui\Widget\Capability\SearchCapableInterface;
+use DrevOps\Tui\Widget\Capability\TextEditCapableInterface;
 
 /**
  * An autocomplete text input fuzzy-filtering a fixed option set.
@@ -16,7 +20,7 @@ use DrevOps\Tui\Theme\ThemeInterface;
  */
 class SuggestWidget extends AbstractWidget implements SearchCapableInterface, TextEditCapableInterface, PagingCapableInterface {
 
-  use PageableTrait;
+  use PagingCapableTrait;
 
   /**
    * The highlighted suggestion index, or -1 for none.

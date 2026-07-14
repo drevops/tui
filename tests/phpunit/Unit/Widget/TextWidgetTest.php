@@ -11,8 +11,8 @@ use DrevOps\Tui\Testing\ArrayKeyStream;
 use DrevOps\Tui\Testing\WidgetRunner;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\AbstractWidget;
-use DrevOps\Tui\Widget\CompletableTrait;
-use DrevOps\Tui\Widget\TextEditTrait;
+use DrevOps\Tui\Widget\Capability\CompletionCapableTrait;
+use DrevOps\Tui\Widget\Capability\TextEditCapableTrait;
 use DrevOps\Tui\Widget\TextWidget;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
@@ -23,8 +23,8 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass(TextWidget::class)]
 #[CoversClass(AbstractWidget::class)]
-#[CoversClass(TextEditTrait::class)]
-#[CoversClass(CompletableTrait::class)]
+#[CoversClass(TextEditCapableTrait::class)]
+#[CoversClass(CompletionCapableTrait::class)]
 #[CoversClass(WidgetRunner::class)]
 #[Group('widget')]
 final class TextWidgetTest extends TestCase {

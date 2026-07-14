@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\Tui\Widget;
+namespace DrevOps\Tui\Widget\Capability;
 
 use DrevOps\Tui\Theme\ThemeInterface;
 
 /**
  * A widget that presents its query as a search: ranked rows, highlighted hits.
  *
- * {@see FuzzySearchTrait} carries the default implementation for the choice
+ * {@see SearchCapableTrait} carries the default implementation for the choice
  * widgets.
  *
- * @package DrevOps\Tui\Widget
+ * @package DrevOps\Tui\Widget\Capability
  */
 interface SearchCapableInterface {
 

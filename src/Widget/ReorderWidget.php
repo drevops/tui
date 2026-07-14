@@ -12,6 +12,9 @@ use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Widget\Capability\OptionsCapableInterface;
+use DrevOps\Tui\Widget\Capability\PagingCapableInterface;
+use DrevOps\Tui\Widget\Capability\PagingCapableTrait;
 
 /**
  * A ranking list: pick up the highlighted item and move it to reorder.
@@ -25,7 +28,7 @@ use DrevOps\Tui\Theme\ThemeInterface;
  */
 class ReorderWidget extends AbstractWidget implements OptionsCapableInterface, PagingCapableInterface {
 
-  use PageableTrait;
+  use PagingCapableTrait;
 
   /**
    * The items in their current arrangement.

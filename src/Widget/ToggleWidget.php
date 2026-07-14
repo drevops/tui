@@ -10,6 +10,7 @@ use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Widget\Capability\StepCapableInterface;
 
 /**
  * An inline switch between two labeled values.

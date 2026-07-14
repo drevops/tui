@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\Tui\Widget;
+namespace DrevOps\Tui\Widget\Capability;
 
 /**
  * A widget that collects a toggleable set of option values as a list.
  *
- * {@see MultiChoiceTrait} carries the default implementation.
+ * {@see MultiSelectionCapableTrait} carries the default implementation.
  *
- * @package DrevOps\Tui\Widget
+ * @package DrevOps\Tui\Widget\Capability
  */
 interface MultiSelectionCapableInterface {
 

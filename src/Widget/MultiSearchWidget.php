@@ -5,6 +5,16 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Widget;
 
 use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Widget\Capability\FilterCapableInterface;
+use DrevOps\Tui\Widget\Capability\FilterCapableTrait;
+use DrevOps\Tui\Widget\Capability\MultiSelectionCapableInterface;
+use DrevOps\Tui\Widget\Capability\MultiSelectionCapableTrait;
+use DrevOps\Tui\Widget\Capability\OptionsCapableInterface;
+use DrevOps\Tui\Widget\Capability\OptionsCapableTrait;
+use DrevOps\Tui\Widget\Capability\PagingCapableInterface;
+use DrevOps\Tui\Widget\Capability\PagingCapableTrait;
+use DrevOps\Tui\Widget\Capability\SearchCapableInterface;
+use DrevOps\Tui\Widget\Capability\SearchCapableTrait;
 
 /**
  * A checkbox list whose query filters by fuzzy match, shown as a search line.
@@ -18,11 +28,11 @@ class MultiSearchWidget extends AbstractWidget implements
   SearchCapableInterface,
   PagingCapableInterface {
 
-  use ChoiceListTrait;
-  use MultiChoiceTrait;
-  use ChoiceFilterTrait;
-  use FuzzySearchTrait;
-  use PageableTrait;
+  use OptionsCapableTrait;
+  use MultiSelectionCapableTrait;
+  use FilterCapableTrait;
+  use SearchCapableTrait;
+  use PagingCapableTrait;
 
   /**
    * Construct a multi-search widget.

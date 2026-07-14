@@ -18,10 +18,10 @@ use DrevOps\Tui\Tests\Traits\AssertsPagingTrait;
 use DrevOps\Tui\Tests\Traits\MixedOptionsTrait;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\AbstractWidget;
-use DrevOps\Tui\Widget\ChoiceListTrait;
-use DrevOps\Tui\Widget\PageableTrait;
+use DrevOps\Tui\Widget\Capability\OptionsCapableTrait;
+use DrevOps\Tui\Widget\Capability\PagingCapableTrait;
 use DrevOps\Tui\Widget\SelectWidget;
-use DrevOps\Tui\Widget\SingleChoiceTrait;
+use DrevOps\Tui\Widget\Capability\SelectionCapableTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -31,9 +31,9 @@ use PHPUnit\Framework\TestCase;
  */
 #[CoversClass(SelectWidget::class)]
 #[CoversClass(AbstractWidget::class)]
-#[CoversClass(ChoiceListTrait::class)]
-#[CoversClass(SingleChoiceTrait::class)]
-#[CoversClass(PageableTrait::class)]
+#[CoversClass(OptionsCapableTrait::class)]
+#[CoversClass(SelectionCapableTrait::class)]
+#[CoversClass(PagingCapableTrait::class)]
 #[Group('widget')]
 final class SelectWidgetTest extends TestCase {
 

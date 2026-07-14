@@ -8,6 +8,16 @@ use DrevOps\Tui\Config\Option;
 use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Widget\Capability\FilterCapableInterface;
+use DrevOps\Tui\Widget\Capability\FilterCapableTrait;
+use DrevOps\Tui\Widget\Capability\OptionsCapableInterface;
+use DrevOps\Tui\Widget\Capability\OptionsCapableTrait;
+use DrevOps\Tui\Widget\Capability\PagingCapableInterface;
+use DrevOps\Tui\Widget\Capability\PagingCapableTrait;
+use DrevOps\Tui\Widget\Capability\SearchCapableInterface;
+use DrevOps\Tui\Widget\Capability\SearchCapableTrait;
+use DrevOps\Tui\Widget\Capability\SelectionCapableInterface;
+use DrevOps\Tui\Widget\Capability\SelectionCapableTrait;
 
 /**
  * A single-choice list with fuzzy type-to-filter over the option labels.
@@ -24,11 +34,11 @@ class SearchWidget extends AbstractWidget implements
   SearchCapableInterface,
   PagingCapableInterface {
 
-  use ChoiceListTrait;
-  use SingleChoiceTrait;
-  use ChoiceFilterTrait;
-  use FuzzySearchTrait;
-  use PageableTrait;
+  use OptionsCapableTrait;
+  use SelectionCapableTrait;
+  use FilterCapableTrait;
+  use SearchCapableTrait;
+  use PagingCapableTrait;
 
   /**
    * Construct a search widget.

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\Tui\Widget;
+namespace DrevOps\Tui\Widget\Capability;
 
 use DrevOps\Tui\Config\FieldType;
 use DrevOps\Tui\Config\Option;
@@ -15,14 +15,14 @@ use DrevOps\Tui\Theme\ThemeInterface;
 /**
  * Multi-choice behaviour: a toggleable selection set collected as a list.
  *
- * Composes with {@see ChoiceListTrait} and {@see ChoiceFilterTrait}: the
+ * Composes with {@see OptionsCapableTrait} and {@see FilterCapableTrait}: the
  * cursor moves over the visible rows, Space toggles the highlighted option,
  * Right/Left select or deselect all visible options, and accepting commits
  * the selected values in display order.
  *
- * @package DrevOps\Tui\Widget
+ * @package DrevOps\Tui\Widget\Capability
  */
-trait MultiChoiceTrait {
+trait MultiSelectionCapableTrait {
 
   /**
    * The selected values as a set (value => TRUE).

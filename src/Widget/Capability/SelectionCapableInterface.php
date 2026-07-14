@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\Tui\Widget;
+namespace DrevOps\Tui\Widget\Capability;
 
 /**
  * A widget whose cursor picks exactly one option as its value.
  *
- * {@see SingleChoiceTrait} carries the default implementation.
+ * {@see SelectionCapableTrait} carries the default implementation.
  *
- * @package DrevOps\Tui\Widget
+ * @package DrevOps\Tui\Widget\Capability
  */
 interface SelectionCapableInterface {
 

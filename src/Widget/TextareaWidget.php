@@ -10,6 +10,9 @@ use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Widget\Capability\ExternalEditCapableInterface;
+use DrevOps\Tui\Widget\Capability\TextEditCapableInterface;
+use DrevOps\Tui\Widget\Capability\TextEditCapableTrait;
 
 /**
  * Multi-line text input: Enter inserts a newline, Tab accepts.
@@ -18,7 +21,7 @@ use DrevOps\Tui\Theme\ThemeInterface;
  */
 class TextareaWidget extends AbstractWidget implements TextEditCapableInterface, ExternalEditCapableInterface {
 
-  use TextEditTrait;
+  use TextEditCapableTrait;
 
   /**
    * Whether the external-editor handoff has been requested.

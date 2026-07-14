@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\Tui\Widget;
+namespace DrevOps\Tui\Widget\Capability;
 
 /**
  * Inline ghost-text completion over a character buffer.
  *
- * Composes with {@see TextEditTrait}: the buffer is completed to the first
- * declared candidate it is a case-insensitive prefix of.
+ * Composes with {@see TextEditCapableTrait}: the buffer is completed to the
+ * first declared candidate it is a case-insensitive prefix of.
  *
- * @package DrevOps\Tui\Widget
+ * @package DrevOps\Tui\Widget\Capability
  */
-trait CompletableTrait {
+trait CompletionCapableTrait {
 
   /**
    * The best completion candidate for the current buffer, if any.

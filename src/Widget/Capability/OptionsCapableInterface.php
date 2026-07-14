@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\Tui\Widget;
+namespace DrevOps\Tui\Widget\Capability;
 
 use DrevOps\Tui\Config\Option;
 use DrevOps\Tui\Theme\ThemeInterface;
@@ -11,10 +11,10 @@ use DrevOps\Tui\Theme\ThemeInterface;
  * A widget that presents a list of option rows.
  *
  * The rows are {@see Option} objects, so headings, separators and disabled
- * options travel with the selectable ones; {@see ChoiceListTrait} carries the
- * default implementation.
+ * options travel with the selectable ones; {@see OptionsCapableTrait} carries
+ * the default implementation.
  *
- * @package DrevOps\Tui\Widget
+ * @package DrevOps\Tui\Widget\Capability
  */
 interface OptionsCapableInterface {
 

@@ -11,6 +11,9 @@ use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Theme\ThemeInterface;
 use DrevOps\Tui\Translation\Translator;
+use DrevOps\Tui\Widget\Capability\RevealCapableInterface;
+use DrevOps\Tui\Widget\Capability\TextEditCapableInterface;
+use DrevOps\Tui\Widget\Capability\TextEditCapableTrait;
 
 /**
  * Single-line text input rendered masked; the accepted value stays plain.
@@ -24,7 +27,7 @@ use DrevOps\Tui\Translation\Translator;
  */
 class PasswordWidget extends AbstractWidget implements TextEditCapableInterface, RevealCapableInterface {
 
-  use TextEditTrait;
+  use TextEditCapableTrait;
 
   /**
    * The current live display mode.

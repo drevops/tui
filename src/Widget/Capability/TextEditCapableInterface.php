@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\Tui\Widget;
+namespace DrevOps\Tui\Widget\Capability;
 
 /**
  * A widget that edits a character buffer.
  *
- * {@see TextEditTrait} carries the default cursor-based implementation; an
- * append-only widget may implement the vocabulary directly.
+ * {@see TextEditCapableTrait} carries the default cursor-based implementation;
+ * an append-only widget may implement the vocabulary directly.
  *
- * @package DrevOps\Tui\Widget
+ * @package DrevOps\Tui\Widget\Capability
  */
 interface TextEditCapableInterface {
 

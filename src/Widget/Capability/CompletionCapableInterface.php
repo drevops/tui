@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\Tui\Widget;
+namespace DrevOps\Tui\Widget\Capability;
 
 /**
  * A widget offering inline ghost-text completion of its buffer.
  *
- * {@see CompletableTrait} carries the default implementation.
+ * {@see CompletionCapableTrait} carries the default implementation.
  *
- * @package DrevOps\Tui\Widget
+ * @package DrevOps\Tui\Widget\Capability
  */
 interface CompletionCapableInterface {
 

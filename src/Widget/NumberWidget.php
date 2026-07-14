@@ -12,6 +12,9 @@ use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Theme\ThemeInterface;
 use DrevOps\Tui\Translation\Translator;
+use DrevOps\Tui\Widget\Capability\StepCapableInterface;
+use DrevOps\Tui\Widget\Capability\TextEditCapableInterface;
+use DrevOps\Tui\Widget\Capability\TextEditCapableTrait;
 
 /**
  * Integer input: digits with an optional leading minus, accepted as an int.
@@ -24,7 +27,7 @@ use DrevOps\Tui\Translation\Translator;
  */
 class NumberWidget extends AbstractWidget implements TextEditCapableInterface, StepCapableInterface {
 
-  use TextEditTrait {
+  use TextEditCapableTrait {
     insert as protected insertText;
   }
 

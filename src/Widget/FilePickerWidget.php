@@ -14,6 +14,10 @@ use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Theme\ThemeInterface;
 use DrevOps\Tui\Translation\Translator;
+use DrevOps\Tui\Widget\Capability\FilterCapableInterface;
+use DrevOps\Tui\Widget\Capability\PagingCapableInterface;
+use DrevOps\Tui\Widget\Capability\PagingCapableTrait;
+use DrevOps\Tui\Widget\Capability\RevealCapableInterface;
 
 /**
  * A filesystem browser that selects a path, or several in multiple mode.
@@ -31,7 +35,7 @@ use DrevOps\Tui\Translation\Translator;
  */
 class FilePickerWidget extends AbstractWidget implements FilterCapableInterface, RevealCapableInterface, PagingCapableInterface {
 
-  use PageableTrait;
+  use PagingCapableTrait;
 
   /**
    * The start directory: where the browser opens and the floor it cannot pass.
