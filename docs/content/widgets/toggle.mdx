@@ -3,10 +3,13 @@ title: Toggle
 sidebar_position: 17
 ---
 
+import ThemedImage from '@theme/ThemedImage';
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
 # Toggle
 
 <p align="center">
-  <img src="/widget-toggle-dark-animated.svg" alt="Toggle widget" />
+  <ThemedImage sources={{light: useBaseUrl('/widget-toggle-light-animated.svg'), dark: useBaseUrl('/widget-toggle-dark-animated.svg')}} alt="Toggle widget" />
 </p>
 
 An inline switch between two labeled values. Arrows or Space flip, the first
@@ -26,12 +29,12 @@ $p->toggle('telemetry', 'Telemetry')->options(['enabled' => 'Enabled', 'disabled
   </tr>
   <tr>
     <td align="right"><strong>Unicode</strong></td>
-    <td><img src="/widget-toggle-dark-static.svg" alt="Toggle: Unicode + ANSI" /></td>
-    <td><img src="/widget-toggle-dark-static-no-ansi.svg" alt="Toggle: Unicode + No ANSI" /></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-toggle-light-static.svg'), dark: useBaseUrl('/widget-toggle-dark-static.svg')}} alt="Toggle: Unicode + ANSI" /></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-toggle-light-static-no-ansi.svg'), dark: useBaseUrl('/widget-toggle-dark-static-no-ansi.svg')}} alt="Toggle: Unicode + No ANSI" /></td>
   </tr>
   <tr>
     <td align="right"><strong>ASCII</strong></td>
-    <td><img src="/widget-toggle-dark-static-ascii.svg" alt="Toggle: ASCII + ANSI" /></td>
-    <td><img src="/widget-toggle-dark-static-ascii-no-ansi.svg" alt="Toggle: ASCII + No ANSI" /></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-toggle-light-static-ascii.svg'), dark: useBaseUrl('/widget-toggle-dark-static-ascii.svg')}} alt="Toggle: ASCII + ANSI" /></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-toggle-light-static-ascii-no-ansi.svg'), dark: useBaseUrl('/widget-toggle-dark-static-ascii-no-ansi.svg')}} alt="Toggle: ASCII + No ANSI" /></td>
   </tr>
 </table>

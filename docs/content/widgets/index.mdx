@@ -2,6 +2,9 @@
 title: Widgets
 ---
 
+import ThemedImage from '@theme/ThemedImage';
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
 # Widgets
 
 The widgets cover text entry, choices, filesystem browsing and gates.
@@ -11,7 +14,7 @@ Widgets pull their glyphs and colours from the theme, so each one is shown in al
 four display modes.
 
 <p align="center">
-  <img src="/widgets-dark-animated.svg" width="100%" alt="All widgets, one after another" />
+  <ThemedImage sources={{light: useBaseUrl('/widgets-light-animated.svg'), dark: useBaseUrl('/widgets-dark-animated.svg')}} alt="All widgets, one after another" width="100%" />
 </p>
 
 ## Text entry

@@ -3,10 +3,13 @@ title: Pause
 sidebar_position: 10
 ---
 
+import ThemedImage from '@theme/ThemedImage';
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
 # Pause
 
 <p align="center">
-  <img src="/widget-pause-dark-animated.svg" alt="Pause widget" />
+  <ThemedImage sources={{light: useBaseUrl('/widget-pause-light-animated.svg'), dark: useBaseUrl('/widget-pause-dark-animated.svg')}} alt="Pause widget" />
 </p>
 
 An acknowledgement gate: Enter (or Space) accepts `TRUE`. Headless runs
@@ -24,12 +27,12 @@ $p->pause('ready', 'Review the summary above');
   </tr>
   <tr>
     <td align="right"><strong>Unicode</strong></td>
-    <td><img src="/widget-pause-dark-static.svg" alt="Pause: Unicode + ANSI" /></td>
-    <td><img src="/widget-pause-dark-static-no-ansi.svg" alt="Pause: Unicode + No ANSI" /></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-pause-light-static.svg'), dark: useBaseUrl('/widget-pause-dark-static.svg')}} alt="Pause: Unicode + ANSI" /></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-pause-light-static-no-ansi.svg'), dark: useBaseUrl('/widget-pause-dark-static-no-ansi.svg')}} alt="Pause: Unicode + No ANSI" /></td>
   </tr>
   <tr>
     <td align="right"><strong>ASCII</strong></td>
-    <td><img src="/widget-pause-dark-static-ascii.svg" alt="Pause: ASCII + ANSI" /></td>
-    <td><img src="/widget-pause-dark-static-ascii-no-ansi.svg" alt="Pause: ASCII + No ANSI" /></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-pause-light-static-ascii.svg'), dark: useBaseUrl('/widget-pause-dark-static-ascii.svg')}} alt="Pause: ASCII + ANSI" /></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-pause-light-static-ascii-no-ansi.svg'), dark: useBaseUrl('/widget-pause-dark-static-ascii-no-ansi.svg')}} alt="Pause: ASCII + No ANSI" /></td>
   </tr>
 </table>

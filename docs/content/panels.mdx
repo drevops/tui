@@ -3,6 +3,9 @@ title: Panels and navigation
 sidebar_position: 4
 ---
 
+import ThemedImage from '@theme/ThemedImage';
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
 # Panels and navigation
 
 The interactive TUI is a full-screen panel browser: the root hub lists the form's
@@ -55,7 +58,7 @@ $form = Form::create('Site settings')
 ```
 
 <p align="center">
-  <img src="/nested-panels-dark-animated.svg" width="100%" alt="Nested panels demo" />
+  <ThemedImage sources={{light: useBaseUrl('/nested-panels-light-animated.svg'), dark: useBaseUrl('/nested-panels-dark-animated.svg')}} alt="Nested panels demo" width="100%" />
 </p>
 
 ## Bordered panels
@@ -81,5 +84,5 @@ $form = Form::create('New service')
 ```
 
 <p align="center">
-  <img src="/bordered-panels-dark-animated.svg" width="100%" alt="Panel browser with a rounded border" />
+  <ThemedImage sources={{light: useBaseUrl('/bordered-panels-light-animated.svg'), dark: useBaseUrl('/bordered-panels-dark-animated.svg')}} alt="Panel browser with a rounded border" width="100%" />
 </p>

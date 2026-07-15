@@ -3,6 +3,9 @@ title: Display modes
 sidebar_position: 12
 ---
 
+import ThemedImage from '@theme/ThemedImage';
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
 # Display modes
 
 The TUI adapts to the terminal: glyphs follow the locale (a `UTF` locale in
@@ -19,12 +22,12 @@ the same scaffolder in each combination:
   </tr>
   <tr>
     <td align="right"><strong>Unicode</strong></td>
-    <td><img src="/scaffolder-dark-animated.svg" width="100%" alt="Scaffolder: Unicode + ANSI" /></td>
-    <td><img src="/scaffolder-dark-animated-no-ansi.svg" width="100%" alt="Scaffolder: Unicode + No ANSI" /></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/scaffolder-light-animated.svg'), dark: useBaseUrl('/scaffolder-dark-animated.svg')}} alt="Scaffolder: Unicode + ANSI" width="100%" /></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/scaffolder-light-animated-no-ansi.svg'), dark: useBaseUrl('/scaffolder-dark-animated-no-ansi.svg')}} alt="Scaffolder: Unicode + No ANSI" width="100%" /></td>
   </tr>
   <tr>
     <td align="right"><strong>ASCII</strong></td>
-    <td><img src="/scaffolder-dark-animated-ascii.svg" width="100%" alt="Scaffolder: ASCII + ANSI" /></td>
-    <td><img src="/scaffolder-dark-animated-ascii-no-ansi.svg" width="100%" alt="Scaffolder: ASCII + No ANSI" /></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/scaffolder-light-animated-ascii.svg'), dark: useBaseUrl('/scaffolder-dark-animated-ascii.svg')}} alt="Scaffolder: ASCII + ANSI" width="100%" /></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/scaffolder-light-animated-ascii-no-ansi.svg'), dark: useBaseUrl('/scaffolder-dark-animated-ascii-no-ansi.svg')}} alt="Scaffolder: ASCII + No ANSI" width="100%" /></td>
   </tr>
 </table>

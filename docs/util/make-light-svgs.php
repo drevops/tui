@@ -10,10 +10,12 @@ declare(strict_types=1);
  * backgrounds, so only the surface and foreground greys are inverted.
  * Deterministic and exact: each light twin shares its dark source's geometry.
  *
- * Each widget mirrors its whole dark set - both motions and all four display
- * modes - into light, so the per-widget naming matrix is symmetric. The panel
- * heroes only ship the animated unicode-colour variant, so only that is
- * mirrored.
+ * Every subject that renders in the standard palette gets a light twin for each
+ * of its dark variants, so the documentation can serve either scheme with a
+ * ThemedImage. Each widget mirrors its whole dark set (both motions, all four
+ * display modes); the panel heroes and demos mirror whatever dark variants they
+ * ship. The ocean theme is deliberately excluded - it demonstrates a custom
+ * palette, not the default light/dark, so it has no meaningful light twin.
  */
 
 // strtr() applies all pairs simultaneously against the original, so the
@@ -27,7 +29,7 @@ $map = [
 
 $dir = __DIR__ . '/../../docs/assets';
 
-$widgets = [
+$subjects = [
   'widget-calendar',
   'widget-confirm',
   'widget-filepicker',
@@ -44,24 +46,28 @@ $widgets = [
   'widget-text',
   'widget-textarea',
   'widget-toggle',
+  'widget-select-groups',
+  'widget-multiselect-groups',
+  'widget-password-reveal',
+  'scaffolder',
+  'widgets',
+  'bordered-panels',
+  'borderless-panels',
+  'nested-panels',
+  'discovery',
 ];
 
-$panels = ['bordered-panels', 'borderless-panels'];
-
-// Every dark variant of each widget, plus only the animated hero of each panel.
-// A widget with no dark variants means the dark pass has not run or is broken,
-// so stop rather than emit a partial light set.
+// Mirror every dark variant of each subject. A subject with no dark variant
+// means the dark pass has not run or is broken, so stop rather than emit a
+// partial light set.
 $sources = [];
-foreach ($widgets as $widget) {
-  $matches = glob($dir . '/' . $widget . '-dark-*.svg');
+foreach ($subjects as $subject) {
+  $matches = glob($dir . '/' . $subject . '-dark-*.svg');
   if ($matches === FALSE || $matches === []) {
-    throw new \RuntimeException(sprintf('No dark variants found for widget "%s".', $widget));
+    throw new \RuntimeException(sprintf('No dark variants found for "%s".', $subject));
   }
 
   $sources = array_merge($sources, $matches);
-}
-foreach ($panels as $panel) {
-  $sources[] = $dir . '/' . $panel . '-dark-animated.svg';
 }
 
 $count = 0;

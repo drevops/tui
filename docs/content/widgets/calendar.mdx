@@ -3,10 +3,13 @@ title: Calendar
 sidebar_position: 1
 ---
 
+import ThemedImage from '@theme/ThemedImage';
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
 # Calendar
 
 <p align="center">
-  <img src="/widget-calendar-dark-animated.svg" alt="Calendar widget" />
+  <ThemedImage sources={{light: useBaseUrl('/widget-calendar-light-animated.svg'), dark: useBaseUrl('/widget-calendar-dark-animated.svg')}} alt="Calendar widget" />
 </p>
 
 A month calendar that returns a normalized ISO `YYYY-MM-DD` date. Left/Right move
@@ -41,12 +44,12 @@ $p->calendar('release', 'Release date')->minDate('2026-01-01')->maxDate('2026-12
   </tr>
   <tr>
     <td align="right"><strong>Unicode</strong></td>
-    <td><img src="/widget-calendar-dark-static.svg" alt="Calendar: Unicode + ANSI" /></td>
-    <td><img src="/widget-calendar-dark-static-no-ansi.svg" alt="Calendar: Unicode + No ANSI" /></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-calendar-light-static.svg'), dark: useBaseUrl('/widget-calendar-dark-static.svg')}} alt="Calendar: Unicode + ANSI" /></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-calendar-light-static-no-ansi.svg'), dark: useBaseUrl('/widget-calendar-dark-static-no-ansi.svg')}} alt="Calendar: Unicode + No ANSI" /></td>
   </tr>
   <tr>
     <td align="right"><strong>ASCII</strong></td>
-    <td><img src="/widget-calendar-dark-static-ascii.svg" alt="Calendar: ASCII + ANSI" /></td>
-    <td><img src="/widget-calendar-dark-static-ascii-no-ansi.svg" alt="Calendar: ASCII + No ANSI" /></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-calendar-light-static-ascii.svg'), dark: useBaseUrl('/widget-calendar-dark-static-ascii.svg')}} alt="Calendar: ASCII + ANSI" /></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-calendar-light-static-ascii-no-ansi.svg'), dark: useBaseUrl('/widget-calendar-dark-static-ascii-no-ansi.svg')}} alt="Calendar: ASCII + No ANSI" /></td>
   </tr>
 </table>

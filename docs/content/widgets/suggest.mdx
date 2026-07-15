@@ -3,10 +3,13 @@ title: Suggest
 sidebar_position: 14
 ---
 
+import ThemedImage from '@theme/ThemedImage';
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
 # Suggest
 
 <p align="center">
-  <img src="/widget-suggest-dark-animated.svg" alt="Suggest widget" />
+  <ThemedImage sources={{light: useBaseUrl('/widget-suggest-light-animated.svg'), dark: useBaseUrl('/widget-suggest-dark-animated.svg')}} alt="Suggest widget" />
 </p>
 
 Free text with autocomplete over a fixed option set: as you type, the suggestions
@@ -27,12 +30,12 @@ $p->suggest('php_version', 'PHP version')->default('8.4')->options(['8.1' => '8.
   </tr>
   <tr>
     <td align="right"><strong>Unicode</strong></td>
-    <td><img src="/widget-suggest-dark-static.svg" alt="Suggest: Unicode + ANSI" /></td>
-    <td><img src="/widget-suggest-dark-static-no-ansi.svg" alt="Suggest: Unicode + No ANSI" /></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-suggest-light-static.svg'), dark: useBaseUrl('/widget-suggest-dark-static.svg')}} alt="Suggest: Unicode + ANSI" /></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-suggest-light-static-no-ansi.svg'), dark: useBaseUrl('/widget-suggest-dark-static-no-ansi.svg')}} alt="Suggest: Unicode + No ANSI" /></td>
   </tr>
   <tr>
     <td align="right"><strong>ASCII</strong></td>
-    <td><img src="/widget-suggest-dark-static-ascii.svg" alt="Suggest: ASCII + ANSI" /></td>
-    <td><img src="/widget-suggest-dark-static-ascii-no-ansi.svg" alt="Suggest: ASCII + No ANSI" /></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-suggest-light-static-ascii.svg'), dark: useBaseUrl('/widget-suggest-dark-static-ascii.svg')}} alt="Suggest: ASCII + ANSI" /></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-suggest-light-static-ascii-no-ansi.svg'), dark: useBaseUrl('/widget-suggest-dark-static-ascii-no-ansi.svg')}} alt="Suggest: ASCII + No ANSI" /></td>
   </tr>
 </table>
