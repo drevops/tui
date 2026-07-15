@@ -30,7 +30,7 @@ use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Testing\TuiTester;
-use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Theme\Mode;
 
 require dirname(__DIR__, 2) . '/vendor/autoload.php';
 
@@ -101,7 +101,7 @@ function widgetSpecs(string $tree): array {
       'rows' => 8,
     ],
     'multiselect' => [
-      'form' => Form::create('MultiSelect widget')->panel('main', 'MultiSelect', function (PanelBuilder $p): void { $p->multiselect('multiselect', 'MultiSelect')->default(['redis'])->options(['redis' => 'Redis', 'solr' => 'Solr', 'clamav' => 'ClamAV']); }),
+      'form' => Form::create('MultiSelect widget')->panel('main', 'MultiSelect', function (PanelBuilder $p): void { $p->multiSelect('multiselect', 'MultiSelect')->default(['redis'])->options(['redis' => 'Redis', 'solr' => 'Solr', 'clamav' => 'ClamAV']); }),
       'keys' => [...$open, $down, $space],
       'rows' => 8,
     ],
@@ -121,7 +121,7 @@ function widgetSpecs(string $tree): array {
       'rows' => 10,
     ],
     'multisearch' => [
-      'form' => Form::create('MultiSearch widget')->panel('main', 'MultiSearch', function (PanelBuilder $p): void { $p->multisearch('multisearch', 'MultiSearch')->default(['redis'])->options(['redis' => 'Redis', 'solr' => 'Solr', 'clamav' => 'ClamAV', 'memcached' => 'Memcached']); }),
+      'form' => Form::create('MultiSearch widget')->panel('main', 'MultiSearch', function (PanelBuilder $p): void { $p->multiSearch('multisearch', 'MultiSearch')->default(['redis'])->options(['redis' => 'Redis', 'solr' => 'Solr', 'clamav' => 'ClamAV', 'memcached' => 'Memcached']); }),
       'keys' => [...$open, 'c', 'l', $space],
       'rows' => 10,
     ],
@@ -141,12 +141,12 @@ function widgetSpecs(string $tree): array {
       'rows' => 6,
     ],
     'filepicker' => [
-      'form' => Form::create('File picker widget')->panel('main', 'File picker', function (PanelBuilder $p) use ($tree): void { $p->filePicker('file', 'File picker')->start($tree)->filesOnly()->extensions(['yml', 'yaml']); }),
+      'form' => Form::create('File picker widget')->panel('main', 'File picker', function (PanelBuilder $p) use ($tree): void { $p->filePicker('file', 'File picker')->startIn($tree)->filesOnly()->extensions(['yml', 'yaml']); }),
       'keys' => [...$open, $down],
       'rows' => 8,
     ],
     'multifilepicker' => [
-      'form' => Form::create('Multi file picker widget')->panel('main', 'Multi file picker', function (PanelBuilder $p) use ($tree): void { $p->multiFilePicker('files', 'Multi file picker')->start($tree); }),
+      'form' => Form::create('Multi file picker widget')->panel('main', 'Multi file picker', function (PanelBuilder $p) use ($tree): void { $p->multiFilePicker('files', 'Multi file picker')->startIn($tree); }),
       'keys' => [...$open, $space, $down, $space],
       'rows' => 10,
     ],
@@ -169,7 +169,7 @@ function widgetSpecs(string $tree): array {
  */
 function renderWidget(string $name, array $spec, string $assets_dir, string $util_dir, string $tmp_dir): void {
   $tester = (new TuiTester($spec['form']))
-    ->options(['color' => TRUE, 'unicode' => TRUE, 'mode' => ThemeInterface::MODE_DARK])
+    ->options(['color' => TRUE, 'unicode' => TRUE, 'mode' => Mode::Dark])
     ->rows($spec['rows']);
   $tester->run(...$spec['keys']);
 
