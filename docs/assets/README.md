@@ -28,9 +28,9 @@ is the dark, Unicode, colour animation, and
 ## What generates what
 
 - **`render-widget-svgs.php`** - every per-widget asset, driven deterministically
-  through the library's own keystroke harness with no terminal: the animated hero
-  (`widget-*-dark-animated.svg`) and the four static display-mode screenshots the
-  docs grid shows (`widget-*-dark-static*.svg`).
+  through the library's own keystroke harness with no terminal: the animated
+  cards in all four display modes (`widget-*-dark-animated*.svg`, the unmarked one
+  being the hero) and the matching static screenshots (`widget-*-dark-static*.svg`).
 - **`make-light-svgs.php`** - the `*-light-animated.svg` twins, recoloured from
   the dark originals.
 - **`update-assets.php`** - the full panel demos, the widget montage and the

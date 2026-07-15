@@ -8,12 +8,12 @@
  * The full-demo montages and panel walkthroughs are recorded from a live pty
  * (see update-assets.php), but the per-widget assets are single-field forms
  * that the library's own scripted-keystroke harness drives with no terminal at
- * all. For each widget this renders two things: the animated hero README.md and
- * the documentation site embed (every rendered frame captured, laid out into an
- * asciicast and handed to the shared svg-term renderer), and the four static
- * display-mode screenshots the documentation grid shows (the opened editor in
- * each glyph and colour combination). The result is reproducible on any machine
- * (and in CI), unlike a pty recording.
+ * all. For each widget, in all four glyph and colour display modes, this renders
+ * both an animation (every rendered frame captured, laid out into an asciicast
+ * and handed to the shared svg-term renderer; the unicode-colour one is the hero
+ * README.md and the docs pages embed) and a static screenshot of the opened
+ * editor (the four the docs grid shows). The result is reproducible on any
+ * machine (and in CI), unlike a pty recording.
  *
  * Dependencies: node, npm (for the svg-term renderer shared with update-assets).
  *
@@ -44,10 +44,10 @@ const HOLD_FIRST = 1.1;
 const HOLD_STEP = 0.65;
 const HOLD_LAST = 2.2;
 
-// The four display modes shown side by side on each widget's documentation
-// page, keyed by the filename suffix that distinguishes them. Unicode and
-// colour are the unmarked default.
-const STATIC_MODES = [
+// The four glyph and colour display modes, keyed by the filename suffix that
+// distinguishes them. Both the animated cards and the static screenshots are
+// rendered in every mode. Unicode and colour are the unmarked default.
+const DISPLAY_MODES = [
   '' => ['color' => TRUE, 'unicode' => TRUE],
   '-ascii' => ['color' => TRUE, 'unicode' => FALSE],
   '-no-ansi' => ['color' => FALSE, 'unicode' => TRUE],
@@ -177,29 +177,29 @@ function widgetSpecs(string $tree): array {
  *   A scratch directory for the intermediate cast.
  */
 function renderWidget(string $name, array $spec, string $assets_dir, string $util_dir, string $tmp_dir): void {
-  $tester = (new TuiTester($spec['form']))
-    ->options(['color' => TRUE, 'unicode' => TRUE, 'mode' => Mode::Dark])
-    ->rows($spec['rows']);
-  $tester->run(...$spec['keys']);
+  foreach (DISPLAY_MODES as $suffix => $mode) {
+    $tester = (new TuiTester($spec['form']))
+      ->options(['color' => $mode['color'], 'unicode' => $mode['unicode'], 'mode' => Mode::Dark])
+      ->rows($spec['rows']);
+    $tester->run(...$spec['keys']);
 
-  $frames = splitFrames($tester->output());
+    $frames = splitFrames($tester->output());
 
-  if (count($frames) < 2) {
-    throw new \RuntimeException(sprintf('Widget "%s" produced %d frame(s); an animation needs at least two.', $name, count($frames)));
+    if (count($frames) < 2) {
+      throw new \RuntimeException(sprintf('Widget "%s" (%s) produced %d frame(s); an animation needs at least two.', $name, $suffix === '' ? 'default' : $suffix, count($frames)));
+    }
+
+    $cast_file = $tmp_dir . '/widget-' . $name . '-animated' . $suffix . '.cast';
+    file_put_contents($cast_file, buildCast($frames, $spec['rows']));
+
+    // The unmarked mode is the unicode, colour hero README.md embeds;
+    // make-light-svgs.php derives its light twin.
+    $svg_file = $assets_dir . '/widget-' . $name . '-dark-animated' . $suffix . '.svg';
+    renderCast($cast_file, $svg_file, $util_dir);
+    file_put_contents($svg_file, slowAnimation((string) file_get_contents($svg_file), ANIMATION_SLOWDOWN));
   }
 
-  $cast_file = $tmp_dir . '/widget-' . $name . '.cast';
-  file_put_contents($cast_file, buildCast($frames, $spec['rows']));
-
-  // The dark, unicode, colour hero card README.md embeds; make-light-svgs.php
-  // derives the light twin from it.
-  $svg_file = $assets_dir . '/widget-' . $name . '-dark-animated.svg';
-  renderCast($cast_file, $svg_file, $util_dir);
-
-  $svg = slowAnimation((string) file_get_contents($svg_file), ANIMATION_SLOWDOWN);
-  file_put_contents($svg_file, $svg);
-
-  printf("  widget-%s-dark-animated.svg (%d frames, %d cols)\n", $name, count($frames), castWidth($frames));
+  printf("  widget-%s-dark-animated*.svg (4 display modes)\n", $name);
 }
 
 /**
@@ -228,7 +228,7 @@ function renderStaticVariants(string $name, array $spec, string $assets_dir, str
   $open = $name === 'pause' ? [$enter] : [$enter, $enter];
   $clear = Ansi::ESC . '[2J' . Ansi::ESC . '[H';
 
-  foreach (STATIC_MODES as $suffix => $mode) {
+  foreach (DISPLAY_MODES as $suffix => $mode) {
     $tester = (new TuiTester($spec['form']))
       ->options(['color' => $mode['color'], 'unicode' => $mode['unicode'], 'mode' => Mode::Dark])
       ->rows($spec['rows']);
