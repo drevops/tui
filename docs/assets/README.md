@@ -31,8 +31,9 @@ is the dark, Unicode, colour animation, and
   through the library's own keystroke harness with no terminal: the animated
   cards in all four display modes (`widget-*-dark-animated*.svg`, the unmarked one
   being the hero) and the matching static screenshots (`widget-*-dark-static*.svg`).
-- **`make-light-svgs.php`** - the `*-light-animated.svg` twins, recoloured from
-  the dark originals.
+- **`make-light-svgs.php`** - the light twins, recoloured from the dark
+  originals: each widget's whole dark set (both motions, all four display modes)
+  mirrored into `widget-*-light-*.svg`, plus each panel hero's `-light-animated`.
 - **`update-assets.php`** - the full panel demos, the widget montage and the
   option-group / password-reveal / discovery frames, recorded from a live
   terminal.
