@@ -343,53 +343,6 @@ class DefaultTheme implements ThemeInterface {
   }
 
   /**
-   * The SGR for a field value.
-   *
-   * The default theme uses the same green in both modes; a curated subclass may
-   * vary it per mode instead.
-   *
-   * Flows through {@see emphasize()}, so it must not contain a bare "1" or "2"
-   * part (those are the weight codes emphasize() strips) - a 256-colour index
-   * like "38;5;114" is safe.
-   *
-   * @return string
-   *   The value SGR.
-   */
-  protected function valueSgr(): string {
-    return '32';
-  }
-
-  /**
-   * The SGR for the scroll indicators, per mode.
-   *
-   * @return string
-   *   The indicator SGR.
-   */
-  protected function indicatorSgr(): string {
-    return $this->isDark ? '1;33' : '35';
-  }
-
-  /**
-   * The SGR for query-matched characters, per mode.
-   *
-   * @return string
-   *   The match-highlight SGR.
-   */
-  protected function matchSgr(): string {
-    return $this->isDark ? '1;33' : '1;35';
-  }
-
-  /**
-   * The SGR for the frame border, per mode.
-   *
-   * @return string
-   *   The border SGR.
-   */
-  protected function borderSgr(): string {
-    return $this->isDark ? '36' : '34';
-  }
-
-  /**
    * {@inheritdoc}
    */
   public function title(string $text): string {
@@ -407,7 +360,7 @@ class DefaultTheme implements ThemeInterface {
    * {@inheritdoc}
    */
   public function value(string $text, bool $selected = FALSE): string {
-    return $this->paint($this->emphasize($this->valueSgr(), $selected), $text);
+    return $this->paint($this->emphasize('32', $selected), $text);
   }
 
   /**
@@ -449,7 +402,7 @@ class DefaultTheme implements ThemeInterface {
    * {@inheritdoc}
    */
   public function indicator(string $text): string {
-    return $this->paint($this->indicatorSgr(), $text);
+    return $this->paint($this->isDark ? '1;33' : '35', $text);
   }
 
   /**
@@ -463,7 +416,7 @@ class DefaultTheme implements ThemeInterface {
    * {@inheritdoc}
    */
   public function highlightMatch(string $text): string {
-    return $this->paint($this->matchSgr(), $text);
+    return $this->paint($this->isDark ? '1;33' : '1;35', $text);
   }
 
   /**
@@ -505,7 +458,7 @@ class DefaultTheme implements ThemeInterface {
    * {@inheritdoc}
    */
   public function border(string $text): string {
-    return $this->paint($this->borderSgr(), $text);
+    return $this->paint($this->isDark ? '36' : '34', $text);
   }
 
   /**

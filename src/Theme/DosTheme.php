@@ -12,8 +12,8 @@ namespace DrevOps\Tui\Theme;
  * the classic 16-colour SGR set rather than 256-colour. It is built for a blue
  * terminal background (its previews are shown on the DOS blue); on a light
  * terminal it falls back to the darker CGA tones so it stays legible. It
- * overrides the five palette accessors and defaults to a double-line border,
- * and inherits the default theme's layout and glyphs.
+ * declares its colours by overriding the appearance atoms directly and defaults
+ * to a double-line border, and inherits the default theme's layout and glyphs.
  *
  * @package DrevOps\Tui\Theme
  */
@@ -23,40 +23,72 @@ class DosTheme extends DefaultTheme {
    * {@inheritdoc}
    */
   #[\Override]
-  protected function accentSgr(): string {
-    return $this->isDark ? '1;97' : '34';
+  public function title(string $text): string {
+    return $this->paint($this->isDark ? '1;97' : '34', $text);
   }
 
   /**
    * {@inheritdoc}
    */
   #[\Override]
-  protected function valueSgr(): string {
-    return $this->isDark ? '96' : '36';
+  public function value(string $text, bool $selected = FALSE): string {
+    return $this->paint($this->emphasize($this->isDark ? '96' : '36', $selected), $text);
   }
 
   /**
    * {@inheritdoc}
    */
   #[\Override]
-  protected function indicatorSgr(): string {
-    return $this->isDark ? '93' : '33';
+  public function indicator(string $text): string {
+    return $this->paint($this->isDark ? '93' : '33', $text);
   }
 
   /**
    * {@inheritdoc}
    */
   #[\Override]
-  protected function matchSgr(): string {
-    return $this->isDark ? '93' : '33';
+  public function highlight(string $text): string {
+    return $this->paint($this->isDark ? '1;97' : '34', $text);
   }
 
   /**
    * {@inheritdoc}
    */
   #[\Override]
-  protected function borderSgr(): string {
-    return $this->isDark ? '97' : '34';
+  public function highlightMatch(string $text): string {
+    return $this->paint($this->isDark ? '93' : '33', $text);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  public function border(string $text): string {
+    return $this->paint($this->isDark ? '97' : '34', $text);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  public function marker(bool $selected): string {
+    return $selected ? $this->paint($this->isDark ? '1;97' : '34', $this->unicode ? '❯' : '>') : ' ';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  public function radio(bool $on): string {
+    return $on ? $this->paint($this->isDark ? '1;97' : '34', $this->unicode ? '●' : '(*)') : ($this->unicode ? '○' : '( )');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  public function caret(): string {
+    return $this->paint($this->isDark ? '1;97' : '34', $this->unicode ? '█' : '|');
   }
 
   /**

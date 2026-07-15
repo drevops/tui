@@ -88,25 +88,31 @@ Form::create('My form')->theme('frost');                        // auto-detect
 
 ## Writing a theme
 
-A custom theme subclasses `DefaultTheme` and overrides only what it changes -
-every role it does not mention keeps working, including the dark/light mode. The
-quickest way to recolour is the palette seam: five per-role style accessors the
-appearance atoms read.
+A custom theme subclasses `DefaultTheme` and declares its palette by overriding
+the appearance atoms it wants to change - `title()`, `value()`, `marker()`,
+`border()` and so on. Each atom returns its text wrapped in an ANSI style code
+with `paint()`; every role it does not mention keeps the default, including the
+dark/light mode.
 
 ```php
 use DrevOps\Tui\Theme\DefaultTheme;
 
 class AquaTheme extends DefaultTheme {
-  protected function accentSgr(): string { return $this->isDark ? '1;38;5;44' : '1;38;5;24'; }
-  protected function valueSgr(): string  { return $this->isDark ? '38;5;80'   : '38;5;30'; }
+  public function title(string $text): string {
+    return $this->paint($this->isDark ? '1;38;5;44' : '1;38;5;24', $text);
+  }
+
+  public function value(string $text, bool $selected = FALSE): string {
+    return $this->paint($this->emphasize($this->isDark ? '38;5;80' : '38;5;30', $selected), $text);
+  }
 }
 ```
 
-`accentSgr()` drives the title, the highlighted row, the marker, the radio dot
-and the caret; `valueSgr()`, `indicatorSgr()`, `matchSgr()` and `borderSgr()`
-colour the remaining roles. For finer control, override an individual appearance
-atom (`title()`, `marker()`, `caret()`…) or a `render*()` method to change how an
-element is laid out.
+Override as many atoms as the palette needs - the built-in themes each redeclare
+the accent-coloured atoms (`title()`, `highlight()`, `marker()`, `radio()`,
+`caret()`) plus `value()`, `indicator()`, `highlightMatch()` and `border()`. To
+change how an element is laid out rather than coloured, override a `render*()`
+method instead.
 
 Lowest friction: a form names the class directly, with no registration:
 
