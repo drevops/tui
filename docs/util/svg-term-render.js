@@ -11,6 +11,8 @@
  * Options:
  *   --at <ms>          Timestamp of frame to render
  *   --line-height <n>  Line height multiplier (default: 1.0)
+ *   --light            Render on a light surface (for light-mode palettes)
+ *   --dos              Render on a CGA blue surface (for the dos theme)
  *   --font-family <s>  Font family (default: Consolas, monospace)
  */
 
@@ -27,6 +29,8 @@ if (args.length < 2 || args.includes('--help')) {
   console.log('Options:');
   console.log('  --at <ms>          Timestamp of frame to render');
   console.log('  --line-height <n>  Line height multiplier (default: 1.0)');
+  console.log('  --light            Render on a light surface (for light-mode palettes)');
+  console.log('  --dos              Render on a CGA blue surface (for the dos theme)');
   console.log('  --font-family <s>  Font family (default: Consolas, monospace)');
   process.exit(args.includes('--help') ? 0 : 1);
 }
@@ -37,6 +41,8 @@ const outputFile = args[1];
 // Parse options.
 let at = null;
 let lineHeight = 1.0;
+let light = false;
+let dos = false;
 let fontFamily = 'Consolas, "Courier New", Courier, "Liberation Mono", monospace';
 
 for (let i = 2; i < args.length; i++) {
@@ -46,6 +52,10 @@ for (let i = 2; i < args.length; i++) {
   } else if (args[i] === '--line-height' && i + 1 < args.length) {
     lineHeight = parseFloat(args[i + 1]);
     i++;
+  } else if (args[i] === '--light') {
+    light = true;
+  } else if (args[i] === '--dos') {
+    dos = true;
   } else if (args[i] === '--font-family' && i + 1 < args.length) {
     fontFamily = args[i + 1];
     i++;
@@ -146,6 +156,29 @@ const theme = {
   lineHeight: lineHeight,
   fontFamily: fontFamily,
 };
+
+// A light surface for the themes' light palettes. The 256-colour accents are
+// fixed xterm RGB and already read on both backgrounds; only the surface and
+// the greyscale text (default and bold) need to flip to dark, mirroring
+// make-light-svgs.php so the light twins share one look.
+if (light) {
+  theme.background = [250, 250, 250]; // #fafafa
+  theme.text = [56, 58, 66];          // #383a42
+  theme.bold = [40, 44, 52];          // #282c34
+}
+
+// The MS-DOS blue surface for the dos theme: the classic CGA blue background
+// with the bright CGA foreground palette, so the 16-colour dos theme reads as
+// an EDIT.COM / QBasic screen rather than the Atom One Dark defaults.
+if (dos) {
+  theme.background = [0, 0, 170];      // #0000aa CGA blue
+  theme.text = [170, 170, 170];        // #aaaaaa CGA light grey
+  theme.bold = [255, 255, 255];        // #ffffff
+  theme.brightWhite = [255, 255, 255]; // #ffffff
+  theme.brightCyan = [85, 255, 255];   // #55ffff CGA bright cyan
+  theme.brightYellow = [255, 255, 85]; // #ffff55 CGA bright yellow
+  theme.brightBlack = [128, 128, 128]; // #808080 - legible on the blue
+}
 
 // Render options.
 const options = {

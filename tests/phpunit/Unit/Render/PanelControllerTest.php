@@ -17,6 +17,7 @@ use DrevOps\Tui\Render\Terminal;
 use DrevOps\Tui\Testing\BufferedTerminal;
 use DrevOps\Tui\Testing\KeyEncoder;
 use DrevOps\Tui\Theme\DefaultTheme;
+use DrevOps\Tui\Theme\DosTheme;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -399,6 +400,30 @@ final class PanelControllerTest extends TestCase {
     $this->assertFalse($controller->isCancelled());
     // The loop rendered the hub before submitting.
     $this->assertStringContainsString('Demo', Ansi::strip($terminal->output()));
+  }
+
+  public function testRunPaintsTheThemeBackground(): void {
+    $config = Form::create('Demo')
+      ->panel('general', 'General', function (PanelBuilder $p): void {
+        $p->text('name', 'Name');
+      })
+      ->build();
+    $keys = [KeyEncoder::encode(Key::named(KeyName::Enter))];
+
+    // The dos theme washes the screen blue: run() hands its background to the
+    // terminal, which fills every rendered frame with it.
+    $dos = new PanelController($config, new DosTheme(40), ['name' => 'Acme'], []);
+    $painted = new BufferedTerminal($keys);
+    $dos->run($painted);
+    $this->assertSame('44', $painted->paintedBackground);
+    $this->assertStringContainsString("\033[44m", $painted->output());
+
+    // A theme with no background leaves the terminal's own surface untouched.
+    $plain = new PanelController($config, new DefaultTheme(40), ['name' => 'Acme'], []);
+    $blank = new BufferedTerminal($keys);
+    $plain->run($blank);
+    $this->assertNull($blank->paintedBackground);
+    $this->assertStringNotContainsString("\033[44m", $blank->output());
   }
 
   public function testRunStopsWhenInputIsExhausted(): void {

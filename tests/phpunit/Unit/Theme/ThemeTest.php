@@ -139,6 +139,10 @@ final class ThemeTest extends TestCase {
     $this->assertFalse((new DefaultTheme(76, ['unicode' => FALSE]))->hasUnicode());
   }
 
+  public function testDefaultThemePaintsNoBackground(): void {
+    $this->assertNull((new DefaultTheme())->background());
+  }
+
   /**
    * A default theme in light mode.
    *

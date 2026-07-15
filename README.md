@@ -154,6 +154,61 @@ There's a widget for most things you'd want to ask: text entry, numbers and date
 </tr>
 </table>
 
+## Themes
+
+Every form is themeable. Six themes ship built-in, selected by name - and any of them can be forced light or dark, or left to auto-detect from the terminal:
+
+```php
+$form = Form::create('My form')->theme('midnight')/* ... */;
+```
+
+| Name | Palette |
+|------|---------|
+| `default` | Cyan accents on an auto-detected dark or light base - the out-of-the-box look. |
+| `midnight` | Violet accents, green values, pink highlights. |
+| `frost` | Arctic frost-blue accents, sage values, sand highlights. |
+| `ember` | Burnt-orange accents, olive values, gold highlights. |
+| `mono` | Hue-free - bold weight, grey levels and reverse video for maximum compatibility. |
+| `dos` | Retro MS-DOS: the bright white/cyan/yellow CGA palette in a double-line window, made for a blue terminal background. |
+
+Each renders across every widget and degrades to plain text without ANSI. Every theme adapts to the terminal - here the dark palette (left) and the light palette (right):
+
+**`midnight`**
+
+<p>
+  <img src="docs/assets/theme-midnight.svg" width="48%" alt="midnight theme, dark mode">
+  <img src="docs/assets/theme-midnight-light.svg" width="48%" alt="midnight theme, light mode">
+</p>
+
+**`frost`**
+
+<p>
+  <img src="docs/assets/theme-frost.svg" width="48%" alt="frost theme, dark mode">
+  <img src="docs/assets/theme-frost-light.svg" width="48%" alt="frost theme, light mode">
+</p>
+
+**`ember`**
+
+<p>
+  <img src="docs/assets/theme-ember.svg" width="48%" alt="ember theme, dark mode">
+  <img src="docs/assets/theme-ember-light.svg" width="48%" alt="ember theme, light mode">
+</p>
+
+**`mono`**
+
+<p>
+  <img src="docs/assets/theme-mono.svg" width="48%" alt="mono theme, dark mode">
+  <img src="docs/assets/theme-mono-light.svg" width="48%" alt="mono theme, light mode">
+</p>
+
+**`dos`** - the CGA blue screen, painted regardless of the terminal background
+
+<p>
+  <img src="docs/assets/theme-dos.svg" width="48%" alt="dos theme on the CGA blue screen">
+</p>
+
+Write your own by subclassing `DefaultTheme` and overriding just its palette - see the [theming guide](https://phptui.dev/themes).
+
 ## Maintenance
 
 ```bash

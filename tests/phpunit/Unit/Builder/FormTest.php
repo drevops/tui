@@ -54,7 +54,7 @@ final class FormTest extends TestCase {
     $fixup = new Fixup(set: 'a', to: 'b', when: new Condition('x', eq: 'y'));
 
     $config = Form::create('My app', 'the project')
-      ->theme('dark')
+      ->theme('midnight')
       ->banner('LOGO')
       ->buttons(TRUE, 'Install', 'Quit')
       ->clearOnExit(FALSE)
@@ -82,7 +82,7 @@ final class FormTest extends TestCase {
 
     $this->assertSame('My app', $config->title);
     $this->assertSame('the project', $config->subject);
-    $this->assertSame('dark', $config->theme);
+    $this->assertSame('midnight', $config->theme);
     $this->assertSame('LOGO', $config->banner);
     $this->assertTrue($config->buttons);
     $this->assertSame('Install', $config->submitLabel);

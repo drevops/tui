@@ -39,7 +39,7 @@ use DrevOps\Tui\Translation\Translator;
  *
  * @code
  * class OceanTheme extends DefaultTheme {
- *   public function title(string $text): string { return $this->paint('1;96', $text); }
+ *   public function title(string $text): string { return $this->paint(Sgr::of(Sgr::Bold, Sgr::BrightCyan), $text); }
  *   public function renderPanelLine(Panel $panel, bool $selected): string {
  *     return $this->marker($selected) . ' ' . $this->label($panel->title);
  *   }
@@ -270,6 +270,24 @@ class DefaultTheme implements ThemeInterface {
   }
 
   /**
+   * The background the theme washes the screen with, or NULL for none.
+   *
+   * A styled span closes with a full reset, so a background opened once would
+   * not survive it. The render layer instead re-opens this background on every
+   * line and after every reset and erases each line to its end, so the whole
+   * screen - the gaps between spans and the padding past the content included -
+   * fills with it. A theme declares its background here the same way it
+   * declares a title colour.
+   *
+   * @return string|null
+   *   The background SGR parameters (e.g. "44" for blue), or NULL to keep the
+   *   terminal's own background.
+   */
+  public function background(): ?string {
+    return NULL;
+  }
+
+  /**
    * Whether colour is enabled.
    *
    * @return bool
@@ -307,19 +325,6 @@ class DefaultTheme implements ThemeInterface {
   }
 
   /**
-   * The accent SGR code: the theme's primary colour, resolved for the mode.
-   *
-   * The single knob behind every accent-coloured atom (title, highlight,
-   * marker, radio, caret), so a theme restyles its accent in one override.
-   *
-   * @return string
-   *   The SGR parameters.
-   */
-  protected function accentSgr(): string {
-    return $this->isDark ? '1;36' : '1;34';
-  }
-
-  /**
    * Add bold to an SGR code when an item is selected.
    *
    * @param string $sgr
@@ -335,9 +340,9 @@ class DefaultTheme implements ThemeInterface {
       return $sgr;
     }
 
-    $drop = ['', '1', '2'];
+    $drop = ['', Sgr::Bold->value, Sgr::Dim->value];
     $parts = array_values(array_filter(explode(';', $sgr), static fn(string $part): bool => !in_array($part, $drop, TRUE)));
-    array_unshift($parts, '1');
+    array_unshift($parts, Sgr::Bold->value);
 
     return implode(';', $parts);
   }
@@ -346,7 +351,7 @@ class DefaultTheme implements ThemeInterface {
    * {@inheritdoc}
    */
   public function title(string $text): string {
-    return $this->paint($this->accentSgr(), $text);
+    return $this->paint($this->isDark ? Sgr::of(Sgr::Bold, Sgr::Cyan) : Sgr::of(Sgr::Bold, Sgr::Blue), $text);
   }
 
   /**
@@ -360,70 +365,70 @@ class DefaultTheme implements ThemeInterface {
    * {@inheritdoc}
    */
   public function value(string $text, bool $selected = FALSE): string {
-    return $this->paint($this->emphasize('32', $selected), $text);
+    return $this->paint($this->emphasize(Sgr::of(Sgr::Green), $selected), $text);
   }
 
   /**
    * {@inheritdoc}
    */
   public function description(string $text, bool $selected = FALSE): string {
-    return $this->paint($this->emphasize('90', $selected), $text);
+    return $this->paint($this->emphasize(Sgr::of(Sgr::Grey), $selected), $text);
   }
 
   /**
    * {@inheritdoc}
    */
   public function badge(string $text, bool $selected = FALSE): string {
-    return $this->paint($this->emphasize('7', $selected), $text);
+    return $this->paint($this->emphasize(Sgr::of(Sgr::Reverse), $selected), $text);
   }
 
   /**
    * {@inheritdoc}
    */
   public function cursor(string $text): string {
-    return $this->paint('1;7', $text);
+    return $this->paint(Sgr::of(Sgr::Bold, Sgr::Reverse), $text);
   }
 
   /**
    * {@inheritdoc}
    */
   public function footer(string $text): string {
-    return $this->paint('90', $text);
+    return $this->paint(Sgr::of(Sgr::Grey), $text);
   }
 
   /**
    * {@inheritdoc}
    */
   public function breadcrumb(string $text): string {
-    return $this->paint('90', $text);
+    return $this->paint(Sgr::of(Sgr::Grey), $text);
   }
 
   /**
    * {@inheritdoc}
    */
   public function indicator(string $text): string {
-    return $this->paint($this->isDark ? '1;33' : '35', $text);
+    return $this->paint($this->isDark ? Sgr::of(Sgr::Bold, Sgr::Yellow) : Sgr::of(Sgr::Magenta), $text);
   }
 
   /**
    * {@inheritdoc}
    */
   public function highlight(string $text): string {
-    return $this->paint($this->accentSgr(), $text);
+    return $this->paint($this->isDark ? Sgr::of(Sgr::Bold, Sgr::Cyan) : Sgr::of(Sgr::Bold, Sgr::Blue), $text);
   }
 
   /**
    * {@inheritdoc}
    */
   public function highlightMatch(string $text): string {
-    return $this->paint($this->isDark ? '1;33' : '1;35', $text);
+    return $this->paint($this->isDark ? Sgr::of(Sgr::Bold, Sgr::Yellow) : Sgr::of(Sgr::Bold, Sgr::Magenta), $text);
   }
 
   /**
    * {@inheritdoc}
    */
   public function heading(string $text): string {
-    return $this->paint('1;90', $text);
+    return $this->paint(Sgr::of(Sgr::Bold, Sgr::Grey), $text);
   }
 
   /**
@@ -437,35 +442,35 @@ class DefaultTheme implements ThemeInterface {
    * {@inheritdoc}
    */
   public function disabled(string $text): string {
-    return $this->paint('90', $text);
+    return $this->paint(Sgr::of(Sgr::Grey), $text);
   }
 
   /**
    * {@inheritdoc}
    */
   public function error(string $text): string {
-    return $this->paint('31', $text);
+    return $this->paint(Sgr::of(Sgr::Red), $text);
   }
 
   /**
    * {@inheritdoc}
    */
   public function rule(string $text): string {
-    return $this->paint('90', $text);
+    return $this->paint(Sgr::of(Sgr::Grey), $text);
   }
 
   /**
    * {@inheritdoc}
    */
   public function border(string $text): string {
-    return $this->paint($this->isDark ? '36' : '34', $text);
+    return $this->paint($this->isDark ? Sgr::of(Sgr::Cyan) : Sgr::of(Sgr::Blue), $text);
   }
 
   /**
    * {@inheritdoc}
    */
   public function marker(bool $selected): string {
-    return $selected ? $this->paint($this->accentSgr(), $this->unicode ? '❯' : '>') : ' ';
+    return $selected ? $this->paint($this->isDark ? Sgr::of(Sgr::Bold, Sgr::Cyan) : Sgr::of(Sgr::Bold, Sgr::Blue), $this->unicode ? '❯' : '>') : ' ';
   }
 
   /**
@@ -542,7 +547,7 @@ class DefaultTheme implements ThemeInterface {
    * {@inheritdoc}
    */
   public function radio(bool $on): string {
-    return $on ? $this->paint($this->accentSgr(), $this->unicode ? '●' : '(*)') : ($this->unicode ? '○' : '( )');
+    return $on ? $this->paint($this->isDark ? Sgr::of(Sgr::Bold, Sgr::Cyan) : Sgr::of(Sgr::Bold, Sgr::Blue), $this->unicode ? '●' : '(*)') : ($this->unicode ? '○' : '( )');
   }
 
   /**
@@ -556,14 +561,14 @@ class DefaultTheme implements ThemeInterface {
    * {@inheritdoc}
    */
   public function caret(): string {
-    return $this->paint($this->accentSgr(), $this->unicode ? '█' : '|');
+    return $this->paint($this->isDark ? Sgr::of(Sgr::Bold, Sgr::Cyan) : Sgr::of(Sgr::Bold, Sgr::Blue), $this->unicode ? '█' : '|');
   }
 
   /**
    * {@inheritdoc}
    */
   public function ghost(string $text): string {
-    return $this->color ? $this->paint('90', $text) : '';
+    return $this->color ? $this->paint(Sgr::of(Sgr::Grey), $text) : '';
   }
 
   /**
@@ -589,23 +594,12 @@ class DefaultTheme implements ThemeInterface {
     $cursor = Ansi::ESC . '[7m' . $cursor_char . Ansi::ESC . '[27m';
     $suffix = $ghost === '' ? '' : Ansi::ESC . '[2m' . $ghost . Ansi::ESC . '[22m';
 
-    return Ansi::style($before . $cursor . $tail . $suffix . $pad, $this->inputSgr());
-  }
+    // Underline styles draw the value colour; a box fills it - light on dark
+    // (black on grey), dark on light (white on blue) - so the field reads
+    // against either terminal background.
+    $fill = $this->field() === FieldStyle::Underline ? Sgr::of(Sgr::Underline, Sgr::Green) : ($this->isDark ? Sgr::of(Sgr::Black, Sgr::OnGrey) : Sgr::of(Sgr::BrightWhite, Sgr::OnBlue));
 
-  /**
-   * The SGR parameters for a boxed or underlined input field, per mode.
-   *
-   * @return string
-   *   The SGR code: an underline in the value colour, or a fill - light in
-   *   dark mode (black on grey), dark in light mode (white on blue) - so the
-   *   field reads against either terminal background.
-   */
-  protected function inputSgr(): string {
-    if ($this->field() === FieldStyle::Underline) {
-      return '4;32';
-    }
-
-    return $this->isDark ? '30;47' : '97;44';
+    return Ansi::style($before . $cursor . $tail . $suffix . $pad, $fill);
   }
 
   /**

@@ -236,7 +236,7 @@ class PanelController {
   public function run(Terminal $terminal): Answers {
     $parser = new KeyParser();
     $this->terminal = $terminal;
-    $terminal->setup();
+    $terminal->setup($this->theme->background());
 
     try {
       if ($this->banner !== '') {

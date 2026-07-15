@@ -19,7 +19,7 @@ use DrevOps\Tui\Input\ScopedKeyMap;
  *
  * @code
  * class OceanTheme extends DefaultTheme {
- *   public function title(string $text): string { return $this->paint('1;96', $text); }
+ *   public function title(string $text): string { return $this->paint(Sgr::of(Sgr::Bold, Sgr::BrightCyan), $text); }
  *   public function marker(bool $selected): string { return $selected ? '~ ' : '  '; }
  * }
  * @endcode

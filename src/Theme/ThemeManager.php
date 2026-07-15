@@ -26,6 +26,11 @@ final class ThemeManager {
    */
   protected static array $registry = [
     'default' => DefaultTheme::class,
+    'midnight' => MidnightTheme::class,
+    'frost' => FrostTheme::class,
+    'ember' => EmberTheme::class,
+    'mono' => MonoTheme::class,
+    'dos' => DosTheme::class,
   ];
 
   /**

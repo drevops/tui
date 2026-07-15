@@ -11,6 +11,7 @@ use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\ScopedKeyMap;
 use DrevOps\Tui\Render\Navigator;
 use DrevOps\Tui\Theme\DefaultTheme;
+use DrevOps\Tui\Theme\Sgr;
 
 /**
  * A custom theme that overrides as much as it sensibly can.
@@ -34,7 +35,7 @@ class OceanTheme extends DefaultTheme {
    */
   #[\Override]
   public function title(string $text): string {
-    return $this->paint('1;96', $text);
+    return $this->paint(Sgr::of(Sgr::Bold, Sgr::BrightCyan), $text);
   }
 
   /**
@@ -42,7 +43,7 @@ class OceanTheme extends DefaultTheme {
    */
   #[\Override]
   public function value(string $text, bool $selected = FALSE): string {
-    return $this->paint($this->emphasize('96', $selected), $text);
+    return $this->paint($this->emphasize(Sgr::of(Sgr::BrightCyan), $selected), $text);
   }
 
   /**
@@ -50,7 +51,7 @@ class OceanTheme extends DefaultTheme {
    */
   #[\Override]
   public function description(string $text, bool $selected = FALSE): string {
-    return $this->paint($this->emphasize('34', $selected), $text);
+    return $this->paint($this->emphasize(Sgr::of(Sgr::Blue), $selected), $text);
   }
 
   /**
@@ -58,7 +59,7 @@ class OceanTheme extends DefaultTheme {
    */
   #[\Override]
   public function badge(string $text, bool $selected = FALSE): string {
-    return $this->paint($this->emphasize('7;36', $selected), $text);
+    return $this->paint($this->emphasize(Sgr::of(Sgr::Reverse, Sgr::Cyan), $selected), $text);
   }
 
   /**
@@ -66,7 +67,7 @@ class OceanTheme extends DefaultTheme {
    */
   #[\Override]
   public function breadcrumb(string $text): string {
-    return $this->paint('36', $text);
+    return $this->paint(Sgr::of(Sgr::Cyan), $text);
   }
 
   /**
@@ -74,7 +75,7 @@ class OceanTheme extends DefaultTheme {
    */
   #[\Override]
   public function footer(string $text): string {
-    return $this->paint('36', $text);
+    return $this->paint(Sgr::of(Sgr::Cyan), $text);
   }
 
   /**
@@ -82,7 +83,7 @@ class OceanTheme extends DefaultTheme {
    */
   #[\Override]
   public function cursor(string $text): string {
-    return $this->paint('1;7;96', $text);
+    return $this->paint(Sgr::of(Sgr::Bold, Sgr::Reverse, Sgr::BrightCyan), $text);
   }
 
   /**
@@ -90,7 +91,7 @@ class OceanTheme extends DefaultTheme {
    */
   #[\Override]
   public function indicator(string $text): string {
-    return $this->paint('1;96', $text);
+    return $this->paint(Sgr::of(Sgr::Bold, Sgr::BrightCyan), $text);
   }
 
   /**
@@ -98,7 +99,7 @@ class OceanTheme extends DefaultTheme {
    */
   #[\Override]
   public function highlight(string $text): string {
-    return $this->paint('1;96', $text);
+    return $this->paint(Sgr::of(Sgr::Bold, Sgr::BrightCyan), $text);
   }
 
   /**
@@ -106,7 +107,7 @@ class OceanTheme extends DefaultTheme {
    */
   #[\Override]
   public function marker(bool $selected): string {
-    return $selected ? $this->paint('1;96', $this->hasUnicode() ? '➤' : '>') : ' ';
+    return $selected ? $this->paint(Sgr::of(Sgr::Bold, Sgr::BrightCyan), $this->hasUnicode() ? '➤' : '>') : ' ';
   }
 
   /**
@@ -162,7 +163,7 @@ class OceanTheme extends DefaultTheme {
    */
   #[\Override]
   public function radio(bool $on): string {
-    return $on ? $this->paint('1;96', $this->hasUnicode() ? '◉' : '(o)') : ($this->hasUnicode() ? '◯' : '( )');
+    return $on ? $this->paint(Sgr::of(Sgr::Bold, Sgr::BrightCyan), $this->hasUnicode() ? '◉' : '(o)') : ($this->hasUnicode() ? '◯' : '( )');
   }
 
   /**
@@ -178,7 +179,7 @@ class OceanTheme extends DefaultTheme {
    */
   #[\Override]
   public function caret(): string {
-    return $this->paint('1;96', $this->hasUnicode() ? '▎' : '|');
+    return $this->paint(Sgr::of(Sgr::Bold, Sgr::BrightCyan), $this->hasUnicode() ? '▎' : '|');
   }
 
   /**

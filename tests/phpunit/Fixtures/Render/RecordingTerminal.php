@@ -33,7 +33,7 @@ class RecordingTerminal extends Terminal {
    * {@inheritdoc}
    */
   #[\Override]
-  public function setup(): void {
+  public function setup(?string $background = NULL): void {
     $this->resumed = TRUE;
   }
 

@@ -101,6 +101,13 @@ final class AllWidgetsFormTest extends TestCase {
     yield 'default light' => ['', ['mode' => Mode::Light, 'color' => TRUE, 'unicode' => TRUE]];
     yield 'ascii no color' => ['', ['mode' => Mode::Dark, 'color' => FALSE, 'unicode' => FALSE]];
     yield 'custom theme class' => [OceanTheme::class, ['mode' => Mode::Dark, 'color' => TRUE, 'unicode' => TRUE]];
+    // Each curated built-in theme renders every widget; ember drives the
+    // no-colour (no-ANSI) path across all of them.
+    yield 'midnight dark' => ['midnight', ['mode' => Mode::Dark, 'color' => TRUE, 'unicode' => TRUE]];
+    yield 'frost light' => ['frost', ['mode' => Mode::Light, 'color' => TRUE, 'unicode' => TRUE]];
+    yield 'ember no color' => ['ember', ['mode' => Mode::Dark, 'color' => FALSE, 'unicode' => FALSE]];
+    yield 'mono light' => ['mono', ['mode' => Mode::Light, 'color' => TRUE, 'unicode' => TRUE]];
+    yield 'dos dark' => ['dos', ['mode' => Mode::Dark, 'color' => TRUE, 'unicode' => TRUE]];
   }
 
   /**

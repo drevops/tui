@@ -5,51 +5,129 @@ sidebar_position: 10
 
 # Themes
 
-A theme is a self-contained class that owns the entire visual representation - the
-palette (per-role ANSI style codes), the glyphs (marker, caret, scroll indicators,
-separators - each a Unicode/ASCII pair) and how every row is composed.
-`AbstractTheme` implements all of it with a neutral base, and a concrete theme
-overrides only what it colours. The `ThemeManager` turns a theme name into an
-instance; two themes are built in:
+A theme owns the entire visual representation - the palette (per-role ANSI style
+codes), the glyphs (marker, caret, scroll indicators, separators - each a
+Unicode/ASCII pair) and how every row is composed. `DefaultTheme` implements all
+of it with a neutral base; a concrete theme extends it and overrides only what it
+changes. The `ThemeManager` turns a theme name into an instance.
+
+## Built-in themes
+
+Six themes ship built-in, each selectable by name:
 
 ```php
-use DrevOps\Tui\Theme\ThemeManager;
+use DrevOps\Tui\Builder\Form;
 
-ThemeManager::create('dark');   // bright foregrounds for a dark terminal
-ThemeManager::create('light');  // higher-contrast foregrounds for a light terminal
+Form::create('My form')->theme('midnight')/* ... */;
 ```
 
-When a form sets no theme (or the explicit `'auto'` sentinel), the interactive TUI
-picks `dark` or `light` from the actual terminal background: it queries the
-background colour over OSC 11, falls back to the `COLORFGBG` environment variable,
-and settles on `dark` when neither answers. An explicit `->theme('dark')` or
-`->theme('light')` opts out of detection.
+| Name | Palette |
+|------|---------|
+| `default` | Cyan accents on a neutral base - the out-of-the-box look. |
+| `midnight` | Violet accents, green values, pink highlights. |
+| `frost` | Arctic frost-blue accents, sage values, sand highlights. |
+| `ember` | Burnt-orange accents, olive values, gold highlights. |
+| `mono` | Hue-free - bold weight, grey levels and reverse video, for maximum compatibility. |
+| `dos` | Retro MS-DOS - the bright white/cyan/yellow CGA palette in a double-line window, painted on its own blue screen. |
 
-A custom theme subclasses a built-in theme (e.g. `DarkTheme`) or `AbstractTheme`,
-overrides the styles or glyphs it changes and merges the rest from the parent -
-roles it does not mention keep working:
+The colourful themes use 256-colour palettes, `mono` the greyscale ramp and `dos`
+the classic 16-colour CGA set; every one renders across all widgets and degrades
+to plain text when colour is off. An unknown theme name fails loudly - a typo
+never silently falls back to the default.
+
+Each adapts to the terminal background - here the dark palette (left) and the
+light palette (right):
+
+**midnight**
+
+<p>
+  <img src="/theme-midnight.svg" width="48%" alt="The midnight theme in dark mode" />
+  <img src="/theme-midnight-light.svg" width="48%" alt="The midnight theme in light mode" />
+</p>
+
+**frost**
+
+<p>
+  <img src="/theme-frost.svg" width="48%" alt="The frost theme in dark mode" />
+  <img src="/theme-frost-light.svg" width="48%" alt="The frost theme in light mode" />
+</p>
+
+**ember**
+
+<p>
+  <img src="/theme-ember.svg" width="48%" alt="The ember theme in dark mode" />
+  <img src="/theme-ember-light.svg" width="48%" alt="The ember theme in light mode" />
+</p>
+
+**mono**
+
+<p>
+  <img src="/theme-mono.svg" width="48%" alt="The mono theme in dark mode" />
+  <img src="/theme-mono-light.svg" width="48%" alt="The mono theme in light mode" />
+</p>
+
+**dos** - the CGA blue screen, painted regardless of the terminal background
+
+<p>
+  <img src="/theme-dos.svg" width="48%" alt="The dos theme on the CGA blue screen" />
+</p>
+
+## Dark and light
+
+Dark and light are not separate themes but a `mode` display option that every
+theme honours. When a form sets no theme (or the explicit `'auto'` sentinel), the
+interactive TUI picks the mode from the actual terminal background: it queries the
+background colour over OSC 11, falls back to the `COLORFGBG` environment variable,
+and settles on dark when neither answers.
 
 ```php
-use DrevOps\Tui\Theme\DarkTheme;
+Form::create('My form')->theme('frost', ['mode' => 'light']);  // force light
+Form::create('My form')->theme('frost');                        // auto-detect
+```
 
-class OceanTheme extends DarkTheme {
-  protected function defineStyles(): array {
-    return ['title' => '1;96', 'value' => '96', 'marker' => '1;96'] + parent::defineStyles();
+## Writing a theme
+
+A custom theme subclasses `DefaultTheme` and declares its palette by overriding
+the appearance atoms it wants to change - `title()`, `value()`, `marker()`,
+`border()` and so on. Each atom returns its text wrapped in an ANSI style code
+with `paint()`; every role it does not mention keeps the default, including the
+dark/light mode.
+
+```php
+use DrevOps\Tui\Theme\DefaultTheme;
+use DrevOps\Tui\Theme\Sgr;
+
+class AquaTheme extends DefaultTheme {
+  public function title(string $text): string {
+    return $this->paint($this->isDark ? Sgr::of(Sgr::Bold, Sgr::Cyan) : Sgr::of(Sgr::Bold, Sgr::Blue), $text);
+  }
+
+  public function value(string $text, bool $selected = FALSE): string {
+    return $this->paint($this->emphasize($this->isDark ? Sgr::of(Sgr::Sky) : Sgr::of(Sgr::Cobalt), $selected), $text);
   }
 }
 ```
 
-Override any `render*` method to change how an element is laid out. Lowest
-friction: a form names the class directly, with no registration:
+Colours come from the `Sgr` palette map - named cases like `Sgr::Cyan` or
+`Sgr::Sand` composed with `Sgr::of(...)`, so a palette reads as colours rather
+than raw ANSI numbers.
+
+Override as many atoms as the palette needs - the built-in themes each redeclare
+the accent-coloured atoms (`title()`, `highlight()`, `marker()`, `radio()`,
+`caret()`) plus `value()`, `indicator()`, `highlightMatch()` and `border()`. To
+change how an element is laid out rather than coloured, override a `render*()`
+method instead.
+
+Lowest friction: a form names the class directly, with no registration:
 
 ```php
-$form = Form::create('My form')->theme('\App\OceanTheme')/* ... */;
+$form = Form::create('My form')->theme('\App\AquaTheme')/* ... */;
 ```
 
-Or register a short alias with `ThemeManager::register('ocean',
-OceanTheme::class)`, then `->theme('ocean')` - an unknown theme name fails loudly
-instead of silently falling back. Here is the [playground's ocean
-theme](https://github.com/drevops/tui/tree/main/playground/2-custom-theme) with a
+Or register a short alias with `ThemeManager::register('aqua', AquaTheme::class)`,
+then `->theme('aqua')`. The [playground's ocean
+theme](https://github.com/drevops/tui/tree/main/playground/2-custom-theme) goes
+further, overriding many atoms and `render*()` methods for a distinct look with a
 start banner:
 
 <p align="center">
