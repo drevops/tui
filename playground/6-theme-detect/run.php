@@ -23,6 +23,7 @@ declare(strict_types=1);
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Builder\PanelBuilder;
 use DrevOps\Tui\Engine\EngineException;
+use DrevOps\Tui\Theme\Mode;
 use DrevOps\Tui\Tui;
 
 require __DIR__ . '/../../vendor/autoload.php';
@@ -30,9 +31,14 @@ require __DIR__ . '/../../vendor/autoload.php';
 $options = getopt('', ['prompts::', 'mode::']);
 $prompts = array_key_exists('prompts', $options) && is_string($options['prompts']) ? $options['prompts'] : '';
 // Empty or "auto" auto-detects the mode from the terminal background; "dark" or
-// "light" force that palette regardless of the background.
+// "light" force that palette. The closed set is normalised to Mode cases here.
 $mode = array_key_exists('mode', $options) && is_string($options['mode']) ? $options['mode'] : '';
-$theme_options = $mode === '' || $mode === 'auto' ? [] : ['mode' => $mode];
+$theme_options = match ($mode) {
+  '', 'auto' => [],
+  'dark' => ['mode' => Mode::Dark],
+  'light' => ['mode' => Mode::Light],
+  default => throw new \InvalidArgumentException(sprintf('Unsupported mode "%s". Use auto, dark, or light.', $mode)),
+};
 
 $form = Form::create('Theme detection demo')
   ->theme('', $theme_options)

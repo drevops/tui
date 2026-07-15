@@ -22,6 +22,7 @@ declare(strict_types=1);
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Builder\PanelBuilder;
 use DrevOps\Tui\Engine\EngineException;
+use DrevOps\Tui\Theme\Mode;
 use DrevOps\Tui\Tui;
 
 require __DIR__ . '/../../vendor/autoload.php';
@@ -31,8 +32,14 @@ $theme = array_key_exists('theme', $options) && is_string($options['theme']) && 
 $mode = array_key_exists('mode', $options) && is_string($options['mode']) && $options['mode'] !== '' ? $options['mode'] : '';
 $prompts = array_key_exists('prompts', $options) && is_string($options['prompts']) ? $options['prompts'] : '';
 
-// An explicit mode forces the palette; otherwise the TUI auto-detects it.
-$theme_options = $mode === '' ? [] : ['mode' => $mode];
+// An explicit mode forces the palette; otherwise the TUI auto-detects it. The
+// closed set is normalised to Mode cases here.
+$theme_options = match ($mode) {
+  '' => [],
+  'dark' => ['mode' => Mode::Dark],
+  'light' => ['mode' => Mode::Light],
+  default => throw new \InvalidArgumentException(sprintf('Unsupported mode "%s". Use dark or light.', $mode)),
+};
 
 $form = Form::create('Built-in theme preview')
   ->theme($theme, $theme_options)

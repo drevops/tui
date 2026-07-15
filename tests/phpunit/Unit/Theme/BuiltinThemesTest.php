@@ -39,6 +39,7 @@ final class BuiltinThemesTest extends TestCase {
     // title, indicator, highlightMatch and border wrap text in the role SGR;
     // an unselected value carries no added weight, so it is the value SGR too.
     $this->assertSame(Ansi::style('X', $expected['accent']), $theme->title('X'));
+    $this->assertSame(Ansi::style('X', $expected['accent']), $theme->highlight('X'));
     $this->assertSame(Ansi::style('X', $expected['value']), $theme->value('X'));
     $this->assertSame(Ansi::style('X', $expected['indicator']), $theme->indicator('X'));
     $this->assertSame(Ansi::style('X', $expected['match']), $theme->highlightMatch('X'));

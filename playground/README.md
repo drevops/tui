@@ -153,7 +153,7 @@ Set it on the builder with `->theme(...)`, lowest friction first:
 2. **Register a short name** - `ThemeManager::register('ocean', OceanTheme::class)`,
    then `->theme('ocean')`. Useful to give a class a stable alias.
 3. **Built-in name** - `->theme('midnight')` (or `frost`, `ember`, `mono`,
-   `default`). Dark or light is a separate `mode` option, not a theme, so a
+   `default` or `dos`). Dark or light is a separate `mode` option, not a theme, so a
    built-in adapts to both. This is what `10-builtin-themes` demonstrates.
 4. **Auto-detect** - leave it unset (or `->theme('auto')`) and the `default`
    theme is used, with the interactive TUI picking the dark or light `mode` from

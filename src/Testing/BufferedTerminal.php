@@ -20,6 +20,11 @@ use DrevOps\Tui\Render\Terminal;
 final class BufferedTerminal extends Terminal {
 
   /**
+   * The background colour passed to setup(), captured for paint-wiring tests.
+   */
+  public ?string $paintedBackground = NULL;
+
+  /**
    * Construct a buffered terminal.
    *
    * @param list<string> $keystrokes
@@ -46,6 +51,7 @@ final class BufferedTerminal extends Terminal {
    */
   #[\Override]
   public function setup(?string $background = NULL): void {
+    $this->paintedBackground = $background;
   }
 
   /**
