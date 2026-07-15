@@ -45,14 +45,14 @@ final class BufferedTerminal extends Terminal {
    * {@inheritdoc}
    */
   #[\Override]
-  public function setup(): void {
+  public function setup(?string $background = NULL): void {
   }
 
   /**
    * {@inheritdoc}
    */
   #[\Override]
-  public function restore(): void {
+  public function restore(?string $background = NULL): void {
   }
 
   /**

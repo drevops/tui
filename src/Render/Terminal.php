@@ -95,20 +95,29 @@ class Terminal {
 
   /**
    * Enter the full-screen raw-input mode.
+   *
+   * @param string|null $background
+   *   An OSC 11 background colour to paint for the session, or NULL to keep the
+   *   terminal's own background.
    */
-  public function setup(): void {
+  public function setup(?string $background = NULL): void {
     // @codeCoverageIgnoreStart
     $this->stty('-echo -icanon');
-    $this->write(TerminalControl::altScreenOn() . TerminalControl::hideCursor() . TerminalControl::mouseOn());
+    $paint = $background !== NULL ? TerminalControl::setBackground($background) : '';
+    $this->write(TerminalControl::altScreenOn() . TerminalControl::hideCursor() . TerminalControl::mouseOn() . $paint);
     // @codeCoverageIgnoreEnd
   }
 
   /**
    * Restore the terminal to its normal mode.
+   *
+   * @param string|null $background
+   *   Pass the same value given to setup() so a painted background is reset.
    */
-  public function restore(): void {
+  public function restore(?string $background = NULL): void {
     // @codeCoverageIgnoreStart
-    $this->write(TerminalControl::restore());
+    $reset = $background !== NULL ? TerminalControl::resetBackground() : '';
+    $this->write($reset . TerminalControl::restore());
     $this->stty('sane');
     // @codeCoverageIgnoreEnd
   }

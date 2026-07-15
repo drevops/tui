@@ -270,6 +270,23 @@ class DefaultTheme implements ThemeInterface {
   }
 
   /**
+   * The terminal background colour to paint for the theme, or NULL for none.
+   *
+   * A styled span resets the background after itself, so a per-span SGR code
+   * cannot fill the screen. Instead the render controller sets the terminal's
+   * default background to this colour over OSC 11 on entry and restores it on
+   * exit, so the screen clear and every reset resolve to it. A theme declares
+   * its background here the same way it declares a title colour.
+   *
+   * @return string|null
+   *   An OSC 11 colour (e.g. "#0000aa"), or NULL to keep the terminal's own
+   *   background.
+   */
+  public function background(): ?string {
+    return NULL;
+  }
+
+  /**
    * Whether colour is enabled.
    *
    * @return bool

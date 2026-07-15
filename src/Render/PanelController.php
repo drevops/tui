@@ -236,7 +236,7 @@ class PanelController {
   public function run(Terminal $terminal): Answers {
     $parser = new KeyParser();
     $this->terminal = $terminal;
-    $terminal->setup();
+    $terminal->setup($this->theme->background());
 
     try {
       if ($this->banner !== '') {
@@ -263,7 +263,7 @@ class PanelController {
       }
     }
     finally {
-      $terminal->restore();
+      $terminal->restore($this->theme->background());
       if ($this->config->clearOnExit) {
         $terminal->clear();
       }

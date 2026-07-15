@@ -114,4 +114,12 @@ final class BuiltinThemesTest extends TestCase {
     $this->assertStringNotContainsString('═', $plain);
   }
 
+  /**
+   * The dos theme paints the terminal DOS blue on a dark background only.
+   */
+  public function testDosPaintsBlueBackground(): void {
+    $this->assertSame('#0000aa', ThemeManager::create('dos', 76, ['mode' => Mode::Dark])->background());
+    $this->assertNull(ThemeManager::create('dos', 76, ['mode' => Mode::Light])->background());
+  }
+
 }

@@ -25,7 +25,7 @@ class RecordingTerminal extends Terminal {
    * {@inheritdoc}
    */
   #[\Override]
-  public function restore(): void {
+  public function restore(?string $background = NULL): void {
     $this->restored = TRUE;
   }
 
@@ -33,7 +33,7 @@ class RecordingTerminal extends Terminal {
    * {@inheritdoc}
    */
   #[\Override]
-  public function setup(): void {
+  public function setup(?string $background = NULL): void {
     $this->resumed = TRUE;
   }
 

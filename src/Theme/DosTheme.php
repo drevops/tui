@@ -105,4 +105,14 @@ class DosTheme extends DefaultTheme {
     return parent::borderStyle();
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  public function background(): ?string {
+    // Paint the classic DOS blue screen on a dark terminal; a light terminal
+    // keeps its own surface, where the darker CGA tones stay legible.
+    return $this->isDark ? '#0000aa' : NULL;
+  }
+
 }
