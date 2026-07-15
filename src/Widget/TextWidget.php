@@ -100,10 +100,7 @@ class TextWidget extends AbstractWidget implements TextEditCapableInterface, Com
    *   The input line.
    */
   protected function caretLine(ThemeInterface $theme): string {
-    $suffix = $this->ghostSuffix();
-    $ghost = $suffix === '' ? '' : $theme->ghost($suffix);
-
-    return $this->renderCaretLine($theme) . $ghost;
+    return $this->renderInputLine($theme, $this->ghostSuffix());
   }
 
 }

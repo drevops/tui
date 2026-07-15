@@ -16,6 +16,7 @@ use DrevOps\Tui\Render\Viewport;
 use DrevOps\Tui\Tests\Fixtures\Theme\AccentOptionTheme;
 use DrevOps\Tui\Theme\Border;
 use DrevOps\Tui\Theme\DefaultTheme;
+use DrevOps\Tui\Theme\FieldStyle;
 use DrevOps\Tui\Theme\Mode;
 use DrevOps\Tui\Theme\Spacing;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -156,6 +157,84 @@ final class ThemeOptionsTest extends TestCase {
 
     $light = (new DefaultTheme(20, ['border' => Border::Line, 'mode' => Mode::Light]))->renderFrame(...$args);
     $this->assertStringContainsString("\033[34m", $light);
+  }
+
+  public function testFieldStyleInvalidValueThrows(): void {
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessage('is not a valid "field"');
+
+    new DefaultTheme(40, ['field' => 'fancy']);
+  }
+
+  public function testFieldFlatInputHasPlainCaretNoFill(): void {
+    $line = (new DefaultTheme(40))->renderInput('ab', 'cd', 'ef');
+
+    // Flat keeps the value with the caret glyph and a dimmed ghost - no fill.
+    $this->assertStringNotContainsString("\033[30;47m", $line);
+    $this->assertStringNotContainsString("\033[97;44m", $line);
+    $this->assertStringContainsString('ab', Ansi::strip($line));
+    $this->assertStringContainsString('cd', Ansi::strip($line));
+  }
+
+  public function testFieldBoxedInputFillsBehindTheValue(): void {
+    // A string value (not the enum case) exercises the option's string path.
+    $line = (new DefaultTheme(40, ['field' => 'boxed']))->renderInput('localhost', '');
+
+    // The fill opens before the value, so the background runs behind the text
+    // itself, and the field is padded to a fixed, visible width.
+    $this->assertStringStartsWith("\033[30;47m", $line);
+    $this->assertStringContainsString("\033[30;47mlocalhost", $line);
+    $this->assertSame(40, Ansi::width($line));
+    $this->assertStringEndsWith("\033[0m", $line);
+  }
+
+  public function testFieldBoxedInputEmptyIsStillAVisibleField(): void {
+    $line = (new DefaultTheme(40, ['field' => FieldStyle::Boxed]))->renderInput('', '');
+
+    // An empty buffer is still a filled bar of the field width - a caret and pad.
+    $this->assertStringStartsWith("\033[30;47m", $line);
+    $this->assertSame(40, Ansi::width($line));
+  }
+
+  public function testFieldBoxedInputAdaptsToLightMode(): void {
+    $line = (new DefaultTheme(40, ['field' => FieldStyle::Boxed, 'mode' => Mode::Light]))->renderInput('x', '');
+
+    // Light mode fills dark (white on blue) for contrast on a light terminal.
+    $this->assertStringStartsWith("\033[97;44m", $line);
+  }
+
+  public function testFieldUnderlineInputUnderlinesField(): void {
+    $line = (new DefaultTheme(40, ['field' => FieldStyle::Underline]))->renderInput('x', 'y');
+
+    $this->assertStringStartsWith("\033[4;32m", $line);
+    $this->assertStringContainsString('x', Ansi::strip($line));
+    $this->assertStringContainsString('y', Ansi::strip($line));
+  }
+
+  public function testFieldBoxedInputCaretShowsTheLetter(): void {
+    $line = (new DefaultTheme(40, ['field' => FieldStyle::Boxed]))->renderInput('ab', 'cd');
+
+    // The caret reverses the character it sits on ('c'), so the letter shows
+    // through the cursor rather than a solid block.
+    $this->assertStringContainsString("\033[7mc\033[27m", $line);
+  }
+
+  public function testFieldBoxedInputFillRunsUnbrokenThroughCaretAndGhost(): void {
+    $line = (new DefaultTheme(40, ['field' => FieldStyle::Boxed]))->renderInput('ab', 'cd', 'xyz');
+
+    // The caret (reverse) and ghost (dim) toggle off rather than reset, so the
+    // fill is never punctured: exactly one closing reset in the whole line.
+    $this->assertSame(1, substr_count($line, "\033[0m"));
+    $this->assertStringContainsString("\033[2mxyz\033[22m", $line);
+  }
+
+  public function testFieldInputNoColourFallsBackToFlat(): void {
+    $line = (new DefaultTheme(40, ['field' => FieldStyle::Boxed, 'color' => FALSE]))->renderInput('ab', 'cd');
+
+    // No colour: no SGR and no padding, just the value with the ascii caret.
+    $this->assertStringNotContainsString("\033[", $line);
+    $this->assertStringContainsString('ab', $line);
+    $this->assertStringContainsString('cd', $line);
   }
 
   public function testUnknownOptionThrows(): void {

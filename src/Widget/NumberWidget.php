@@ -149,7 +149,7 @@ class NumberWidget extends AbstractWidget implements TextEditCapableInterface, S
    * {@inheritdoc}
    */
   public function view(ThemeInterface $theme): string {
-    return $this->withError($theme, $this->renderCaretLine($theme));
+    return $this->withError($theme, $this->renderInputLine($theme));
   }
 
   /**

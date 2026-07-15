@@ -188,9 +188,9 @@ class PasswordWidget extends AbstractWidget implements TextEditCapableInterface,
    */
   protected function renderLine(ThemeInterface $theme): string {
     return match ($this->display) {
-      PasswordDisplay::Hidden => $theme->caret(),
-      PasswordDisplay::Masked => str_repeat($theme->mask(), $this->cursor) . $theme->caret() . str_repeat($theme->mask(), mb_strlen($this->buffer, 'UTF-8') - $this->cursor),
-      PasswordDisplay::Plaintext => $this->renderCaretLine($theme),
+      PasswordDisplay::Hidden => $theme->renderInput('', ''),
+      PasswordDisplay::Masked => $theme->renderInput(str_repeat($theme->mask(), $this->cursor), str_repeat($theme->mask(), mb_strlen($this->buffer, 'UTF-8') - $this->cursor)),
+      PasswordDisplay::Plaintext => $this->renderInputLine($theme),
     };
   }
 
