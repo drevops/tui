@@ -30,7 +30,7 @@ final class AnsiTest extends TestCase {
     $this->assertStringContainsString("\033[44m", $washed);
     $this->assertStringContainsString("\033[K", $washed);
 
-    // A reset inside a span is followed by a re-opened wash so gaps stay filled.
+    // A reset re-opens the wash, so gaps between spans stay filled.
     $this->assertStringContainsString("\033[0m\033[44m", Ansi::wash("\033[1mx\033[0m", '44'));
   }
 
