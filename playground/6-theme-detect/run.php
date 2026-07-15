@@ -2,19 +2,19 @@
 
 /**
  * @file
- * Theme auto-detection vs forcing: the same form, resolved either way.
+ * Mode auto-detection vs forcing: the same form, resolved either way.
  *
- * With no --theme (or --theme=auto) the interactive TUI reads the terminal
- * background and picks the light or dark theme to match; passing --theme=dark
- * or --theme=light forces that theme and overrides detection. Switch your
+ * With no --mode (or --mode=auto) the interactive TUI reads the terminal
+ * background and picks the light or dark palette to match; passing --mode=dark
+ * or --mode=light forces that palette and overrides detection. Switch your
  * terminal between a light and a dark colour scheme and re-run the auto mode
  * to watch the palette follow it.
  *
  * Usage:
  *   php 6-theme-detect/run.php               # detect from the background
- *   php 6-theme-detect/run.php --theme=auto  # explicit auto sentinel
- *   php 6-theme-detect/run.php --theme=dark  # force the dark theme
- *   php 6-theme-detect/run.php --theme=light # force the light theme
+ *   php 6-theme-detect/run.php --mode=auto   # explicit auto
+ *   php 6-theme-detect/run.php --mode=dark   # force the dark palette
+ *   php 6-theme-detect/run.php --mode=light  # force the light palette
  *   php 6-theme-detect/run.php --prompts='{"name":"Sam"}'
  */
 
@@ -27,14 +27,15 @@ use DrevOps\Tui\Tui;
 
 require __DIR__ . '/../../vendor/autoload.php';
 
-$options = getopt('', ['prompts::', 'theme::']);
+$options = getopt('', ['prompts::', 'mode::']);
 $prompts = array_key_exists('prompts', $options) && is_string($options['prompts']) ? $options['prompts'] : '';
-// Empty or "auto" auto-detects from the terminal background; "dark" or "light"
-// force that theme regardless of the background.
-$theme = array_key_exists('theme', $options) && is_string($options['theme']) ? $options['theme'] : '';
+// Empty or "auto" auto-detects the mode from the terminal background; "dark" or
+// "light" force that palette regardless of the background.
+$mode = array_key_exists('mode', $options) && is_string($options['mode']) ? $options['mode'] : '';
+$theme_options = $mode === '' || $mode === 'auto' ? [] : ['mode' => $mode];
 
 $form = Form::create('Theme detection demo')
-  ->theme($theme)
+  ->theme('', $theme_options)
   ->panel('appearance', 'Appearance', function (PanelBuilder $p): void {
     $p->text('name', 'Your name')->default('Sam');
     $p->select('fruit', 'Favourite fruit')->default('apple')->options([

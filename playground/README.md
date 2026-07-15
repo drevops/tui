@@ -83,14 +83,14 @@ composer install
   ```
 
 - **[`6-theme-detect/`](6-theme-detect)** - the same form resolved two ways:
-  auto-detecting the light or dark theme from the terminal background, or forcing
-  one with `--theme`. The auto path follows your terminal's colour scheme; forcing
+  auto-detecting the light or dark mode from the terminal background, or forcing
+  one with `--mode`. The auto path follows your terminal's colour scheme; forcing
   overrides it.
 
   ```bash
   php playground/6-theme-detect/run.php                 # auto-detect from the background
-  php playground/6-theme-detect/run.php --theme=dark    # force dark
-  php playground/6-theme-detect/run.php --theme=light   # force light
+  php playground/6-theme-detect/run.php --mode=dark     # force dark
+  php playground/6-theme-detect/run.php --mode=light    # force light
   ```
 
 - **[`7-theme-options/`](7-theme-options)** - the display options (`spacing`,
@@ -133,6 +133,17 @@ composer install
   php playground/10-inline-fields/run.php --prompts='{"env":"prod"}'
   ```
 
+- **[`10-builtin-themes/`](10-builtin-themes)** - one form rendered under a
+  chosen built-in theme, selected with `--theme`: `default`, `midnight`,
+  `frost`, `ember`, `mono` or `dos` (the retro MS-DOS CGA palette). The dark or
+  light palette is auto-detected from the terminal background.
+
+  ```bash
+  php playground/10-builtin-themes/run.php                  # midnight
+  php playground/10-builtin-themes/run.php --theme=frost
+  php playground/10-builtin-themes/run.php --theme=dos      # best on a blue terminal
+  ```
+
 ## How a form picks a theme
 
 Set it on the builder with `->theme(...)`, lowest friction first:
@@ -141,11 +152,14 @@ Set it on the builder with `->theme(...)`, lowest friction first:
    directly; no registration needed. This is what `2-custom-theme` does.
 2. **Register a short name** - `ThemeManager::register('ocean', OceanTheme::class)`,
    then `->theme('ocean')`. Useful to give a class a stable alias.
-3. **Built-ins** - `->theme('dark')` or `->theme('light')` to force one.
-4. **Auto-detect** - leave it unset (or `->theme('auto')`) and the interactive TUI
-   picks `dark` or `light` from the terminal background (an OSC 11 query, then
-   `COLORFGBG`, then a dark default). Forcing a built-in opts out. This is what
-   `6-theme-detect` demonstrates.
+3. **Built-in name** - `->theme('midnight')` (or `frost`, `ember`, `mono`,
+   `default`). Dark or light is a separate `mode` option, not a theme, so a
+   built-in adapts to both. This is what `10-builtin-themes` demonstrates.
+4. **Auto-detect** - leave it unset (or `->theme('auto')`) and the `default`
+   theme is used, with the interactive TUI picking the dark or light `mode` from
+   the terminal background (an OSC 11 query, then `COLORFGBG`, then a dark
+   default). Setting `mode` explicitly opts out. This is what `6-theme-detect`
+   demonstrates.
 
 ## How a form sets key bindings
 

@@ -458,6 +458,26 @@ EXPECT;
 }
 
 /**
+ * The expect body driving the built-in-themes preview.
+ *
+ * Drills into the Preview panel so the static frame shows the themed fields -
+ * labels, values, descriptions and the selection marker in one screen.
+ *
+ * @return string
+ *   The expect script body.
+ */
+function builtinThemeInteraction(): string {
+  return <<<'EXPECT'
+# Drill into the Preview panel to show the themed fields.
+expect "Preview" {
+    pause 1500
+    safe_send "\r"
+}
+pause 1500
+EXPECT;
+}
+
+/**
  * Get all job definitions.
  *
  * @param string $project_dir
@@ -467,8 +487,9 @@ EXPECT;
  *   Keyed by job name, each containing command, interact, rows, cols and
  *   optionally: at_needle (text anchoring a static frame - the frame is
  *   captured FRAME_SETTLE_MS after the text first appears), at (a fixed
- *   static-frame timestamp in ms), and verify (text every animated SVG must
- *   contain).
+ *   static-frame timestamp in ms), light (render on a light surface), dos
+ *   (render on the CGA blue surface), and verify (text every animated SVG
+ *   must contain).
  */
 function getJobs(string $project_dir): array {
   $jobs = [];
@@ -538,6 +559,48 @@ function getJobs(string $project_dir): array {
     'rows' => 20,
     'cols' => TERMINAL_COLS,
     'verify' => 'Diver profile',
+  ];
+
+  // The built-in themes, each as a static frame of the drilled-in Preview
+  // fields. Every theme is captured twice: dark (the dark palette on a dark
+  // surface) and light (--mode forces the light palette, rendered on a light
+  // surface), giving the README's dark/light picture twins.
+  foreach (['midnight', 'frost', 'ember', 'mono'] as $theme_name) {
+    $jobs['theme-' . $theme_name] = [
+      'command' => 'env LINES=15 COLUMNS=64 php ' . $project_dir . '/playground/10-builtin-themes/run.php --theme=' . $theme_name . ' --mode=dark',
+      'interact' => builtinThemeInteraction(),
+      'rows' => 15,
+      'cols' => 64,
+      'at_needle' => 'Project name',
+    ];
+    $jobs['theme-' . $theme_name . '-light'] = [
+      'command' => 'env LINES=15 COLUMNS=64 php ' . $project_dir . '/playground/10-builtin-themes/run.php --theme=' . $theme_name . ' --mode=light',
+      'interact' => builtinThemeInteraction(),
+      'rows' => 15,
+      'cols' => 64,
+      'at_needle' => 'Project name',
+      'light' => TRUE,
+    ];
+  }
+
+  // The dos theme is the same drilled-in frame, but its dark preview renders
+  // on the CGA blue surface (the EDIT.COM / QBasic look); the light preview
+  // uses the light surface like the others.
+  $jobs['theme-dos'] = [
+    'command' => 'env LINES=16 COLUMNS=80 php ' . $project_dir . '/playground/10-builtin-themes/run.php --theme=dos --mode=dark',
+    'interact' => builtinThemeInteraction(),
+    'rows' => 16,
+    'cols' => 80,
+    'at_needle' => 'Project name',
+    'dos' => TRUE,
+  ];
+  $jobs['theme-dos-light'] = [
+    'command' => 'env LINES=16 COLUMNS=80 php ' . $project_dir . '/playground/10-builtin-themes/run.php --theme=dos --mode=light',
+    'interact' => builtinThemeInteraction(),
+    'rows' => 16,
+    'cols' => 80,
+    'at_needle' => 'Project name',
+    'light' => TRUE,
   ];
 
   // Update-mode discovery: headless, shows the provenance-badged summary.
@@ -839,7 +902,7 @@ function processOne(string $name): void {
     $at = $appeared + FRAME_SETTLE_MS;
   }
 
-  convertToSvg($cast_file, $svg_file, $script_dir, is_int($at) ? $at : NULL);
+  convertToSvg($cast_file, $svg_file, $script_dir, is_int($at) ? $at : NULL, (bool) ($job['light'] ?? FALSE), (bool) ($job['dos'] ?? FALSE));
   verifySvg($svg_file, $name, is_string($needle) ? $needle : ($job['verify'] ?? NULL), is_string($needle));
 }
 
@@ -1158,17 +1221,23 @@ function postProcessCast(string $cast_file): void {
  *   Path to the tooling directory containing svg-term-render.js.
  * @param int|null $at
  *   Optional timestamp in ms to capture a static frame.
+ * @param bool $light
+ *   Whether to render on a light surface (for light-mode palettes).
+ * @param bool $dos
+ *   Whether to render on the CGA blue surface (for the dos theme).
  */
-function convertToSvg(string $cast_file, string $svg_file, string $util_dir, ?int $at = NULL): void {
+function convertToSvg(string $cast_file, string $svg_file, string $util_dir, ?int $at = NULL, bool $light = FALSE, bool $dos = FALSE): void {
   $renderer = $util_dir . '/svg-term-render.js';
 
   $at_flag = $at !== NULL ? sprintf(' --at %d', $at) : '';
+  $surface_flag = $dos ? ' --dos' : ($light ? ' --light' : '');
   $cmd = sprintf(
-    'node %s %s %s --line-height 1.1%s 2>&1',
+    'node %s %s %s --line-height 1.1%s%s 2>&1',
     escapeshellarg($renderer),
     escapeshellarg($cast_file),
     escapeshellarg($svg_file),
-    $at_flag
+    $at_flag,
+    $surface_flag
   );
 
   $output = shell_exec($cmd);

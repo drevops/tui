@@ -42,6 +42,12 @@ final class ThemeManagerTest extends TestCase {
     // The dark/light palette is a mode option, not a separate theme.
     yield 'light mode' => ['default', ['mode' => Mode::Light], static fn(DefaultTheme $t): string => $t->title('X'), '1;34'];
     yield 'light mode indicator' => ['default', ['mode' => Mode::Light], static fn(DefaultTheme $t): string => $t->indicator('X'), '35'];
+    // Each curated built-in theme resolves by name to its own accent.
+    yield 'midnight resolves' => ['midnight', [], static fn(DefaultTheme $t): string => $t->title('X'), '1;38;5;141'];
+    yield 'frost resolves' => ['frost', [], static fn(DefaultTheme $t): string => $t->title('X'), '1;38;5;117'];
+    yield 'ember resolves' => ['ember', [], static fn(DefaultTheme $t): string => $t->title('X'), '1;38;5;208'];
+    yield 'mono resolves' => ['mono', [], static fn(DefaultTheme $t): string => $t->title('X'), '1;97'];
+    yield 'dos resolves' => ['dos', [], static fn(DefaultTheme $t): string => $t->title('X'), '1;97'];
   }
 
   public function testCreateUnknownThrows(): void {
