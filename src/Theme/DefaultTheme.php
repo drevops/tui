@@ -56,6 +56,16 @@ class DefaultTheme implements ThemeInterface {
   public const int DEFAULT_WIDTH = 76;
 
   /**
+   * The nominal width of a boxed or underlined input field, in columns.
+   */
+  protected const int FIELD_WIDTH = 40;
+
+  /**
+   * The minimum width of a boxed or underlined input field, in columns.
+   */
+  protected const int FIELD_MIN_WIDTH = 12;
+
+  /**
    * Whether colour (ANSI) is enabled, resolved from the "color" option.
    */
   protected bool $color;
@@ -147,6 +157,7 @@ class DefaultTheme implements ThemeInterface {
       'unicode' => [TRUE, FALSE],
       'spacing' => array_column(Spacing::cases(), 'value'),
       'border' => array_column(Border::cases(), 'value'),
+      'field' => array_column(FieldStyle::cases(), 'value'),
     ];
   }
 
@@ -240,6 +251,22 @@ class DefaultTheme implements ThemeInterface {
     }
 
     return is_string($value) ? (Border::tryFrom($value) ?? Border::None) : Border::None;
+  }
+
+  /**
+   * The field-input style option.
+   *
+   * @return \DrevOps\Tui\Theme\FieldStyle
+   *   The field style; flat when unset.
+   */
+  protected function field(): FieldStyle {
+    $value = $this->options['field'] ?? NULL;
+
+    if ($value instanceof FieldStyle) {
+      return $value;
+    }
+
+    return is_string($value) ? (FieldStyle::tryFrom($value) ?? FieldStyle::Flat) : FieldStyle::Flat;
   }
 
   /**
@@ -537,6 +564,48 @@ class DefaultTheme implements ThemeInterface {
    */
   public function ghost(string $text): string {
     return $this->color ? $this->paint('90', $text) : '';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function renderInput(string $before, string $after, string $ghost = ''): string {
+    if (!$this->color || $this->field() === FieldStyle::Flat) {
+      return $before . $this->caret() . $after . ($ghost === '' ? '' : $this->ghost($ghost));
+    }
+
+    // The caret reverses the character it sits on (a space at the line end), so
+    // the cursor highlights the letter rather than hiding it behind a block.
+    $cursor_char = $after === '' ? ' ' : mb_substr($after, 0, 1, 'UTF-8');
+    $tail = $after === '' ? '' : mb_substr($after, 1, NULL, 'UTF-8');
+
+    $target = max(self::FIELD_MIN_WIDTH, min($this->width, self::FIELD_WIDTH));
+    $visible = mb_strlen($before, 'UTF-8') + 1 + mb_strlen($tail, 'UTF-8') + mb_strlen($ghost, 'UTF-8');
+    $pad = str_repeat(' ', max(0, $target - $visible));
+
+    // The caret (reverse) and ghost (dim) toggle off again (27, 22) instead of
+    // resetting, so the field fill runs unbroken behind the whole value - the
+    // only reset is Ansi::style()'s closing one.
+    $cursor = Ansi::ESC . '[7m' . $cursor_char . Ansi::ESC . '[27m';
+    $suffix = $ghost === '' ? '' : Ansi::ESC . '[2m' . $ghost . Ansi::ESC . '[22m';
+
+    return Ansi::style($before . $cursor . $tail . $suffix . $pad, $this->inputSgr());
+  }
+
+  /**
+   * The SGR parameters for a boxed or underlined input field, per mode.
+   *
+   * @return string
+   *   The SGR code: an underline in the value colour, or a fill - light in
+   *   dark mode (black on grey), dark in light mode (white on blue) - so the
+   *   field reads against either terminal background.
+   */
+  protected function inputSgr(): string {
+    if ($this->field() === FieldStyle::Underline) {
+      return '4;32';
+    }
+
+    return $this->isDark ? '30;47' : '97;44';
   }
 
   /**

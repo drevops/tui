@@ -123,6 +123,19 @@ trait TextEditCapableTrait {
   }
 
   /**
+   * The buffer split into the text before and after the caret.
+   *
+   * @return array{string,string}
+   *   The before-caret and after-caret segments.
+   */
+  protected function caretSegments(): array {
+    return [
+      mb_substr($this->buffer, 0, $this->cursor, 'UTF-8'),
+      mb_substr($this->buffer, $this->cursor, NULL, 'UTF-8'),
+    ];
+  }
+
+  /**
    * Render the buffer split by the caret at the cursor position.
    *
    * @param \DrevOps\Tui\Theme\ThemeInterface $theme
@@ -132,7 +145,29 @@ trait TextEditCapableTrait {
    *   The input line.
    */
   protected function renderCaretLine(ThemeInterface $theme): string {
-    return mb_substr($this->buffer, 0, $this->cursor, 'UTF-8') . $theme->caret() . mb_substr($this->buffer, $this->cursor, NULL, 'UTF-8');
+    [$before, $after] = $this->caretSegments();
+
+    return $before . $theme->caret() . $after;
+  }
+
+  /**
+   * Render the buffer as a single-line input field, in the theme's field style.
+   *
+   * The flat style is the plain caret line; the boxed and underline styles fill
+   * or underline the field behind the value.
+   *
+   * @param \DrevOps\Tui\Theme\ThemeInterface $theme
+   *   The theme composing the input.
+   * @param string $ghost
+   *   The inline ghost-text completion suffix, or an empty string.
+   *
+   * @return string
+   *   The input line.
+   */
+  protected function renderInputLine(ThemeInterface $theme, string $ghost = ''): string {
+    [$before, $after] = $this->caretSegments();
+
+    return $theme->renderInput($before, $after, $ghost);
   }
 
 }

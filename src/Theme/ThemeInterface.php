@@ -201,6 +201,27 @@ interface ThemeInterface {
   public function ghost(string $text): string;
 
   /**
+   * Render an editor input line, styled per the "field" theme option.
+   *
+   * The flat style returns the value with a plain caret. The boxed and
+   * underline styles wrap it in a fixed-width filled or underlined field, so
+   * the entry area reads as an input the way an MS-DOS form marked its fields:
+   * the fill runs behind the value text, and a reverse-video caret sits over
+   * the character it is on, so the letter still shows.
+   *
+   * @param string $before
+   *   The buffer text before the caret.
+   * @param string $after
+   *   The buffer text after the caret.
+   * @param string $ghost
+   *   The inline ghost-text completion suffix, or an empty string.
+   *
+   * @return string
+   *   The composed input line.
+   */
+  public function renderInput(string $before, string $after, string $ghost = ''): string;
+
+  /**
    * The masked-character symbol for secret values.
    */
   public function mask(): string;
