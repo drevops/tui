@@ -94,6 +94,9 @@ final readonly class Field {
    * @param \DrevOps\Tui\Config\DateBounds|null $dateBounds
    *   Date only: the min/max range and week-start day; NULL for non-date
    *   fields.
+   * @param \DrevOps\Tui\Config\RenderMode $render
+   *   Where the field's editor is drawn: inline in the panel (the default) or
+   *   full-screen on its own standalone editor.
    */
   public function __construct(
     public string $id,
@@ -120,6 +123,7 @@ final readonly class Field {
     public ?int $pageSize = NULL,
     public array|\Closure $completion = [],
     public ?DateBounds $dateBounds = NULL,
+    public RenderMode $render = RenderMode::Inline,
   ) {
     $this->options = Option::list($options);
   }

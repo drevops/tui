@@ -16,6 +16,7 @@ use DrevOps\Tui\Config\FilePickerMode;
 use DrevOps\Tui\Config\Fixup;
 use DrevOps\Tui\Config\NumberBounds;
 use DrevOps\Tui\Config\OptionKind;
+use DrevOps\Tui\Config\RenderMode;
 use DrevOps\Tui\Config\Weekday;
 use DrevOps\Tui\Derive\Derive;
 use DrevOps\Tui\Discovery\Dotenv;
@@ -223,6 +224,24 @@ final class FormTest extends TestCase {
     $this->assertNull($config->color);
     $this->assertSame('', $config->envPrefix);
     $this->assertSame('', $config->panels[0]->description);
+  }
+
+  public function testStandaloneOptsOutOfInlineEditing(): void {
+    $config = Form::create('T')
+      ->panel('p', 'P', function (PanelBuilder $panel): void {
+        $panel->confirm('a');
+        $panel->select('b')->option('x')->standalone();
+        // A later standalone(FALSE) restores inline editing.
+        $panel->text('c')->standalone()->standalone(FALSE);
+      })
+      ->build();
+
+    // A field is edited inline by default.
+    $this->assertSame(RenderMode::Inline, $config->field('a')?->render);
+    // Declaring it standalone opts out to the full-screen editor.
+    $this->assertSame(RenderMode::Standalone, $config->field('b')?->render);
+    // standalone(FALSE) restores inline editing.
+    $this->assertSame(RenderMode::Inline, $config->field('c')?->render);
   }
 
   public function testExternalEditorFlag(): void {

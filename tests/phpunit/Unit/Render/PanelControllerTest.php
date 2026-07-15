@@ -125,7 +125,7 @@ final class PanelControllerTest extends TestCase {
     $this->assertStringContainsString('[ Submit ]', Ansi::strip($controller->frame(12)));
   }
 
-  public function testEditingFrameShowsHeaderAndHints(): void {
+  public function testInlineEditExpandsWidgetInsideThePanel(): void {
     $controller = $this->controller();
     $controller->handle(Key::named(KeyName::Enter));
     $controller->handle(Key::named(KeyName::Enter));
@@ -133,12 +133,77 @@ final class PanelControllerTest extends TestCase {
 
     $frame = Ansi::strip($controller->frame(12));
 
-    // The editor shows the field label underlined with the rule glyph, and
-    // editing hints instead of the panel status line.
+    // The editor expands in place: the breadcrumb and the sibling row stay
+    // visible, the field's view (its caret input) shows under the label, and
+    // the footer switches to the widget's hints - no full-screen editor header.
+    $this->assertStringContainsString('General', $frame);
+    $this->assertStringContainsString('❯ Name', $frame);
+    $this->assertStringContainsString('Acme', $frame);
+    $this->assertStringContainsString('Advanced', $frame);
+    $this->assertStringContainsString('accept', $frame);
+    $this->assertStringNotContainsString('────', $frame);
+  }
+
+  public function testInlineEditRendersChoiceListInThePanel(): void {
+    $config = Form::create('Demo')
+      ->buttons(FALSE)
+      ->panel('main', 'Main', function (PanelBuilder $p): void {
+        $p->select('env', 'Env')->default('dev')->options(['dev' => 'Development', 'prod' => 'Production']);
+        $p->text('note', 'Note');
+      })
+      ->build();
+    $controller = new PanelController($config, new DefaultTheme(40, ['color' => FALSE]), ['env' => 'dev', 'note' => 'n'], []);
+
+    $controller->handle(Key::named(KeyName::Enter));
+    $controller->handle(Key::named(KeyName::Enter));
+
+    $frame = Ansi::strip($controller->frame(12));
+
+    // A multi-line widget view renders inline too: the select's own radio list
+    // shows in the panel, with the sibling field still visible below it.
+    $this->assertStringContainsString('Development', $frame);
+    $this->assertStringContainsString('Production', $frame);
+    $this->assertStringContainsString('Note', $frame);
+  }
+
+  public function testInlineEditKeepsTheFieldDescription(): void {
+    $config = Form::create('Demo')
+      ->buttons(FALSE)
+      ->panel('main', 'Main', function (PanelBuilder $p): void {
+        $p->confirm('cdn', 'Serve via CDN?')->description('Cache assets at the edge.');
+      })
+      ->build();
+    $controller = new PanelController($config, new DefaultTheme(50, ['color' => FALSE]), ['cdn' => TRUE], []);
+
+    $controller->handle(Key::named(KeyName::Enter));
+    $controller->handle(Key::named(KeyName::Enter));
+
+    // The field's help text stays visible while its editor is open in the row.
+    $this->assertStringContainsString('Cache assets at the edge.', Ansi::strip($controller->frame(12)));
+  }
+
+  public function testStandaloneEditTakesTheFullScreen(): void {
+    $config = Form::create('Demo')
+      ->buttons(FALSE)
+      ->panel('general', 'General', function (PanelBuilder $p): void {
+        $p->text('name', 'Name')->standalone();
+        $p->text('other', 'Other');
+      })
+      ->build();
+    $controller = new PanelController($config, new DefaultTheme(40, ['color' => FALSE]), ['name' => 'Acme', 'other' => 'x'], []);
+
+    $controller->handle(Key::named(KeyName::Enter));
+    $controller->handle(Key::named(KeyName::Enter));
+    $this->assertTrue($controller->isEditing());
+
+    $frame = Ansi::strip($controller->frame(12));
+
+    // A standalone field opens full-screen: the underlined label header and the
+    // widget's hints, with none of the other panel rows around it.
     $this->assertStringContainsString("Name\n────", $frame);
     $this->assertStringContainsString('accept', $frame);
     $this->assertStringContainsString('esc cancel', $frame);
-    $this->assertStringNotContainsString('move', $frame);
+    $this->assertStringNotContainsString('Other', $frame);
   }
 
   public function testButtonsNavigateWithLeftRight(): void {
