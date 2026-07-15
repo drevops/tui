@@ -43,8 +43,6 @@ class Terminal {
 
   /**
    * The background SGR each rendered frame is washed with, or NULL for none.
-   *
-   * @var string|null
    */
   protected ?string $background = NULL;
 
