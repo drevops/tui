@@ -27,13 +27,15 @@ is the dark, Unicode, colour animation, and
 
 ## What generates what
 
-- **`render-widget-svgs.php`** - the per-widget hero cards the README embeds
-  (`widget-*-dark-animated.svg`), driven deterministically through the library's
-  own keystroke harness, no terminal required.
+- **`render-widget-svgs.php`** - every per-widget asset, driven deterministically
+  through the library's own keystroke harness with no terminal: the animated hero
+  (`widget-*-dark-animated.svg`) and the four static display-mode screenshots the
+  docs grid shows (`widget-*-dark-static*.svg`).
 - **`make-light-svgs.php`** - the `*-light-animated.svg` twins, recoloured from
   the dark originals.
-- **`update-assets.php`** - the full panel demos and the alternate display-mode
-  screenshots, recorded from a live terminal.
+- **`update-assets.php`** - the full panel demos, the widget montage and the
+  option-group / password-reveal / discovery frames, recorded from a live
+  terminal.
 
 Every animated SVG is slowed to a shared playback factor so the motion stays
 readable.

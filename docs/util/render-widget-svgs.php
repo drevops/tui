@@ -6,12 +6,14 @@
  * Render the README's per-widget animated SVGs deterministically.
  *
  * The full-demo montages and panel walkthroughs are recorded from a live pty
- * (see update-assets.php), but the per-widget cards are single-field forms that
- * the library's own scripted-keystroke harness drives frame for frame with no
- * terminal at all. Each widget is opened, exercised and accepted through
- * TuiTester; every rendered frame is captured, laid out into an asciicast and
- * handed to the shared svg-term renderer as an animation. The result is
- * reproducible on any machine (and in CI), unlike a pty recording.
+ * (see update-assets.php), but the per-widget assets are single-field forms
+ * that the library's own scripted-keystroke harness drives with no terminal at
+ * all. For each widget this renders two things: the animated hero README.md and
+ * the documentation site embed (every rendered frame captured, laid out into an
+ * asciicast and handed to the shared svg-term renderer), and the four static
+ * display-mode screenshots the documentation grid shows (the opened editor in
+ * each glyph and colour combination). The result is reproducible on any machine
+ * (and in CI), unlike a pty recording.
  *
  * Dependencies: node, npm (for the svg-term renderer shared with update-assets).
  *
@@ -41,6 +43,16 @@ require_once __DIR__ . '/svg-slowdown.php';
 const HOLD_FIRST = 1.1;
 const HOLD_STEP = 0.65;
 const HOLD_LAST = 2.2;
+
+// The four display modes shown side by side on each widget's documentation
+// page, keyed by the filename suffix that distinguishes them. Unicode and
+// colour are the unmarked default.
+const STATIC_MODES = [
+  '' => ['color' => TRUE, 'unicode' => TRUE],
+  '-ascii' => ['color' => TRUE, 'unicode' => FALSE],
+  '-no-ansi' => ['color' => FALSE, 'unicode' => TRUE],
+  '-ascii-no-ansi' => ['color' => FALSE, 'unicode' => FALSE],
+];
 
 /**
  * The per-widget forms and the keystrokes that drive them.
@@ -191,6 +203,53 @@ function renderWidget(string $name, array $spec, string $assets_dir, string $uti
 }
 
 /**
+ * Render a widget's static display-mode screenshots.
+ *
+ * The documentation page shows each widget's editor, opened on its default, in
+ * all four glyph and colour combinations. Every frame comes from the same
+ * scripted open, so the grid stays consistent with itself and with the animated
+ * hero above it.
+ *
+ * @param string $name
+ *   The asset name.
+ * @param array{form: \DrevOps\Tui\Builder\Form, keys: list<string|\DrevOps\Tui\Input\Key>, rows: int} $spec
+ *   The widget spec.
+ * @param string $assets_dir
+ *   The output directory.
+ * @param string $util_dir
+ *   The tooling directory holding the svg-term renderer.
+ * @param string $tmp_dir
+ *   A scratch directory for the intermediate cast.
+ */
+function renderStaticVariants(string $name, array $spec, string $assets_dir, string $util_dir, string $tmp_dir): void {
+  // A gate settles one Enter in; every other widget opens its editor with the
+  // hub-into-panel-into-field drill.
+  $enter = Key::named(KeyName::Enter);
+  $open = $name === 'pause' ? [$enter] : [$enter, $enter];
+  $clear = Ansi::ESC . '[2J' . Ansi::ESC . '[H';
+
+  foreach (STATIC_MODES as $suffix => $mode) {
+    $tester = (new TuiTester($spec['form']))
+      ->options(['color' => $mode['color'], 'unicode' => $mode['unicode'], 'mode' => Mode::Dark])
+      ->rows($spec['rows']);
+    $tester->run(...$open);
+
+    $frames = splitFrames($tester->output());
+    if ($frames === []) {
+      throw new \RuntimeException(sprintf('Widget "%s" static "%s" produced no frame.', $name, $suffix === '' ? 'default' : $suffix));
+    }
+
+    $frame = $frames[count($frames) - 1];
+    $cast = json_encode(['version' => 2, 'width' => castWidth([$frame]), 'height' => $spec['rows']]) . "\n"
+      . json_encode([0.0, 'o', $clear . $frame]) . "\n";
+    $cast_file = $tmp_dir . '/widget-' . $name . '-static' . $suffix . '.cast';
+    file_put_contents($cast_file, $cast);
+
+    renderCast($cast_file, $assets_dir . '/widget-' . $name . '-dark-static' . $suffix . '.svg', $util_dir, 0);
+  }
+}
+
+/**
  * Split captured output into whole rendered frames.
  *
  * Every frame the panel loop draws is prefixed by the clear-screen sequence, so
@@ -262,7 +321,7 @@ function buildCast(array $frames, int $rows): string {
 }
 
 /**
- * Render a cast to an animated SVG with the shared svg-term renderer.
+ * Render a cast to an SVG with the shared svg-term renderer.
  *
  * @param string $cast_file
  *   The input cast path.
@@ -270,13 +329,17 @@ function buildCast(array $frames, int $rows): string {
  *   The output SVG path.
  * @param string $util_dir
  *   The directory holding svg-term-render.js.
+ * @param int|null $at
+ *   A timestamp in milliseconds to capture a single static frame, or NULL to
+ *   render the whole cast as an animation.
  */
-function renderCast(string $cast_file, string $svg_file, string $util_dir): void {
+function renderCast(string $cast_file, string $svg_file, string $util_dir, ?int $at = NULL): void {
   $cmd = sprintf(
-    'node %s %s %s --line-height 1.1 2>&1',
+    'node %s %s %s --line-height 1.1%s 2>&1',
     escapeshellarg($util_dir . '/svg-term-render.js'),
     escapeshellarg($cast_file),
-    escapeshellarg($svg_file)
+    escapeshellarg($svg_file),
+    $at !== NULL ? sprintf(' --at %d', $at) : ''
   );
   $output = shell_exec($cmd);
 
@@ -325,6 +388,7 @@ foreach ($names as $name) {
   }
 
   renderWidget($name, $specs[$name], $assets_dir, $util_dir, $tmp_dir);
+  renderStaticVariants($name, $specs[$name], $assets_dir, $util_dir, $tmp_dir);
 }
 
 info('Done.');
