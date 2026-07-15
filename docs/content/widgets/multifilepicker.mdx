@@ -3,7 +3,14 @@ title: MultiFilePicker
 sidebar_position: 4
 ---
 
+import ThemedImage from '@theme/ThemedImage';
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
 # MultiFilePicker
+
+<p align="center">
+  <ThemedImage sources={{light: useBaseUrl('/widget-multifilepicker-light-animated.svg'), dark: useBaseUrl('/widget-multifilepicker-dark-animated.svg')}} alt="MultiFilePicker widget" />
+</p>
 
 Like the file picker, but several paths can be chosen: `Space` toggles the
 highlighted entry and selections accumulate as you browse between directories,
@@ -21,12 +28,12 @@ $p->multiFilePicker('assets', 'Asset files')->startIn(getcwd())->extensions(['pn
   </tr>
   <tr>
     <td align="right"><strong>Unicode</strong></td>
-    <td><img src="/widget-multifilepicker.svg" alt="Multi file picker: Unicode + ANSI" /></td>
-    <td><img src="/widget-multifilepicker-no-ansi.svg" alt="Multi file picker: Unicode + No ANSI" /></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-multifilepicker-light-static.svg'), dark: useBaseUrl('/widget-multifilepicker-dark-static.svg')}} alt="Multi file picker: Unicode + ANSI" /></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-multifilepicker-light-static-no-ansi.svg'), dark: useBaseUrl('/widget-multifilepicker-dark-static-no-ansi.svg')}} alt="Multi file picker: Unicode + No ANSI" /></td>
   </tr>
   <tr>
     <td align="right"><strong>ASCII</strong></td>
-    <td><img src="/widget-multifilepicker-ascii.svg" alt="Multi file picker: ASCII + ANSI" /></td>
-    <td><img src="/widget-multifilepicker-ascii-no-ansi.svg" alt="Multi file picker: ASCII + No ANSI" /></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-multifilepicker-light-static-ascii.svg'), dark: useBaseUrl('/widget-multifilepicker-dark-static-ascii.svg')}} alt="Multi file picker: ASCII + ANSI" /></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-multifilepicker-light-static-ascii-no-ansi.svg'), dark: useBaseUrl('/widget-multifilepicker-dark-static-ascii-no-ansi.svg')}} alt="Multi file picker: ASCII + No ANSI" /></td>
   </tr>
 </table>

@@ -3,7 +3,14 @@ title: Select
 sidebar_position: 13
 ---
 
+import ThemedImage from '@theme/ThemedImage';
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
 # Select
+
+<p align="center">
+  <ThemedImage sources={{light: useBaseUrl('/widget-select-light-animated.svg'), dark: useBaseUrl('/widget-select-dark-animated.svg')}} alt="Select widget" />
+</p>
 
 Single choice from a list. Up/Down move, Enter accepts the highlighted option.
 Pass `default` (an option key) to start on an option other than the first. Long
@@ -24,12 +31,12 @@ groups](/widgets/option-groups).
   </tr>
   <tr>
     <td align="right"><strong>Unicode</strong></td>
-    <td><img src="/widget-select.svg" alt="Select: Unicode + ANSI" /></td>
-    <td><img src="/widget-select-no-ansi.svg" alt="Select: Unicode + No ANSI" /></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-select-light-static.svg'), dark: useBaseUrl('/widget-select-dark-static.svg')}} alt="Select: Unicode + ANSI" /></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-select-light-static-no-ansi.svg'), dark: useBaseUrl('/widget-select-dark-static-no-ansi.svg')}} alt="Select: Unicode + No ANSI" /></td>
   </tr>
   <tr>
     <td align="right"><strong>ASCII</strong></td>
-    <td><img src="/widget-select-ascii.svg" alt="Select: ASCII + ANSI" /></td>
-    <td><img src="/widget-select-ascii-no-ansi.svg" alt="Select: ASCII + No ANSI" /></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-select-light-static-ascii.svg'), dark: useBaseUrl('/widget-select-dark-static-ascii.svg')}} alt="Select: ASCII + ANSI" /></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-select-light-static-ascii-no-ansi.svg'), dark: useBaseUrl('/widget-select-dark-static-ascii-no-ansi.svg')}} alt="Select: ASCII + No ANSI" /></td>
   </tr>
 </table>

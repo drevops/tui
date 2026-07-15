@@ -3,7 +3,14 @@ title: Search
 sidebar_position: 12
 ---
 
+import ThemedImage from '@theme/ThemedImage';
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
 # Search
+
+<p align="center">
+  <ThemedImage sources={{light: useBaseUrl('/widget-search-light-animated.svg'), dark: useBaseUrl('/widget-search-dark-animated.svg')}} alt="Search widget" />
+</p>
 
 Single choice with a visible filter line above the options: typing fuzzy-matches
 and ranks the labels - exact and prefix matches lead, looser subsequence matches
@@ -26,12 +33,12 @@ groups](/widgets/option-groups).
   </tr>
   <tr>
     <td align="right"><strong>Unicode</strong></td>
-    <td><img src="/widget-search.svg" alt="Search: Unicode + ANSI" /></td>
-    <td><img src="/widget-search-no-ansi.svg" alt="Search: Unicode + No ANSI" /></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-search-light-static.svg'), dark: useBaseUrl('/widget-search-dark-static.svg')}} alt="Search: Unicode + ANSI" /></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-search-light-static-no-ansi.svg'), dark: useBaseUrl('/widget-search-dark-static-no-ansi.svg')}} alt="Search: Unicode + No ANSI" /></td>
   </tr>
   <tr>
     <td align="right"><strong>ASCII</strong></td>
-    <td><img src="/widget-search-ascii.svg" alt="Search: ASCII + ANSI" /></td>
-    <td><img src="/widget-search-ascii-no-ansi.svg" alt="Search: ASCII + No ANSI" /></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-search-light-static-ascii.svg'), dark: useBaseUrl('/widget-search-dark-static-ascii.svg')}} alt="Search: ASCII + ANSI" /></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-search-light-static-ascii-no-ansi.svg'), dark: useBaseUrl('/widget-search-dark-static-ascii-no-ansi.svg')}} alt="Search: ASCII + No ANSI" /></td>
   </tr>
 </table>

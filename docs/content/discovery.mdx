@@ -3,6 +3,9 @@ title: Discovery
 sidebar_position: 7
 ---
 
+import ThemedImage from '@theme/ThemedImage';
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
 # Discovery
 
 In update mode, `->discover()` rules detect defaults from an existing project
@@ -20,5 +23,5 @@ Discovered values are badged in the summary, and explicit input (prompts or
 environment) always wins over discovery:
 
 <p align="center">
-  <img src="/discovery.svg" width="100%" alt="Discovery summary with provenance badges" />
+  <ThemedImage sources={{light: useBaseUrl('/discovery-light-static.svg'), dark: useBaseUrl('/discovery-dark-static.svg')}} alt="Discovery summary with provenance badges" width="100%" />
 </p>

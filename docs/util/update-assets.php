@@ -5,12 +5,19 @@
  * @file
  * Generate animated SVG assets from asciinema recordings.
  *
- * Records terminal sessions for the playground demos (the panel TUI runners
- * and the per-widget scripts), then converts the recordings to SVGs for use
- * in README.md: animated SVGs for the full demos, static frames for the
- * per-widget screenshots. Static frames are anchored to the moment the
- * demo's gate text first appears in the recording, and every generated SVG
- * is verified to contain the expected content before the job succeeds.
+ * Records terminal sessions for the playground panel demos (the panel TUI
+ * runners) and the widget montage, then converts the recordings to animated
+ * SVGs; it also renders the option-group, password-reveal and discovery static
+ * frames. Every per-widget card - both its animations and its static
+ * display-mode screenshots - is rendered deterministically by
+ * render-widget-svgs.php instead, and the light twins by make-light-svgs.php.
+ * Static frames are anchored to the moment the demo's gate text first appears in
+ * the recording; every animated SVG is slowed to ANIMATION_SLOWDOWN, and every
+ * generated SVG is verified to contain the expected content before the job
+ * succeeds.
+ *
+ * Output filenames follow the explicit convention shared with those sibling
+ * scripts: <subject>-<dark|light>-<animated|static>[-ascii][-no-ansi].svg.
  *
  * Supports parallel execution: when run without arguments, launches all
  * recordings as parallel worker processes for faster generation.
@@ -43,6 +50,10 @@ define('END_PAUSE', 10);
 // interactions pause for 1000ms after their gate matches, so half of that
 // lands safely inside the stable initial frame.
 define('FRAME_SETTLE_MS', 500);
+
+// The playback-speed factor (ANIMATION_SLOWDOWN) and the slowAnimation() scaler
+// are shared with render-widget-svgs.php.
+require_once __DIR__ . '/svg-slowdown.php';
 
 /**
  * The expect snippets driving each widget demo, keyed by widget name.
@@ -569,90 +580,10 @@ EXPECT,
     'at_needle' => 'hunter2',
   ];
 
-  // Static per-widget screenshots: a single frame of the initial state.
-  $widget_rows = [
-    'text' => 6,
-    'number' => 6,
-    'calendar' => 14,
-    'textarea' => 8,
-    'password' => 6,
-    'select' => 8,
-    'multiselect' => 8,
-    // The reorder frame captures its opened editor, which is taller than the
-    // panel-hub summary the other single-field forms show at their anchor.
-    'reorder' => 12,
-    'suggest' => 10,
-    'search' => 10,
-    'multisearch' => 10,
-    'confirm' => 6,
-    'toggle' => 6,
-    'pause' => 6,
-  ];
-
-  foreach (widgetInteractions() as $widget => $interact) {
-    // The frame is anchored to the interaction's own gate text - the widget
-    // title it waits for - so the capture never races the process startup.
-    preg_match('/expect "([^"]+)"/', $interact, $matches);
-    $gate = $matches[1] ?? '';
-
-    foreach ($flag_variants as $suffix => $flags) {
-      $jobs['widget-' . $widget . $suffix] = [
-        'command' => 'php ' . $project_dir . '/playground/3-widgets/widget-' . $widget . '.php' . $flags,
-        'interact' => $interact,
-        'rows' => $widget_rows[$widget],
-        'cols' => 44,
-        'at_needle' => $gate,
-      ];
-    }
-  }
-
-  // The reorder field opens its editor only after Enter, so its frame anchors
-  // on the widget's own labels ("Redis") rather than the form title - the panel
-  // hub summary lists the lowercase option values, so the capital label appears
-  // only once the reorder list is on screen.
-  foreach ($flag_variants as $suffix => $flags) {
-    $jobs['widget-reorder' . $suffix]['at_needle'] = 'Redis';
-  }
-
-  // The file pickers browse a fixture tree, so they stand apart from the
-  // single-screen widget montage; each is still shown in all display modes.
-  $picker_rows = ['filepicker' => 8, 'multifilepicker' => 10];
-  $picker_interactions = [
-    'filepicker' => <<<'EXPECT'
-# File picker: descend into the config directory, select the first YAML file.
-expect "File picker widget" {
-    pause 1000
-    safe_send "\r"
-    pause 1000
-    wait_and_enter
-}
-EXPECT,
-    'multifilepicker' => <<<'EXPECT'
-# Multi file picker: toggle two entries, accept.
-expect "Multi file picker widget" {
-    pause 1000
-    toggle_space
-    arrow_down
-    toggle_space
-    wait_and_enter
-}
-EXPECT,
-  ];
-
-  foreach ($picker_interactions as $widget => $interact) {
-    preg_match('/expect "([^"]+)"/', $interact, $matches);
-    $gate = $matches[1] ?? '';
-
-    foreach ($flag_variants as $suffix => $flags) {
-      $jobs['widget-' . $widget . $suffix] = [
-        'command' => 'php ' . $project_dir . '/playground/3-widgets/widget-' . $widget . '.php' . $flags,
-        'interact' => $interact,
-        'rows' => $picker_rows[$widget],
-        'cols' => 60,
-        'at_needle' => $gate,
-      ];
-    }
-  }
+  // Every per-widget card - the animated unicode-colour hero README.md embeds
+  // and all four static display-mode screenshots the documentation pages show -
+  // is rendered deterministically by render-widget-svgs.php, so no per-widget
+  // recordings run here. widgetInteractions() still feeds the montage above.
 
   // Option-kind demos: a select and a multiselect showing group headings,
   // separators and disabled options, each in all four display modes. The
@@ -813,9 +744,10 @@ function processOne(string $name): void {
   }
 
   $job = $jobs[$name];
+  $static = isset($job['at_needle']) || isset($job['at']);
   $cast_file = $tmp_dir . '/' . $name . '.cast';
   $expect_script = $tmp_dir . '/' . $name . '.exp';
-  $svg_file = $assets_dir . '/' . $name . '.svg';
+  $svg_file = $assets_dir . '/' . assetName($name, $static);
   $rows = $job['rows'] ?? TERMINAL_ROWS;
   $cols = $job['cols'] ?? TERMINAL_COLS;
 
@@ -1162,6 +1094,12 @@ function postProcessCast(string $cast_file): void {
 function convertToSvg(string $cast_file, string $svg_file, string $util_dir, ?int $at = NULL): void {
   $renderer = $util_dir . '/svg-term-render.js';
 
+  // Clear any prior output first, so a failed render leaves no stale file that
+  // the success check would accept and then re-slow.
+  if (is_file($svg_file)) {
+    unlink($svg_file);
+  }
+
   $at_flag = $at !== NULL ? sprintf(' --at %d', $at) : '';
   $cmd = sprintf(
     'node %s %s %s --line-height 1.1%s 2>&1',
@@ -1176,6 +1114,35 @@ function convertToSvg(string $cast_file, string $svg_file, string $util_dir, ?in
   if (!file_exists($svg_file) || filesize($svg_file) === 0) {
     throw new \RuntimeException('Failed to convert cast to SVG: ' . $cast_file . "\n" . ($output ?? ''));
   }
+
+  // A static frame has no animation to slow; an animated render is scaled to
+  // the project-wide playback speed.
+  if ($at === NULL) {
+    file_put_contents($svg_file, slowAnimation((string) file_get_contents($svg_file), ANIMATION_SLOWDOWN));
+  }
+}
+
+/**
+ * The asset filename for a job under the explicit naming convention.
+ *
+ * The job key already carries the display-mode suffixes; this adds the theme
+ * (always dark here - light twins are derived by make-light-svgs.php) and the
+ * motion, yielding <subject>-dark-<motion>[-ascii][-no-ansi].svg.
+ *
+ * @param string $job
+ *   The job key.
+ * @param bool $static
+ *   Whether the job renders a single static frame.
+ *
+ * @return string
+ *   The asset filename.
+ */
+function assetName(string $job, bool $static): string {
+  $ascii = str_contains($job, '-ascii');
+  $noansi = str_contains($job, '-no-ansi');
+  $subject = str_replace(['-ascii', '-no-ansi'], '', $job);
+
+  return $subject . '-dark-' . ($static ? 'static' : 'animated') . ($ascii ? '-ascii' : '') . ($noansi ? '-no-ansi' : '') . '.svg';
 }
 
 /**
