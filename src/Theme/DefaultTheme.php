@@ -596,8 +596,8 @@ class DefaultTheme implements ThemeInterface {
    * The SGR parameters for a boxed or underlined input field, per mode.
    *
    * @return string
-   *   The SGR code: an underline in the value colour, or a fill that is light in
-   *   dark mode (black on grey) and dark in light mode (white on blue), so the
+   *   The SGR code: an underline in the value colour, or a fill - light in
+   *   dark mode (black on grey), dark in light mode (white on blue) - so the
    *   field reads against either terminal background.
    */
   protected function inputSgr(): string {

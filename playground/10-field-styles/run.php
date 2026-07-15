@@ -5,9 +5,9 @@
  * Field-value styles: the theme's "field" option on the editor input line.
  *
  * The "field" theme option controls how a field's input line looks while you
- * type a value into it - "flat" is a plain caret (the default), "boxed" fills a
- * fixed-width background block behind the value (MS-DOS style, visible even when
- * empty), and "underline" underlines the entry field. It applies to the
+ * type a value into it - "flat" is a plain caret (the default), "boxed" fills
+ * a fixed-width background block behind the value (MS-DOS style, visible even
+ * when empty), and "underline" underlines the entry field. It applies to the
  * single-line inputs (text, number, password). Press Enter on a field to open
  * its editor and see the style; pass the colour mode too.
  *

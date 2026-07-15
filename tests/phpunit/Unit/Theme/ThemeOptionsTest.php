@@ -188,10 +188,10 @@ final class ThemeOptionsTest extends TestCase {
     $this->assertStringEndsWith("\033[0m", $line);
   }
 
-  public function testFieldBoxedInputEmptyIsStillAVisibleField(): void {
+  public function testFieldBoxedEmptyInputIsVisible(): void {
     $line = (new DefaultTheme(40, ['field' => FieldStyle::Boxed]))->renderInput('', '');
 
-    // An empty buffer is still a filled bar of the field width - a caret and pad.
+    // An empty buffer still renders a full-width filled bar (caret + pad).
     $this->assertStringStartsWith("\033[30;47m", $line);
     $this->assertSame(40, Ansi::width($line));
   }
