@@ -237,11 +237,11 @@ final class FormTest extends TestCase {
       ->build();
 
     // A field is edited inline by default.
-    $this->assertSame(RenderMode::Inline, $config->field('a')->render);
+    $this->assertSame(RenderMode::Inline, $config->field('a')?->render);
     // Declaring it standalone opts out to the full-screen editor.
-    $this->assertSame(RenderMode::Standalone, $config->field('b')->render);
+    $this->assertSame(RenderMode::Standalone, $config->field('b')?->render);
     // standalone(FALSE) restores inline editing.
-    $this->assertSame(RenderMode::Inline, $config->field('c')->render);
+    $this->assertSame(RenderMode::Inline, $config->field('c')?->render);
   }
 
   public function testExternalEditorFlag(): void {

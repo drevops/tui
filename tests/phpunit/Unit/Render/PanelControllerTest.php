@@ -134,7 +134,7 @@ final class PanelControllerTest extends TestCase {
     $frame = Ansi::strip($controller->frame(12));
 
     // The editor expands in place: the breadcrumb and the sibling row stay
-    // visible, the field's own view (its caret input) shows under the label, and
+    // visible, the field's view (its caret input) shows under the label, and
     // the footer switches to the widget's hints - no full-screen editor header.
     $this->assertStringContainsString('General', $frame);
     $this->assertStringContainsString('❯ Name', $frame);
@@ -144,7 +144,7 @@ final class PanelControllerTest extends TestCase {
     $this->assertStringNotContainsString('────', $frame);
   }
 
-  public function testInlineEditRendersAChoiceListInThePanel(): void {
+  public function testInlineEditRendersChoiceListInThePanel(): void {
     $config = Form::create('Demo')
       ->buttons(FALSE)
       ->panel('main', 'Main', function (PanelBuilder $p): void {

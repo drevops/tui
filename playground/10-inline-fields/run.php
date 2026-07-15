@@ -6,7 +6,7 @@
  *
  * Press Enter on a field and its editor opens right where the value sits - the
  * confirm's Yes/No, the select's list, the number's input - edited with the
- * widget's own keys, collapsing back on accept or cancel. Inline is the default;
+ * widget's keys, collapsing back on accept or cancel. Inline is the default;
  * the last field opts out with ->standalone() to open its editor full-screen.
  *
  * Usage:
@@ -56,5 +56,5 @@ catch (EngineException $exception) {
   exit(1);
 }
 
-// The self-describing summary: answers grouped by panel, with provenance badges.
+// Self-describing summary: answers grouped by panel, with provenance badges.
 echo $answers->toSummary() . PHP_EOL;

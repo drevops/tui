@@ -725,7 +725,7 @@ class DefaultTheme implements ThemeInterface {
    * Render a field's editor in place of its value: the label, then the view.
    *
    * The field keeps its label and marker; the widget's own rendered view takes
-   * the place of the summary value, starting on the label row and, when it spans
+   * the place of the summary value, on the label row and, when it spans
    * several lines, aligning the rest under that value column - so the field
    * reads as its editor opened in place, the rest of the panel still around it.
    *
