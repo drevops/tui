@@ -657,6 +657,10 @@ class DefaultTheme implements ThemeInterface {
           $lines[] = $line;
         }
 
+        if ($verbose && $field->description !== '') {
+          $lines[] = $this->renderDescriptionLine(Translator::t($field->description), $index === $cursor);
+        }
+
         $index++;
 
         continue;

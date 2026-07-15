@@ -166,6 +166,22 @@ final class PanelControllerTest extends TestCase {
     $this->assertStringContainsString('Note', $frame);
   }
 
+  public function testInlineEditKeepsTheFieldDescription(): void {
+    $config = Form::create('Demo')
+      ->buttons(FALSE)
+      ->panel('main', 'Main', function (PanelBuilder $p): void {
+        $p->confirm('cdn', 'Serve via CDN?')->description('Cache assets at the edge.');
+      })
+      ->build();
+    $controller = new PanelController($config, new DefaultTheme(50, ['color' => FALSE]), ['cdn' => TRUE], []);
+
+    $controller->handle(Key::named(KeyName::Enter));
+    $controller->handle(Key::named(KeyName::Enter));
+
+    // The field's help text stays visible while its editor is open in the row.
+    $this->assertStringContainsString('Cache assets at the edge.', Ansi::strip($controller->frame(12)));
+  }
+
   public function testStandaloneEditTakesTheFullScreen(): void {
     $config = Form::create('Demo')
       ->buttons(FALSE)
