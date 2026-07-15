@@ -43,6 +43,7 @@ The border is optional - here is the same form without one, at normal spacing:
 Full documentation - every widget, configuration, theming, key bindings and the engine architecture - lives at **[phptui.dev](https://phptui.dev)**.
 
 - 🧭 [**Full-screen TUI**](https://phptui.dev/panels) - a scrollable, keyboard-driven form with a contextual key-hint footer and a `?` help overlay
+- ⚡ [**Inline editing**](https://phptui.dev/panels#inline-editing) - a field's editor opens in place on the panel row (the widget's own view and keys), no separate screen; opt a field out to full-screen with `->standalone()`
 - 🧩 [**Widgets**](https://phptui.dev/widgets) - field types for text, numbers, dates, choices, file browsing, fuzzy search and gates
 - 🏗️ [**Builder-driven**](https://phptui.dev/configuration) - the form is declared in PHP with a fluent builder
 - 🎛️ [**Interactive or unattended**](https://phptui.dev/headless-collection) - answer the form by keyboard, or supply the answers up front as a JSON payload and environment variables so it runs without prompting

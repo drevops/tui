@@ -122,6 +122,17 @@ composer install
   php playground/9-bordered-panels/run.php --prompts='{"name":"api"}'
   ```
 
+- **[`10-inline-fields/`](10-inline-fields)** - inline editing: each field's editor
+  opens in place on the panel row on Enter (the confirm's Yes/No, the number's
+  input, the select's list), collapsing back on accept or cancel. Inline is the
+  default; the calendar opts out with `->standalone()` for its full-screen month
+  grid.
+
+  ```bash
+  php playground/10-inline-fields/run.php                      # TUI
+  php playground/10-inline-fields/run.php --prompts='{"env":"prod"}'
+  ```
+
 ## How a form picks a theme
 
 Set it on the builder with `->theme(...)`, lowest friction first:

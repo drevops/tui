@@ -46,7 +46,7 @@ loop until done
   else navigating
     PC -> KM: matches(key, action)?
     KM --> PC: bound action (move, activate, back, quit)
-    note right of PC: move cursor, drill panel, or open editor
+    note right of PC: move cursor, drill panel,\nor open the field editor in place (full-screen if standalone)
   end
 end
 

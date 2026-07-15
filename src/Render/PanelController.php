@@ -9,6 +9,7 @@ use DrevOps\Tui\Answers\Provenance;
 use DrevOps\Tui\Config\Config;
 use DrevOps\Tui\Config\Field;
 use DrevOps\Tui\Config\Panel;
+use DrevOps\Tui\Config\RenderMode;
 use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
@@ -315,7 +316,9 @@ class PanelController {
       return $this->theme->renderHelp($this->nav, ...$this->helpSections());
     }
 
-    if ($this->editor instanceof WidgetInterface) {
+    // A standalone field takes the whole screen; an inline field expands inside
+    // the hub, which hubFrame() splices in.
+    if ($this->editor instanceof WidgetInterface && $this->editing instanceof Field && $this->editing->render === RenderMode::Standalone) {
       return $this->editorFrame($this->editor);
     }
 
@@ -350,7 +353,17 @@ class PanelController {
    */
   protected function hubFrame(int $height): string {
     $panel = $this->navigator->current();
-    [$body, $cursor_line] = $this->theme->renderBody($panel, $this->answers(), $this->cursor);
+
+    // When an inline field is being edited, hand its field and rendered view to
+    // the body so the theme expands the editor in place of the summary row.
+    $editing = NULL;
+    $view = '';
+    if ($this->editor instanceof WidgetInterface && $this->editing instanceof Field) {
+      $editing = $this->editing;
+      $view = $this->editor->view($this->theme);
+    }
+
+    [$body, $cursor_line] = $this->theme->renderBody($panel, $this->answers(), $this->cursor, $editing, $view);
 
     if ($this->buttonsVisible()) {
       $base = $panel->itemCount();
@@ -371,7 +384,7 @@ class PanelController {
 
     $viewport = $this->resolveViewport(count($body), $cursor_line, $height);
     $header = [$this->theme->renderBreadcrumbLine($this->navigator)];
-    $footer = $this->hubFooter();
+    $footer = $editing instanceof Field ? $this->inlineEditFooter() : $this->hubFooter();
 
     return $this->theme->renderFrame($header, $body, $footer, $viewport, $height);
   }
@@ -525,6 +538,24 @@ class PanelController {
    */
   protected function hubFooter(): array {
     return $this->config->footer ? [$this->theme->renderHints($this->nav, ...$this->navigationHints())] : [];
+  }
+
+  /**
+   * The footer while a field is edited inline: the active widget's own hints.
+   *
+   * The keys in play are the widget's, not the hub's, so the footer switches to
+   * the widget's hints against its field-scope bindings - the same line the
+   * standalone editor would show.
+   *
+   * @return list<string>
+   *   The widget's hint line, or none when the footer is turned off.
+   */
+  protected function inlineEditFooter(): array {
+    if (!$this->config->footer || !$this->editor instanceof WidgetInterface || !$this->editing instanceof Field) {
+      return [];
+    }
+
+    return [$this->theme->renderHints($this->keymap->forField($this->editing->type), ...$this->editor->hints())];
   }
 
   /**

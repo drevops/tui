@@ -70,6 +70,18 @@ final class ThemeRenderTest extends TestCase {
     $this->assertStringNotContainsString('•', $empty);
   }
 
+  public function testRenderInlineEditorPutsViewInPlaceOfValue(): void {
+    $field = new Field('cdn', 'CDN', '', FieldType::Confirm, FALSE);
+
+    $lines = $this->theme()->renderInlineEditor($field, "line one\nline two", TRUE);
+
+    // The view's first line sits on the label row where the value would be; a
+    // further line aligns under that value column.
+    $this->assertSame('❯ CDN  line one', Ansi::strip($lines[0]));
+    $this->assertMatchesRegularExpression('/^ +line two$/', Ansi::strip($lines[1]));
+    $this->assertCount(2, $lines);
+  }
+
   public function testPanelLineShowsDrillIndicator(): void {
     $line = Ansi::strip($this->theme()->renderPanelLine(new Panel('adv', 'Advanced', ''), TRUE));
 

@@ -624,11 +624,17 @@ class DefaultTheme implements ThemeInterface {
    *   The current answers.
    * @param int $cursor
    *   The selected item index.
+   * @param \DrevOps\Tui\Config\Field|null $editing
+   *   The field whose editor is expanded inline in the panel, or NULL when no
+   *   field is being edited inline.
+   * @param string $editorView
+   *   The inline editor's rendered view, spliced in at the editing field's row
+   *   in place of its summary.
    *
    * @return array{list<string>,int}
    *   The body lines and the selected item's first line index.
    */
-  public function renderBody(Panel $panel, Answers $answers, int $cursor): array {
+  public function renderBody(Panel $panel, Answers $answers, int $cursor, ?Field $editing = NULL, string $editorView = ''): array {
     $lines = [];
     $cursor_line = 0;
     $index = 0;
@@ -644,6 +650,16 @@ class DefaultTheme implements ThemeInterface {
 
       if ($index === $cursor) {
         $cursor_line = count($lines);
+      }
+
+      if ($editing instanceof Field && $field->id === $editing->id) {
+        foreach ($this->renderInlineEditor($field, $editorView, $index === $cursor) as $line) {
+          $lines[] = $line;
+        }
+
+        $index++;
+
+        continue;
       }
 
       $lines[] = $this->renderFieldLine($field, $answers, $index === $cursor);
@@ -703,6 +719,38 @@ class DefaultTheme implements ThemeInterface {
     }
 
     return Ansi::alignRight($left, $this->badge(' ' . $provenance->label() . ' ', $selected), $this->width);
+  }
+
+  /**
+   * Render a field's editor in place of its value: the label, then the view.
+   *
+   * The field keeps its label and marker; the widget's own rendered view takes
+   * the place of the summary value, starting on the label row and, when it spans
+   * several lines, aligning the rest under that value column - so the field
+   * reads as its editor opened in place, the rest of the panel still around it.
+   *
+   * @param \DrevOps\Tui\Config\Field $field
+   *   The field being edited.
+   * @param string $view
+   *   The widget's rendered view.
+   * @param bool $selected
+   *   Whether the field's row holds the cursor (it does while editing).
+   *
+   * @return list<string>
+   *   The label row carrying the view's first line, then any further view lines
+   *   indented to the value column.
+   */
+  public function renderInlineEditor(Field $field, string $view, bool $selected): array {
+    $prefix = $this->marker($selected) . ' ' . $this->label(Translator::t($field->label), $selected) . '  ';
+    $indent = str_repeat(' ', Ansi::width($prefix));
+
+    $lines = [];
+
+    foreach (explode("\n", $view) as $index => $line) {
+      $lines[] = ($index === 0 ? $prefix : $indent) . $line;
+    }
+
+    return $lines;
   }
 
   /**

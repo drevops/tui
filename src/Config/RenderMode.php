@@ -1,0 +1,24 @@
+<?php
+
+declare(strict_types=1);
+
+namespace DrevOps\Tui\Config;
+
+/**
+ * Where a field's editor is drawn: inline in the panel, or on its own screen.
+ *
+ * An inline field expands its editor in place on the panel when activated - the
+ * widget's own view, driven by its own keys, collapsing back to a one-line
+ * summary on accept or cancel - so a value is changed without leaving the panel.
+ * A standalone field opens that same editor full-screen instead, the better fit
+ * for a widget that wants the whole viewport. Fields are inline by default; a
+ * consumer opts one out with the builder's standalone() method.
+ *
+ * @package DrevOps\Tui\Config
+ */
+enum RenderMode {
+
+  case Inline;
+  case Standalone;
+
+}

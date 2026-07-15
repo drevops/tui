@@ -8,7 +8,7 @@ sidebar_position: 4
 The interactive TUI is a full-screen panel browser: the root hub lists the form's
 panels with live value summaries, and each panel lists its fields with their
 current values and provenance badges. Up/Down move the cursor, Enter edits a field
-(or drills into a sub-panel), Esc goes back, `q` quits, and the mouse wheel
+in place (or drills into a sub-panel), Esc goes back, `q` quits, and the mouse wheel
 scrolls long panels without moving the cursor - all of these keys are configurable
 (see [Key bindings](/key-bindings)). **Submit** and **Cancel** buttons live on the
 root panel - `->buttons(FALSE)` hides them, `->buttons(TRUE, 'Save', 'Discard')`
@@ -28,6 +28,24 @@ always reflects remapped keys - and `->footer(FALSE)` turns it off form-wide.
 A form-level `->banner()` shows a start screen (with an optional version) before
 the panels, and `->clearOnExit(FALSE)` keeps the final frame on screen after the
 TUI exits.
+
+## Inline editing
+
+Editing happens **in place**. Pressing Enter on a field opens its editor right where the value sits - the widget's own view, driven by its own keys - while the rest of the panel stays around it; the widget's accept key commits and collapses the row back to its summary, Esc cancels. A confirm shows its `● Yes ○ No` in the row, a select drops its option list under the label, a text field becomes a caret input - each the same editor the widget always uses, just drawn in the panel instead of on its own screen. A change costs a single Enter with no context switch.
+
+Inline is the default for every field. A field opts out with `->standalone()`, which opens that same editor full-screen instead - the better fit for a widget that wants the whole viewport, such as a month calendar, a long option list or a multi-line textarea:
+
+```php
+$form = Form::create('Release')
+  ->panel('build', 'Build', function (PanelBuilder $p): void {
+    // Inline by default: the editor opens in the row on Enter.
+    $p->confirm('minify', 'Minify assets')->default(TRUE);
+    $p->select('env', 'Environment')->default('dev')->options(['dev' => 'Development', 'stage' => 'Staging', 'prod' => 'Production']);
+
+    // Full-screen editor, a better fit for the month grid.
+    $p->calendar('release_on', 'Release date')->standalone();
+  });
+```
 
 ## Nested panels
 

@@ -13,6 +13,7 @@ use DrevOps\Tui\Config\FilePickerMode;
 use DrevOps\Tui\Config\NumberBounds;
 use DrevOps\Tui\Config\Option;
 use DrevOps\Tui\Config\OptionKind;
+use DrevOps\Tui\Config\RenderMode;
 use DrevOps\Tui\Config\Weekday;
 use DrevOps\Tui\Derive\Derive;
 use DrevOps\Tui\Discovery\DiscoverInterface;
@@ -161,6 +162,11 @@ final class FieldBuilder {
   protected ?Weekday $weekStart = NULL;
 
   /**
+   * Where the field's editor is drawn: inline in the panel, or full-screen.
+   */
+  protected RenderMode $render = RenderMode::Inline;
+
+  /**
    * Construct a field builder.
    *
    * @param string $id
@@ -279,6 +285,27 @@ final class FieldBuilder {
    */
   public function externalEditor(bool $enabled = TRUE): self {
     $this->externalEditor = $enabled;
+
+    return $this;
+  }
+
+  /**
+   * Edit the field on its own full-screen editor rather than inline.
+   *
+   * A field is edited inline by default - its editor expands in place on the
+   * panel when activated, and collapses back on accept or cancel. Declaring it
+   * standalone opens that same editor full-screen instead: the better fit for a
+   * widget that wants the whole viewport, such as a long option list, a month
+   * calendar or a multi-line textarea.
+   *
+   * @param bool $standalone
+   *   TRUE for the full-screen editor; FALSE to restore inline editing.
+   *
+   * @return $this
+   *   The builder.
+   */
+  public function standalone(bool $standalone = TRUE): self {
+    $this->render = $standalone ? RenderMode::Standalone : RenderMode::Inline;
 
     return $this;
   }
@@ -685,6 +712,7 @@ final class FieldBuilder {
       $this->pageSize,
       $this->completion,
       $this->buildDateBounds(),
+      $this->render,
     );
   }
 
