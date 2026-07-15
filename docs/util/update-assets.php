@@ -50,10 +50,9 @@ define('END_PAUSE', 10);
 // lands safely inside the stable initial frame.
 define('FRAME_SETTLE_MS', 500);
 
-// Every animated SVG this project ships runs at this fraction of its recorded
-// speed. The same factor lives in render-widget-svgs.php, which renders the
-// per-widget hero cards.
-define('ANIMATION_SLOWDOWN', 1.25);
+// The playback-speed factor (ANIMATION_SLOWDOWN) and the slowAnimation() scaler
+// are shared with render-widget-svgs.php.
+require_once __DIR__ . '/svg-slowdown.php';
 
 /**
  * The expect snippets driving each widget demo, keyed by widget name.
@@ -1234,25 +1233,6 @@ function assetName(string $job, bool $static): string {
   $subject = str_replace(['-ascii', '-no-ansi'], '', $job);
 
   return $subject . '-dark-' . ($static ? 'static' : 'animated') . ($ascii ? '-ascii' : '') . ($noansi ? '-no-ansi' : '') . '.svg';
-}
-
-/**
- * Scale every animation duration in an SVG by a factor.
- *
- * @param string $svg
- *   The SVG markup.
- * @param float $factor
- *   The multiplier; greater than one slows the animation down.
- *
- * @return string
- *   The SVG with scaled durations.
- */
-function slowAnimation(string $svg, float $factor): string {
-  return (string) preg_replace_callback(
-    '/animation-duration:([0-9.]+)s/',
-    static fn(array $matches): string => 'animation-duration:' . rtrim(rtrim(sprintf('%.3f', (float) $matches[1] * $factor), '0'), '.') . 's',
-    $svg
-  );
 }
 
 /**

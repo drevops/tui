@@ -9,7 +9,7 @@ site. Do not edit these by hand - they are produced by the scripts in
 Every file spells out four properties, so you can tell what it is from the name
 alone:
 
-```
+```text
 <subject>-<theme>-<motion>[-ascii][-no-ansi].svg
 ```
 

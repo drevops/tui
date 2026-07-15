@@ -33,10 +33,7 @@ use DrevOps\Tui\Testing\TuiTester;
 use DrevOps\Tui\Theme\Mode;
 
 require dirname(__DIR__, 2) . '/vendor/autoload.php';
-
-// Every animated SVG this project ships runs at this fraction of its recorded
-// speed, so the same factor lives here and in update-assets.php.
-const ANIMATION_SLOWDOWN = 1.25;
+require_once __DIR__ . '/svg-slowdown.php';
 
 // Seconds each captured frame is held: a longer beat on the opening frame, an
 // even cadence through the interaction, and a rest on the last frame before the
@@ -92,7 +89,7 @@ function widgetSpecs(string $tree): array {
     ],
     'password' => [
       'form' => Form::create('Password widget')->panel('main', 'Password', function (PanelBuilder $p): void { $p->password('password', 'Password')->default('hunter2'); }),
-      'keys' => [...$open, 's', '3', 'c', 'r', 'e', 't'],
+      'keys' => [...$open, $bs, $bs, $bs, $bs, $bs, $bs, $bs, 's', '3', 'c', 'r', 'e', 't'],
       'rows' => 6,
     ],
     'select' => [
@@ -286,25 +283,6 @@ function renderCast(string $cast_file, string $svg_file, string $util_dir): void
   if (!file_exists($svg_file) || filesize($svg_file) === 0) {
     throw new \RuntimeException('Failed to render SVG: ' . $svg_file . "\n" . ($output ?? ''));
   }
-}
-
-/**
- * Scale every animation duration in an SVG by a factor.
- *
- * @param string $svg
- *   The SVG markup.
- * @param float $factor
- *   The multiplier (greater than one slows the animation down).
- *
- * @return string
- *   The SVG with scaled durations.
- */
-function slowAnimation(string $svg, float $factor): string {
-  return (string) preg_replace_callback(
-    '/animation-duration:([0-9.]+)s/',
-    static fn(array $matches): string => 'animation-duration:' . rtrim(rtrim(sprintf('%.3f', (float) $matches[1] * $factor), '0'), '.') . 's',
-    $svg
-  );
 }
 
 /**
