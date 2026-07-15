@@ -309,10 +309,14 @@ function buildCast(array $frames, int $rows): string {
   $clear = Ansi::ESC . '[2J' . Ansi::ESC . '[H';
   $lines = [json_encode(['version' => 2, 'width' => castWidth($frames), 'height' => $rows])];
 
+  $last = count($frames) - 1;
   $time = 0.0;
   foreach ($frames as $index => $frame) {
     $lines[] = json_encode([round($time, 3), 'o', $clear . $frame]);
-    $time += $index === 0 ? HOLD_FIRST : HOLD_STEP;
+    // The final frame's hold is HOLD_LAST alone, so it does not advance here.
+    if ($index < $last) {
+      $time += $index === 0 ? HOLD_FIRST : HOLD_STEP;
+    }
   }
   // Hold the final frame before the animation loops back to the first.
   $lines[] = json_encode([round($time + HOLD_LAST, 3), 'o', ' ']);
@@ -334,6 +338,12 @@ function buildCast(array $frames, int $rows): string {
  *   render the whole cast as an animation.
  */
 function renderCast(string $cast_file, string $svg_file, string $util_dir, ?int $at = NULL): void {
+  // Clear any prior output first, so a failed render leaves no stale file for
+  // the caller to mistake for (and re-slow) a fresh one.
+  if (is_file($svg_file)) {
+    unlink($svg_file);
+  }
+
   $cmd = sprintf(
     'node %s %s %s --line-height 1.1%s 2>&1',
     escapeshellarg($util_dir . '/svg-term-render.js'),

@@ -5,15 +5,16 @@
  * @file
  * Generate animated SVG assets from asciinema recordings.
  *
- * Records terminal sessions for the playground demos (the panel TUI runners)
- * and the per-widget display-mode variants, then converts the recordings to
- * SVGs: animated SVGs for the full demos, static frames for the alternate
- * display-mode screenshots. The unicode-colour per-widget hero cards README.md
- * embeds are instead rendered deterministically by render-widget-svgs.php, and
- * their light twins by make-light-svgs.php. Static frames are anchored to the
- * moment the demo's gate text first appears in the recording; every animated
- * SVG is slowed to ANIMATION_SLOWDOWN, and every generated SVG is verified to
- * contain the expected content before the job succeeds.
+ * Records terminal sessions for the playground panel demos (the panel TUI
+ * runners) and the widget montage, then converts the recordings to animated
+ * SVGs; it also renders the option-group, password-reveal and discovery static
+ * frames. Every per-widget card - both its animations and its static
+ * display-mode screenshots - is rendered deterministically by
+ * render-widget-svgs.php instead, and the light twins by make-light-svgs.php.
+ * Static frames are anchored to the moment the demo's gate text first appears in
+ * the recording; every animated SVG is slowed to ANIMATION_SLOWDOWN, and every
+ * generated SVG is verified to contain the expected content before the job
+ * succeeds.
  *
  * Output filenames follow the explicit convention shared with those sibling
  * scripts: <subject>-<dark|light>-<animated|static>[-ascii][-no-ansi].svg.
@@ -1092,6 +1093,12 @@ function postProcessCast(string $cast_file): void {
  */
 function convertToSvg(string $cast_file, string $svg_file, string $util_dir, ?int $at = NULL): void {
   $renderer = $util_dir . '/svg-term-render.js';
+
+  // Clear any prior output first, so a failed render leaves no stale file that
+  // the success check would accept and then re-slow.
+  if (is_file($svg_file)) {
+    unlink($svg_file);
+  }
 
   $at_flag = $at !== NULL ? sprintf(' --at %d', $at) : '';
   $cmd = sprintf(
