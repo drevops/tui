@@ -21,6 +21,19 @@ final class AnsiTest extends TestCase {
     $this->assertSame('hi', Ansi::style('hi', ''));
   }
 
+  public function testWash(): void {
+    // An empty background returns the text unchanged.
+    $this->assertSame("a\nb", Ansi::wash("a\nb", ''));
+
+    // A background re-opens on each line and erases to its end.
+    $washed = Ansi::wash("a\nb", '44');
+    $this->assertStringContainsString("\033[44m", $washed);
+    $this->assertStringContainsString("\033[K", $washed);
+
+    // A reset inside a span is followed by a re-opened wash so gaps stay filled.
+    $this->assertStringContainsString("\033[0m\033[44m", Ansi::wash("\033[1mx\033[0m", '44'));
+  }
+
   public function testStripAndWidth(): void {
     $styled = Ansi::style('hello', '32');
 

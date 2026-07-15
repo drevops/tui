@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Tests\Unit\Render;
 
 use DrevOps\Tui\Render\Terminal;
+use DrevOps\Tui\Testing\BufferedTerminal;
 use DrevOps\Tui\Tests\Traits\IsolatesEnvTrait;
 use DrevOps\Tui\Theme\Mode;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -40,6 +41,19 @@ final class TerminalTest extends TestCase {
 
     $this->assertStringContainsString('hello', $contents);
     $this->assertStringContainsString('FRAME', $contents);
+    $this->assertStringContainsString("\033[2J", $contents);
+  }
+
+  public function testRenderWashesTheBackground(): void {
+    $terminal = new BufferedTerminal();
+    $terminal->setup('44');
+    $terminal->render("A\nB");
+
+    $contents = $terminal->output();
+
+    // The wash opens the background and erases each line to its end.
+    $this->assertStringContainsString("\033[44m", $contents);
+    $this->assertStringContainsString("\033[K", $contents);
     $this->assertStringContainsString("\033[2J", $contents);
   }
 

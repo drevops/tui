@@ -21,7 +21,7 @@ class EmberTheme extends DefaultTheme {
    */
   #[\Override]
   public function title(string $text): string {
-    return $this->paint($this->isDark ? '1;38;5;208' : '1;38;5;166', $text);
+    return $this->paint($this->isDark ? Sgr::of(Sgr::Bold, Sgr::Orange) : Sgr::of(Sgr::Bold, Sgr::Rust), $text);
   }
 
   /**
@@ -29,7 +29,7 @@ class EmberTheme extends DefaultTheme {
    */
   #[\Override]
   public function value(string $text, bool $selected = FALSE): string {
-    return $this->paint($this->emphasize($this->isDark ? '38;5;142' : '38;5;100', $selected), $text);
+    return $this->paint($this->emphasize($this->isDark ? Sgr::of(Sgr::Olive) : Sgr::of(Sgr::Khaki), $selected), $text);
   }
 
   /**
@@ -37,7 +37,7 @@ class EmberTheme extends DefaultTheme {
    */
   #[\Override]
   public function indicator(string $text): string {
-    return $this->paint($this->isDark ? '38;5;214' : '38;5;172', $text);
+    return $this->paint($this->isDark ? Sgr::of(Sgr::Gold) : Sgr::of(Sgr::Bronze), $text);
   }
 
   /**
@@ -45,7 +45,7 @@ class EmberTheme extends DefaultTheme {
    */
   #[\Override]
   public function highlight(string $text): string {
-    return $this->paint($this->isDark ? '1;38;5;208' : '1;38;5;166', $text);
+    return $this->paint($this->isDark ? Sgr::of(Sgr::Bold, Sgr::Orange) : Sgr::of(Sgr::Bold, Sgr::Rust), $text);
   }
 
   /**
@@ -53,7 +53,7 @@ class EmberTheme extends DefaultTheme {
    */
   #[\Override]
   public function highlightMatch(string $text): string {
-    return $this->paint($this->isDark ? '38;5;214' : '38;5;172', $text);
+    return $this->paint($this->isDark ? Sgr::of(Sgr::Gold) : Sgr::of(Sgr::Bronze), $text);
   }
 
   /**
@@ -61,7 +61,7 @@ class EmberTheme extends DefaultTheme {
    */
   #[\Override]
   public function border(string $text): string {
-    return $this->paint($this->isDark ? '38;5;130' : '38;5;94', $text);
+    return $this->paint($this->isDark ? Sgr::of(Sgr::Brown) : Sgr::of(Sgr::Umber), $text);
   }
 
   /**
@@ -69,7 +69,7 @@ class EmberTheme extends DefaultTheme {
    */
   #[\Override]
   public function marker(bool $selected): string {
-    return $selected ? $this->paint($this->isDark ? '1;38;5;208' : '1;38;5;166', $this->unicode ? '❯' : '>') : ' ';
+    return $selected ? $this->paint($this->isDark ? Sgr::of(Sgr::Bold, Sgr::Orange) : Sgr::of(Sgr::Bold, Sgr::Rust), $this->unicode ? '❯' : '>') : ' ';
   }
 
   /**
@@ -77,7 +77,7 @@ class EmberTheme extends DefaultTheme {
    */
   #[\Override]
   public function radio(bool $on): string {
-    return $on ? $this->paint($this->isDark ? '1;38;5;208' : '1;38;5;166', $this->unicode ? '●' : '(*)') : ($this->unicode ? '○' : '( )');
+    return $on ? $this->paint($this->isDark ? Sgr::of(Sgr::Bold, Sgr::Orange) : Sgr::of(Sgr::Bold, Sgr::Rust), $this->unicode ? '●' : '(*)') : ($this->unicode ? '○' : '( )');
   }
 
   /**
@@ -85,7 +85,7 @@ class EmberTheme extends DefaultTheme {
    */
   #[\Override]
   public function caret(): string {
-    return $this->paint($this->isDark ? '1;38;5;208' : '1;38;5;166', $this->unicode ? '█' : '|');
+    return $this->paint($this->isDark ? Sgr::of(Sgr::Bold, Sgr::Orange) : Sgr::of(Sgr::Bold, Sgr::Rust), $this->unicode ? '█' : '|');
   }
 
 }

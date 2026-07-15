@@ -52,13 +52,14 @@ final class BufferedTerminal extends Terminal {
   #[\Override]
   public function setup(?string $background = NULL): void {
     $this->paintedBackground = $background;
+    $this->background = $background;
   }
 
   /**
    * {@inheritdoc}
    */
   #[\Override]
-  public function restore(?string $background = NULL): void {
+  public function restore(): void {
   }
 
   /**

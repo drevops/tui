@@ -95,29 +95,6 @@ final class TerminalControl {
   }
 
   /**
-   * Set the terminal's default background colour (OSC 11).
-   *
-   * @param string $color
-   *   An OSC 11 colour specification, e.g. "#0000aa".
-   *
-   * @return string
-   *   The control sequence.
-   */
-  public static function setBackground(string $color): string {
-    return Ansi::ESC . ']11;' . $color . "\007";
-  }
-
-  /**
-   * Reset the terminal's background colour to its default (OSC 111).
-   *
-   * @return string
-   *   The control sequence.
-   */
-  public static function resetBackground(): string {
-    return Ansi::ESC . ']111' . "\007";
-  }
-
-  /**
    * The full restore sequence (mouse off, cursor shown, main screen).
    *
    * @return string

@@ -201,11 +201,10 @@ Each renders across every widget and degrades to plain text without ANSI. Every 
   <img src="docs/assets/theme-mono-light.svg" width="48%" alt="mono theme, light mode">
 </p>
 
-**`dos`** - shown on its intended DOS-blue background (left) and a light terminal (right)
+**`dos`** - the CGA blue screen, painted regardless of the terminal background
 
 <p>
-  <img src="docs/assets/theme-dos.svg" width="48%" alt="dos theme on a blue background">
-  <img src="docs/assets/theme-dos-light.svg" width="48%" alt="dos theme, light mode">
+  <img src="docs/assets/theme-dos.svg" width="48%" alt="dos theme on the CGA blue screen">
 </p>
 
 Write your own by subclassing `DefaultTheme` and overriding just its palette - see the [theming guide](https://phptui.dev/themes).

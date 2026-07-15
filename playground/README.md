@@ -135,13 +135,14 @@ composer install
 
 - **[`10-builtin-themes/`](10-builtin-themes)** - one form rendered under a
   chosen built-in theme, selected with `--theme`: `default`, `midnight`,
-  `frost`, `ember`, `mono` or `dos` (the retro MS-DOS CGA palette). The dark or
-  light palette is auto-detected from the terminal background.
+  `frost`, `ember`, `mono` or `dos` (the retro MS-DOS CGA palette on its own blue
+  screen). For the adaptive themes the dark or light palette is auto-detected
+  from the terminal background.
 
   ```bash
   php playground/10-builtin-themes/run.php                  # midnight
   php playground/10-builtin-themes/run.php --theme=frost
-  php playground/10-builtin-themes/run.php --theme=dos      # best on a blue terminal
+  php playground/10-builtin-themes/run.php --theme=dos      # its own blue screen
   ```
 
 ## How a form picks a theme

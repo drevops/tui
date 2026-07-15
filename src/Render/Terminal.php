@@ -42,6 +42,13 @@ class Terminal {
   protected $input;
 
   /**
+   * The background SGR each rendered frame is washed with, or NULL for none.
+   *
+   * @var string|null
+   */
+  protected ?string $background = NULL;
+
+  /**
    * Construct a terminal.
    *
    * @param mixed $output
@@ -83,7 +90,16 @@ class Terminal {
    *   The frame.
    */
   public function render(string $frame): void {
-    $this->write(TerminalControl::clear() . $frame);
+    if ($this->background === NULL) {
+      $this->write(TerminalControl::clear() . $frame);
+
+      return;
+    }
+
+    // Open the wash before the clear so the erase fills the screen with it,
+    // then wash the frame so its gaps and padding keep the background too.
+    $open = Ansi::ESC . '[' . $this->background . 'm';
+    $this->write($open . TerminalControl::clear() . Ansi::wash($frame, $this->background) . Ansi::ESC . '[0m');
   }
 
   /**
@@ -97,28 +113,26 @@ class Terminal {
    * Enter the full-screen raw-input mode.
    *
    * @param string|null $background
-   *   An OSC 11 background colour to paint for the session, or NULL to keep the
+   *   A background SGR to wash each rendered frame with, or NULL to keep the
    *   terminal's own background.
    */
   public function setup(?string $background = NULL): void {
     // @codeCoverageIgnoreStart
+    $this->background = $background;
     $this->stty('-echo -icanon');
-    $paint = $background !== NULL ? TerminalControl::setBackground($background) : '';
-    $this->write(TerminalControl::altScreenOn() . TerminalControl::hideCursor() . TerminalControl::mouseOn() . $paint);
+    $this->write(TerminalControl::altScreenOn() . TerminalControl::hideCursor() . TerminalControl::mouseOn());
     // @codeCoverageIgnoreEnd
   }
 
   /**
    * Restore the terminal to its normal mode.
-   *
-   * @param string|null $background
-   *   Pass the same value given to setup() so a painted background is reset.
    */
-  public function restore(?string $background = NULL): void {
+  public function restore(): void {
     // @codeCoverageIgnoreStart
-    $reset = $background !== NULL ? TerminalControl::resetBackground() : '';
-    $this->write($reset . TerminalControl::restore());
+    // Reset any wash so the shell's own colours return with the main screen.
+    $this->write(Ansi::ESC . '[0m' . TerminalControl::restore());
     $this->stty('sane');
+    $this->background = NULL;
     // @codeCoverageIgnoreEnd
   }
 

@@ -21,7 +21,7 @@ class FrostTheme extends DefaultTheme {
    */
   #[\Override]
   public function title(string $text): string {
-    return $this->paint($this->isDark ? '1;38;5;117' : '1;38;5;25', $text);
+    return $this->paint($this->isDark ? Sgr::of(Sgr::Bold, Sgr::Sky) : Sgr::of(Sgr::Bold, Sgr::Cobalt), $text);
   }
 
   /**
@@ -29,7 +29,7 @@ class FrostTheme extends DefaultTheme {
    */
   #[\Override]
   public function value(string $text, bool $selected = FALSE): string {
-    return $this->paint($this->emphasize($this->isDark ? '38;5;150' : '38;5;65', $selected), $text);
+    return $this->paint($this->emphasize($this->isDark ? Sgr::of(Sgr::Sage) : Sgr::of(Sgr::Moss), $selected), $text);
   }
 
   /**
@@ -37,7 +37,7 @@ class FrostTheme extends DefaultTheme {
    */
   #[\Override]
   public function indicator(string $text): string {
-    return $this->paint($this->isDark ? '38;5;222' : '38;5;136', $text);
+    return $this->paint($this->isDark ? Sgr::of(Sgr::Sand) : Sgr::of(Sgr::Ochre), $text);
   }
 
   /**
@@ -45,7 +45,7 @@ class FrostTheme extends DefaultTheme {
    */
   #[\Override]
   public function highlight(string $text): string {
-    return $this->paint($this->isDark ? '1;38;5;117' : '1;38;5;25', $text);
+    return $this->paint($this->isDark ? Sgr::of(Sgr::Bold, Sgr::Sky) : Sgr::of(Sgr::Bold, Sgr::Cobalt), $text);
   }
 
   /**
@@ -53,7 +53,7 @@ class FrostTheme extends DefaultTheme {
    */
   #[\Override]
   public function highlightMatch(string $text): string {
-    return $this->paint($this->isDark ? '38;5;222' : '38;5;136', $text);
+    return $this->paint($this->isDark ? Sgr::of(Sgr::Sand) : Sgr::of(Sgr::Ochre), $text);
   }
 
   /**
@@ -61,7 +61,7 @@ class FrostTheme extends DefaultTheme {
    */
   #[\Override]
   public function border(string $text): string {
-    return $this->paint($this->isDark ? '38;5;109' : '38;5;66', $text);
+    return $this->paint($this->isDark ? Sgr::of(Sgr::Steel) : Sgr::of(Sgr::Teal), $text);
   }
 
   /**
@@ -69,7 +69,7 @@ class FrostTheme extends DefaultTheme {
    */
   #[\Override]
   public function marker(bool $selected): string {
-    return $selected ? $this->paint($this->isDark ? '1;38;5;117' : '1;38;5;25', $this->unicode ? '❯' : '>') : ' ';
+    return $selected ? $this->paint($this->isDark ? Sgr::of(Sgr::Bold, Sgr::Sky) : Sgr::of(Sgr::Bold, Sgr::Cobalt), $this->unicode ? '❯' : '>') : ' ';
   }
 
   /**
@@ -77,7 +77,7 @@ class FrostTheme extends DefaultTheme {
    */
   #[\Override]
   public function radio(bool $on): string {
-    return $on ? $this->paint($this->isDark ? '1;38;5;117' : '1;38;5;25', $this->unicode ? '●' : '(*)') : ($this->unicode ? '○' : '( )');
+    return $on ? $this->paint($this->isDark ? Sgr::of(Sgr::Bold, Sgr::Sky) : Sgr::of(Sgr::Bold, Sgr::Cobalt), $this->unicode ? '●' : '(*)') : ($this->unicode ? '○' : '( )');
   }
 
   /**
@@ -85,7 +85,7 @@ class FrostTheme extends DefaultTheme {
    */
   #[\Override]
   public function caret(): string {
-    return $this->paint($this->isDark ? '1;38;5;117' : '1;38;5;25', $this->unicode ? '█' : '|');
+    return $this->paint($this->isDark ? Sgr::of(Sgr::Bold, Sgr::Sky) : Sgr::of(Sgr::Bold, Sgr::Cobalt), $this->unicode ? '█' : '|');
   }
 
 }

@@ -263,7 +263,7 @@ class PanelController {
       }
     }
     finally {
-      $terminal->restore($this->theme->background());
+      $terminal->restore();
       if ($this->config->clearOnExit) {
         $terminal->clear();
       }

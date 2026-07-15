@@ -410,17 +410,20 @@ final class PanelControllerTest extends TestCase {
       ->build();
     $keys = [KeyEncoder::encode(Key::named(KeyName::Enter))];
 
-    // The dos theme's DOS-blue background is painted by run() via setup().
-    $dos = new PanelController($config, new DosTheme(40, ['color' => FALSE]), ['name' => 'Acme'], []);
+    // The dos theme washes the screen blue: run() hands its background to the
+    // terminal, which fills every rendered frame with it.
+    $dos = new PanelController($config, new DosTheme(40), ['name' => 'Acme'], []);
     $painted = new BufferedTerminal($keys);
     $dos->run($painted);
-    $this->assertSame('#0000aa', $painted->paintedBackground);
+    $this->assertSame('44', $painted->paintedBackground);
+    $this->assertStringContainsString("\033[44m", $painted->output());
 
     // A theme with no background leaves the terminal's own surface untouched.
-    $plain = new PanelController($config, new DefaultTheme(40, ['color' => FALSE]), ['name' => 'Acme'], []);
+    $plain = new PanelController($config, new DefaultTheme(40), ['name' => 'Acme'], []);
     $blank = new BufferedTerminal($keys);
     $plain->run($blank);
     $this->assertNull($blank->paintedBackground);
+    $this->assertStringNotContainsString("\033[44m", $blank->output());
   }
 
   public function testRunStopsWhenInputIsExhausted(): void {

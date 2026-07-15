@@ -23,7 +23,7 @@ class MonoTheme extends DefaultTheme {
    */
   #[\Override]
   public function title(string $text): string {
-    return $this->paint($this->isDark ? '1;97' : '1;30', $text);
+    return $this->paint($this->isDark ? Sgr::of(Sgr::Bold, Sgr::BrightWhite) : Sgr::of(Sgr::Bold, Sgr::Black), $text);
   }
 
   /**
@@ -31,7 +31,7 @@ class MonoTheme extends DefaultTheme {
    */
   #[\Override]
   public function value(string $text, bool $selected = FALSE): string {
-    return $this->paint($this->emphasize($this->isDark ? '38;5;250' : '38;5;240', $selected), $text);
+    return $this->paint($this->emphasize($this->isDark ? Sgr::of(Sgr::Silver) : Sgr::of(Sgr::Ash), $selected), $text);
   }
 
   /**
@@ -39,7 +39,7 @@ class MonoTheme extends DefaultTheme {
    */
   #[\Override]
   public function indicator(string $text): string {
-    return $this->paint('1', $text);
+    return $this->paint(Sgr::of(Sgr::Bold), $text);
   }
 
   /**
@@ -47,7 +47,7 @@ class MonoTheme extends DefaultTheme {
    */
   #[\Override]
   public function highlight(string $text): string {
-    return $this->paint($this->isDark ? '1;97' : '1;30', $text);
+    return $this->paint($this->isDark ? Sgr::of(Sgr::Bold, Sgr::BrightWhite) : Sgr::of(Sgr::Bold, Sgr::Black), $text);
   }
 
   /**
@@ -55,7 +55,7 @@ class MonoTheme extends DefaultTheme {
    */
   #[\Override]
   public function highlightMatch(string $text): string {
-    return $this->paint('7', $text);
+    return $this->paint(Sgr::of(Sgr::Reverse), $text);
   }
 
   /**
@@ -63,7 +63,7 @@ class MonoTheme extends DefaultTheme {
    */
   #[\Override]
   public function border(string $text): string {
-    return $this->paint($this->isDark ? '38;5;244' : '38;5;246', $text);
+    return $this->paint($this->isDark ? Sgr::of(Sgr::Gunmetal) : Sgr::of(Sgr::Pewter), $text);
   }
 
   /**
@@ -71,7 +71,7 @@ class MonoTheme extends DefaultTheme {
    */
   #[\Override]
   public function marker(bool $selected): string {
-    return $selected ? $this->paint($this->isDark ? '1;97' : '1;30', $this->unicode ? '❯' : '>') : ' ';
+    return $selected ? $this->paint($this->isDark ? Sgr::of(Sgr::Bold, Sgr::BrightWhite) : Sgr::of(Sgr::Bold, Sgr::Black), $this->unicode ? '❯' : '>') : ' ';
   }
 
   /**
@@ -79,7 +79,7 @@ class MonoTheme extends DefaultTheme {
    */
   #[\Override]
   public function radio(bool $on): string {
-    return $on ? $this->paint($this->isDark ? '1;97' : '1;30', $this->unicode ? '●' : '(*)') : ($this->unicode ? '○' : '( )');
+    return $on ? $this->paint($this->isDark ? Sgr::of(Sgr::Bold, Sgr::BrightWhite) : Sgr::of(Sgr::Bold, Sgr::Black), $this->unicode ? '●' : '(*)') : ($this->unicode ? '○' : '( )');
   }
 
   /**
@@ -87,7 +87,7 @@ class MonoTheme extends DefaultTheme {
    */
   #[\Override]
   public function caret(): string {
-    return $this->paint($this->isDark ? '1;97' : '1;30', $this->unicode ? '█' : '|');
+    return $this->paint($this->isDark ? Sgr::of(Sgr::Bold, Sgr::BrightWhite) : Sgr::of(Sgr::Bold, Sgr::Black), $this->unicode ? '█' : '|');
   }
 
 }

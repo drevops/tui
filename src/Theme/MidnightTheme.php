@@ -21,7 +21,7 @@ class MidnightTheme extends DefaultTheme {
    */
   #[\Override]
   public function title(string $text): string {
-    return $this->paint($this->isDark ? '1;38;5;141' : '1;38;5;54', $text);
+    return $this->paint($this->isDark ? Sgr::of(Sgr::Bold, Sgr::Violet) : Sgr::of(Sgr::Bold, Sgr::Indigo), $text);
   }
 
   /**
@@ -29,7 +29,7 @@ class MidnightTheme extends DefaultTheme {
    */
   #[\Override]
   public function value(string $text, bool $selected = FALSE): string {
-    return $this->paint($this->emphasize($this->isDark ? '38;5;114' : '38;5;28', $selected), $text);
+    return $this->paint($this->emphasize($this->isDark ? Sgr::of(Sgr::Jade) : Sgr::of(Sgr::Forest), $selected), $text);
   }
 
   /**
@@ -37,7 +37,7 @@ class MidnightTheme extends DefaultTheme {
    */
   #[\Override]
   public function indicator(string $text): string {
-    return $this->paint($this->isDark ? '38;5;212' : '38;5;162', $text);
+    return $this->paint($this->isDark ? Sgr::of(Sgr::Pink) : Sgr::of(Sgr::Fuchsia), $text);
   }
 
   /**
@@ -45,7 +45,7 @@ class MidnightTheme extends DefaultTheme {
    */
   #[\Override]
   public function highlight(string $text): string {
-    return $this->paint($this->isDark ? '1;38;5;141' : '1;38;5;54', $text);
+    return $this->paint($this->isDark ? Sgr::of(Sgr::Bold, Sgr::Violet) : Sgr::of(Sgr::Bold, Sgr::Indigo), $text);
   }
 
   /**
@@ -53,7 +53,7 @@ class MidnightTheme extends DefaultTheme {
    */
   #[\Override]
   public function highlightMatch(string $text): string {
-    return $this->paint($this->isDark ? '38;5;212' : '38;5;162', $text);
+    return $this->paint($this->isDark ? Sgr::of(Sgr::Pink) : Sgr::of(Sgr::Fuchsia), $text);
   }
 
   /**
@@ -61,7 +61,7 @@ class MidnightTheme extends DefaultTheme {
    */
   #[\Override]
   public function border(string $text): string {
-    return $this->paint($this->isDark ? '38;5;97' : '38;5;61', $text);
+    return $this->paint($this->isDark ? Sgr::of(Sgr::Purple) : Sgr::of(Sgr::Slate), $text);
   }
 
   /**
@@ -69,7 +69,7 @@ class MidnightTheme extends DefaultTheme {
    */
   #[\Override]
   public function marker(bool $selected): string {
-    return $selected ? $this->paint($this->isDark ? '1;38;5;141' : '1;38;5;54', $this->unicode ? '❯' : '>') : ' ';
+    return $selected ? $this->paint($this->isDark ? Sgr::of(Sgr::Bold, Sgr::Violet) : Sgr::of(Sgr::Bold, Sgr::Indigo), $this->unicode ? '❯' : '>') : ' ';
   }
 
   /**
@@ -77,7 +77,7 @@ class MidnightTheme extends DefaultTheme {
    */
   #[\Override]
   public function radio(bool $on): string {
-    return $on ? $this->paint($this->isDark ? '1;38;5;141' : '1;38;5;54', $this->unicode ? '●' : '(*)') : ($this->unicode ? '○' : '( )');
+    return $on ? $this->paint($this->isDark ? Sgr::of(Sgr::Bold, Sgr::Violet) : Sgr::of(Sgr::Bold, Sgr::Indigo), $this->unicode ? '●' : '(*)') : ($this->unicode ? '○' : '( )');
   }
 
   /**
@@ -85,7 +85,7 @@ class MidnightTheme extends DefaultTheme {
    */
   #[\Override]
   public function caret(): string {
-    return $this->paint($this->isDark ? '1;38;5;141' : '1;38;5;54', $this->unicode ? '█' : '|');
+    return $this->paint($this->isDark ? Sgr::of(Sgr::Bold, Sgr::Violet) : Sgr::of(Sgr::Bold, Sgr::Indigo), $this->unicode ? '█' : '|');
   }
 
 }

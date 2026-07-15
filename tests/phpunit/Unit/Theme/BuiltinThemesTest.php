@@ -12,6 +12,7 @@ use DrevOps\Tui\Theme\FrostTheme;
 use DrevOps\Tui\Theme\MidnightTheme;
 use DrevOps\Tui\Theme\Mode;
 use DrevOps\Tui\Theme\MonoTheme;
+use DrevOps\Tui\Theme\Sgr;
 use DrevOps\Tui\Theme\ThemeManager;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -26,6 +27,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(EmberTheme::class)]
 #[CoversClass(MonoTheme::class)]
 #[CoversClass(DosTheme::class)]
+#[CoversClass(Sgr::class)]
 #[Group('tui')]
 final class BuiltinThemesTest extends TestCase {
 
@@ -56,7 +58,7 @@ final class BuiltinThemesTest extends TestCase {
     yield 'mono dark' => ['mono', Mode::Dark, ['accent' => '1;97', 'value' => '38;5;250', 'indicator' => '1', 'match' => '7', 'border' => '38;5;244']];
     yield 'mono light' => ['mono', Mode::Light, ['accent' => '1;30', 'value' => '38;5;240', 'indicator' => '1', 'match' => '7', 'border' => '38;5;246']];
     yield 'dos dark' => ['dos', Mode::Dark, ['accent' => '1;97', 'value' => '96', 'indicator' => '93', 'match' => '93', 'border' => '97']];
-    yield 'dos light' => ['dos', Mode::Light, ['accent' => '34', 'value' => '36', 'indicator' => '33', 'match' => '33', 'border' => '34']];
+    yield 'dos light' => ['dos', Mode::Light, ['accent' => '1;97', 'value' => '96', 'indicator' => '93', 'match' => '93', 'border' => '97']];
   }
 
   /**
@@ -116,11 +118,12 @@ final class BuiltinThemesTest extends TestCase {
   }
 
   /**
-   * The dos theme paints the terminal DOS blue on a dark background only.
+   * The dos theme washes the screen blue in either mode, colour permitting.
    */
   public function testDosPaintsBlueBackground(): void {
-    $this->assertSame('#0000aa', ThemeManager::create('dos', 76, ['mode' => Mode::Dark])->background());
-    $this->assertNull(ThemeManager::create('dos', 76, ['mode' => Mode::Light])->background());
+    $this->assertSame('44', ThemeManager::create('dos', 76, ['mode' => Mode::Dark])->background());
+    $this->assertSame('44', ThemeManager::create('dos', 76, ['mode' => Mode::Light])->background());
+    $this->assertNull(ThemeManager::create('dos', 76, ['color' => FALSE])->background());
   }
 
 }

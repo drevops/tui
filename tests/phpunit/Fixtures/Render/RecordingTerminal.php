@@ -25,7 +25,7 @@ class RecordingTerminal extends Terminal {
    * {@inheritdoc}
    */
   #[\Override]
-  public function restore(?string $background = NULL): void {
+  public function restore(): void {
     $this->restored = TRUE;
   }
 

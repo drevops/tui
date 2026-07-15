@@ -583,9 +583,8 @@ function getJobs(string $project_dir): array {
     ];
   }
 
-  // The dos theme is the same drilled-in frame, but its dark preview renders
-  // on the CGA blue surface (the EDIT.COM / QBasic look); the light preview
-  // uses the light surface like the others.
+  // The dos theme is the same drilled-in frame, rendered on the CGA blue
+  // surface (the EDIT.COM / QBasic look) that it paints regardless of mode.
   $jobs['theme-dos'] = [
     'command' => 'env LINES=16 COLUMNS=80 php ' . $project_dir . '/playground/10-builtin-themes/run.php --theme=dos --mode=dark',
     'interact' => builtinThemeInteraction(),
@@ -593,14 +592,6 @@ function getJobs(string $project_dir): array {
     'cols' => 80,
     'at_needle' => 'Project name',
     'dos' => TRUE,
-  ];
-  $jobs['theme-dos-light'] = [
-    'command' => 'env LINES=16 COLUMNS=80 php ' . $project_dir . '/playground/10-builtin-themes/run.php --theme=dos --mode=light',
-    'interact' => builtinThemeInteraction(),
-    'rows' => 16,
-    'cols' => 80,
-    'at_needle' => 'Project name',
-    'light' => TRUE,
   ];
 
   // Update-mode discovery: headless, shows the provenance-badged summary.

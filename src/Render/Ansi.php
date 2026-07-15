@@ -76,4 +76,37 @@ final class Ansi {
     return $left . str_repeat(' ', max(1, $pad)) . $right;
   }
 
+  /**
+   * Wash a multi-line block with a background SGR so it fills edge to edge.
+   *
+   * A styled span closes with a full reset, which drops the background, so a
+   * background opened once would survive only until the first span. This
+   * re-opens the wash at the start of every line and again after every reset,
+   * then erases each line to its end, so the gaps between spans and the padding
+   * past the content all keep the background.
+   *
+   * @param string $text
+   *   The block to wash (may span several lines and carry ANSI codes).
+   * @param string $sgr
+   *   The background SGR parameters (e.g. "44"); empty returns the text as-is.
+   *
+   * @return string
+   *   The washed block.
+   */
+  public static function wash(string $text, string $sgr): string {
+    if ($sgr === '') {
+      return $text;
+    }
+
+    $open = self::ESC . '[' . $sgr . 'm';
+    $reset = self::ESC . '[0m';
+    $lines = explode("\n", $text);
+
+    foreach ($lines as $index => $line) {
+      $lines[$index] = $open . str_replace($reset, $reset . $open, $line) . $open . self::ESC . '[K';
+    }
+
+    return implode("\n", $lines);
+  }
+
 }

@@ -28,7 +28,7 @@ Form::create('My form')->theme('midnight')/* ... */;
 | `frost` | Arctic frost-blue accents, sage values, sand highlights. |
 | `ember` | Burnt-orange accents, olive values, gold highlights. |
 | `mono` | Hue-free - bold weight, grey levels and reverse video, for maximum compatibility. |
-| `dos` | Retro MS-DOS - the bright white/cyan/yellow CGA palette in a double-line window, made for a blue terminal background. |
+| `dos` | Retro MS-DOS - the bright white/cyan/yellow CGA palette in a double-line window, painted on its own blue screen. |
 
 The colourful themes use 256-colour palettes, `mono` the greyscale ramp and `dos`
 the classic 16-colour CGA set; every one renders across all widgets and degrades
@@ -66,11 +66,10 @@ light palette (right):
   <img src="/theme-mono-light.svg" width="48%" alt="The mono theme in light mode" />
 </p>
 
-**dos** - on its intended DOS-blue background (left) and a light terminal (right)
+**dos** - the CGA blue screen, painted regardless of the terminal background
 
 <p>
-  <img src="/theme-dos.svg" width="48%" alt="The dos theme on a blue background" />
-  <img src="/theme-dos-light.svg" width="48%" alt="The dos theme in light mode" />
+  <img src="/theme-dos.svg" width="48%" alt="The dos theme on the CGA blue screen" />
 </p>
 
 ## Dark and light
@@ -96,17 +95,22 @@ dark/light mode.
 
 ```php
 use DrevOps\Tui\Theme\DefaultTheme;
+use DrevOps\Tui\Theme\Sgr;
 
 class AquaTheme extends DefaultTheme {
   public function title(string $text): string {
-    return $this->paint($this->isDark ? '1;38;5;44' : '1;38;5;24', $text);
+    return $this->paint($this->isDark ? Sgr::of(Sgr::Bold, Sgr::Cyan) : Sgr::of(Sgr::Bold, Sgr::Blue), $text);
   }
 
   public function value(string $text, bool $selected = FALSE): string {
-    return $this->paint($this->emphasize($this->isDark ? '38;5;80' : '38;5;30', $selected), $text);
+    return $this->paint($this->emphasize($this->isDark ? Sgr::of(Sgr::Sky) : Sgr::of(Sgr::Cobalt), $selected), $text);
   }
 }
 ```
+
+Colours come from the `Sgr` palette map - named cases like `Sgr::Cyan` or
+`Sgr::Sand` composed with `Sgr::of(...)`, so a palette reads as colours rather
+than raw ANSI numbers.
 
 Override as many atoms as the palette needs - the built-in themes each redeclare
 the accent-coloured atoms (`title()`, `highlight()`, `marker()`, `radio()`,
