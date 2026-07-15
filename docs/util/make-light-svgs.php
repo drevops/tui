@@ -49,11 +49,16 @@ $widgets = [
 $panels = ['bordered-panels', 'borderless-panels'];
 
 // Every dark variant of each widget, plus only the animated hero of each panel.
+// A widget with no dark variants means the dark pass has not run or is broken,
+// so stop rather than emit a partial light set.
 $sources = [];
 foreach ($widgets as $widget) {
-  foreach (glob($dir . '/' . $widget . '-dark-*.svg') ?: [] as $file) {
-    $sources[] = $file;
+  $matches = glob($dir . '/' . $widget . '-dark-*.svg');
+  if ($matches === FALSE || $matches === []) {
+    throw new \RuntimeException(sprintf('No dark variants found for widget "%s".', $widget));
   }
+
+  $sources = array_merge($sources, $matches);
 }
 foreach ($panels as $panel) {
   $sources[] = $dir . '/' . $panel . '-dark-animated.svg';
@@ -62,14 +67,20 @@ foreach ($panels as $panel) {
 $count = 0;
 foreach ($sources as $source) {
   if (!is_file($source)) {
-    fwrite(STDERR, sprintf("MISSING: %s\n", $source));
-    continue;
+    throw new \RuntimeException('Missing source: ' . $source);
   }
 
-  $light = strtr((string) file_get_contents($source), $map);
-  $out = str_replace('-dark-', '-light-', basename($source));
-  file_put_contents($dir . '/' . $out, $light);
+  $dark = file_get_contents($source);
+  if ($dark === FALSE) {
+    throw new \RuntimeException('Failed to read source: ' . $source);
+  }
+
+  $out = $dir . '/' . str_replace('-dark-', '-light-', basename($source));
+  if (file_put_contents($out, strtr($dark, $map)) === FALSE) {
+    throw new \RuntimeException('Failed to write: ' . $out);
+  }
+
   $count++;
 }
 
-echo sprintf("Wrote %d light twin(s).\n", $count);
+echo sprintf('Wrote %d light twin(s).', $count) . PHP_EOL;
