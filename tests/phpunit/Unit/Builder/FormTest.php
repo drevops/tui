@@ -62,9 +62,9 @@ final class FormTest extends TestCase {
     $this->assertSame('My app', $form->title);
     $this->assertSame('the project', $form->subject);
     $this->assertSame('LOGO', $form->banner);
-    $this->assertTrue($form->buttons);
-    $this->assertSame('Install', $form->submitLabel);
-    $this->assertSame('Quit', $form->cancelLabel);
+    $this->assertTrue($form->buttons->show);
+    $this->assertSame('Install', $form->buttons->submitLabel);
+    $this->assertSame('Quit', $form->buttons->cancelLabel);
     $this->assertSame('APP_', $form->envPrefix);
     $this->assertSame([$fixup], $form->fixups);
     $this->assertSame('General settings.', $form->panels[0]->description);
@@ -190,8 +190,8 @@ final class FormTest extends TestCase {
 
     // Form-level defaults (the global TUI runtime is tested on the Tui facade).
     $this->assertSame('', $form->subject);
-    $this->assertTrue($form->buttons);
-    $this->assertSame('Submit', $form->submitLabel);
+    $this->assertTrue($form->buttons->show);
+    $this->assertSame('Submit', $form->buttons->submitLabel);
     $this->assertSame('', $form->envPrefix);
     $this->assertSame('', $form->panels[0]->description);
   }
@@ -526,6 +526,46 @@ final class FormTest extends TestCase {
 
     Form::create('T')
       ->panel('p', 'P', fn(PanelBuilder $p): FieldBuilder => $p->reorder('r')->option('a')->separator()->option('b'))
+      ->build();
+  }
+
+  public function testModalPanelBuildsWithConfiguredButtons(): void {
+    $form = Form::create('T')
+      ->panel('root', 'Root', function (PanelBuilder $p): void {
+        $p->text('name');
+        $p->panel('confirm', 'Delete?', function (PanelBuilder $m): void {
+          $m->modal('Yes', 'No')->description('This cannot be undone.');
+          $m->confirm('sure');
+        });
+      })
+      ->build();
+
+    $modal = $form->panels[0]->panels[0];
+    $this->assertTrue($modal->isModal());
+    $this->assertSame('This cannot be undone.', $modal->description);
+    $this->assertSame('Yes', $modal->modal?->buttons->submitLabel);
+    $this->assertSame('No', $modal->modal?->buttons->cancelLabel);
+    $this->assertTrue($modal->modal?->buttons->show);
+  }
+
+  public function testModalDefaultsButtonLabels(): void {
+    $form = Form::create('T')
+      ->panel('m', 'M', fn(PanelBuilder $p): PanelBuilder => $p->modal())
+      ->build();
+
+    $this->assertSame('Submit', $form->panels[0]->modal?->buttons->submitLabel);
+    $this->assertSame('Cancel', $form->panels[0]->modal?->buttons->cancelLabel);
+  }
+
+  public function testModalPanelWithSubPanelThrows(): void {
+    $this->expectException(FormException::class);
+    $this->expectExceptionMessage('Modal panel "confirm" cannot contain sub-panels.');
+
+    Form::create('T')
+      ->panel('confirm', 'Confirm', function (PanelBuilder $m): void {
+        $m->modal();
+        $m->panel('nested', 'Nested', fn(PanelBuilder $n): FieldBuilder => $n->text('x'));
+      })
       ->build();
   }
 

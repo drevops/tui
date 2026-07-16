@@ -117,6 +117,44 @@ final class TuiTesterTest extends TestCase {
     yield 'is interrupted' => [static fn(TuiTester $tester): mixed => $tester->isInterrupted()];
   }
 
+  public function testModalSubmitFlowsThroughTheInputPipe(): void {
+    $tester = new TuiTester($this->modalForm());
+
+    $answers = $tester->run(
+      Key::named(KeyName::Down),   // hub: move to the modal panel item
+      Key::named(KeyName::Enter),  // open the dialog
+      Key::named(KeyName::Enter),  // edit the nickname field
+      'Zed',
+      Key::named(KeyName::Enter),  // commit the field
+      Key::named(KeyName::Down),   // move to the dialog's Apply button
+      Key::named(KeyName::Enter),  // apply, returning to the hub
+      Key::named(KeyName::Down),   // hub: move to Submit
+      Key::named(KeyName::Enter),  // submit the form
+    );
+
+    $this->assertSame('Zed', $answers->value('nick'));
+    $this->assertFalse($tester->isCancelled());
+  }
+
+  public function testModalDiscardRestoresThroughTheInputPipe(): void {
+    $tester = new TuiTester($this->modalForm());
+
+    $answers = $tester->run(
+      Key::named(KeyName::Down),   // hub: move to the modal panel item
+      Key::named(KeyName::Enter),  // open the dialog
+      Key::named(KeyName::Enter),  // edit the nickname field
+      'Zed',
+      Key::named(KeyName::Enter),  // commit the field
+      Key::named(KeyName::Down),   // dialog: Apply
+      Key::named(KeyName::Down),   // dialog: Discard
+      Key::named(KeyName::Enter),  // discard, restoring the answer
+      Key::named(KeyName::Down),   // hub: move to Submit
+      Key::named(KeyName::Enter),  // submit the form
+    );
+
+    $this->assertSame('', $answers->value('nick'));
+  }
+
   /**
    * A single-field form used across the harness tests.
    */
@@ -124,6 +162,20 @@ final class TuiTesterTest extends TestCase {
     return Form::create('Demo')
       ->panel('main', 'Main', function (PanelBuilder $p): void {
         $p->text('name', 'Name');
+      });
+  }
+
+  /**
+   * A form whose second top-level panel is a modal dialog.
+   */
+  protected function modalForm(): Form {
+    return Form::create('Demo')
+      ->panel('main', 'Main', function (PanelBuilder $p): void {
+        $p->text('name', 'Name');
+      })
+      ->panel('edit', 'Quick edit', function (PanelBuilder $m): void {
+        $m->modal('Apply', 'Discard');
+        $m->text('nick', 'Nickname');
       });
   }
 

@@ -24,6 +24,9 @@ final readonly class Panel {
    *   Ordered fields in this panel.
    * @param \DrevOps\Tui\Model\Panel[] $panels
    *   Ordered nested sub-panels.
+   * @param \DrevOps\Tui\Model\Modal|null $modal
+   *   The modal presentation config when this panel opens as a centered dialog
+   *   over the parent, or NULL for an ordinary drill-in panel.
    */
   public function __construct(
     public string $id,
@@ -31,6 +34,7 @@ final readonly class Panel {
     public string $description,
     public array $fields = [],
     public array $panels = [],
+    public ?Modal $modal = NULL,
   ) {
   }
 
@@ -42,6 +46,16 @@ final readonly class Panel {
    */
   public function itemCount(): int {
     return count($this->fields) + count($this->panels);
+  }
+
+  /**
+   * Whether this panel opens as a modal dialog rather than a drill-in panel.
+   *
+   * @return bool
+   *   TRUE when the panel carries a modal config.
+   */
+  public function isModal(): bool {
+    return $this->modal instanceof Modal;
   }
 
 }

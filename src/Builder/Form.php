@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Builder;
 
+use DrevOps\Tui\Model\Buttons;
 use DrevOps\Tui\Model\FieldType;
 use DrevOps\Tui\Model\FormDefinition;
 use DrevOps\Tui\Model\FormException;
@@ -191,14 +192,13 @@ final class Form {
       $this->fixups,
       $this->envPrefix,
       $this->banner,
-      $this->buttons,
-      $this->submitLabel,
-      $this->cancelLabel,
+      new Buttons($this->buttons, $this->submitLabel, $this->cancelLabel),
     );
 
     $this->assertUniqueFieldIds($form);
     $this->assertToggleOptions($form);
     $this->assertReorderOptions($form);
+    $this->assertModalPanels($form->panels);
 
     return $form;
   }
@@ -276,6 +276,26 @@ final class Form {
       if (count($field->options) < 2) {
         throw new FormException(sprintf('Reorder field "%s" must have at least two options, %d given.', $field->id, count($field->options)));
       }
+    }
+  }
+
+  /**
+   * Assert that no modal panel declares sub-panels.
+   *
+   * A modal is a single centered dialog, not a navigable tree - it may hold
+   * fields and a description, but nesting panels (or another modal) inside it
+   * has no defined layout.
+   *
+   * @param \DrevOps\Tui\Model\Panel[] $panels
+   *   The panels to walk, recursively.
+   */
+  protected function assertModalPanels(array $panels): void {
+    foreach ($panels as $panel) {
+      if ($panel->isModal() && $panel->panels !== []) {
+        throw new FormException(sprintf('Modal panel "%s" cannot contain sub-panels.', $panel->id));
+      }
+
+      $this->assertModalPanels($panel->panels);
     }
   }
 

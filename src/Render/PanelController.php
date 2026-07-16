@@ -132,6 +132,25 @@ class PanelController {
   protected bool $help = FALSE;
 
   /**
+   * The answer values snapshot taken when the current modal dialog opened.
+   *
+   * @var array<string,mixed>
+   */
+  protected array $modalValues = [];
+
+  /**
+   * The provenance snapshot taken when the current modal dialog opened.
+   *
+   * @var array<string,\DrevOps\Tui\Answers\Provenance>
+   */
+  protected array $modalProvenance = [];
+
+  /**
+   * The cursor position to restore in the parent when a modal dialog closes.
+   */
+  protected int $modalReturnCursor = 0;
+
+  /**
    * Construct a controller.
    *
    * @param \DrevOps\Tui\Model\FormDefinition $form
@@ -382,6 +401,10 @@ class PanelController {
       return $this->editorFrame($this->editor);
     }
 
+    if ($this->navigator->current()->isModal()) {
+      return $this->modalFrame($height);
+    }
+
     return $this->hubFrame($height);
   }
 
@@ -437,8 +460,8 @@ class PanelController {
       }
 
       $body[] = $this->theme->renderButtonBar([
-        Translator::t($this->form->submitLabel),
-        Translator::t($this->form->cancelLabel),
+        Translator::t($this->form->buttons->submitLabel),
+        Translator::t($this->form->buttons->cancelLabel),
       ], $selected);
     }
 
@@ -447,6 +470,60 @@ class PanelController {
     $footer = $editing instanceof Field ? $this->inlineEditFooter() : $this->hubFooter();
 
     return $this->theme->renderFrame($header, $body, $footer, $viewport, $height);
+  }
+
+  /**
+   * Render the current modal dialog floating over its dimmed parent.
+   *
+   * @param int $height
+   *   The body viewport height.
+   *
+   * @return string
+   *   The modal frame.
+   */
+  protected function modalFrame(int $height): string {
+    $modal = $this->navigator->current();
+
+    $editing = NULL;
+    $view = '';
+    if ($this->editor instanceof WidgetInterface && $this->editing instanceof Field) {
+      $editing = $this->editing;
+      $view = $this->editor->view($this->theme);
+    }
+
+    $base = $modal->itemCount();
+    $selected = $this->cursor >= $base ? $this->cursor - $base : -1;
+
+    return $this->theme->renderModal($modal, $this->answers(), $this->cursor, $editing, $view, $selected, $this->backdrop($height));
+  }
+
+  /**
+   * Render the parent panel as the backdrop a modal dialog floats over.
+   *
+   * The parent renders un-highlighted; the theme dims it while compositing the
+   * dialog on top, so what shows through the padding reads as recessed.
+   *
+   * @param int $height
+   *   The body viewport height.
+   *
+   * @return string
+   *   The parent frame.
+   */
+  protected function backdrop(int $height): string {
+    $parent = $this->navigator->parent();
+
+    if (!$parent instanceof Panel) {
+      // A modal is always entered from a parent, so this never happens.
+      // @codeCoverageIgnoreStart
+      $parent = $this->navigator->current();
+      // @codeCoverageIgnoreEnd
+    }
+
+    [$body] = $this->theme->renderBody($parent, $this->answers(), -1);
+    $viewport = $this->scroller->viewport(0, count($body), $height);
+    $header = [$this->theme->renderBreadcrumbLine($this->navigator)];
+
+    return $this->theme->renderFrame($header, $body, $this->hubFooter(), $viewport, $height);
   }
 
   /**
@@ -517,7 +594,13 @@ class PanelController {
     }
 
     if ($this->nav->matches($key, Action::Quit)) {
-      $this->done = TRUE;
+      // A modal is blocking: quit dismisses the dialog, not the whole form.
+      if ($this->navigator->current()->isModal()) {
+        $this->closeModal(TRUE);
+      }
+      else {
+        $this->done = TRUE;
+      }
 
       return;
     }
@@ -555,7 +638,10 @@ class PanelController {
       }
     }
     elseif ($this->nav->matches($key, Action::Back)) {
-      if ($this->navigator->pop()) {
+      if ($this->navigator->current()->isModal()) {
+        $this->closeModal(TRUE);
+      }
+      elseif ($this->navigator->pop()) {
         $this->cursor = 0;
       }
     }
@@ -579,8 +665,7 @@ class PanelController {
 
     $subpanel = $panel->panels[$this->cursor - $field_count] ?? NULL;
     if ($subpanel instanceof Panel) {
-      $this->navigator->enter($subpanel);
-      $this->cursor = 0;
+      $this->enterPanel($subpanel);
 
       return;
     }
@@ -588,6 +673,58 @@ class PanelController {
     if ($this->buttonsVisible()) {
       $this->activateButton($this->cursor - $field_count - count($panel->panels));
     }
+  }
+
+  /**
+   * Enter a sub-panel: open it as a modal dialog, or drill into it.
+   *
+   * @param \DrevOps\Tui\Model\Panel $panel
+   *   The panel to enter.
+   */
+  protected function enterPanel(Panel $panel): void {
+    if ($panel->isModal()) {
+      $this->openModal($panel);
+
+      return;
+    }
+
+    $this->navigator->enter($panel);
+    $this->cursor = 0;
+  }
+
+  /**
+   * Open a modal dialog, snapshotting answers so a cancel can restore them.
+   *
+   * @param \DrevOps\Tui\Model\Panel $panel
+   *   The modal panel.
+   */
+  protected function openModal(Panel $panel): void {
+    $this->modalValues = $this->values;
+    $this->modalProvenance = $this->provenance;
+    $this->modalReturnCursor = $this->cursor;
+    $this->navigator->enter($panel);
+    $this->cursor = 0;
+  }
+
+  /**
+   * Close the current modal dialog, restoring the parent's cursor.
+   *
+   * @param bool $cancel
+   *   TRUE to discard the dialog's edits (restoring the opening snapshot); FALSE
+   *   to keep them.
+   */
+  protected function closeModal(bool $cancel): void {
+    if ($cancel) {
+      $this->values = $this->modalValues;
+      $this->provenance = $this->modalProvenance;
+    }
+
+    $this->navigator->pop();
+    $this->cursor = $this->modalReturnCursor;
+    $this->followCursor = TRUE;
+    $this->modalValues = [];
+    $this->modalProvenance = [];
+    $this->modalReturnCursor = 0;
   }
 
   /**
@@ -667,19 +804,33 @@ class PanelController {
    * global actions.
    *
    * @return bool
-   *   TRUE when buttons are enabled and the navigator is at the root panel.
+   *   TRUE when buttons are enabled and the navigator is at the root panel, or
+   *   when the current panel is a modal (which always shows its own pair).
    */
   protected function buttonsVisible(): bool {
-    return $this->form->buttons && $this->navigator->isRoot();
+    if ($this->navigator->current()->isModal()) {
+      return TRUE;
+    }
+
+    return $this->form->buttons->show && $this->navigator->isRoot();
   }
 
   /**
-   * Activate a button by its index in the pair: finish, recording a cancel.
+   * Activate a button by its index in the pair.
+   *
+   * In a modal the pair dismisses the dialog; otherwise it finishes the form,
+   * recording whether the user cancelled.
    *
    * @param int $index
    *   The button index (submit first, cancel second).
    */
   protected function activateButton(int $index): void {
+    if ($this->navigator->current()->isModal()) {
+      $this->closeModal($index === self::CANCEL_BUTTON);
+
+      return;
+    }
+
     $this->done = TRUE;
     $this->cancelled = $index === self::CANCEL_BUTTON;
   }

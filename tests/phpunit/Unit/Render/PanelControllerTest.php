@@ -617,6 +617,150 @@ final class PanelControllerTest extends TestCase {
     };
   }
 
+  public function testModalOpensCenteredOverTheBackdrop(): void {
+    $controller = $this->modalController();
+
+    // Move to the modal item and open it.
+    $controller->handle(Key::named(KeyName::Down));
+    $controller->handle(Key::named(KeyName::Enter));
+
+    $this->assertTrue($controller->currentPanel()->isModal());
+    $this->assertSame('Quick edit', $controller->currentPanel()->title);
+
+    $frame = Ansi::strip($controller->frame(14));
+
+    // The dialog box shows its title, description, field and its own configured
+    // buttons; the parent panel shows through around it (the backdrop).
+    $this->assertStringContainsString('Quick edit', $frame);
+    $this->assertStringContainsString('Adjust the nickname.', $frame);
+    $this->assertStringContainsString('Nickname', $frame);
+    $this->assertStringContainsString('[ Apply ]', $frame);
+    $this->assertStringContainsString('[ Discard ]', $frame);
+    $this->assertStringContainsString('Main', $frame);
+  }
+
+  public function testModalSubmitKeepsEditsAndReturnsToParent(): void {
+    $controller = $this->modalController();
+
+    $controller->handle(Key::named(KeyName::Down));
+    $controller->handle(Key::named(KeyName::Enter));
+
+    // Edit the dialog's field, then activate its Submit button.
+    $controller->handle(Key::named(KeyName::Enter));
+    $controller->handle(Key::char('!'));
+    $controller->handle(Key::named(KeyName::Enter));
+    $controller->handle(Key::named(KeyName::Down));
+    $controller->handle(Key::named(KeyName::Enter));
+
+    $this->assertFalse($controller->currentPanel()->isModal());
+    $this->assertFalse($controller->isDone());
+    $this->assertSame('ace!', $controller->answers()->value('nick'));
+    // The cursor is restored to the item that opened the dialog.
+    $this->assertSame(1, $controller->cursor());
+  }
+
+  public function testModalCancelButtonRestoresTheAnswers(): void {
+    $controller = $this->modalController();
+
+    $controller->handle(Key::named(KeyName::Down));
+    $controller->handle(Key::named(KeyName::Enter));
+
+    // Edit the field, then activate the Cancel button.
+    $controller->handle(Key::named(KeyName::Enter));
+    $controller->handle(Key::char('X'));
+    $controller->handle(Key::named(KeyName::Enter));
+    $controller->handle(Key::named(KeyName::Down));
+    $controller->handle(Key::named(KeyName::Down));
+    $controller->handle(Key::named(KeyName::Enter));
+
+    $this->assertFalse($controller->currentPanel()->isModal());
+    $this->assertSame('ace', $controller->answers()->value('nick'));
+  }
+
+  public function testModalEscapeRestoresTheAnswers(): void {
+    $controller = $this->modalController();
+
+    $controller->handle(Key::named(KeyName::Down));
+    $controller->handle(Key::named(KeyName::Enter));
+
+    $controller->handle(Key::named(KeyName::Enter));
+    $controller->handle(Key::char('Z'));
+    $controller->handle(Key::named(KeyName::Enter));
+
+    // Escape dismisses the dialog like Cancel: edits are discarded.
+    $controller->handle(Key::named(KeyName::Escape));
+
+    $this->assertFalse($controller->currentPanel()->isModal());
+    $this->assertSame('ace', $controller->answers()->value('nick'));
+    $this->assertSame(1, $controller->cursor());
+  }
+
+  public function testModalQuitDismissesInsteadOfEndingTheForm(): void {
+    $controller = $this->modalController();
+
+    $controller->handle(Key::named(KeyName::Down));
+    $controller->handle(Key::named(KeyName::Enter));
+    $this->assertTrue($controller->currentPanel()->isModal());
+
+    // A modal is blocking: quit closes it rather than finishing the form.
+    $controller->handle(Key::char('q'));
+
+    $this->assertFalse($controller->isDone());
+    $this->assertFalse($controller->currentPanel()->isModal());
+  }
+
+  public function testModalButtonsNavigateWithLeftRight(): void {
+    $controller = $this->modalController();
+
+    $controller->handle(Key::named(KeyName::Down));
+    $controller->handle(Key::named(KeyName::Enter));
+
+    // Past the single field to Submit (index 1), then Left/Right between buttons.
+    $controller->handle(Key::named(KeyName::Down));
+    $this->assertSame(1, $controller->cursor());
+    $controller->handle(Key::named(KeyName::Right));
+    $this->assertSame(2, $controller->cursor());
+    $controller->handle(Key::named(KeyName::Left));
+    $this->assertSame(1, $controller->cursor());
+  }
+
+  public function testModalEditsFieldInlineInsideTheDialog(): void {
+    $controller = $this->modalController();
+
+    $controller->handle(Key::named(KeyName::Down));
+    $controller->handle(Key::named(KeyName::Enter));
+    $controller->handle(Key::named(KeyName::Enter));
+    $this->assertTrue($controller->isEditing());
+
+    // Type a character so the live editor value differs from the stored one -
+    // the dialog must show the live value, proving the editor renders in place.
+    $controller->handle(Key::char('Z'));
+
+    $frame = Ansi::strip($controller->frame(14));
+
+    $this->assertStringContainsString('Nickname', $frame);
+    $this->assertStringContainsString('aceZ', $frame);
+    // The editor renders inside the dialog box, which still frames it.
+    $this->assertStringContainsString('[ Apply ]', $frame);
+  }
+
+  /**
+   * A controller over a form whose second top-level panel is a modal dialog.
+   */
+  protected function modalController(): PanelController {
+    $builder = Form::create('Demo')
+      ->buttons(FALSE)
+      ->panel('main', 'Main', function (PanelBuilder $p): void {
+        $p->text('name', 'Name');
+      })
+      ->panel('edit', 'Quick edit', function (PanelBuilder $m): void {
+        $m->modal('Apply', 'Discard')->description('Adjust the nickname.');
+        $m->text('nick', 'Nickname');
+      });
+
+    return new PanelController($builder->build(), new DefaultTheme(50, ['color' => FALSE]), NULL, TRUE, TRUE, ['name' => 'Acme', 'nick' => 'ace'], []);
+  }
+
   /**
    * A controller over a two-panel form seeded with answers.
    */

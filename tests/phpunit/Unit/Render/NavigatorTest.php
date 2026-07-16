@@ -35,4 +35,15 @@ final class NavigatorTest extends TestCase {
     $this->assertFalse($navigator->pop());
   }
 
+  public function testParent(): void {
+    $sub = new Panel('adv', 'Advanced', '');
+    $navigator = new Navigator(new Panel('hub', 'Hub', '', [], [$sub]));
+
+    $this->assertNull($navigator->parent());
+
+    $navigator->enter($sub);
+    $this->assertInstanceOf(Panel::class, $navigator->parent());
+    $this->assertSame('Hub', $navigator->parent()?->title);
+  }
+
 }
