@@ -12,28 +12,47 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
   <ThemedImage sources={{light: useBaseUrl('/widget-text-light-animated.svg'), dark: useBaseUrl('/widget-text-dark-animated.svg')}} alt="Text widget" />
 </p>
 
-Single-line text input with a movable caret. Type to insert, Left/Right move the
-caret, Backspace deletes, Enter accepts.
+Single-line text input with a movable caret. It collects a **`string`**.
 
 ```php
-$p->text('name', 'Site name')->default('Acme Site')->required();
+$p->text('item', 'Item')
+  ->default('Pear'); // Initial value.
+
+// Inline ghost-text autocomplete over a static candidate list:
+$p->text('item', 'Item')
+  ->complete(['Pear', 'Peach', 'Plum']);
+
+// The candidates can be computed from the answers collected so far:
+$p->text('variety', 'Variety')
+  ->complete(fn(array $answers): array => [$answers['fruit'] . ' - Gala']);
 ```
 
-Add `complete()` for inline ghost-text autocomplete: as you type, the
-best-matching candidate is shown dimmed after the caret and accepted with Tab or
-Right-arrow (at the end of the line). This is distinct from the `suggest`
-widget's dropdown - ghost-text keeps the eye on the input line. The source is a
-static list or a closure over the answers collected so far; the match is a
-case-insensitive prefix, with no match the field behaves as a plain input, and
-the ghost-text is suppressed when colour is off.
+## Options
 
-```php
-// Static candidates.
-$p->text('timezone', 'Timezone')->complete(['UTC', 'Europe/London', 'Australia/Sydney']);
+| Name | Description | Required | Default |
+| --- | --- | --- | --- |
+| `default()` | Initial value. | No | `''` (empty) |
+| `complete()` | Ghost-text completion source: a `list<string>`, or a `fn(array $answers): list<string>`. | No | None |
 
-// Candidates computed from prior answers.
-$p->text('repo', 'Repository')->complete(fn(array $answers): array => [$answers['owner'] . '/site']);
-```
+As you type, the first candidate your input is a case-insensitive prefix of
+appears dimmed after the caret; accept it with `Tab` or `→` at the end of the
+line. This is distinct from the [Suggest](/widgets/suggest) dropdown - ghost-text
+keeps your eye on the input line - and it is suppressed when colour is off.
+
+## Keyboard
+
+| Key | Action |
+| --- | --- |
+| printable keys | Insert at the caret |
+| `←` / `→` | Move the caret |
+| `Backspace` | Delete the character before the caret |
+| `Tab` / `→` (at line end) | Accept the ghost-text suggestion |
+| `Enter` | Accept |
+| `Esc` | Cancel |
+
+## Display modes
+
+In all four [display modes](/display-modes) - Unicode or ASCII, colour on or off:
 
 <table>
   <tr>

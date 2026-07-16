@@ -28,7 +28,7 @@ $opts = getopt('', ['no-unicode', 'no-ansi']);
 
 $form = Form::create('Password widget')
   ->panel('main', 'Password', function (PanelBuilder $p): void {
-    $p->password('password', 'Password')->default('hunter2');
+    $p->password('password', 'Password')->default('melon7');
   });
 
 echo (new Tui($form))->color(isset($opts['no-ansi']) ? FALSE : NULL)->unicode(isset($opts['no-unicode']) ? FALSE : NULL)->run()->toJson() . "\n";

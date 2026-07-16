@@ -27,7 +27,7 @@ $opts = getopt('', ['no-unicode', 'no-ansi']);
 
 $form = Form::create('Text widget')
   ->panel('main', 'Text', function (PanelBuilder $p): void {
-    $p->text('text', 'Text')->default('Acme Site');
+    $p->text('text', 'Text')->default('Pear');
   });
 
 echo (new Tui($form))->color(isset($opts['no-ansi']) ? FALSE : NULL)->unicode(isset($opts['no-unicode']) ? FALSE : NULL)->run()->toJson() . "\n";

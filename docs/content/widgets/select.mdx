@@ -12,16 +12,42 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
   <ThemedImage sources={{light: useBaseUrl('/widget-select-light-animated.svg'), dark: useBaseUrl('/widget-select-dark-animated.svg')}} alt="Select widget" />
 </p>
 
-Single choice from a list. Up/Down move, Enter accepts the highlighted option.
-Pass `default` (an option key) to start on an option other than the first. Long
-lists page around the cursor - set the window with `->pageSize()`.
+Single choice from a list of options. It collects the **selected option value**
+(a `string`).
 
 ```php
-$p->select('profile', 'Install profile')->default('minimal')->options(['standard' => 'Standard', 'minimal' => 'Minimal', 'demo_umami' => 'Demo Umami']);
+$p->select('fruit', 'Fruit')
+  ->options([
+    'apple' => 'Apple',
+    'banana' => 'Banana',
+    'cherry' => 'Cherry',
+  ])
+  ->default('banana') // Which option starts highlighted (defaults to the first).
+  ->pageSize(10);     // Options visible before the list pages around the cursor.
 ```
 
-For headings, separators and disabled options, see [Option
-groups](/widgets/option-groups).
+## Options
+
+| Name | Description | Required | Default |
+| --- | --- | --- | --- |
+| `options()` | The choices, as a `value => label` map (or added one at a time with `option()`). | Yes | - |
+| `default()` | Which option starts highlighted, by value. | No | First option |
+| `pageSize()` | Options shown before the list pages around the cursor. | No | `10` |
+
+For headings, separators and disabled options, see
+[Option groups](/widgets/option-groups).
+
+## Keyboard
+
+| Key | Action |
+| --- | --- |
+| `↑` / `↓` | Move the highlight (skips headings, separators and disabled options) |
+| `Enter` | Accept the highlighted option |
+| `Esc` | Cancel |
+
+## Display modes
+
+In all four [display modes](/display-modes) - Unicode or ASCII, colour on or off:
 
 <table>
   <tr>

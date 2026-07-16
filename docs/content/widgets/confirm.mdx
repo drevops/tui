@@ -12,12 +12,31 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
   <ThemedImage sources={{light: useBaseUrl('/widget-confirm-light-animated.svg'), dark: useBaseUrl('/widget-confirm-dark-animated.svg')}} alt="Confirm widget" />
 </p>
 
-Yes/No toggle. Arrows or Space switch, `y`/`n` set the choice directly, Enter
-accepts.
+A Yes/No gate. It collects a **`bool`**.
 
 ```php
-$p->confirm('cdn', 'Serve via CDN?')->default(TRUE);
+$p->confirm('organic', 'Organic only?')
+  ->default(TRUE); // Which choice starts highlighted (defaults to No).
 ```
+
+## Options
+
+| Name | Description | Required | Default |
+| --- | --- | --- | --- |
+| `default()` | Which choice starts highlighted - `TRUE` for Yes, `FALSE` for No. | No | `FALSE` (No) |
+
+## Keyboard
+
+| Key | Action |
+| --- | --- |
+| `y` / `n` | Choose Yes / No directly |
+| `←` / `→` / `Space` / `↑` / `↓` | Flip the choice |
+| `Enter` | Accept the current choice |
+| `Esc` | Cancel |
+
+## Display modes
+
+In all four [display modes](/display-modes) - Unicode or ASCII, colour on or off:
 
 <table>
   <tr>

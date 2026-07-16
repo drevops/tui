@@ -2,11 +2,11 @@
 
 /**
  * @file
- * Package scaffolder runner: interactive TUI or non-interactive collection.
+ * Produce box runner: interactive TUI or non-interactive collection.
  *
  * Usage:
  *   php 1-scaffolder/run.php                                  # interactive TUI
- *   php 1-scaffolder/run.php --prompts='{"name":"My Widget"}' # non-interactive
+ *   php 1-scaffolder/run.php --prompts='{"name":"Box"}' # non-interactive
  *   php 1-scaffolder/run.php --schema                    # print JSON schema.
  */
 
@@ -24,54 +24,54 @@ require __DIR__ . '/../../vendor/autoload.php';
 
 $options = getopt('', ['prompts::', 'schema']);
 
-$form = Form::create('Package scaffolder')
-  ->panel('general', 'General', function (PanelBuilder $p): void {
+$form = Form::create('Produce box')
+  ->panel('general', 'Basics', function (PanelBuilder $p): void {
     $p->description('Naming and identity.');
     // Declared behaviour: a dynamic default from the run context, validation
     // and a value transform - all closures on the field, no handler class.
-    $p->text('name', 'Package name')->description('A human-readable name, e.g. "My Widget".')->required()
+    $p->text('name', 'Box name')->description('A human-readable name, e.g. "Summer Box".')->required()
       ->default(fn (Context $c): string => ucwords(str_replace(['-', '_'], ' ', basename($c->directory))))
-      ->validate(fn (mixed $v): ?string => is_string($v) && trim($v) !== '' ? NULL : 'The package name is required.')
+      ->validate(fn (mixed $v): ?string => is_string($v) && trim($v) !== '' ? NULL : 'The box name is required.')
       ->transform(fn (mixed $v): mixed => is_string($v) ? trim($v) : $v);
-    // Derived: machine name of the package name (str2name "machine").
-    $p->text('machine_name', 'Machine name')->description('Derived from the package name.')->derive(new Derive('{{name}}', 'machine'));
+    // Derived: slug of the box name (str2name "machine").
+    $p->text('slug', 'Slug')->description('Derived from the box name.')->derive(new Derive('{{name}}', 'machine'));
     // A plain default that other fields derive from.
-    $p->text('vendor', 'Vendor')->default('acme');
-    // Derived through a chain: "{{vendor}}/{{machine_name}}", lowercased.
-    $p->text('package', 'Composer package')->description('Derived from vendor and machine name.')->derive(new Derive('{{vendor}}/{{machine_name}}', 'lower'));
-    // Derived PHP namespace (str2name "pascal").
-    $p->text('namespace', 'PHP namespace')->derive(new Derive('{{name}}', 'pascal'));
+    $p->text('grower', 'Grower')->default('sunny');
+    // Derived through a chain: "{{grower}}/{{slug}}", lowercased.
+    $p->text('code', 'Box code')->description('Derived from grower and slug.')->derive(new Derive('{{grower}}/{{slug}}', 'lower'));
+    // Derived label (str2name "pascal").
+    $p->text('label', 'Label')->derive(new Derive('{{name}}', 'pascal'));
   })
-  ->panel('build', 'Build & features', function (PanelBuilder $p): void {
-    $p->description('What the package ships with.');
+  ->panel('build', 'Contents & options', function (PanelBuilder $p): void {
+    $p->description('What the box ships with.');
     // A single-choice list.
-    $p->select('type', 'Package type')->default('library')->options([
-      'library' => 'Library',
-      'application' => 'Application',
-      'cli' => 'CLI tool',
+    $p->select('size', 'Box size')->default('medium')->options([
+      'small' => 'Small',
+      'medium' => 'Medium',
+      'large' => 'Large',
     ]);
     // A multi-select list.
-    $p->multiSelect('features', 'Features')->description('Space to toggle, type to filter.')->options([
-      'tests' => 'Tests',
-      'ci' => 'CI',
-      'docker' => 'Docker',
-      'docs' => 'Docs',
+    $p->multiSelect('contents', 'Contents')->description('Space to toggle, type to filter.')->options([
+      'fruit' => 'Fruit',
+      'veg' => 'Vegetables',
+      'herbs' => 'Herbs',
+      'salad' => 'Salad',
     ]);
-    // Conditional: only shown when "docker" is among the selected features.
-    $p->text('docker_image', 'Docker base image')->default('php:8.4-cli')->when(new Condition('features', contains: 'docker'));
+    // Conditional: only shown when "herbs" is among the selected contents.
+    $p->text('herb_bundle', 'Herb bundle')->default('mixed')->when(new Condition('contents', contains: 'herbs'));
     // A multi-field conditional: conditions compose with all/any/not, so a
-    // field can depend on any number of others - here docker selected AND
-    // type application.
-    $p->confirm('docker_compose', 'Generate a docker-compose.yml?')->default(TRUE)->when(Condition::all(new Condition('features', contains: 'docker'), new Condition('type', eq: 'application')));
+    // field can depend on any number of others - here herbs selected AND
+    // size large.
+    $p->confirm('weekly', 'Weekly delivery?')->default(TRUE)->when(Condition::all(new Condition('contents', contains: 'herbs'), new Condition('size', eq: 'large')));
     // An autocomplete with free-text fallback.
-    $p->suggest('php_version', 'PHP version')->default('8.4')->options([
-      '8.1' => '8.1',
-      '8.2' => '8.2',
-      '8.3' => '8.3',
-      '8.4' => '8.4',
+    $p->suggest('delivery', 'Delivery day')->default('Friday')->options([
+      'Monday' => 'Monday',
+      'Wednesday' => 'Wednesday',
+      'Friday' => 'Friday',
+      'Saturday' => 'Saturday',
     ]);
     // A yes/no toggle.
-    $p->confirm('private', 'Private package?')->default(FALSE);
+    $p->confirm('gift', 'Gift wrap?')->default(FALSE);
   });
 
 $tui = new Tui($form);

@@ -12,23 +12,49 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
   <ThemedImage sources={{light: useBaseUrl('/widget-number-light-animated.svg'), dark: useBaseUrl('/widget-number-dark-animated.svg')}} alt="Number widget" />
 </p>
 
-Integer input: digits with an optional leading minus, accepted as an `int`.
+Integer input - digits with an optional leading minus. It collects an **`int`**.
 
 ```php
-$p->number('port', 'HTTP port')->default(8080);
+$p->number('weight', 'Basket weight (g)')
+  ->min(200)       // Lowest accepted value, inclusive.
+  ->max(9000)      // Highest accepted value, inclusive.
+  ->step(100)      // Amount the Up/Down keys adjust by.
+  ->default(1200); // Initial value.
 ```
 
-Declare optional `min`, `max` and `step` to bound the value and enable keyboard
-adjustment. Up and Down then adjust the value by the step (defaulting to `1`),
-clamped to the range, and an entry outside the range is rejected inline with a
-clear message. The bounds are enforced headlessly too - a `--prompts` or
-environment value outside the range is rejected - and are reflected in the JSON
-schema as `min`, `max` and `step` on the prompt. With none declared the field
-stays a plain integer entry with the arrow keys inert.
+## Options
 
-```php
-$p->number('port', 'HTTP port')->min(1)->max(65535)->step(1)->default(8080);
-```
+| Name | Description | Required | Default |
+| --- | --- | --- | --- |
+| `min()` | Lowest accepted value, inclusive. | No | Unbounded |
+| `max()` | Highest accepted value, inclusive. | No | Unbounded |
+| `step()` | Amount the Up/Down keys adjust by; must be positive. | No | `1` |
+| `default()` | Initial value. | No | `0` |
+
+With no bounds declared the field is a plain integer entry and the arrow keys are
+inert. Declaring `min()` or `max()` turns on Up/Down adjustment, clamped to the
+range.
+
+## Keyboard
+
+| Key | Action |
+| --- | --- |
+| digits | Insert a digit |
+| `-` | Leading minus (once, at the start) |
+| `←` / `→` | Move the caret |
+| `↑` / `↓` | Increment / decrement by `step` (only when bounds are set) |
+| `Enter` | Accept (an out-of-range value is rejected inline) |
+| `Esc` | Cancel |
+
+## Headless behaviour
+
+The bounds are enforced when the form runs [headlessly](/headless-collection)
+too - a value outside the range is rejected - and surface in the JSON schema as
+`min`, `max` and `step` on the prompt.
+
+## Display modes
+
+In all four [display modes](/display-modes) - Unicode or ASCII, colour on or off:
 
 <table>
   <tr>

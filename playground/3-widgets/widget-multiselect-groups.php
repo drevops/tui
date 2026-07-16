@@ -30,12 +30,12 @@ $opts = getopt('', ['no-unicode', 'no-ansi']);
 
 $form = Form::create('MultiSelect with groups')
   ->panel('main', 'MultiSelect', function (PanelBuilder $p): void {
-    $p->multiSelect('multiselect', 'MultiSelect')->default(['redis'])
-      ->heading('Services')
-      ->option('redis', 'Redis')
-      ->option('solr', 'Solr')
+    $p->multiSelect('multiselect', 'MultiSelect')->default(['apple'])
+      ->heading('Basket')
+      ->option('apple', 'Apple')
+      ->option('banana', 'Banana')
       ->separator()
-      ->option('clamav', 'ClamAV', disabled: TRUE, disabled_reason: 'licence required');
+      ->option('rhubarb', 'Rhubarb', disabled: TRUE, disabled_reason: 'out of season');
   });
 
 echo (new Tui($form))->color(isset($opts['no-ansi']) ? FALSE : NULL)->unicode(isset($opts['no-unicode']) ? FALSE : NULL)->run()->toJson() . "\n";

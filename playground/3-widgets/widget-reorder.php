@@ -28,9 +28,9 @@ $opts = getopt('', ['no-unicode', 'no-ansi']);
 $form = Form::create('Reorder widget')
   ->panel('main', 'Reorder', function (PanelBuilder $p): void {
     $p->reorder('reorder', 'Reorder')->options([
-      'redis' => 'Redis',
-      'solr' => 'Solr',
-      'clamav' => 'ClamAV',
+      'apple' => 'Apple',
+      'carrot' => 'Carrot',
+      'tomato' => 'Tomato',
     ]);
   });
 

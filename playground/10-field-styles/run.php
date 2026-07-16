@@ -35,16 +35,16 @@ $mode = is_string($options['mode'] ?? NULL) ? $options['mode'] : Mode::Dark->val
 $prompts = is_string($options['prompts'] ?? NULL) ? $options['prompts'] : '';
 
 $form = Form::create('Field styles')
-  ->panel('server', 'Server settings', function (PanelBuilder $p): void {
+  ->panel('order', 'Order details', function (PanelBuilder $p): void {
     $p->description('Press Enter on a field to edit it and see the input style.');
-    $p->text('host', 'Host')->default('localhost');
-    $p->number('port', 'Port')->default(8080);
-    $p->text('user', 'Username')->default('admin');
-    $p->password('secret', 'Password')->default('hunter2');
-    $p->select('driver', 'Driver')->default('mysql')->options([
-      'mysql' => 'MySQL',
-      'pgsql' => 'PostgreSQL',
-      'sqlite' => 'SQLite',
+    $p->text('name', 'Name')->default('Weekly Box');
+    $p->number('quantity', 'Quantity')->default(6);
+    $p->text('grower', 'Grower')->default('Sunny Farm');
+    $p->password('code', 'Order code')->default('melon7');
+    $p->select('fruit', 'Fruit')->default('apple')->options([
+      'apple' => 'Apple',
+      'banana' => 'Banana',
+      'cherry' => 'Cherry',
     ]);
     // Empty by default: editing it shows the boxed field as an empty bar.
     $p->text('notes', 'Notes');

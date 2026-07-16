@@ -49,6 +49,7 @@ $subjects = [
   'widget-select-groups',
   'widget-multiselect-groups',
   'widget-password-reveal',
+  'quickstart',
   'scaffolder',
   'widgets',
   'bordered-panels',

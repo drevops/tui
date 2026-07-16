@@ -12,17 +12,48 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
   <ThemedImage sources={{light: useBaseUrl('/widget-multisearch-light-animated.svg'), dark: useBaseUrl('/widget-multisearch-dark-animated.svg')}} alt="MultiSearch widget" />
 </p>
 
-A multi-select whose filter query is shown as a search line: typing fuzzy-matches
-and ranks the options with the matched characters highlighted, Space toggles,
-Enter accepts the checked set. Long lists page around the cursor - set the window
-with `->pageSize()`.
+A multi-select whose filter query shows as a search line. Typing fuzzy-matches
+and ranks the options with the matched characters highlighted; `Space` toggles.
+It collects a **`list<string>`** of the checked values.
 
 ```php
-$p->multiSearch('services', 'Services')->default(['redis'])->options(['redis' => 'Redis', 'solr' => 'Solr', 'clamav' => 'ClamAV', 'memcached' => 'Memcached']);
+$p->multiSearch('basket', 'Basket')
+  ->options([
+    'apple' => 'Apple',
+    'banana' => 'Banana',
+    'carrot' => 'Carrot',
+    'tomato' => 'Tomato',
+  ])
+  ->default(['apple']) // Values pre-checked when the field opens.
+  ->pageSize(10);      // Matches visible before the list pages around the cursor.
 ```
 
-For headings, separators and disabled options, see [Option
-groups](/widgets/option-groups).
+## Options
+
+| Name | Description | Required | Default |
+| --- | --- | --- | --- |
+| `options()` | The choices, as a `value => label` map (or added one at a time with `option()`). | Yes | - |
+| `default()` | Values pre-checked when the field opens. | No | `[]` (none) |
+| `pageSize()` | Matches shown before the list pages around the cursor. | No | `10` |
+
+For headings, separators and disabled options, see
+[Option groups](/widgets/option-groups).
+
+## Keyboard
+
+| Key | Action |
+| --- | --- |
+| printable keys | Type to fuzzy-filter and rank the options |
+| `↑` / `↓` | Move over the matches |
+| `Space` | Toggle the highlighted match |
+| `→` / `←` | Select all / deselect all visible |
+| `Backspace` | Delete a filter character |
+| `Enter` | Accept the checked set |
+| `Esc` | Cancel |
+
+## Display modes
+
+In all four [display modes](/display-modes) - Unicode or ASCII, colour on or off:
 
 <table>
   <tr>

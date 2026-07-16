@@ -10,7 +10,7 @@ import {themes as prismThemes} from 'prism-react-renderer';
 const config = {
   title: 'TUI',
   tagline: 'Terminal user interfaces for PHP',
-  favicon: 'img/logo.png',
+  favicon: 'img/logo.svg',
 
   // Set the production url of your site here.
   url: 'https://phptui.dev',
@@ -90,7 +90,7 @@ const config = {
         title: 'TUI',
         logo: {
           alt: 'TUI Logo',
-          src: 'img/logo.png',
+          src: 'img/logo.svg',
         },
         items: [
           {

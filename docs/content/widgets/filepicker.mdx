@@ -12,16 +12,47 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
   <ThemedImage sources={{light: useBaseUrl('/widget-filepicker-light-animated.svg'), dark: useBaseUrl('/widget-filepicker-dark-animated.svg')}} alt="FilePicker widget" />
 </p>
 
-Browse the filesystem for a single path. Arrows move, `→` enters the highlighted
-directory and `←` returns to its parent (never above the start directory), typing
-filters the current directory and `Tab` reveals hidden entries; `Enter` selects
-the highlighted entry. Restrict what may be chosen with `filesOnly()` or
-`directoriesOnly()`, limit files with `extensions()`, and choose where browsing
-starts with `startIn()`. It collects the chosen path.
+Browse the filesystem for a single path. It collects the **chosen path** (a
+`string`).
 
 ```php
-$p->filePicker('config', 'Config file')->startIn(getcwd())->filesOnly()->extensions(['yml', 'yaml']);
+$p->filePicker('list', 'Price list')
+  ->startIn(getcwd())   // Directory to open in (and the floor for ←).
+  ->filesOnly()         // Only files are selectable; directories stay navigable.
+  ->extensions(['csv']) // Limit selectable files to these extensions.
+  ->showHidden();        // Show hidden (dot) entries when the browser opens.
 ```
+
+## Options
+
+| Name | Description | Required | Default |
+| --- | --- | --- | --- |
+| `startIn()` | Directory the browser opens in, and the floor it cannot ascend above. | No | Current directory |
+| `filesOnly()` | Only files are selectable; directories stay navigable. | No | Files and directories |
+| `directoriesOnly()` | Only directories are selectable. | No | Files and directories |
+| `extensions()` | Restrict selectable files to these extensions (dot-less, case-insensitive). | No | All |
+| `showHidden()` | Show hidden (dot) entries when the browser opens. | No | Off |
+| `pageSize()` | Entries shown before the list pages around the cursor. | No | `10` |
+
+`filesOnly()` and `directoriesOnly()` are mutually exclusive - the last one set
+wins.
+
+## Keyboard
+
+| Key | Action |
+| --- | --- |
+| `↑` / `↓` | Move the highlight |
+| `→` | Descend into the highlighted directory |
+| `←` | Ascend to the parent (never above the start directory) |
+| printable keys | Filter the current directory |
+| `Tab` | Toggle hidden entries |
+| `Backspace` | Delete a filter character, or ascend when the filter is empty |
+| `Enter` | Select the highlighted entry if selectable, otherwise descend into the directory |
+| `Esc` | Cancel |
+
+## Display modes
+
+In all four [display modes](/display-modes) - Unicode or ASCII, colour on or off:
 
 <table>
   <tr>

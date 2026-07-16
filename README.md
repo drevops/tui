@@ -40,7 +40,7 @@ That border is optional. Here's the same form without one, at normal spacing:
 
 ## 📖 Documentation
 
-The full documentation - every widget, all the configuration, theming, key bindings and how the engine fits together - lives at **[phptui.dev](https://phptui.dev)**.
+The full documentation - every widget, all the configuration, theming, key bindings and how the engine fits together - lives at **[phptui.dev](https://phptui.dev)**. The in-development build, rebuilt from `main` ahead of each release, is previewed at **[tui-docs.netlify.app](https://tui-docs.netlify.app/)**.
 
 - 🧭 [**Full-screen TUI**](https://phptui.dev/panels) - a scrollable, keyboard-driven form with a contextual key-hint footer and a `?` help overlay
 - ⚡ [**Inline editing**](https://phptui.dev/panels#inline-editing) - a field's editor opens in place on the panel row (the widget's own view and keys), no separate screen; opt a field out to full-screen with `->standalone()`

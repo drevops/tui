@@ -19,17 +19,17 @@ $form = Form::create('My form')
   ->panel('general', 'General', function (PanelBuilder $p): void {
     // text | select | multiselect | suggest | confirm
     // number | textarea | password | search | multisearch | pause
-    $p->text('name', 'Project name')->required();
+    $p->text('name', 'Produce name')->required();
 
     // Compute one field from others.
-    $p->text('machine_name', 'Machine name')->derive(new Derive('{{name}}', transform: 'machine'));
+    $p->text('slug', 'Slug')->derive(new Derive('{{name}}', transform: 'machine'));
 
-    $p->select('profile', 'Profile')
-      ->default('standard')
-      ->options(['standard' => 'Standard', 'custom' => 'Custom']);
+    $p->select('category', 'Category')
+      ->default('fruit')
+      ->options(['fruit' => 'Fruit', 'vegetable' => 'Vegetable']);
 
     // Shown only when the condition holds; compose with Condition::all()/any()/not().
-    $p->text('profile_custom', 'Custom profile')->when(new Condition('profile', eq: 'custom'));
+    $p->text('variety', 'Variety')->when(new Condition('category', eq: 'vegetable'));
   });
 ```
 
@@ -59,9 +59,9 @@ placeholders plus a transform. A transform is any
 name throws when the form is declared. Chains of derives settle to a fixpoint:
 
 ```php
-$p->text('machine_name', 'Machine name')->derive(new Derive('{{name}}', 'machine'));
-$p->text('package', 'Composer package')->derive(new Derive('{{vendor}}/{{machine_name}}', 'lower'));
-$p->text('namespace', 'PHP namespace')->derive(new Derive('{{name}}', 'pascal'));
+$p->text('slug', 'Slug')->derive(new Derive('{{name}}', 'machine'));
+$p->text('label', 'Label')->derive(new Derive('{{category}}/{{slug}}', 'lower'));
+$p->text('code', 'Code')->derive(new Derive('{{name}}', 'constant'));
 ```
 
 ## Conditional fields
@@ -71,8 +71,8 @@ A `->when()` rule shows or hides a field based on other answers, with operators
 `Condition::any()` and `Condition::not()`:
 
 ```php
-$p->text('docker_image', 'Docker base image')->default('php:8.4-cli')->when(new Condition('features', contains: 'docker'));
-$p->confirm('docker_compose', 'Generate a docker-compose.yml?')->when(Condition::all(new Condition('features', contains: 'docker'), new Condition('type', eq: 'application')));
+$p->text('heat_level', 'Heat level')->default('mild')->when(new Condition('tags', contains: 'spicy'));
+$p->confirm('warning_label', 'Add a heat warning?')->when(Condition::all(new Condition('tags', contains: 'spicy'), new Condition('category', eq: 'vegetable')));
 ```
 
 A form-level `->fixup(new Fixup(set: ..., to: ..., when: ...))` reconciles

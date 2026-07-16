@@ -8,7 +8,7 @@
  * engine's defaults do everything.
  *
  * Usage:
- *   php 0-minimal/run.php --prompts='{"name":"Ada","colour":"green"}'
+ *   php 0-minimal/run.php --prompts='{"name":"Ada","fruit":"apple"}'
  */
 
 declare(strict_types=1);
@@ -25,10 +25,10 @@ $prompts = array_key_exists('prompts', $options) && is_string($options['prompts'
 $form = Form::create('Minimal')
   ->panel('main', 'Main', function (PanelBuilder $p): void {
     $p->text('name', 'Your name')->required();
-    $p->select('colour', 'Favourite colour')->default('blue')->options([
-      'red' => 'Red',
-      'green' => 'Green',
-      'blue' => 'Blue',
+    $p->select('fruit', 'Favourite fruit')->default('banana')->options([
+      'apple' => 'Apple',
+      'banana' => 'Banana',
+      'cherry' => 'Cherry',
     ]);
   });
 

@@ -12,14 +12,38 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
   <ThemedImage sources={{light: useBaseUrl('/widget-toggle-light-animated.svg'), dark: useBaseUrl('/widget-toggle-dark-animated.svg')}} alt="Toggle widget" />
 </p>
 
-An inline switch between two labeled values. Arrows or Space flip, the first
-letter of each label sets the choice directly, Enter accepts. The first option is
-shown by default; pass `default` (an option value) to start on a specific one
-instead.
+An inline switch that cycles between a fixed set of labelled values. It collects
+the **selected option value** (a `string`), and is always in one of its states,
+so it always returns a value.
 
 ```php
-$p->toggle('telemetry', 'Telemetry')->options(['enabled' => 'Enabled', 'disabled' => 'Disabled'])->default('enabled');
+$p->toggle('ripeness', 'Ripeness')
+  ->options([
+    'ripe' => 'Ripe',   // value => label
+    'unripe' => 'Unripe',
+  ])
+  ->default('ripe'); // Which value starts selected (defaults to the first).
 ```
+
+## Options
+
+| Name | Description | Required | Default |
+| --- | --- | --- | --- |
+| `options()` | The values to switch between, as a `value => label` map. | Yes | - |
+| `default()` | Which value starts selected. | No | First option |
+
+## Keyboard
+
+| Key | Action |
+| --- | --- |
+| `←` / `→` / `Space` / `↑` / `↓` | Cycle to the adjacent value |
+| a letter | Jump to the first value whose label starts with it |
+| `Enter` | Accept the current value |
+| `Esc` | Cancel |
+
+## Display modes
+
+In all four [display modes](/display-modes) - Unicode or ASCII, colour on or off:
 
 <table>
   <tr>

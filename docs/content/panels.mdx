@@ -39,14 +39,14 @@ Editing happens **in place**. Pressing Enter on a field opens its editor right w
 Inline is the default for every field. A field opts out with `->standalone()`, which opens that same editor full-screen instead - the better fit for a widget that wants the whole viewport, such as a month calendar, a long option list or a multi-line textarea:
 
 ```php
-$form = Form::create('Release')
-  ->panel('build', 'Build', function (PanelBuilder $p): void {
+$form = Form::create('Order')
+  ->panel('basket', 'Basket', function (PanelBuilder $p): void {
     // Inline by default: the editor opens in the row on Enter.
-    $p->confirm('minify', 'Minify assets')->default(TRUE);
-    $p->select('env', 'Environment')->default('dev')->options(['dev' => 'Development', 'stage' => 'Staging', 'prod' => 'Production']);
+    $p->confirm('ripe', 'Ripe only?')->default(TRUE);
+    $p->select('fruit', 'Fruit')->default('apple')->options(['apple' => 'Apple', 'banana' => 'Banana', 'cherry' => 'Cherry']);
 
     // Full-screen editor, a better fit for the month grid.
-    $p->calendar('release_on', 'Release date')->standalone();
+    $p->calendar('harvest_on', 'Harvest date')->standalone();
   });
 ```
 
@@ -54,22 +54,22 @@ $form = Form::create('Release')
 
 Panels nest to any depth: a sub-panel renders as a drillable row with a one-line
 summary of its values, and the breadcrumb header tracks where you are. A
-`->fixup()` rule reconciles dependent answers on every settle pass - here, CDN is
-forced off outside production, whatever was answered:
+`->fixup()` rule reconciles dependent answers on every settle pass - here, organic
+sourcing is forced off outside the premium grade, whatever was answered:
 
 ```php
-$form = Form::create('Site settings')
+$form = Form::create('Basket settings')
   ->buttons(TRUE, 'Save', 'Discard')
-  ->fixup(new Fixup(set: 'cdn', to: FALSE, when: new Condition('environment', ne: 'prod')))
-  ->panel('stack', 'Stack', function (PanelBuilder $p): void {
-    $p->select('environment', 'Environment')->default('dev')->option('dev', 'Development', 'Local containers')->option('stage', 'Staging', 'Shared preview')->option('prod', 'Production', 'Live traffic');
-    $p->confirm('cdn', 'Serve via CDN?')->default(TRUE);
+  ->fixup(new Fixup(set: 'organic', to: FALSE, when: new Condition('grade', ne: 'premium')))
+  ->panel('basket', 'Basket', function (PanelBuilder $p): void {
+    $p->select('grade', 'Grade')->default('standard')->option('premium', 'Premium', 'Hand-picked')->option('standard', 'Standard', 'Everyday quality')->option('budget', 'Budget', 'Value pack');
+    $p->confirm('organic', 'Organic only?')->default(TRUE);
 
-    $p->panel('services', 'Services', function (PanelBuilder $sp): void {
-      $sp->multiSelect('services', 'Enabled services')->options(['solr' => 'Solr', 'redis' => 'Redis', 'clamav' => 'ClamAV']);
+    $p->panel('extras', 'Extras', function (PanelBuilder $sp): void {
+      $sp->multiSelect('extras', 'Add extras')->options(['herbs' => 'Herbs', 'nuts' => 'Nuts', 'seeds' => 'Seeds']);
 
-      $sp->panel('tuning', 'Tuning', function (PanelBuilder $tp): void {
-        $tp->suggest('php_memory', 'PHP memory limit')->default('256M')->options(['128M' => '128M', '256M' => '256M', '512M' => '512M']);
+      $sp->panel('portion', 'Portion', function (PanelBuilder $tp): void {
+        $tp->suggest('serving', 'Serving size')->default('medium')->options(['small' => 'Small', 'medium' => 'Medium', 'large' => 'Large']);
       });
     });
   });
@@ -87,16 +87,16 @@ alongside the spacing; the hub, breadcrumb header, fields and the key-hint foote
 all sit inside it, and every drill-in sub-panel keeps it:
 
 ```php
-$form = Form::create('New service')
+$form = Form::create('New order')
   ->buttons(TRUE, 'Create', 'Cancel')
   ->panel('basics', 'Basics', function (PanelBuilder $p): void {
-    $p->text('name', 'Service name')->default('api')->required();
-    $p->select('runtime', 'Runtime')->default('php')->options(['php' => 'PHP', 'node' => 'Node.js', 'python' => 'Python']);
-    $p->number('port', 'Port')->default(8080)->min(1)->max(65535);
+    $p->text('name', 'Produce name')->default('Pear')->required();
+    $p->select('category', 'Category')->default('fruit')->options(['fruit' => 'Fruit', 'vegetable' => 'Vegetable', 'herb' => 'Herb']);
+    $p->number('quantity', 'Quantity')->default(6)->min(1)->max(99);
   })
-  ->panel('deploy', 'Deployment', function (PanelBuilder $p): void {
-    $p->select('environment', 'Environment')->default('dev')->option('dev', 'Development')->option('prod', 'Production');
-    $p->confirm('autoscale', 'Enable autoscaling?')->default(FALSE);
+  ->panel('delivery', 'Delivery', function (PanelBuilder $p): void {
+    $p->select('ripeness', 'Ripeness')->default('ripe')->option('ripe', 'Ripe')->option('unripe', 'Unripe');
+    $p->confirm('express', 'Express delivery?')->default(FALSE);
   });
 
 // The border and spacing are theme options, set on the Tui facade.

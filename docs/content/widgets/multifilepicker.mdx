@@ -12,13 +12,46 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
   <ThemedImage sources={{light: useBaseUrl('/widget-multifilepicker-light-animated.svg'), dark: useBaseUrl('/widget-multifilepicker-dark-animated.svg')}} alt="MultiFilePicker widget" />
 </p>
 
-Like the file picker, but several paths can be chosen: `Space` toggles the
-highlighted entry and selections accumulate as you browse between directories,
-`Enter` accepts them all. It collects the list of chosen paths.
+Like the [file picker](/widgets/filepicker), but several paths accumulate as you
+browse between directories. It collects a **`list<string>`** of the chosen paths.
 
 ```php
-$p->multiFilePicker('assets', 'Asset files')->startIn(getcwd())->extensions(['png', 'svg']);
+$p->multiFilePicker('lists', 'Price lists')
+  ->startIn(getcwd())    // Directory to open in (and the floor for ←).
+  ->extensions(['csv']); // Limit selectable files to these extensions.
 ```
+
+## Options
+
+It shares the [file picker](/widgets/filepicker)'s options, plus a `default()`.
+
+| Name | Description | Required | Default |
+| --- | --- | --- | --- |
+| `startIn()` | Directory the browser opens in, and the floor it cannot ascend above. | No | Current directory |
+| `filesOnly()` | Only files are selectable; directories stay navigable. | No | Files and directories |
+| `directoriesOnly()` | Only directories are selectable. | No | Files and directories |
+| `extensions()` | Restrict selectable files to these extensions (dot-less, case-insensitive). | No | All |
+| `showHidden()` | Show hidden (dot) entries when the browser opens. | No | Off |
+| `default()` | Paths pre-selected when the browser opens. | No | `[]` (none) |
+| `pageSize()` | Entries shown before the list pages around the cursor. | No | `10` |
+
+## Keyboard
+
+| Key | Action |
+| --- | --- |
+| `↑` / `↓` | Move the highlight |
+| `→` | Descend into the highlighted directory |
+| `←` | Ascend to the parent (never above the start directory) |
+| `Space` | Toggle the highlighted selectable entry (selections accumulate across directories) |
+| printable keys | Filter the current directory |
+| `Tab` | Toggle hidden entries |
+| `Backspace` | Delete a filter character, or ascend when the filter is empty |
+| `Enter` | Accept the accumulated selection |
+| `Esc` | Cancel |
+
+## Display modes
+
+In all four [display modes](/display-modes) - Unicode or ASCII, colour on or off:
 
 <table>
   <tr>

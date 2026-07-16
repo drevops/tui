@@ -1,0 +1,7 @@
+# Pantry - stock reference and category metadata.
+season: summer
+supplier: green-grocer
+categories:
+  - fruit
+  - vegetable
+  - herb

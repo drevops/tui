@@ -29,48 +29,49 @@ $opts = getopt('', ['no-unicode', 'no-ansi']);
 
 $form = Form::create('Widgets')
   ->panel('widgets', 'Widgets', function (PanelBuilder $p): void {
-    $p->text('text', 'Text')->default('Acme Site');
-    $p->number('number', 'Number')->default(8080);
+    $p->text('text', 'Text')->default('Pear');
+    $p->number('number', 'Number')->default(1200);
     $p->calendar('date', 'Calendar')->default('2026-07-15');
-    $p->textarea('textarea', 'Textarea')->default("Redis for cache\nSolr for search");
-    $p->password('password', 'Password')->default('hunter2');
-    $p->select('select', 'Select')->default('minimal')->options([
-      'standard' => 'Standard',
-      'minimal' => 'Minimal',
-      'demo_umami' => 'Demo Umami',
+    $p->textarea('textarea', 'Textarea')->default("Crisp and sweet\nHint of citrus");
+    $p->password('password', 'Password')->default('melon7');
+    $p->select('select', 'Select')->default('apple')->options([
+      'apple' => 'Apple',
+      'banana' => 'Banana',
+      'cherry' => 'Cherry',
     ]);
-    $p->multiSelect('multiselect', 'MultiSelect')->default(['redis'])->options([
-      'redis' => 'Redis',
-      'solr' => 'Solr',
-      'clamav' => 'ClamAV',
+    $p->multiSelect('multiselect', 'MultiSelect')->default(['apple'])->options([
+      'apple' => 'Apple',
+      'carrot' => 'Carrot',
+      'tomato' => 'Tomato',
     ]);
     $p->reorder('reorder', 'Reorder')->options([
-      'redis' => 'Redis',
-      'solr' => 'Solr',
-      'clamav' => 'ClamAV',
+      'apple' => 'Apple',
+      'carrot' => 'Carrot',
+      'tomato' => 'Tomato',
     ]);
     $p->suggest('suggest', 'Suggest')->options([
-      'UTC' => 'UTC',
-      'Europe/London' => 'Europe/London',
-      'Europe/Paris' => 'Europe/Paris',
-      'Australia/Sydney' => 'Australia/Sydney',
+      'Apple' => 'Apple',
+      'Apricot' => 'Apricot',
+      'Banana' => 'Banana',
+      'Cherry' => 'Cherry',
+      'Mango' => 'Mango',
     ]);
-    $p->search('search', 'Search')->default('london')->options([
-      'utc' => 'UTC',
-      'london' => 'Europe/London',
-      'paris' => 'Europe/Paris',
-      'sydney' => 'Australia/Sydney',
+    $p->search('search', 'Search')->default('carrot')->options([
+      'carrot' => 'Carrot',
+      'potato' => 'Potato',
+      'onion' => 'Onion',
+      'pepper' => 'Pepper',
     ]);
-    $p->multiSearch('multisearch', 'MultiSearch')->default(['redis'])->options([
-      'redis' => 'Redis',
-      'solr' => 'Solr',
-      'clamav' => 'ClamAV',
-      'memcached' => 'Memcached',
+    $p->multiSearch('multisearch', 'MultiSearch')->default(['apple'])->options([
+      'apple' => 'Apple',
+      'banana' => 'Banana',
+      'carrot' => 'Carrot',
+      'tomato' => 'Tomato',
     ]);
     $p->confirm('confirm', 'Confirm')->default(TRUE);
-    $p->toggle('toggle', 'Toggle')->default('enabled')->options([
-      'enabled' => 'Enabled',
-      'disabled' => 'Disabled',
+    $p->toggle('toggle', 'Toggle')->default('ripe')->options([
+      'ripe' => 'Ripe',
+      'unripe' => 'Unripe',
     ]);
     $p->pause('pause', 'Pause');
   });

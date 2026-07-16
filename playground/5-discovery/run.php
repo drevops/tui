@@ -6,12 +6,12 @@
  *
  * The fields carry `discover` rules evaluated against `sample/`: a `.env` key,
  * a JSON dot-path, a path-exists check and a directory scan. Per-question env
- * overrides use the form-declared `MYAPP_` prefix instead of the default
+ * overrides use the form-declared `BOX_` prefix instead of the default
  * `TUI_`.
  *
  * Usage:
  *   php 5-discovery/run.php                            # discover from sample/
- *   MYAPP_TIMEZONE=UTC php 5-discovery/run.php         # env override wins
+ *   BOX_SEASON=winter php 5-discovery/run.php          # env override wins
  *   php 5-discovery/run.php --prompts='{"name":"Renamed"}'  # prompts win
  */
 
@@ -32,18 +32,18 @@ require __DIR__ . '/../../vendor/autoload.php';
 $options = getopt('', ['prompts::']);
 $prompts = array_key_exists('prompts', $options) && is_string($options['prompts']) ? $options['prompts'] : '';
 
-$form = Form::create('Discovery demo', 'an existing project')
-  // Per-question env overrides read MYAPP_<ID> instead of the default TUI_<ID>.
-  ->envPrefix('MYAPP_')
-  ->panel('project', 'Project', function (PanelBuilder $p): void {
+$form = Form::create('Discovery demo', 'an existing box')
+  // Per-question env overrides read BOX_<ID> instead of the default TUI_<ID>.
+  ->envPrefix('BOX_')
+  ->panel('project', 'Box', function (PanelBuilder $p): void {
     // Read a dot-path from a JSON file.
-    $p->text('name', 'Project name')->discover(new JsonValue('composer.json', 'name'));
+    $p->text('name', 'Box name')->discover(new JsonValue('box.json', 'name'));
     // Read a key from the .env file.
-    $p->text('timezone', 'Timezone')->default('UTC')->discover(new Dotenv('TZ'));
+    $p->text('season', 'Season')->default('summer')->discover(new Dotenv('SEASON'));
     // Whether a path exists.
-    $p->confirm('docker', 'Uses Docker?')->discover(new PathExists('docker-compose.yml'));
+    $p->confirm('inseason', 'In season?')->discover(new PathExists('harvest.csv'));
     // List directory entries (the type keeps dirs, files or any entry).
-    $p->multiSelect('modules', 'Custom modules')->options(['alpha' => 'Alpha', 'beta' => 'Beta', 'gamma' => 'Gamma'])->discover(new Scan('modules', type: ScanType::Dir));
+    $p->multiSelect('baskets', 'Baskets')->options(['apples' => 'Apples', 'pears' => 'Pears', 'plums' => 'Plums'])->discover(new Scan('baskets', type: ScanType::Dir));
   });
 
 $tui = new Tui($form);

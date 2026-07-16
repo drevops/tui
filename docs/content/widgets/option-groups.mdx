@@ -8,20 +8,33 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 
 # Option groups, separators and disabled options
 
-`select`, `multiselect`, `search` and `multisearch` accept more than a flat list.
-Alongside the `->options(['value' => 'Label'])` map shorthand, `->option()`
-declares one option at a time and can mark it disabled, and `->heading()` and
-`->separator()` add non-selectable structure:
+The choice widgets - [`select`](/widgets/select),
+[`multiselect`](/widgets/multiselect), [`search`](/widgets/search) and
+[`multisearch`](/widgets/multisearch) - accept more than a flat list. Alongside
+the `->options(['value' => 'Label'])` map shorthand, you can declare options one
+at a time, mark them disabled, and add non-selectable structure.
 
 ```php
-$p->select('profile', 'Install profile')
-  ->heading('Recommended')
-  ->option('standard', 'Standard')
-  ->option('minimal', 'Minimal')
-  ->separator()
-  ->heading('Advanced')
-  ->option('demo_umami', 'Demo Umami', disabled: TRUE, disabled_reason: 'requires PHP 8.4');
+$p->select('item', 'Item')
+  ->heading('Fruit')            // A non-selectable group heading.
+  ->option('apple', 'Apple')    // value => label
+  ->option('banana', 'Banana')
+  ->separator()                 // A non-selectable divider row.
+  ->heading('Vegetable')
+  ->option('carrot', 'Carrot')
+  ->option('rhubarb', 'Rhubarb', disabled: TRUE, disabled_reason: 'out of season');
 ```
+
+## Builder methods
+
+| Name | Description |
+| --- | --- |
+| `option($value, $label = '', ...)` | Add one selectable row. The label defaults to the value; re-declaring a value replaces it in place. Pass `disabled: TRUE` (with an optional `disabled_reason`) to show it but block selection. |
+| `options([$value => $label])` | Add many selectable rows from a map - shorthand for repeated `option()`. |
+| `heading($label)` | Add a non-selectable group-heading row. |
+| `separator()` | Add a non-selectable divider row. |
+
+## Behaviour
 
 Headings, separators and disabled options are **visual only**: navigation skips
 them, so the cursor lands only on selectable options, and they can never be
@@ -29,11 +42,14 @@ highlighted or selected. A disabled option shows its reason beside the label,
 dimmed. Every kind is theme-driven - override `heading()`, `divider()` or
 `disabled()` on a theme to restyle it.
 
-Non-selectable rows never leak into the answer: a disabled value is dropped from a
-`multiselect` default, absent from the collected value, and excluded from the JSON
-schema (`Tui::schema()` lists selectable options only). Supplying a disabled - or
-otherwise unknown - option value non-interactively (via `--prompts` JSON or an
-environment override) fails collection with a clear error naming the value.
+Non-selectable rows never leak into the answer: a disabled value is dropped from
+a `multiselect` default, absent from the collected value, and excluded from the
+JSON schema (`Tui::schema()` lists selectable options only). Supplying a disabled
+- or otherwise unknown - option value [headlessly](/headless-collection) (via
+`--prompts` JSON or an environment override) fails collection with a clear error
+naming the value.
+
+## Examples
 
 A single-choice `select` with a group heading, a separator and a disabled option
 (its reason shown beside the dimmed label):

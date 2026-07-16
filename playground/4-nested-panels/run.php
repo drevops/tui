@@ -6,7 +6,7 @@
  *
  * Usage:
  *   php 4-nested-panels/run.php                             # interactive TUI
- *   php 4-nested-panels/run.php --prompts='{"environment":"dev","cdn":true}'
+ *   php 4-nested-panels/run.php --prompts='{"delivery":"pickup","gift":true}'
  */
 
 declare(strict_types=1);
@@ -24,39 +24,39 @@ require __DIR__ . '/../../vendor/autoload.php';
 $options = getopt('', ['prompts::']);
 $prompts = array_key_exists('prompts', $options) && is_string($options['prompts']) ? $options['prompts'] : '';
 
-$form = Form::create('Site settings')
+$form = Form::create('Produce order')
   // Custom button labels; the buttons live on the root panel only.
   ->buttons(TRUE, 'Save', 'Discard')
-  // A fix-up reconciles dependent answers on every settle pass: no CDN outside
-  // production, whatever was answered.
-  ->fixup(new Fixup(set: 'cdn', to: FALSE, when: new Condition('environment', ne: 'prod')))
-  ->panel('identity', 'Identity', function (PanelBuilder $p): void {
-    $p->description('Who this site is.');
-    $p->text('name', 'Site name')->default('Umami')->required();
-    $p->text('machine_name', 'Machine name')->description('Derived from the site name.')->derive(new Derive('{{name}}', 'machine'));
+  // A fix-up reconciles dependent answers on every settle pass: no gift wrap
+  // outside doorstep delivery, whatever was answered.
+  ->fixup(new Fixup(set: 'gift', to: FALSE, when: new Condition('delivery', ne: 'doorstep')))
+  ->panel('identity', 'Order', function (PanelBuilder $p): void {
+    $p->description('Who this order is for.');
+    $p->text('name', 'Order name')->default('Weekly')->required();
+    $p->text('slug', 'Slug')->description('Derived from the order name.')->derive(new Derive('{{name}}', 'machine'));
   })
-  ->panel('stack', 'Stack', function (PanelBuilder $p): void {
-    $p->description('What the site runs on.');
+  ->panel('stack', 'Delivery', function (PanelBuilder $p): void {
+    $p->description('How it arrives.');
     // Options declared one by one carry their own descriptions.
-    $p->select('environment', 'Environment')->default('dev')->option('dev', 'Development', 'Local containers')->option('stage', 'Staging', 'Shared preview')->option('prod', 'Production', 'Live traffic');
-    $p->confirm('cdn', 'Serve via CDN?')->default(TRUE);
+    $p->select('delivery', 'Delivery')->default('pickup')->option('pickup', 'Pickup', 'At the stall')->option('locker', 'Locker', 'Nearby locker')->option('doorstep', 'Doorstep', 'To your door');
+    $p->confirm('gift', 'Gift wrap?')->default(TRUE);
 
     // A nested sub-panel: rendered as a drillable row with a value summary.
-    $p->panel('services', 'Services', function (PanelBuilder $sp): void {
-      $sp->description('Optional backing services.');
-      $sp->multiSelect('services', 'Enabled services')->options([
-        'solr' => 'Solr',
-        'redis' => 'Redis',
-        'clamav' => 'ClamAV',
+    $p->panel('extras', 'Extras', function (PanelBuilder $sp): void {
+      $sp->description('Optional add-ons.');
+      $sp->multiSelect('addons', 'Add-ons')->options([
+        'herbs' => 'Herbs',
+        'nuts' => 'Nuts',
+        'seeds' => 'Seeds',
       ]);
-      $sp->text('solr_core', 'Solr core')->default('drupal')->when(new Condition('services', contains: 'solr'));
+      $sp->text('herb_note', 'Herb note')->default('mixed')->when(new Condition('addons', contains: 'herbs'));
 
       // Sub-panels nest to any depth.
-      $sp->panel('tuning', 'Tuning', function (PanelBuilder $tp): void {
-        $tp->suggest('php_memory', 'PHP memory limit')->default('256M')->options([
-          '128M' => '128M',
-          '256M' => '256M',
-          '512M' => '512M',
+      $sp->panel('tuning', 'Packaging', function (PanelBuilder $tp): void {
+        $tp->suggest('weight', 'Bag weight')->default('250g')->options([
+          '250g' => '250g',
+          '500g' => '500g',
+          '1kg' => '1kg',
         ]);
       });
     });

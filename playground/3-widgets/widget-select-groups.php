@@ -29,12 +29,12 @@ $opts = getopt('', ['no-unicode', 'no-ansi']);
 
 $form = Form::create('Select with groups')
   ->panel('main', 'Select', function (PanelBuilder $p): void {
-    $p->select('select', 'Select')->default('standard')
-      ->heading('Recommended')
-      ->option('standard', 'Standard')
-      ->option('minimal', 'Minimal')
+    $p->select('select', 'Select')->default('apple')
+      ->heading('Fruit')
+      ->option('apple', 'Apple')
+      ->option('banana', 'Banana')
       ->separator()
-      ->option('demo_umami', 'Demo Umami', disabled: TRUE, disabled_reason: 'requires PHP 8.4');
+      ->option('rhubarb', 'Rhubarb', disabled: TRUE, disabled_reason: 'out of season');
   });
 
 echo (new Tui($form))->color(isset($opts['no-ansi']) ? FALSE : NULL)->unicode(isset($opts['no-unicode']) ? FALSE : NULL)->run()->toJson() . "\n";

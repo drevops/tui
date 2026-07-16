@@ -28,10 +28,11 @@ $opts = getopt('', ['no-unicode', 'no-ansi']);
 $form = Form::create('Suggest widget')
   ->panel('main', 'Suggest', function (PanelBuilder $p): void {
     $p->suggest('suggest', 'Suggest')->options([
-      'UTC' => 'UTC',
-      'Europe/London' => 'Europe/London',
-      'Europe/Paris' => 'Europe/Paris',
-      'Australia/Sydney' => 'Australia/Sydney',
+      'Apple' => 'Apple',
+      'Apricot' => 'Apricot',
+      'Banana' => 'Banana',
+      'Cherry' => 'Cherry',
+      'Mango' => 'Mango',
     ]);
   });
 
