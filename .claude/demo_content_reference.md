@@ -21,7 +21,7 @@ fruit, adding vegetables, choosing a quantity, and confirming.
 
 ## Vocabulary
 
-- **Fruits**: Apple, Apricot, Banana, Cherry, Grape, Lemon, Mango, Orange, Peach, Pear, Plum.
+- **Fruits**: Apple, Apricot, Banana, Cherry, Grape, Lemon, Mango, Melon, Orange, Peach, Pear, Plum.
 - **Vegetables**: Beet, Broccoli, Cabbage, Carrot, Celery, Leek, Onion, Pepper, Potato, Spinach, Tomato.
 - **Categories**: Fruit, Vegetable, Herb.
 - **States**: Ripe / Unripe, Organic / Conventional.

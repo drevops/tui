@@ -95,7 +95,7 @@ function widgetSpecs(string $tree): array {
       'rows' => 14,
     ],
     'textarea' => [
-      'form' => Form::create('Textarea widget')->panel('main', 'Textarea', function (PanelBuilder $p): void { $p->textarea('textarea', 'Textarea')->default("Crisp and sweet\nHint of citrus"); }),
+      'form' => Form::create('Textarea widget')->panel('main', 'Textarea', function (PanelBuilder $p): void { $p->textarea('textarea', 'Textarea')->default('Crisp and sweet' . chr(10) . 'Hint of citrus'); }),
       'keys' => [...$open, $enter, 'S', 'l', 'i', 'g', 'h', 't', 'l', 'y', ' ', 't', 'a', 'r', 't'],
       'rows' => 8,
     ],

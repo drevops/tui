@@ -49,7 +49,7 @@ $form = Form::create('Built-in theme preview')
       'premium' => 'Premium',
       'organic' => 'Organic',
     ]);
-    $p->multiselect('extras', 'Extras')->default(['herbs', 'nuts'])->description('Added extras.')->options([
+    $p->multiSelect('extras', 'Extras')->default(['herbs', 'nuts'])->description('Added extras.')->options([
       'herbs' => 'Herbs',
       'nuts' => 'Nuts',
       'seeds' => 'Seeds',

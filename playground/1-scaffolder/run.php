@@ -42,7 +42,7 @@ $form = Form::create('Produce box')
     // Derived label (str2name "pascal").
     $p->text('label', 'Label')->derive(new Derive('{{name}}', 'pascal'));
   })
-  ->panel('build', 'Contents & options', function (PanelBuilder $p): void {
+  ->panel('packing', 'Contents & options', function (PanelBuilder $p): void {
     $p->description('What the box ships with.');
     // A single-choice list.
     $p->select('size', 'Box size')->default('medium')->options([
@@ -70,7 +70,7 @@ $form = Form::create('Produce box')
       'Friday' => 'Friday',
       'Saturday' => 'Saturday',
     ]);
-    // A yes/no toggle.
+    // A yes/no confirmation.
     $p->confirm('gift', 'Gift wrap?')->default(FALSE);
   });
 

@@ -46,7 +46,7 @@ $form = Form::create('Order')
     $p->select('fruit', 'Fruit')->default('apple')->options(['apple' => 'Apple', 'banana' => 'Banana', 'cherry' => 'Cherry']);
 
     // Full-screen editor, a better fit for the month grid.
-    $p->calendar('harvest_on', 'Harvest date')->standalone();
+    $p->calendar('harvest_on', 'Harvest date')->default('2026-07-15')->standalone();
   });
 ```
 

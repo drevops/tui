@@ -35,7 +35,7 @@ $prompts = array_key_exists('prompts', $options) && is_string($options['prompts'
 $form = Form::create('Discovery demo', 'an existing box')
   // Per-question env overrides read BOX_<ID> instead of the default TUI_<ID>.
   ->envPrefix('BOX_')
-  ->panel('project', 'Box', function (PanelBuilder $p): void {
+  ->panel('box', 'Box', function (PanelBuilder $p): void {
     // Read a dot-path from a JSON file.
     $p->text('name', 'Box name')->discover(new JsonValue('box.json', 'name'));
     // Read a key from the .env file.

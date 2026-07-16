@@ -32,8 +32,8 @@ $p->number('weight', 'Basket weight (g)')
 | `default()` | Initial value. | No | `0` |
 
 With no bounds declared the field is a plain integer entry and the arrow keys are
-inert. Declaring `min()` or `max()` turns on Up/Down adjustment, clamped to the
-range.
+inert. Declaring `min()`, `max()` or `step()` turns on Up/Down adjustment; the
+value is clamped only when a range (`min()` / `max()`) is set.
 
 ## Keyboard
 

@@ -35,7 +35,7 @@ $form = Form::create('Produce order')
     $p->text('name', 'Order name')->default('Weekly')->required();
     $p->text('slug', 'Slug')->description('Derived from the order name.')->derive(new Derive('{{name}}', 'machine'));
   })
-  ->panel('stack', 'Delivery', function (PanelBuilder $p): void {
+  ->panel('shipping', 'Delivery', function (PanelBuilder $p): void {
     $p->description('How it arrives.');
     // Options declared one by one carry their own descriptions.
     $p->select('delivery', 'Delivery')->default('pickup')->option('pickup', 'Pickup', 'At the stall')->option('locker', 'Locker', 'Nearby locker')->option('doorstep', 'Doorstep', 'To your door');
@@ -52,7 +52,7 @@ $form = Form::create('Produce order')
       $sp->text('herb_note', 'Herb note')->default('mixed')->when(new Condition('addons', contains: 'herbs'));
 
       // Sub-panels nest to any depth.
-      $sp->panel('tuning', 'Packaging', function (PanelBuilder $tp): void {
+      $sp->panel('packaging', 'Packaging', function (PanelBuilder $tp): void {
         $tp->suggest('weight', 'Bag weight')->default('250g')->options([
           '250g' => '250g',
           '500g' => '500g',

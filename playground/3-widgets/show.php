@@ -48,7 +48,7 @@ $widgets = [
   'Text' => static fn(): WidgetInterface => new TextWidget('Pear'),
   'Number' => static fn(): WidgetInterface => new NumberWidget('1200'),
   'Calendar' => static fn(): WidgetInterface => new CalendarWidget('2026-07-15'),
-  'Textarea' => static fn(): WidgetInterface => new TextareaWidget("Crisp and sweet\nHint of citrus"),
+  'Textarea' => static fn(): WidgetInterface => new TextareaWidget('Crisp and sweet' . chr(10) . 'Hint of citrus'),
   'Password' => static fn(): WidgetInterface => new PasswordWidget('melon7'),
   'Select' => static fn(): WidgetInterface => new SelectWidget([
     'apple' => 'Apple',

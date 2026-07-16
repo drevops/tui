@@ -32,7 +32,7 @@ $form = Form::create('Widgets')
     $p->text('text', 'Text')->default('Pear');
     $p->number('number', 'Number')->default(1200);
     $p->calendar('date', 'Calendar')->default('2026-07-15');
-    $p->textarea('textarea', 'Textarea')->default("Crisp and sweet\nHint of citrus");
+    $p->textarea('textarea', 'Textarea')->default('Crisp and sweet' . chr(10) . 'Hint of citrus');
     $p->password('password', 'Password')->default('melon7');
     $p->select('select', 'Select')->default('apple')->options([
       'apple' => 'Apple',

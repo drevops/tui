@@ -8,7 +8,7 @@
  * engine's defaults do everything.
  *
  * Usage:
- *   php 0-minimal/run.php --prompts='{"name":"Ada","fruit":"apple"}'
+ *   php 0-minimal/run.php --prompts='{"name":"Pear","fruit":"apple"}'
  */
 
 declare(strict_types=1);

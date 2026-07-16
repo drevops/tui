@@ -22,9 +22,10 @@ $p->text('item', 'Item')
 $p->text('item', 'Item')
   ->complete(['Pear', 'Peach', 'Plum']);
 
-// The candidates can be computed from the answers collected so far:
+// The candidates can be computed from the answers collected so far
+// (guard the lookup - a field may be unanswered when this runs):
 $p->text('variety', 'Variety')
-  ->complete(fn(array $answers): array => [$answers['fruit'] . ' - Gala']);
+  ->complete(fn(array $answers): array => [($answers['fruit'] ?? 'Apple') . ' - Gala']);
 ```
 
 ## Options

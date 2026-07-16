@@ -71,8 +71,8 @@ A `->when()` rule shows or hides a field based on other answers, with operators
 `Condition::any()` and `Condition::not()`:
 
 ```php
-$p->text('heat_level', 'Heat level')->default('mild')->when(new Condition('tags', contains: 'spicy'));
-$p->confirm('warning_label', 'Add a heat warning?')->when(Condition::all(new Condition('tags', contains: 'spicy'), new Condition('category', eq: 'vegetable')));
+$p->text('heat_level', 'Heat level')->default('mild')->when(new Condition('category', eq: 'vegetable'));
+$p->confirm('warning_label', 'Add a heat warning?')->when(Condition::all(new Condition('category', eq: 'vegetable'), new Condition('heat_level', ne: 'mild')));
 ```
 
 A form-level `->fixup(new Fixup(set: ..., to: ..., when: ...))` reconciles
