@@ -18,8 +18,10 @@ use DrevOps\Tui\Widget\Capability\SelectionCapableInterface;
 use DrevOps\Tui\Widget\Capability\SelectionCapableTrait;
 
 /**
- * A choice list: a single-choice radio list, or a multiple-choice checkbox
- * list with type-to-filter and select-all/none.
+ * A single-choice or multiple-choice list of options.
+ *
+ * A single-choice radio list, or a multiple-choice checkbox list with
+ * type-to-filter and select-all/none.
  *
  * @package DrevOps\Tui\Widget
  */

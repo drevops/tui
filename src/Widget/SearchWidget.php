@@ -20,11 +20,11 @@ use DrevOps\Tui\Widget\Capability\SelectionCapableInterface;
 use DrevOps\Tui\Widget\Capability\SelectionCapableTrait;
 
 /**
- * A choice list with fuzzy type-to-filter over the option labels, drawn under
- * a query line: single-choice, or multiple-choice with checkboxes.
+ * A fuzzy type-to-filter choice list under a query line.
  *
- * Printable characters narrow the list, ranked by fuzzy relevance, and the
- * matched characters are highlighted.
+ * A single-choice radio list or a multiple-choice checkbox list: printable
+ * characters narrow the list, ranked by fuzzy relevance, and the matched
+ * characters are highlighted.
  *
  * @package DrevOps\Tui\Widget
  */

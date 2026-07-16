@@ -211,8 +211,9 @@ final class PanelBuilder {
   }
 
   /**
-   * Add a search field: a fuzzy type-to-filter choice list. Call
-   * ->multiple() to collect several values.
+   * Add a search field: a fuzzy type-to-filter choice list.
+   *
+   * Call ->multiple() to collect several values.
    *
    * @param string $id
    *   The field id.
@@ -227,8 +228,9 @@ final class PanelBuilder {
   }
 
   /**
-   * Add a file picker field (browse the filesystem for a path). Call
-   * ->multiple() to collect several paths.
+   * Add a file picker field (browse the filesystem for a path).
+   *
+   * Call ->multiple() to collect several paths.
    *
    * @param string $id
    *   The field id.
