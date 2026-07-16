@@ -19,8 +19,6 @@ use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\ConfirmWidget;
 use DrevOps\Tui\Widget\CalendarWidget;
 use DrevOps\Tui\Widget\FilePickerWidget;
-use DrevOps\Tui\Widget\MultiSearchWidget;
-use DrevOps\Tui\Widget\MultiSelectWidget;
 use DrevOps\Tui\Widget\NumberWidget;
 use DrevOps\Tui\Widget\PasswordWidget;
 use DrevOps\Tui\Widget\PauseWidget;
@@ -50,23 +48,22 @@ final class WidgetFactoryTest extends TestCase {
     $this->assertInstanceOf(ConfirmWidget::class, $factory->create($this->field(FieldType::Confirm), TRUE));
     $this->assertInstanceOf(ToggleWidget::class, $factory->create($this->fieldWithOptions(FieldType::Toggle), 'a'));
     $this->assertInstanceOf(SelectWidget::class, $factory->create($this->fieldWithOptions(FieldType::Select), 'a'));
-    $this->assertInstanceOf(MultiSelectWidget::class, $factory->create($this->fieldWithOptions(FieldType::MultiSelect), ['a']));
+    $this->assertInstanceOf(SelectWidget::class, $factory->create($this->multiFieldWithOptions(FieldType::Select), ['a']));
     $this->assertInstanceOf(SuggestWidget::class, $factory->create($this->fieldWithOptions(FieldType::Suggest), 'a'));
     $this->assertInstanceOf(NumberWidget::class, $factory->create($this->field(FieldType::Number), 42));
     $this->assertInstanceOf(CalendarWidget::class, $factory->create($this->field(FieldType::Calendar), '2026-07-15'));
     $this->assertInstanceOf(TextareaWidget::class, $factory->create($this->field(FieldType::Textarea), 'x'));
     $this->assertInstanceOf(PasswordWidget::class, $factory->create($this->field(FieldType::Password), 'x'));
     $this->assertInstanceOf(SearchWidget::class, $factory->create($this->fieldWithOptions(FieldType::Search), 'a'));
-    $this->assertInstanceOf(MultiSearchWidget::class, $factory->create($this->fieldWithOptions(FieldType::MultiSearch), ['a']));
+    $this->assertInstanceOf(SearchWidget::class, $factory->create($this->multiFieldWithOptions(FieldType::Search), ['a']));
     $this->assertInstanceOf(ReorderWidget::class, $factory->create($this->fieldWithOptions(FieldType::Reorder), ['a']));
     $this->assertInstanceOf(FilePickerWidget::class, $factory->create($this->field(FieldType::FilePicker), '/tmp'));
-    $this->assertInstanceOf(FilePickerWidget::class, $factory->create($this->field(FieldType::MultiFilePicker), ['/tmp']));
     $this->assertInstanceOf(PauseWidget::class, $factory->create($this->field(FieldType::Pause), TRUE));
   }
 
   public function testFilePickerFlagsPassedThrough(): void {
     $single = new Field('f', 'F', '', FieldType::FilePicker, '', pickerStart: '/nonexistent');
-    $multi = new Field('g', 'G', '', FieldType::MultiFilePicker, [], pickerStart: '/nonexistent');
+    $multi = new Field('g', 'G', '', FieldType::FilePicker, [], pickerStart: '/nonexistent', multiple: TRUE);
 
     // The single picker yields a string; a current path outside the start is
     // ignored and the missing directory lists nothing, so the value is empty.
@@ -144,8 +141,8 @@ final class WidgetFactoryTest extends TestCase {
     $this->assertSame('Acme', $widget->value());
   }
 
-  public function testMultiselectWithNonArrayValueHasNoDefaults(): void {
-    $widget = (new WidgetFactory())->create($this->fieldWithOptions(FieldType::MultiSelect), 'notalist');
+  public function testMultipleWithNonArrayValueHasNoDefaults(): void {
+    $widget = (new WidgetFactory())->create($this->multiFieldWithOptions(FieldType::Select), 'notalist');
 
     $this->assertSame([], $widget->value());
   }
@@ -267,6 +264,16 @@ final class WidgetFactoryTest extends TestCase {
    */
   protected function fieldWithOptions(FieldType $type): Field {
     return new Field('f', 'F', '', $type, '', ['a' => new Option('a', 'A'), 'b' => new Option('b', 'B')]);
+  }
+
+  /**
+   * A multiple-choice field of the given type with two options.
+   *
+   * @param \DrevOps\Tui\Model\FieldType $type
+   *   The field type.
+   */
+  protected function multiFieldWithOptions(FieldType $type): Field {
+    return new Field('f', 'F', '', $type, [], ['a' => new Option('a', 'A'), 'b' => new Option('b', 'B')], multiple: TRUE);
   }
 
 }

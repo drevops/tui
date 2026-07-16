@@ -83,8 +83,8 @@ class SchemaValidator {
    *   The first error, or NULL when valid.
    */
   protected function validateValue(Field $field, mixed $value): ?string {
-    if (!$field->type->acceptsValue($value)) {
-      return $this->constraintMessage($field, $field->type->valueKind());
+    if (!$field->acceptsValue($value)) {
+      return $this->constraintMessage($field, $field->valueKind());
     }
 
     if ($field->required && $this->isEmpty($value)) {

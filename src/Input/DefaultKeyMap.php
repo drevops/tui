@@ -73,21 +73,20 @@ class DefaultKeyMap {
       $bindings[] = new Binding(Scope::field($type), Action::Toggle, KeyName::Left, KeyName::Right, KeyName::Space, KeyName::Up, KeyName::Down);
     }
 
-    // The checkbox and the searchable checkbox share one set of list bindings.
-    foreach ([FieldType::MultiSelect, FieldType::MultiSearch] as $type) {
-      $bindings[] = new Binding(Scope::field($type), Action::Toggle, KeyName::Space);
-      $bindings[] = new Binding(Scope::field($type), Action::SelectAll, KeyName::Right);
-      $bindings[] = new Binding(Scope::field($type), Action::SelectNone, KeyName::Left);
+    // The checkbox and the searchable checkbox share one set of list bindings,
+    // carried by the multiple variant of each option-backed choice type.
+    foreach ([FieldType::Select, FieldType::Search] as $type) {
+      $bindings[] = new Binding(Scope::field($type, multiple: TRUE), Action::Toggle, KeyName::Space);
+      $bindings[] = new Binding(Scope::field($type, multiple: TRUE), Action::SelectAll, KeyName::Right);
+      $bindings[] = new Binding(Scope::field($type, multiple: TRUE), Action::SelectNone, KeyName::Left);
     }
 
-    // Both pickers reveal hidden entries on Tab (Left/Right browse in and out,
-    // inherited from the base); the multiple picker also toggles the
-    // highlighted entry on Space.
-    foreach ([FieldType::FilePicker, FieldType::MultiFilePicker] as $type) {
-      $bindings[] = new Binding(Scope::field($type), Action::Reveal, KeyName::Tab);
-    }
-
-    $bindings[] = new Binding(Scope::field(FieldType::MultiFilePicker), Action::Toggle, KeyName::Space);
+    // The picker reveals hidden entries on Tab in both variants (Left/Right
+    // browse in and out, inherited from the base); the multiple variant also
+    // toggles the highlighted entry on Space.
+    $bindings[] = new Binding(Scope::field(FieldType::FilePicker), Action::Reveal, KeyName::Tab);
+    $bindings[] = new Binding(Scope::field(FieldType::FilePicker, multiple: TRUE), Action::Reveal, KeyName::Tab);
+    $bindings[] = new Binding(Scope::field(FieldType::FilePicker, multiple: TRUE), Action::Toggle, KeyName::Space);
 
     // The reorder widget picks up and drops the highlighted item on Space;
     // Up and Down (inherited from the base) move the cursor, or the held item.

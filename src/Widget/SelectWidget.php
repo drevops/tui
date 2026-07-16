@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Widget;
 
-use DrevOps\Tui\Input\Key;
+use DrevOps\Tui\Model\FieldType;
+use DrevOps\Tui\Model\Option;
+use DrevOps\Tui\Model\OptionKind;
 use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Widget\Capability\FilterCapableInterface;
+use DrevOps\Tui\Widget\Capability\FilterCapableTrait;
 use DrevOps\Tui\Widget\Capability\OptionsCapableInterface;
 use DrevOps\Tui\Widget\Capability\OptionsCapableTrait;
 use DrevOps\Tui\Widget\Capability\PagingCapableInterface;
@@ -14,14 +18,16 @@ use DrevOps\Tui\Widget\Capability\SelectionCapableInterface;
 use DrevOps\Tui\Widget\Capability\SelectionCapableTrait;
 
 /**
- * A single-choice radio list.
+ * A choice list: a single-choice radio list, or a multiple-choice checkbox
+ * list with type-to-filter and select-all/none.
  *
  * @package DrevOps\Tui\Widget
  */
-class SelectWidget extends AbstractWidget implements OptionsCapableInterface, SelectionCapableInterface, PagingCapableInterface {
+class SelectWidget extends AbstractWidget implements OptionsCapableInterface, SelectionCapableInterface, FilterCapableInterface, PagingCapableInterface {
 
   use OptionsCapableTrait;
   use SelectionCapableTrait;
+  use FilterCapableTrait;
   use PagingCapableTrait;
 
   /**
@@ -30,8 +36,10 @@ class SelectWidget extends AbstractWidget implements OptionsCapableInterface, Se
    * @param array<int|string,\DrevOps\Tui\Model\Option|string> $options
    *   Option rows in display order - a list of options or the value => label
    *   shorthand map.
-   * @param string $default
-   *   The initially highlighted value.
+   * @param string|list<string> $default
+   *   The initially highlighted value (single) or selected values (multiple).
+   * @param bool $multiple
+   *   Whether several options are collected as a list.
    * @param \Closure|null $validate
    *   Optional validator (see AbstractWidget).
    * @param \Closure|null $transform
@@ -40,27 +48,48 @@ class SelectWidget extends AbstractWidget implements OptionsCapableInterface, Se
    *   The number of option rows shown at once before the list pages; NULL uses
    *   the default.
    */
-  public function __construct(array $options, string $default = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL, ?int $page_size = NULL) {
+  public function __construct(array $options, string|array $default = '', bool $multiple = FALSE, ?\Closure $validate = NULL, ?\Closure $transform = NULL, ?int $page_size = NULL) {
     parent::__construct($validate, $transform);
-    $this->initSingleChoice($options, $default);
+    $this->initChoice($options, $default, $multiple);
     $this->pageSize = $this->resolvePageSize($page_size);
   }
 
   /**
-   * {@inheritdoc}
+   * The field type this widget binds its keys under.
+   *
+   * @return \DrevOps\Tui\Model\FieldType
+   *   The select field type.
    */
-  public function handle(Key $key): void {
-    $this->handleSingleChoiceKey($key);
+  protected function choiceType(): FieldType {
+    return FieldType::Select;
   }
 
   /**
-   * The rows currently shown: a plain select shows every declared row.
+   * Filter the options by case-insensitive substring over the labels.
+   *
+   * @param string $needle
+   *   The query.
    *
    * @return list<\DrevOps\Tui\Model\Option>
-   *   The visible rows.
+   *   The matching option rows.
    */
-  public function visible(): array {
-    return $this->options;
+  protected function filterOptions(string $needle): array {
+    $lower = mb_strtolower($needle, 'UTF-8');
+
+    return array_values(array_filter($this->options, static fn(Option $option): bool => $option->kind === OptionKind::Option && str_contains(mb_strtolower($option->label, 'UTF-8'), $lower)));
+  }
+
+  /**
+   * The matched-character positions: a plain choice list highlights none.
+   *
+   * @param string $label
+   *   The option label.
+   *
+   * @return list<int>
+   *   The matched indices (always empty).
+   */
+  protected function matchPositions(string $label): array {
+    return [];
   }
 
   /**

@@ -47,7 +47,7 @@ final class FormTest extends TestCase {
         $p->text('name', 'Site name')->description('The name.')->required()->weight(10)->default('Acme');
         $p->text('machine_name', 'Machine name')->derive(new Derive('{{ name }}'));
         $p->select('profile', 'Profile')->options(['standard' => 'Standard', 'minimal' => 'Minimal'])->default('standard');
-        $p->multiSelect('services', 'Services')->option('solr', 'Solr', 'Search')->option('redis', 'Redis');
+        $p->select('services', 'Services')->multiple()->option('solr', 'Solr', 'Search')->option('redis', 'Redis');
         $p->confirm('docs', 'Keep docs?')->default(TRUE)->when(new Condition('profile', eq: 'standard'));
         $p->toggle('visibility', 'Visibility')->options(['public' => 'Public', 'private' => 'Private'])->default('private');
         $p->password('secret', 'Secret')->revealable()->confirmation();
@@ -90,7 +90,8 @@ final class FormTest extends TestCase {
 
     $services = $form->field('services');
     $this->assertInstanceOf(Field::class, $services);
-    $this->assertSame(FieldType::MultiSelect, $services->type);
+    $this->assertSame(FieldType::Select, $services->type);
+    $this->assertTrue($services->multiple);
     $this->assertSame('Search', $services->option('solr')?->description);
 
     $docs = $form->field('docs');
@@ -135,7 +136,7 @@ final class FormTest extends TestCase {
       ->panel('p', 'P', function (PanelBuilder $panel): void {
         $panel->text('t');
         $panel->select('s')->option('a');
-        $panel->multiSelect('m');
+        $panel->select('m')->multiple();
         $panel->confirm('c');
         $panel->suggest('g');
         $panel->number('n');
@@ -143,10 +144,10 @@ final class FormTest extends TestCase {
         $panel->textarea('ta');
         $panel->password('pw');
         $panel->search('se')->option('a');
-        $panel->multiSearch('ms')->option('a');
+        $panel->search('ms')->multiple()->option('a');
         $panel->toggle('tg')->option('on', 'On')->option('off', 'Off');
         $panel->filePicker('fp');
-        $panel->multiFilePicker('mfp');
+        $panel->filePicker('mfp')->multiple();
         $panel->pause('pa');
         $panel->reorder('rk')->option('a')->option('b')->option('c');
       })
@@ -370,11 +371,20 @@ final class FormTest extends TestCase {
       ->build();
   }
 
+  public function testMultipleOnUnsupportedTypeThrows(): void {
+    $this->expectException(FormException::class);
+    $this->expectExceptionMessage('Field "t" of type "text" does not collect several values');
+
+    Form::create('T')
+      ->panel('p', 'P', fn(PanelBuilder $p): FieldBuilder => $p->text('t')->multiple())
+      ->build();
+  }
+
   public function testFilePickerOptions(): void {
     $form = Form::create('T')
       ->panel('p', 'P', function (PanelBuilder $panel): void {
         $panel->filePicker('config', 'Config')->startIn('/opt')->filesOnly()->extensions(['yml', 'yaml'])->showHidden();
-        $panel->multiFilePicker('assets', 'Assets')->directoriesOnly();
+        $panel->filePicker('assets', 'Assets')->multiple()->directoriesOnly();
       })
       ->build();
 
@@ -388,7 +398,8 @@ final class FormTest extends TestCase {
 
     $assets = $form->field('assets');
     $this->assertInstanceOf(Field::class, $assets);
-    $this->assertSame(FieldType::MultiFilePicker, $assets->type);
+    $this->assertSame(FieldType::FilePicker, $assets->type);
+    $this->assertTrue($assets->multiple);
     $this->assertSame(FilePickerMode::Directory, $assets->pickerMode);
   }
 

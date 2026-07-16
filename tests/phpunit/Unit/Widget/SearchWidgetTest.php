@@ -15,16 +15,16 @@ use DrevOps\Tui\Tests\Traits\MixedOptionsTrait;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\Capability\FilterCapableTrait;
 use DrevOps\Tui\Widget\Capability\OptionsCapableTrait;
-use DrevOps\Tui\Widget\Capability\SearchCapableTrait;
 use DrevOps\Tui\Widget\Capability\PagingCapableTrait;
-use DrevOps\Tui\Widget\SearchWidget;
+use DrevOps\Tui\Widget\Capability\SearchCapableTrait;
 use DrevOps\Tui\Widget\Capability\SelectionCapableTrait;
+use DrevOps\Tui\Widget\SearchWidget;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Tests the search widget.
+ * Tests the search widget, single-choice and multiple-choice.
  */
 #[CoversClass(SearchWidget::class)]
 #[CoversClass(SelectionCapableTrait::class)]
@@ -39,11 +39,18 @@ final class SearchWidgetTest extends TestCase {
   use MixedOptionsTrait;
 
   /**
-   * The options used across the tests.
+   * The options used across the single-choice tests.
    *
    * @var array<string,string>
    */
   protected array $labels = ['gha' => 'GitHub Actions', 'circleci' => 'CircleCI', 'none' => 'None'];
+
+  /**
+   * The options used across the multiple-choice tests.
+   *
+   * @var array<string,string>
+   */
+  protected array $services = ['clamav' => 'ClamAV', 'redis' => 'Redis', 'solr' => 'Solr'];
 
   public function testFilterNarrowsAndEnterAcceptsValue(): void {
     $widget = new SearchWidget($this->labels);
@@ -238,6 +245,91 @@ final class SearchWidgetTest extends TestCase {
     $labels = array_map(static fn(Hint $hint): string => $hint->label, (new SearchWidget($this->labels))->hints());
 
     $this->assertSame(['move', 'accept', 'cancel'], $labels);
+  }
+
+  public function testMultipleFilterToggleAndAccept(): void {
+    $widget = new SearchWidget($this->services, [], TRUE);
+
+    $value = WidgetRunner::run($widget, ArrayKeyStream::of('sol', Key::named(KeyName::Space), Key::named(KeyName::Enter)));
+
+    $this->assertSame(['solr'], $value);
+  }
+
+  public function testMultipleSeededSelectionKept(): void {
+    $widget = new SearchWidget($this->services, ['redis'], TRUE);
+
+    $value = WidgetRunner::run($widget, ArrayKeyStream::of(Key::named(KeyName::Enter)));
+
+    $this->assertSame(['redis'], $value);
+  }
+
+  public function testMultipleViewShowsQueryLineAboveOptions(): void {
+    $widget = new SearchWidget($this->services, [], TRUE);
+
+    $widget->handle(Key::char('r'));
+    $view = Ansi::strip($widget->view(new DefaultTheme()));
+
+    $this->assertStringContainsString("r█\n", $view);
+    $this->assertStringContainsString('Redis', $view);
+    $this->assertStringNotContainsString('ClamAV', $view);
+  }
+
+  public function testMultipleHints(): void {
+    $labels = array_map(static fn(Hint $hint): string => $hint->label, (new SearchWidget($this->services, [], TRUE))->hints());
+
+    $this->assertSame(['select', 'move', 'none/all', 'accept', 'cancel'], $labels);
+  }
+
+  public function testMultipleSkipsNonSelectableWhenToggling(): void {
+    $widget = new SearchWidget($this->mixedOptions(), [], TRUE);
+
+    $value = WidgetRunner::run($widget, ArrayKeyStream::of(
+      Key::named(KeyName::Space),
+      Key::named(KeyName::Down),
+      Key::named(KeyName::Space),
+      Key::named(KeyName::Down),
+      Key::named(KeyName::Space),
+      Key::named(KeyName::Enter),
+    ));
+
+    $this->assertSame(['a', 'b', 'd'], $value);
+  }
+
+  public function testMultipleRendersKindsBelowQueryLine(): void {
+    $view = Ansi::strip((new SearchWidget($this->mixedOptions(), [], TRUE))->view(new DefaultTheme()));
+
+    $this->assertStringContainsString("█\n", $view);
+    $this->assertStringContainsString('Fruits', $view);
+    $this->assertStringContainsString('Cherry (out of stock)', $view);
+    $this->assertStringContainsString('──', $view);
+  }
+
+  public function testMultipleFuzzyMatchesNonContiguousSubsequence(): void {
+    $widget = new SearchWidget(['banana' => 'Banana', 'apple' => 'Apple', 'cherry' => 'Cherry'], [], TRUE);
+
+    // "bn" is not a substring of any label but is a subsequence of "Banana".
+    $value = WidgetRunner::run($widget, ArrayKeyStream::of('bn', Key::named(KeyName::Space), Key::named(KeyName::Enter)));
+
+    $this->assertSame(['banana'], $value);
+  }
+
+  public function testMultipleHighlightsMatchedCharacters(): void {
+    $theme = new DefaultTheme();
+    $widget = new SearchWidget(['banana' => 'Banana'], [], TRUE);
+
+    $widget->handle(Key::char('b'));
+    $widget->handle(Key::char('n'));
+    $view = $widget->view($theme);
+
+    // The non-contiguous match highlights each hit character on its own,
+    // leaving the intervening characters unstyled.
+    $this->assertStringContainsString($theme->highlightMatch('B'), $view);
+    $this->assertStringContainsString($theme->highlightMatch('n'), $view);
+    $this->assertStringContainsString('Banana', Ansi::strip($view));
+  }
+
+  public function testMultiplePagesLongOptionList(): void {
+    $this->assertPagesAndFollowsCursor(static fn(int $size): SearchWidget => new SearchWidget(self::pagingOptions(), [], TRUE, page_size: $size));
   }
 
 }

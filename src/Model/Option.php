@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Model;
 
 /**
- * A single row in a select, multiselect, search or suggest option list.
+ * A single row in a select, search or suggest option list.
  *
  * A row is an Option, a Separator or a Heading (see {@see OptionKind}). Only
  * an Option row is selectable, and only when it is not disabled; Separator and

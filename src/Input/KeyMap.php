@@ -86,12 +86,14 @@ final class KeyMap {
    *
    * @param \DrevOps\Tui\Model\FieldType $type
    *   The field type.
+   * @param bool $multiple
+   *   Whether the multiple-collecting variant of the type is targeted.
    *
    * @return \DrevOps\Tui\Input\ScopedKeyMap
    *   The bindings for that widget type.
    */
-  public function forField(FieldType $type): ScopedKeyMap {
-    return $this->fields[Scope::field($type)->token()] ?? $this->base;
+  public function forField(FieldType $type, bool $multiple = FALSE): ScopedKeyMap {
+    return $this->fields[Scope::field($type, $multiple)->token()] ?? $this->base;
   }
 
   /**
@@ -108,7 +110,7 @@ final class KeyMap {
       return $this->navigation;
     }
 
-    return $scope->fieldType instanceof FieldType ? $this->forField($scope->fieldType) : $this->base;
+    return $scope->fieldType instanceof FieldType ? $this->forField($scope->fieldType, $scope->multiple) : $this->base;
   }
 
   /**

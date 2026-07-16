@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Resolver;
 
+use DrevOps\Tui\Model\Field;
 use DrevOps\Tui\Model\FieldType;
 use DrevOps\Tui\Translation\Translator;
 
@@ -50,7 +51,7 @@ class InputResolver {
     foreach ($fields as $field) {
       $name = $this->envName($field->id);
       if (array_key_exists($name, $env)) {
-        $inputs[$field->id] = $this->coerce($env[$name], $field->type);
+        $inputs[$field->id] = $this->coerce($env[$name], $field);
       }
     }
 
@@ -79,22 +80,22 @@ class InputResolver {
    *
    * @param string $value
    *   The raw environment value.
-   * @param \DrevOps\Tui\Model\FieldType $type
-   *   The field type.
+   * @param \DrevOps\Tui\Model\Field $field
+   *   The field.
    *
    * @return mixed
    *   The coerced value.
    */
-  protected function coerce(string $value, FieldType $type): mixed {
+  protected function coerce(string $value, Field $field): mixed {
     $trimmed = trim($value);
     $truthy = ['1', 'true', 'yes', 'on'];
 
     return match (TRUE) {
-      $type === FieldType::Confirm, $type === FieldType::Pause => in_array(strtolower($trimmed), $truthy, TRUE),
-      $type->collectsList() => $this->splitList($value),
+      $field->type === FieldType::Confirm, $field->type === FieldType::Pause => in_array(strtolower($trimmed), $truthy, TRUE),
+      $field->collectsList() => $this->splitList($value),
       // Only an integral value coerces; anything else stays a string so the
       // engine's type check rejects it instead of it silently becoming 0.
-      $type === FieldType::Number => preg_match('/^-?\d+$/', $trimmed) === 1 ? (int) $trimmed : $value,
+      $field->type === FieldType::Number => preg_match('/^-?\d+$/', $trimmed) === 1 ? (int) $trimmed : $value,
       default => $value,
     };
   }

@@ -53,7 +53,7 @@ final class ThemeRenderTest extends TestCase {
     $bool = Ansi::strip($theme->renderFieldLine(new Field('b', 'B', '', FieldType::Confirm, FALSE), new Answers(['b' => TRUE], ['b' => Provenance::Default]), FALSE));
     $this->assertStringContainsString('B  yes', $bool);
 
-    $list = Ansi::strip($theme->renderFieldLine(new Field('m', 'M', '', FieldType::MultiSelect, []), new Answers(['m' => ['a', 'b']], ['m' => Provenance::Default]), FALSE));
+    $list = Ansi::strip($theme->renderFieldLine(new Field('m', 'M', '', FieldType::Select, [], multiple: TRUE), new Answers(['m' => ['a', 'b']], ['m' => Provenance::Default]), FALSE));
     $this->assertStringContainsString('M  a, b', $list);
   }
 
@@ -133,7 +133,7 @@ final class ThemeRenderTest extends TestCase {
       new Field('a', 'A', '', FieldType::Text, ''),
       new Field('b', 'B', '', FieldType::Text, ''),
       new Field('gated', 'Gated', '', FieldType::Text, ''),
-      new Field('m', 'M', '', FieldType::MultiSelect, []),
+      new Field('m', 'M', '', FieldType::Select, [], multiple: TRUE),
       new Field('c', 'C', '', FieldType::Text, ''),
       new Field('d', 'D', '', FieldType::Text, ''),
     ]);
@@ -203,7 +203,7 @@ final class ThemeRenderTest extends TestCase {
   }
 
   public function testRenderHintsJoinsFragmentsInBothModes(): void {
-    $keys = KeyMapManager::create()->forField(FieldType::MultiSelect);
+    $keys = KeyMapManager::create()->forField(FieldType::Select, TRUE);
     $hints = [new Hint('select', Action::Toggle), new Hint('none/all', Action::SelectNone, Action::SelectAll)];
 
     $unicode = Ansi::strip((new DefaultTheme())->renderHints($keys, ...$hints));

@@ -84,16 +84,16 @@ final class KeyMapTest extends TestCase {
     // Toggle switch.
     yield 'toggle space flips' => [Scope::field(FieldType::Toggle), Key::named(KeyName::Space), Action::Toggle, TRUE];
     yield 'toggle enter accepts' => [Scope::field(FieldType::Toggle), Key::named(KeyName::Enter), Action::Accept, TRUE];
-    // Multi-select.
-    yield 'multiselect space toggles' => [Scope::field(FieldType::MultiSelect), Key::named(KeyName::Space), Action::Toggle, TRUE];
-    yield 'multiselect right selects all' => [Scope::field(FieldType::MultiSelect), Key::named(KeyName::Right), Action::SelectAll, TRUE];
-    yield 'multiselect up moves up (inherited)' => [Scope::field(FieldType::MultiSelect), Key::named(KeyName::Up), Action::MoveUp, TRUE];
-    yield 'multisearch space toggles' => [Scope::field(FieldType::MultiSearch), Key::named(KeyName::Space), Action::Toggle, TRUE];
+    // Multiple choice.
+    yield 'multiselect space toggles' => [Scope::field(FieldType::Select, TRUE), Key::named(KeyName::Space), Action::Toggle, TRUE];
+    yield 'multiselect right selects all' => [Scope::field(FieldType::Select, TRUE), Key::named(KeyName::Right), Action::SelectAll, TRUE];
+    yield 'multiselect up moves up (inherited)' => [Scope::field(FieldType::Select, TRUE), Key::named(KeyName::Up), Action::MoveUp, TRUE];
+    yield 'multisearch space toggles' => [Scope::field(FieldType::Search, TRUE), Key::named(KeyName::Space), Action::Toggle, TRUE];
     // File pickers reveal hidden entries on Tab; base arrows browse in and out.
     yield 'filepicker tab reveals' => [Scope::field(FieldType::FilePicker), Key::named(KeyName::Tab), Action::Reveal, TRUE];
     yield 'filepicker right browses in (inherited)' => [Scope::field(FieldType::FilePicker), Key::named(KeyName::Right), Action::MoveRight, TRUE];
-    yield 'multifilepicker space toggles' => [Scope::field(FieldType::MultiFilePicker), Key::named(KeyName::Space), Action::Toggle, TRUE];
-    yield 'multifilepicker tab reveals' => [Scope::field(FieldType::MultiFilePicker), Key::named(KeyName::Tab), Action::Reveal, TRUE];
+    yield 'multifilepicker space toggles' => [Scope::field(FieldType::FilePicker, TRUE), Key::named(KeyName::Space), Action::Toggle, TRUE];
+    yield 'multifilepicker tab reveals' => [Scope::field(FieldType::FilePicker, TRUE), Key::named(KeyName::Tab), Action::Reveal, TRUE];
     // Pause binds two keys to accept.
     yield 'pause enter accepts' => [Scope::field(FieldType::Pause), Key::named(KeyName::Enter), Action::Accept, TRUE];
     yield 'pause space accepts' => [Scope::field(FieldType::Pause), Key::named(KeyName::Space), Action::Accept, TRUE];
@@ -242,6 +242,10 @@ final class KeyMapTest extends TestCase {
     yield 'select is not a text-entry scope' => [Scope::field(FieldType::Select), 'field:Select', 'select', FALSE];
     // The file picker filters by typing, so it is a text-entry scope.
     yield 'filepicker is a text-entry scope' => [Scope::field(FieldType::FilePicker), 'field:FilePicker', 'filepicker', TRUE];
+    // A multiple select filters by typing, so it becomes a text-entry scope
+    // with its own token, unlike the single select.
+    yield 'multiple select is a distinct text-entry scope' => [Scope::field(FieldType::Select, TRUE), 'field:Select#multiple', 'select', TRUE];
+    yield 'multiple file picker keeps its own token' => [Scope::field(FieldType::FilePicker, TRUE), 'field:FilePicker#multiple', 'filepicker', TRUE];
   }
 
   public function testBindingHoldsItsDeclaration(): void {

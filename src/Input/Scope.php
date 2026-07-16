@@ -14,7 +14,10 @@ use DrevOps\Tui\Model\FieldType;
  * keys that mean something different there (Enter inserts a newline in a
  * textarea, Space toggles an option in a checkbox list, and so on). A scope is
  * a value, not an enum, so it can wrap a {@see FieldType} without duplicating
- * that enum's cases.
+ * that enum's cases. A choice or file-picker type carries the same bindings
+ * single or multiple, except where collecting several values adds a key (Space
+ * toggles, Left/Right select none/all), so the scope also carries a `multiple`
+ * flag to keep those two binding sets apart.
  *
  * @package DrevOps\Tui\Input
  */
@@ -25,7 +28,10 @@ final readonly class Scope {
    *
    * In these scopes a letter or digit is the value the user is typing, so a
    * binding may not claim a printable character for an action - that would make
-   * the character un-typeable. Enforced by {@see consumesText()}.
+   * the character un-typeable. Enforced by {@see consumesText()}. A single
+   * select is absent: it navigates by cursor and does not filter, so it takes
+   * typed characters only in its multiple variant (handled in
+   * {@see consumesText()}).
    */
   protected const array TEXT_ENTRY = [
     FieldType::Text,
@@ -34,11 +40,8 @@ final readonly class Scope {
     FieldType::Textarea,
     FieldType::Search,
     FieldType::Suggest,
-    FieldType::MultiSelect,
-    FieldType::MultiSearch,
     FieldType::Toggle,
     FieldType::FilePicker,
-    FieldType::MultiFilePicker,
   ];
 
   /**
@@ -60,6 +63,11 @@ final readonly class Scope {
   protected const string FIELD_PREFIX = 'field:';
 
   /**
+   * The suffix marking the multiple variant of a field scope.
+   */
+  protected const string MULTIPLE_SUFFIX = '#multiple';
+
+  /**
    * Construct a scope.
    *
    * @param \DrevOps\Tui\Model\FieldType|null $fieldType
@@ -67,10 +75,13 @@ final readonly class Scope {
    *   scopes.
    * @param bool $navigation
    *   Whether this is the navigation scope.
+   * @param bool $multiple
+   *   Whether this is the multiple-collecting variant of the field scope.
    */
   protected function __construct(
     public ?FieldType $fieldType = NULL,
     public bool $navigation = FALSE,
+    public bool $multiple = FALSE,
   ) {
   }
 
@@ -99,12 +110,14 @@ final readonly class Scope {
    *
    * @param \DrevOps\Tui\Model\FieldType $type
    *   The field type.
+   * @param bool $multiple
+   *   Whether the multiple-collecting variant of the type is targeted.
    *
    * @return self
    *   The field-type scope.
    */
-  public static function field(FieldType $type): self {
-    return new self($type);
+  public static function field(FieldType $type, bool $multiple = FALSE): self {
+    return new self($type, multiple: $multiple);
   }
 
   /**
@@ -118,7 +131,11 @@ final readonly class Scope {
       return self::NAVIGATION_TOKEN;
     }
 
-    return $this->fieldType instanceof FieldType ? self::FIELD_PREFIX . $this->fieldType->name : self::BASE_TOKEN;
+    if (!$this->fieldType instanceof FieldType) {
+      return self::BASE_TOKEN;
+    }
+
+    return self::FIELD_PREFIX . $this->fieldType->name . ($this->multiple ? self::MULTIPLE_SUFFIX : '');
   }
 
   /**
@@ -129,7 +146,17 @@ final readonly class Scope {
    *   bound to an action.
    */
   public function consumesText(): bool {
-    return $this->fieldType instanceof FieldType && in_array($this->fieldType, self::TEXT_ENTRY, TRUE);
+    if (!$this->fieldType instanceof FieldType) {
+      return FALSE;
+    }
+
+    if (in_array($this->fieldType, self::TEXT_ENTRY, TRUE)) {
+      return TRUE;
+    }
+
+    // A single select navigates by cursor; only its multiple variant filters
+    // by typed text, so only that variant reserves printable characters.
+    return $this->multiple && $this->fieldType === FieldType::Select;
   }
 
   /**
