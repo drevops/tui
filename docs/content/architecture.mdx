@@ -96,8 +96,11 @@ the default, and are validated when the form is built. Armed with the action, th
 controller either moves the cursor / drills into a sub-panel, or opens a widget to
 edit a field - the widget consults the same key map, and both render themselves
 through the theme, under a theme-composed underlined label header. Editing writes
-the new value back and marks it "edited". When the user finishes, it returns the
-same `Answers` object the headless path produces.
+the new value back and marks it "edited". A panel declared modal with `->modal()`
+instead opens as a centered dialog composited over the dimmed parent, with its own
+configurable submit/cancel buttons - submit keeps the edits, cancel or Escape
+restores the answers it opened with. When the user finishes, it returns the same
+`Answers` object the headless path produces.
 
 ## Step 5 - apply the answers (the consumer's job)
 
