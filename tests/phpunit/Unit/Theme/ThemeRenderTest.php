@@ -353,7 +353,7 @@ final class ThemeRenderTest extends TestCase {
     // A backdrop taller than the dialog, so the dialog centres within it.
     $backdrop = $theme->renderFrame(['Demo'], ['Alpha  1', 'Beta  2', 'Gamma  3', 'Delta  4', 'Epsilon  5', 'Zeta  6', 'Eta  7', 'Theta  8'], [], new Viewport(0, FALSE, FALSE), 8);
 
-    $out = Ansi::strip($theme->renderModal($modal, new Answers(['opt' => 'val'], ['opt' => Provenance::Default]), 0, NULL, '', 0, $backdrop));
+    $out = Ansi::strip($theme->renderModal($modal, new Answers(['opt' => 'val'], ['opt' => Provenance::Default]), 0, NULL, '', 0, $backdrop, 10));
 
     $this->assertStringContainsString('Confirm', $out);
     $this->assertStringContainsString('Proceed with care.', $out);
@@ -369,7 +369,7 @@ final class ThemeRenderTest extends TestCase {
     $modal = new Panel('n', 'Notice', 'Saved successfully.', [], [], new Modal());
     $backdrop = "aaaaaa\nbbbbbb\ncccccc\ndddddd\neeeeee\nffffff\ngggggg\nhhhhhh";
 
-    $out = Ansi::strip($theme->renderModal($modal, new Answers([], []), -1, NULL, '', -1, $backdrop));
+    $out = Ansi::strip($theme->renderModal($modal, new Answers([], []), -1, NULL, '', -1, $backdrop, 8));
 
     // A text-only dialog still shows its message and its default buttons.
     $this->assertStringContainsString('Notice', $out);
@@ -383,12 +383,34 @@ final class ThemeRenderTest extends TestCase {
     $modal = new Panel('e', 'Empty', '', [], [], new Modal());
     $backdrop = "aaaaaa\nbbbbbb\ncccccc\ndddddd\neeeeee\nffffff";
 
-    $out = Ansi::strip($theme->renderModal($modal, new Answers([], []), -1, NULL, '', -1, $backdrop));
+    $out = Ansi::strip($theme->renderModal($modal, new Answers([], []), -1, NULL, '', -1, $backdrop, 6));
 
     // Even a borderless theme boxes the dialog so it reads as floating above.
     $this->assertStringContainsString('┌', $out);
     $this->assertStringContainsString('Empty', $out);
     $this->assertStringContainsString('[ Submit ]', $out);
+  }
+
+  public function testRenderModalScrollsBodyAndPinsButtonsWhenTall(): void {
+    $theme = $this->theme();
+    $fields = [];
+    $values = [];
+    for ($i = 1; $i <= 10; $i++) {
+      $fields[] = new Field('f' . $i, 'Field ' . $i, '', FieldType::Text, 'v' . $i);
+      $values['f' . $i] = 'v' . $i;
+    }
+    $modal = new Panel('big', 'Big', 'Many fields.', $fields, [], new Modal(new Buttons(TRUE, 'Save', 'Discard')));
+    // A short backdrop forces the padding; a small height forces the body to
+    // scroll under the pinned button footer rather than clipping it.
+    $backdrop = "aaaa\nbbbb\ncccc";
+
+    $out = Ansi::strip($theme->renderModal($modal, new Answers($values, []), 0, NULL, '', -1, $backdrop, 12));
+
+    $this->assertStringContainsString('Field 1', $out);
+    $this->assertStringContainsString('[ Save ]', $out);
+    $this->assertStringContainsString('[ Discard ]', $out);
+    // The last field scrolls out of view, but the buttons never do.
+    $this->assertStringNotContainsString('Field 10', $out);
   }
 
   /**

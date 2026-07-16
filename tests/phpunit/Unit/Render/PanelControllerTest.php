@@ -744,6 +744,41 @@ final class PanelControllerTest extends TestCase {
     $this->assertStringContainsString('[ Apply ]', $frame);
   }
 
+  public function testModalKeepsButtonsVisibleWhenTallerThanTheScreen(): void {
+    $builder = Form::create('Demo')
+      ->buttons(FALSE)
+      ->panel('main', 'Main', function (PanelBuilder $p): void {
+        $p->text('a', 'Alpha');
+        $p->panel('big', 'Big dialog', function (PanelBuilder $m): void {
+          $m->modal('Save', 'Discard')->description('Many fields.');
+          for ($i = 1; $i <= 12; $i++) {
+            $m->text('f' . $i, 'Field ' . $i);
+          }
+        });
+      });
+    $values = ['a' => 'x'];
+    for ($i = 1; $i <= 12; $i++) {
+      $values['f' . $i] = 'v' . $i;
+    }
+    $controller = new PanelController($builder->build(), new DefaultTheme(50, ['color' => FALSE]), NULL, TRUE, TRUE, $values, []);
+
+    $controller->handle(Key::named(KeyName::Enter));
+    $controller->handle(Key::named(KeyName::Down));
+    $controller->handle(Key::named(KeyName::Enter));
+
+    // A dialog with more content than the viewport scrolls its body under a
+    // pinned button footer, so both exits stay reachable rather than clipping
+    // off the bottom.
+    $frame = Ansi::strip($controller->frame(12));
+    $this->assertStringContainsString('[ Save ]', $frame);
+    $this->assertStringContainsString('[ Discard ]', $frame);
+
+    // The very short viewport falls back to truncating the body, still pinning
+    // the buttons.
+    $squeezed = Ansi::strip($controller->frame(8));
+    $this->assertStringContainsString('[ Save ]', $squeezed);
+  }
+
   /**
    * A controller over a form whose second top-level panel is a modal dialog.
    */

@@ -151,6 +151,11 @@ class PanelController {
   protected int $modalReturnCursor = 0;
 
   /**
+   * The scroll offset to restore in the parent when a modal dialog closes.
+   */
+  protected int $modalReturnOffset = 0;
+
+  /**
    * Construct a controller.
    *
    * @param \DrevOps\Tui\Model\FormDefinition $form
@@ -494,7 +499,7 @@ class PanelController {
     $base = $modal->itemCount();
     $selected = $this->cursor >= $base ? $this->cursor - $base : -1;
 
-    return $this->theme->renderModal($modal, $this->answers(), $this->cursor, $editing, $view, $selected, $this->backdrop($height));
+    return $this->theme->renderModal($modal, $this->answers(), $this->cursor, $editing, $view, $selected, $this->backdrop($height), $height);
   }
 
   /**
@@ -702,12 +707,14 @@ class PanelController {
     $this->modalValues = $this->values;
     $this->modalProvenance = $this->provenance;
     $this->modalReturnCursor = $this->cursor;
+    $this->modalReturnOffset = $this->offset;
     $this->navigator->enter($panel);
     $this->cursor = 0;
+    $this->offset = 0;
   }
 
   /**
-   * Close the current modal dialog, restoring the parent's cursor.
+   * Close the current modal dialog, restoring the parent's cursor and scroll.
    *
    * @param bool $cancel
    *   TRUE to discard the dialog's edits (restoring the opening snapshot);
@@ -721,10 +728,12 @@ class PanelController {
 
     $this->navigator->pop();
     $this->cursor = $this->modalReturnCursor;
+    $this->offset = $this->modalReturnOffset;
     $this->followCursor = TRUE;
     $this->modalValues = [];
     $this->modalProvenance = [];
     $this->modalReturnCursor = 0;
+    $this->modalReturnOffset = 0;
   }
 
   /**

@@ -1252,11 +1252,13 @@ class DefaultTheme implements ThemeInterface {
    *   The index of the selected dialog button, or -1 when none is selected.
    * @param string $backdrop
    *   The rendered parent frame to dim and overlay the dialog on.
+   * @param int $height
+   *   The screen's body height, bounding the dialog so its footer never clips.
    *
    * @return string
    *   The composited screen.
    */
-  public function renderModal(Panel $modal, Answers $answers, int $cursor, ?Field $editing, string $editorView, int $selectedButton, string $backdrop): string {
+  public function renderModal(Panel $modal, Answers $answers, int $cursor, ?Field $editing, string $editorView, int $selectedButton, string $backdrop, int $height): string {
     $config = $modal->modal;
 
     if (!$config instanceof Modal) {
@@ -1265,7 +1267,7 @@ class DefaultTheme implements ThemeInterface {
       // @codeCoverageIgnoreEnd
     }
 
-    [$body] = $this->renderBody($modal, $answers, $cursor, $editing, $editorView);
+    [$fields, $field_cursor] = $this->renderBody($modal, $answers, $cursor, $editing, $editorView);
 
     $lead = [];
     if ($modal->description !== '') {
@@ -1273,30 +1275,58 @@ class DefaultTheme implements ThemeInterface {
         $lead[] = $this->label($line);
       }
 
-      if ($body !== []) {
+      if ($fields !== []) {
         $lead[] = '';
       }
     }
 
-    $body = array_merge($lead, $body);
+    $body = array_merge($lead, $fields);
 
-    if ($body !== []) {
-      $body[] = '';
-    }
-
-    $body[] = $this->renderButtonBar([
-      Translator::t($config->buttons->submitLabel),
-      Translator::t($config->buttons->cancelLabel),
-    ], $selectedButton);
+    // The buttons pin to a footer so a dialog taller than the terminal never
+    // clips its only way out; the body scrolls under them to keep the cursor
+    // in view.
+    $footer = [
+      $this->renderButtonBar([
+        Translator::t($config->buttons->submitLabel),
+        Translator::t($config->buttons->cancelLabel),
+      ], $selectedButton),
+    ];
 
     $inset = max(2, intdiv($this->outerWidth, 8));
     $modal_width = max(1, $this->outerWidth - 2 * $inset);
     $border = $this->borderStyle() === Border::None ? Border::Line : $this->borderStyle();
 
-    $box = explode("\n", $this->renderBoxed([$this->title(Translator::t($modal->title))], $body, [], new Viewport(0, FALSE, FALSE), count($body), $modal_width, $border));
-    $backdrop_lines = array_map(fn(string $line): string => Box::fit(Ansi::strip($line), $this->outerWidth), explode("\n", $backdrop));
+    // Fit the dialog within the screen height so the pinned button footer is
+    // never clipped, reserving the box chrome (four rules, the title, the
+    // footer and any spacing pad). Only the body scrolls; the footer stays put.
+    $pad = $this->spacing() === Spacing::Padded ? 1 : 0;
+    $room = max(0, $height - 6 - 2 * $pad);
 
-    [$top, $left] = Overlay::center($this->outerWidth, count($backdrop_lines), $modal_width, count($box));
+    if (count($body) > $room && $room >= 3) {
+      // The body overflows and there is room to scroll it under the footer.
+      $cursor_line = $selectedButton >= 0 ? max(0, count($body) - 1) : count($lead) + $field_cursor;
+      $body_height = $room - 2;
+      $viewport = (new Scroller())->follow(count($body), $body_height, $cursor_line, 0);
+    }
+    else {
+      // The body fits, or there is too little room to scroll: show what fits.
+      $body = array_slice($body, 0, $room);
+      $viewport = new Viewport(0, FALSE, FALSE);
+      $body_height = count($body);
+    }
+
+    $box = explode("\n", $this->renderBoxed([$this->title(Translator::t($modal->title))], $body, $footer, $viewport, $body_height, $modal_width, $border));
+
+    // Pad the backdrop so a short parent frame still gives the dialog room to
+    // sit over, rather than shrinking it.
+    $backdrop_lines = array_map(fn(string $line): string => Box::fit(Ansi::strip($line), $this->outerWidth), explode("\n", $backdrop));
+    $area_height = max(count($backdrop_lines), count($box));
+
+    while (count($backdrop_lines) < $area_height) {
+      $backdrop_lines[] = str_repeat(' ', $this->outerWidth);
+    }
+
+    [$top, $left] = Overlay::center($this->outerWidth, $area_height, $modal_width, count($box));
 
     return implode("\n", Overlay::composite($backdrop_lines, $box, $modal_width, $top, $left, fn(string $segment): string => $this->dim($segment)));
   }
