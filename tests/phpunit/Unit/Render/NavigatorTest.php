@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Tests\Unit\Render;
 
-use DrevOps\Tui\Config\Panel;
+use DrevOps\Tui\Model\Panel;
 use DrevOps\Tui\Render\Navigator;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;

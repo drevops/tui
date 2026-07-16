@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Answers;
 
-use DrevOps\Tui\Config\Config;
-use DrevOps\Tui\Config\Panel;
+use DrevOps\Tui\Model\FormDefinition;
+use DrevOps\Tui\Model\Panel;
 
 /**
  * The collected answer set: values plus provenance, keyed by question id.
@@ -42,13 +42,13 @@ final readonly class Answers {
   }
 
   /**
-   * Build a self-describing answer set from a configuration.
+   * Build a self-describing answer set from a form definition.
    *
    * Walks the panel tree in form order and snapshots each active question
    * (label, kind, weight, panel trail) into its answer.
    *
-   * @param \DrevOps\Tui\Config\Config $config
-   *   The configuration the answers were collected against.
+   * @param \DrevOps\Tui\Model\FormDefinition $form
+   *   The form definition the answers were collected against.
    * @param array<string,mixed> $values
    *   The answer values keyed by question id.
    * @param array<string,\DrevOps\Tui\Answers\Provenance> $provenance
@@ -57,10 +57,10 @@ final readonly class Answers {
    * @return self
    *   The answer set.
    */
-  public static function forConfig(Config $config, array $values, array $provenance): self {
+  public static function forForm(FormDefinition $form, array $values, array $provenance): self {
     $items = [];
 
-    foreach ($config->panels as $panel) {
+    foreach ($form->panels as $panel) {
       $items = [...$items, ...self::walkPanel($panel, [], $values, $provenance)];
     }
 
@@ -70,7 +70,7 @@ final readonly class Answers {
   /**
    * Walk a panel and its sub-panels, snapshotting each active field.
    *
-   * @param \DrevOps\Tui\Config\Panel $panel
+   * @param \DrevOps\Tui\Model\Panel $panel
    *   The panel to walk.
    * @param list<string> $trail
    *   The titles of the ancestor panels, outermost first.

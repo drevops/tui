@@ -8,7 +8,7 @@ use DrevOps\Tui\Builder\FieldBuilder;
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Builder\PanelBuilder;
 use DrevOps\Tui\Condition\Condition;
-use DrevOps\Tui\Config\Config;
+use DrevOps\Tui\Model\FormDefinition;
 use DrevOps\Tui\Schema\SchemaValidator;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -32,7 +32,7 @@ final class SchemaValidatorTest extends TestCase {
    */
   #[DataProvider('dataProviderValidate')]
   public function testValidate(array $answers, ?string $expected_error): void {
-    $errors = (new SchemaValidator($this->config()))->validate($answers);
+    $errors = (new SchemaValidator($this->form()))->validate($answers);
 
     $this->assertSame($expected_error === NULL ? [] : [$expected_error], $errors);
   }
@@ -87,10 +87,10 @@ final class SchemaValidatorTest extends TestCase {
   }
 
   public function testNumericStringOptionMembership(): void {
-    $config = Form::create('T')
+    $form = Form::create('T')
       ->panel('p', 'p', fn(PanelBuilder $p): FieldBuilder => $p->toggle('flag')->option('0', 'Off')->option('1', 'On'))
       ->build();
-    $validator = new SchemaValidator($config);
+    $validator = new SchemaValidator($form);
 
     // A numeric-string value stays valid: values are compared as strings.
     $this->assertSame([], $validator->validate(['flag' => '1']));
@@ -98,9 +98,9 @@ final class SchemaValidatorTest extends TestCase {
   }
 
   /**
-   * Build a config exercising every validation branch.
+   * Build a form exercising every validation branch.
    */
-  protected function config(): Config {
+  protected function form(): FormDefinition {
     return Form::create('T')
       ->panel('p', 'p', function (PanelBuilder $p): void {
         $p->text('name')->required();

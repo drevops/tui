@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Tests\Unit\Widget;
 
-use DrevOps\Tui\Config\DateBounds;
-use DrevOps\Tui\Config\FieldType;
-use DrevOps\Tui\Config\Weekday;
+use DrevOps\Tui\Model\DateBounds;
+use DrevOps\Tui\Model\FieldType;
+use DrevOps\Tui\Model\Weekday;
 use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyMapManager;

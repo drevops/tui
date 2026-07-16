@@ -42,7 +42,6 @@ $theme_options = match ($mode) {
 };
 
 $form = Form::create('Built-in theme preview')
-  ->theme($theme, $theme_options)
   ->panel('preview', 'Preview', function (PanelBuilder $p): void {
     $p->text('name', 'Project name')->default('Acme Corp')->description('Shown in the header.');
     $p->select('env', 'Environment')->default('prod')->description('Deployment target.')->options([
@@ -60,8 +59,8 @@ $form = Form::create('Built-in theme preview')
   });
 
 try {
-  // The theme comes from the form; run() picks the dark/light mode.
-  $answers = (new Tui($form))->run($prompts);
+  // The theme is set on the facade; run() picks the dark/light mode.
+  $answers = (new Tui($form))->theme($theme, $theme_options)->run($prompts);
 }
 catch (EngineException $exception) {
   fwrite(STDERR, $exception->getMessage() . PHP_EOL);

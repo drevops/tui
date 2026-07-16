@@ -26,8 +26,6 @@ require __DIR__ . '/../../vendor/autoload.php';
 $opts = getopt('', ['no-unicode', 'no-ansi']);
 
 $form = Form::create('MultiSelect widget')
-  ->color(isset($opts['no-ansi']) ? FALSE : NULL)
-  ->unicode(isset($opts['no-unicode']) ? FALSE : NULL)
   ->panel('main', 'MultiSelect', function (PanelBuilder $p): void {
     $p->multiSelect('multiselect', 'MultiSelect')->default(['redis'])->options([
       'redis' => 'Redis',
@@ -36,4 +34,4 @@ $form = Form::create('MultiSelect widget')
     ]);
   });
 
-echo (new Tui($form))->run()->toJson() . "\n";
+echo (new Tui($form))->color(isset($opts['no-ansi']) ? FALSE : NULL)->unicode(isset($opts['no-unicode']) ? FALSE : NULL)->run()->toJson() . "\n";

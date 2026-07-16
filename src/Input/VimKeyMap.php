@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Input;
 
-use DrevOps\Tui\Config\FieldType;
+use DrevOps\Tui\Model\FieldType;
 
 /**
  * A vim-style preset: h/j/k/l navigate alongside the arrow keys.

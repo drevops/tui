@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Schema;
 
-use DrevOps\Tui\Config\Config;
-use DrevOps\Tui\Config\DateBounds;
-use DrevOps\Tui\Config\Field;
-use DrevOps\Tui\Config\NumberBounds;
+use DrevOps\Tui\Model\FormDefinition;
+use DrevOps\Tui\Model\DateBounds;
+use DrevOps\Tui\Model\Field;
+use DrevOps\Tui\Model\NumberBounds;
 use DrevOps\Tui\Translation\Translator;
 
 /**
@@ -20,12 +20,12 @@ class AgentHelp {
   /**
    * Construct the help generator.
    *
-   * @param \DrevOps\Tui\Config\Config $config
+   * @param \DrevOps\Tui\Model\FormDefinition $form
    *   The configuration to describe.
    * @param string $envPrefix
    *   The prefix for per-question env variable names (e.g. "APP_").
    */
-  public function __construct(protected Config $config, protected string $envPrefix = '') {
+  public function __construct(protected FormDefinition $form, protected string $envPrefix = '') {
   }
 
   /**
@@ -52,7 +52,7 @@ class AgentHelp {
     $lines[] = '';
     $lines[] = Translator::t('Questions:');
 
-    foreach ($this->config->fields() as $field) {
+    foreach ($this->form->fields() as $field) {
       $required = $field->required ? ' ' . Translator::t('(required)') : '';
       $lines[] = sprintf('  %s [%s]%s - %s%s%s', $field->id, $field->type->value, $required, Translator::t($field->label), $this->rangeNote($field), $this->dateNote($field));
     }
@@ -63,7 +63,7 @@ class AgentHelp {
   /**
    * A compact range annotation for a bounded number field.
    *
-   * @param \DrevOps\Tui\Config\Field $field
+   * @param \DrevOps\Tui\Model\Field $field
    *   The field.
    *
    * @return string
@@ -91,7 +91,7 @@ class AgentHelp {
   /**
    * A format-and-range annotation for a date field.
    *
-   * @param \DrevOps\Tui\Config\Field $field
+   * @param \DrevOps\Tui\Model\Field $field
    *   The field.
    *
    * @return string

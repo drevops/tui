@@ -7,9 +7,9 @@ namespace DrevOps\Tui\Theme;
 use DrevOps\Tui\Answers\Answers;
 use DrevOps\Tui\Answers\Provenance;
 use DrevOps\Tui\Answers\SummaryFormatter;
-use DrevOps\Tui\Config\Field;
-use DrevOps\Tui\Config\FieldType;
-use DrevOps\Tui\Config\Panel;
+use DrevOps\Tui\Model\Field;
+use DrevOps\Tui\Model\FieldType;
+use DrevOps\Tui\Model\Panel;
 use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
@@ -612,13 +612,13 @@ class DefaultTheme implements ThemeInterface {
   /**
    * Build the body lines and the line index of the selected item.
    *
-   * @param \DrevOps\Tui\Config\Panel $panel
+   * @param \DrevOps\Tui\Model\Panel $panel
    *   The panel.
    * @param \DrevOps\Tui\Answers\Answers $answers
    *   The current answers.
    * @param int $cursor
    *   The selected item index.
-   * @param \DrevOps\Tui\Config\Field|null $editing
+   * @param \DrevOps\Tui\Model\Field|null $editing
    *   The field whose editor is expanded inline in the panel, or NULL when no
    *   field is being edited inline.
    * @param string $editorView
@@ -698,7 +698,7 @@ class DefaultTheme implements ThemeInterface {
   /**
    * Render a field row.
    *
-   * @param \DrevOps\Tui\Config\Field $field
+   * @param \DrevOps\Tui\Model\Field $field
    *   The field.
    * @param \DrevOps\Tui\Answers\Answers $answers
    *   The current answers.
@@ -727,7 +727,7 @@ class DefaultTheme implements ThemeInterface {
    * several lines, aligning the rest under that value column - so the field
    * reads as its editor opened in place, the rest of the panel still around it.
    *
-   * @param \DrevOps\Tui\Config\Field $field
+   * @param \DrevOps\Tui\Model\Field $field
    *   The field being edited.
    * @param string $view
    *   The widget's rendered view.
@@ -754,7 +754,7 @@ class DefaultTheme implements ThemeInterface {
   /**
    * Render a sub-panel row.
    *
-   * @param \DrevOps\Tui\Config\Panel $panel
+   * @param \DrevOps\Tui\Model\Panel $panel
    *   The sub-panel.
    * @param bool $selected
    *   Whether the row is selected.
@@ -784,7 +784,7 @@ class DefaultTheme implements ThemeInterface {
   /**
    * Summarize a sub-panel's active field values into one line, for the hub.
    *
-   * @param \DrevOps\Tui\Config\Panel $panel
+   * @param \DrevOps\Tui\Model\Panel $panel
    *   The sub-panel.
    * @param \DrevOps\Tui\Answers\Answers $answers
    *   The current answers.
@@ -1208,7 +1208,7 @@ class DefaultTheme implements ThemeInterface {
   /**
    * Render a field's value readably, masking secret values.
    *
-   * @param \DrevOps\Tui\Config\Field $field
+   * @param \DrevOps\Tui\Model\Field $field
    *   The field the value belongs to.
    * @param mixed $value
    *   The value.

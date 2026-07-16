@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Resolver;
 
-use DrevOps\Tui\Config\FieldType;
+use DrevOps\Tui\Model\FieldType;
 use DrevOps\Tui\Translation\Translator;
 
 /**
@@ -34,7 +34,7 @@ class InputResolver {
   /**
    * Build the input map for the given fields.
    *
-   * @param \DrevOps\Tui\Config\Field[] $fields
+   * @param \DrevOps\Tui\Model\Field[] $fields
    *   The fields to resolve inputs for.
    * @param string $prompts
    *   A `--prompts` JSON string, or a path to a JSON file, or empty.
@@ -79,7 +79,7 @@ class InputResolver {
    *
    * @param string $value
    *   The raw environment value.
-   * @param \DrevOps\Tui\Config\FieldType $type
+   * @param \DrevOps\Tui\Model\FieldType $type
    *   The field type.
    *
    * @return mixed

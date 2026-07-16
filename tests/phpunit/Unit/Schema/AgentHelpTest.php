@@ -19,14 +19,14 @@ use PHPUnit\Framework\TestCase;
 final class AgentHelpTest extends TestCase {
 
   public function testGenerate(): void {
-    $config = Form::create('T')
+    $form = Form::create('T')
       ->panel('p', 'p', function (PanelBuilder $p): void {
         $p->text('name', 'Site name')->required();
         $p->confirm('agree', 'Agree');
       })
       ->build();
 
-    $help = (new AgentHelp($config, 'APP_'))->generate();
+    $help = (new AgentHelp($form, 'APP_'))->generate();
 
     $this->assertStringContainsString('--no-interaction', $help);
     $this->assertStringContainsString('--prompts', $help);
@@ -37,7 +37,7 @@ final class AgentHelpTest extends TestCase {
   }
 
   public function testNumberRangeAnnotation(): void {
-    $config = Form::create('T')
+    $form = Form::create('T')
       ->panel('p', 'p', function (PanelBuilder $p): void {
         $p->number('port', 'HTTP port')->min(1)->max(65535)->step(5);
         $p->number('count', 'Count')->min(1);
@@ -46,7 +46,7 @@ final class AgentHelpTest extends TestCase {
       })
       ->build();
 
-    $help = (new AgentHelp($config))->generate();
+    $help = (new AgentHelp($form))->generate();
 
     $this->assertStringContainsString('port [number] - HTTP port (between 1 and 65535, step 5)', $help);
     $this->assertStringContainsString('count [number] - Count (at least 1)', $help);
@@ -55,7 +55,7 @@ final class AgentHelpTest extends TestCase {
   }
 
   public function testDateRangeAnnotation(): void {
-    $config = Form::create('T')
+    $form = Form::create('T')
       ->panel('p', 'p', function (PanelBuilder $p): void {
         $p->calendar('due', 'Due date')->minDate('2026-01-01')->maxDate('2026-12-31');
         $p->calendar('any', 'Any date');
@@ -64,7 +64,7 @@ final class AgentHelpTest extends TestCase {
       })
       ->build();
 
-    $help = (new AgentHelp($config))->generate();
+    $help = (new AgentHelp($form))->generate();
 
     $this->assertStringContainsString('due [calendar] - Due date (between 2026-01-01 and 2026-12-31)', $help);
     // With no range declared, the format itself is the annotation.
@@ -75,13 +75,13 @@ final class AgentHelpTest extends TestCase {
   }
 
   public function testNoEnvPrefixOmitsEnvLine(): void {
-    $config = Form::create('T')
+    $form = Form::create('T')
       ->panel('p', 'p', function (PanelBuilder $p): void {
         $p->text('x');
       })
       ->build();
 
-    $help = (new AgentHelp($config))->generate();
+    $help = (new AgentHelp($form))->generate();
 
     $this->assertStringNotContainsString('environment variables named', $help);
   }

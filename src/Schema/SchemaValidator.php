@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Schema;
 
-use DrevOps\Tui\Config\Config;
-use DrevOps\Tui\Config\Field;
+use DrevOps\Tui\Model\FormDefinition;
+use DrevOps\Tui\Model\Field;
 use DrevOps\Tui\Translation\Translator;
 
 /**
@@ -22,10 +22,10 @@ class SchemaValidator {
   /**
    * Construct a validator.
    *
-   * @param \DrevOps\Tui\Config\Config $config
+   * @param \DrevOps\Tui\Model\FormDefinition $form
    *   The configuration to validate against.
    */
-  public function __construct(protected Config $config) {
+  public function __construct(protected FormDefinition $form) {
   }
 
   /**
@@ -41,7 +41,7 @@ class SchemaValidator {
     $errors = [];
     $known = [];
 
-    foreach ($this->config->fields() as $field) {
+    foreach ($this->form->fields() as $field) {
       $known[$field->id] = TRUE;
 
       if ($field->when !== NULL && !$field->when->matches($answers)) {
@@ -74,7 +74,7 @@ class SchemaValidator {
   /**
    * Validate a single value against its field.
    *
-   * @param \DrevOps\Tui\Config\Field $field
+   * @param \DrevOps\Tui\Model\Field $field
    *   The field.
    * @param mixed $value
    *   The value.
@@ -102,7 +102,7 @@ class SchemaValidator {
   /**
    * Check a value against the field's declared number or date bounds.
    *
-   * @param \DrevOps\Tui\Config\Field $field
+   * @param \DrevOps\Tui\Model\Field $field
    *   The field.
    * @param mixed $value
    *   The value.
@@ -119,7 +119,7 @@ class SchemaValidator {
   /**
    * Frame a constraint fragment as a question-scoped error message.
    *
-   * @param \DrevOps\Tui\Config\Field $field
+   * @param \DrevOps\Tui\Model\Field $field
    *   The field.
    * @param string $constraint
    *   The constraint fragment (e.g. "a string", "between 1 and 10").
@@ -150,7 +150,7 @@ class SchemaValidator {
    * Rejects any supplied value that is not a selectable option, telling a
    * disabled option apart from an unknown one.
    *
-   * @param \DrevOps\Tui\Config\Field $field
+   * @param \DrevOps\Tui\Model\Field $field
    *   The field.
    * @param mixed $value
    *   The value.

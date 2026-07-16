@@ -26,10 +26,8 @@ require __DIR__ . '/../../vendor/autoload.php';
 $opts = getopt('', ['no-unicode', 'no-ansi']);
 
 $form = Form::create('Calendar widget')
-  ->color(isset($opts['no-ansi']) ? FALSE : NULL)
-  ->unicode(isset($opts['no-unicode']) ? FALSE : NULL)
   ->panel('main', 'Calendar', function (PanelBuilder $p): void {
     $p->calendar('date', 'Calendar')->default('2026-07-15');
   });
 
-echo (new Tui($form))->run()->toJson() . "\n";
+echo (new Tui($form))->color(isset($opts['no-ansi']) ? FALSE : NULL)->unicode(isset($opts['no-unicode']) ? FALSE : NULL)->run()->toJson() . "\n";

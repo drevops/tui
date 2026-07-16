@@ -6,10 +6,12 @@ namespace DrevOps\Tui;
 
 use DrevOps\Tui\Answers\Answers;
 use DrevOps\Tui\Builder\Form;
-use DrevOps\Tui\Config\Config;
 use DrevOps\Tui\Engine\Engine;
 use DrevOps\Tui\Handler\Context;
 use DrevOps\Tui\Handler\HandlerRegistry;
+use DrevOps\Tui\Input\KeyMap;
+use DrevOps\Tui\Input\KeyMapManager;
+use DrevOps\Tui\Model\FormDefinition;
 use DrevOps\Tui\Resolver\InputResolver;
 use DrevOps\Tui\Schema\AgentHelp;
 use DrevOps\Tui\Schema\SchemaGenerator;
@@ -25,9 +27,11 @@ use DrevOps\Tui\Translation\Translator;
  * The one-class entry point for collecting a form's answers.
  *
  * Wraps the engine, input resolver, schema tools and panel TUI so a consumer
- * can collect answers - headlessly or interactively - in a single call,
- * without touching the internals. Those internals stay reachable via
- * config(), engine() and registry() when a consumer does want finer control.
+ * can collect answers - headlessly or interactively - in a single call. It also
+ * owns the global TUI runtime shared by every form: the theme, key bindings,
+ * colour and glyph forcing, the key-hint footer, screen clearing and the active
+ * language, each set through a fluent setter. Those internals stay reachable
+ * via form(), engine() and registry() when a consumer wants finer control.
  *
  * @package DrevOps\Tui
  */
@@ -49,15 +53,57 @@ final class Tui {
   protected string $envPrefix;
 
   /**
-   * The configuration.
+   * The form definition.
    */
-  protected Config $config;
+  protected FormDefinition $form;
+
+  /**
+   * The theme name or class (empty for the default).
+   */
+  protected string $theme = '';
+
+  /**
+   * Display options passed to the interactive theme.
+   *
+   * @var array<string,mixed>
+   */
+  protected array $themeOptions = [];
+
+  /**
+   * The resolved key bindings; NULL uses the default preset.
+   */
+  protected ?KeyMap $keymap = NULL;
+
+  /**
+   * Force ANSI colour on/off; NULL auto-detects.
+   */
+  protected ?bool $color = NULL;
+
+  /**
+   * Force Unicode/ASCII glyphs; NULL auto-detects.
+   */
+  protected ?bool $unicode = NULL;
+
+  /**
+   * Whether the interactive TUI shows the contextual key-hint footer.
+   */
+  protected bool $footer = TRUE;
+
+  /**
+   * Whether to clear the screen when the interactive TUI exits.
+   */
+  protected bool $clearOnExit = TRUE;
+
+  /**
+   * The translator localizing chrome and questions (NULL leaves English).
+   */
+  protected ?Translator $translator = NULL;
 
   /**
    * Construct a TUI.
    *
-   * @param \DrevOps\Tui\Config\Config|\DrevOps\Tui\Builder\Form $form
-   *   The form: a Form builder (built internally) or its built Config.
+   * @param \DrevOps\Tui\Model\FormDefinition|\DrevOps\Tui\Builder\Form $form
+   *   The form: a Form builder (built internally) or its built definition.
    * @param string[] $handler_namespaces
    *   Namespaces searched, in order, for per-field consumer classes offering
    *   reusable static validate()/transform() behaviour.
@@ -65,17 +111,138 @@ final class Tui {
    *   The env-variable prefix for per-question overrides; wins over the
    *   form-declared prefix, which wins over the "TUI_" default.
    */
-  public function __construct(Config|Form $form, array $handler_namespaces = [], string $env_prefix = '') {
-    $this->config = $form instanceof Form ? $form->build() : $form;
-    $this->envPrefix = $env_prefix !== '' ? $env_prefix : ($this->config->envPrefix !== '' ? $this->config->envPrefix : 'TUI_');
+  public function __construct(FormDefinition|Form $form, array $handler_namespaces = [], string $env_prefix = '') {
+    $this->form = $form instanceof Form ? $form->build() : $form;
+    $this->envPrefix = $env_prefix !== '' ? $env_prefix : ($this->form->envPrefix !== '' ? $this->form->envPrefix : 'TUI_');
     $this->registry = new HandlerRegistry($handler_namespaces);
-    $this->engine = new Engine($this->config, $this->registry);
+    $this->engine = new Engine($this->form, $this->registry);
 
-    // Activate the form's translator process-wide so t() localizes chrome and
-    // questions from any depth without threading the translator through. A NULL
-    // translator clears any previously activated one, so a translator-less form
-    // never inherits the language of an earlier instance.
-    Translator::setShared($this->config->translator);
+    // A fresh facade starts in English; a later translator() call activates a
+    // language, so a translator-less run never inherits an earlier instance's.
+    Translator::setShared(NULL);
+  }
+
+  /**
+   * Set the interactive theme name and its display options.
+   *
+   * @param string $theme
+   *   The theme name or class. Empty (or "auto") auto-detects light/dark from
+   *   the terminal background.
+   * @param array<string,mixed> $options
+   *   Display options for the theme, keyed by name - e.g.
+   *   `['spacing' => Spacing::Padded, 'border' => Border::Rounded]` - plus any
+   *   a custom theme reads.
+   *
+   * @return $this
+   *   The facade.
+   */
+  public function theme(string $theme, array $options = []): self {
+    $this->theme = $theme;
+    $this->themeOptions = $options;
+
+    return $this;
+  }
+
+  /**
+   * Set the key-binding preset and optional overrides.
+   *
+   * The preset names the base bindings ("default", "vim", a registered name, or
+   * a preset class); each override is a {@see \DrevOps\Tui\Input\Binding}
+   * naming a scope, an action and its keys, retuning it on top of the preset.
+   * Conflicting, un-typeable or malformed bindings throw here, not mid-session.
+   *
+   * @param string $preset
+   *   The preset name or class. Empty selects the default preset.
+   * @param list<\DrevOps\Tui\Input\Binding> $overrides
+   *   Bindings applied on top of the preset.
+   *
+   * @return $this
+   *   The facade.
+   */
+  public function keys(string $preset = '', array $overrides = []): self {
+    $this->keymap = KeyMapManager::create($preset, $overrides);
+
+    return $this;
+  }
+
+  /**
+   * Force ANSI colour on or off.
+   *
+   * @param bool|null $color
+   *   TRUE/FALSE to force, NULL to auto-detect.
+   *
+   * @return $this
+   *   The facade.
+   */
+  public function color(?bool $color): self {
+    $this->color = $color;
+
+    return $this;
+  }
+
+  /**
+   * Force Unicode or ASCII glyphs.
+   *
+   * @param bool|null $unicode
+   *   TRUE/FALSE to force, NULL to auto-detect.
+   *
+   * @return $this
+   *   The facade.
+   */
+  public function unicode(?bool $unicode): self {
+    $this->unicode = $unicode;
+
+    return $this;
+  }
+
+  /**
+   * Set whether the contextual key-hint footer is shown.
+   *
+   * @param bool $show
+   *   Whether to show the footer.
+   *
+   * @return $this
+   *   The facade.
+   */
+  public function footer(bool $show): self {
+    $this->footer = $show;
+
+    return $this;
+  }
+
+  /**
+   * Set whether to clear the screen when the TUI exits.
+   *
+   * @param bool $clear
+   *   Whether to clear on exit.
+   *
+   * @return $this
+   *   The facade.
+   */
+  public function clearOnExit(bool $clear): self {
+    $this->clearOnExit = $clear;
+
+    return $this;
+  }
+
+  /**
+   * Set the translator localizing chrome and questions.
+   *
+   * The translator carries the active language and catalog directories and is
+   * activated process-wide so `t()` resolves during a run. Without one, every
+   * string renders in its English source.
+   *
+   * @param \DrevOps\Tui\Translation\Translator $translator
+   *   The translator.
+   *
+   * @return $this
+   *   The facade.
+   */
+  public function translator(Translator $translator): self {
+    $this->translator = $translator;
+    Translator::setShared($translator);
+
+    return $this;
   }
 
   /**
@@ -120,7 +287,7 @@ final class Tui {
    *   The collected answers.
    */
   public function collect(string $prompts = '', string $directory = '', bool $update = FALSE, string $version = ''): Answers {
-    $inputs = (new InputResolver($this->envPrefix))->resolve($this->config->fields(), $prompts, getenv());
+    $inputs = (new InputResolver($this->envPrefix))->resolve($this->form->fields(), $prompts, getenv());
 
     return $this->engine->collect($inputs, $this->context($directory, $update, $version));
   }
@@ -129,8 +296,8 @@ final class Tui {
    * Collect answers interactively through the panel TUI.
    *
    * @param string $theme
-   *   The theme name or class. Empty falls back to the config's theme; an
-   *   empty config theme (or "auto") auto-detects light/dark from the terminal
+   *   The theme name or class. Empty falls back to the facade's theme; an empty
+   *   facade theme (or "auto") auto-detects light/dark from the terminal
    *   background.
    * @param string $banner
    *   An optional start banner.
@@ -151,7 +318,7 @@ final class Tui {
       // @codeCoverageIgnoreEnd
     }
 
-    // The theme's display options (colour, Unicode, mode) come from the config
+    // The theme's display options (colour, Unicode, mode) come from the facade
     // when set, otherwise they are auto-detected from the terminal.
     $controller = $this->controller($this->resolveThemeOptions($terminal), $theme, $banner, $version, $directory);
 
@@ -169,9 +336,9 @@ final class Tui {
    * @param array<string,mixed> $options
    *   The resolved theme display options (colour, Unicode, mode).
    * @param string $theme
-   *   The theme name or class; empty falls back to the config's theme.
+   *   The theme name or class; empty falls back to the facade's theme.
    * @param string $banner
-   *   An optional start banner; empty falls back to the config's banner.
+   *   An optional start banner; empty falls back to the form's banner.
    * @param string $version
    *   An optional version shown below the banner and stamped into the context.
    * @param string $directory
@@ -187,11 +354,14 @@ final class Tui {
   public function controller(array $options, string $theme = '', string $banner = '', string $version = '', string $directory = ''): PanelController {
     $answers = $this->engine->collect([], $this->context($directory, FALSE, $version));
 
-    $banner_text = $banner !== '' ? $banner : $this->config->banner;
+    $banner_text = $banner !== '' ? $banner : $this->form->banner;
 
     return new PanelController(
-      $this->config,
+      $this->form,
       ThemeManager::create($this->resolveTheme($theme), DefaultTheme::DEFAULT_WIDTH, $options),
+      $this->keymap ?? KeyMapManager::create(),
+      $this->footer,
+      $this->clearOnExit,
       $answers->values,
       $answers->provenance,
       $banner_text,
@@ -206,7 +376,7 @@ final class Tui {
    *   The schema.
    */
   public function schema(): array {
-    return (new SchemaGenerator($this->config))->generate();
+    return (new SchemaGenerator($this->form))->generate();
   }
 
   /**
@@ -216,7 +386,7 @@ final class Tui {
    *   The help text.
    */
   public function agentHelp(): string {
-    return (new AgentHelp($this->config, $this->envPrefix))->generate();
+    return (new AgentHelp($this->form, $this->envPrefix))->generate();
   }
 
   /**
@@ -229,17 +399,17 @@ final class Tui {
    *   The validation errors (empty when valid).
    */
   public function validate(array $answers): array {
-    return (new SchemaValidator($this->config))->validate($answers);
+    return (new SchemaValidator($this->form))->validate($answers);
   }
 
   /**
-   * The configuration.
+   * The form definition.
    *
-   * @return \DrevOps\Tui\Config\Config
-   *   The configuration.
+   * @return \DrevOps\Tui\Model\FormDefinition
+   *   The form definition.
    */
-  public function config(): Config {
-    return $this->config;
+  public function form(): FormDefinition {
+    return $this->form;
   }
 
   /**
@@ -265,18 +435,18 @@ final class Tui {
   /**
    * Resolve the interactive theme name.
    *
-   * The argument wins over the config theme; an empty result or the explicit
+   * The argument wins over the facade's theme; an empty result or the explicit
    * "auto" sentinel selects the default theme. The dark/light mode is a display
    * option resolved separately, no longer a theme choice.
    *
    * @param string $theme
-   *   The theme argument (empty to fall back to the config theme).
+   *   The theme argument (empty to fall back to the facade's theme).
    *
    * @return string
    *   The resolved theme name.
    */
   protected function resolveTheme(string $theme): string {
-    $name = $theme !== '' ? $theme : $this->config->theme;
+    $name = $theme !== '' ? $theme : $this->theme;
 
     return $name === '' || $name === 'auto' ? 'default' : $name;
   }
@@ -284,7 +454,7 @@ final class Tui {
   /**
    * Build the theme's display options, auto-detecting what the consumer omits.
    *
-   * The config's options win; anything unset for colour, Unicode and the
+   * The facade's options win; anything unset for colour, Unicode and the
    * dark/light mode is filled from the detected terminal capabilities. The mode
    * follows the background only when colour is on - with colour off the palette
    * is invisible, so the background query is skipped.
@@ -296,14 +466,14 @@ final class Tui {
    *   The resolved options.
    */
   protected function resolveThemeOptions(Terminal $terminal): array {
-    $options = $this->config->themeOptions;
+    $options = $this->themeOptions;
 
     if (!isset($options['color'])) {
-      $options['color'] = $this->config->color ?? Terminal::detectColor();
+      $options['color'] = $this->color ?? Terminal::detectColor();
     }
 
     if (!isset($options['unicode'])) {
-      $options['unicode'] = $this->config->unicode ?? Terminal::detectUnicode();
+      $options['unicode'] = $this->unicode ?? Terminal::detectUnicode();
     }
 
     if (!isset($options['mode'])) {

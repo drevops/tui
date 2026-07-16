@@ -6,10 +6,10 @@ namespace DrevOps\Tui\Render;
 
 use DrevOps\Tui\Answers\Answers;
 use DrevOps\Tui\Answers\Provenance;
-use DrevOps\Tui\Config\Config;
-use DrevOps\Tui\Config\Field;
-use DrevOps\Tui\Config\Panel;
-use DrevOps\Tui\Config\RenderMode;
+use DrevOps\Tui\Model\Field;
+use DrevOps\Tui\Model\FormDefinition;
+use DrevOps\Tui\Model\Panel;
+use DrevOps\Tui\Model\RenderMode;
 use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
@@ -128,10 +128,16 @@ class PanelController {
   /**
    * Construct a controller.
    *
-   * @param \DrevOps\Tui\Config\Config $config
-   *   The configuration.
+   * @param \DrevOps\Tui\Model\FormDefinition $form
+   *   The form definition (panels, fields, titles and submit/cancel chrome).
    * @param \DrevOps\Tui\Theme\DefaultTheme $theme
    *   The theme (the visual authority for rendering).
+   * @param \DrevOps\Tui\Input\KeyMap|null $keymap
+   *   The resolved key bindings; NULL uses the default preset.
+   * @param bool $footer
+   *   Whether the contextual key-hint footer is shown.
+   * @param bool $clearOnExit
+   *   Whether to clear the screen when the interactive loop exits.
    * @param array<string,mixed> $values
    *   The initial answer values (typically the engine's resolved answers).
    * @param array<string,\DrevOps\Tui\Answers\Provenance> $provenance
@@ -145,20 +151,23 @@ class PanelController {
    *   tests and to gate the textarea handoff on editor availability.
    */
   public function __construct(
-    protected Config $config,
+    protected FormDefinition $form,
     protected DefaultTheme $theme,
+    ?KeyMap $keymap = NULL,
+    protected bool $footer = TRUE,
+    protected bool $clearOnExit = TRUE,
     protected array $values = [],
     protected array $provenance = [],
     protected string $banner = '',
     protected string $version = '',
     ?ExternalEditor $external_editor = NULL,
   ) {
-    $this->keymap = $config->keymap ?? KeyMapManager::create();
+    $this->keymap = $keymap ?? KeyMapManager::create();
     $this->externalEditor = $external_editor ?? new ExternalEditor();
     $this->widgets = new WidgetFactory($this->keymap, $this->externalEditor->isAvailable());
     $this->nav = $this->keymap->navigation();
     $this->scroller = new Scroller();
-    $this->navigator = new Navigator(new Panel('hub', $config->title, '', [], $config->panels));
+    $this->navigator = new Navigator(new Panel('hub', $form->title, '', [], $form->panels));
   }
 
   /**
@@ -264,7 +273,7 @@ class PanelController {
     }
     finally {
       $terminal->restore();
-      if ($this->config->clearOnExit) {
+      if ($this->clearOnExit) {
         $terminal->clear();
       }
     }
@@ -285,7 +294,7 @@ class PanelController {
   /**
    * The current panel.
    *
-   * @return \DrevOps\Tui\Config\Panel
+   * @return \DrevOps\Tui\Model\Panel
    *   The current panel.
    */
   public function currentPanel(): Panel {
@@ -299,7 +308,7 @@ class PanelController {
    *   The self-describing answers.
    */
   public function answers(): Answers {
-    return Answers::forConfig($this->config, $this->values, $this->provenance);
+    return Answers::forForm($this->form, $this->values, $this->provenance);
   }
 
   /**
@@ -337,7 +346,7 @@ class PanelController {
   protected function editorFrame(WidgetInterface $editor): string {
     $label = $this->editing instanceof Field ? Translator::t($this->editing->label) : '';
     $keys = $this->editing instanceof Field ? $this->keymap->forField($this->editing->type) : $this->nav;
-    $hints = $this->config->footer ? $editor->hints() : [];
+    $hints = $this->footer ? $editor->hints() : [];
 
     return $this->theme->renderEditor($label, $editor->view($this->theme), $hints, $keys);
   }
@@ -377,8 +386,8 @@ class PanelController {
       }
 
       $body[] = $this->theme->renderButtonBar([
-        Translator::t($this->config->submitLabel),
-        Translator::t($this->config->cancelLabel),
+        Translator::t($this->form->submitLabel),
+        Translator::t($this->form->cancelLabel),
       ], $selected);
     }
 
@@ -537,7 +546,7 @@ class PanelController {
    *   The footer lines: one when the footer is on, none when it is off.
    */
   protected function hubFooter(): array {
-    return $this->config->footer ? [$this->theme->renderHints($this->nav, ...$this->navigationHints())] : [];
+    return $this->footer ? [$this->theme->renderHints($this->nav, ...$this->navigationHints())] : [];
   }
 
   /**
@@ -551,7 +560,7 @@ class PanelController {
    *   The widget's hint line, or none when the footer is turned off.
    */
   protected function inlineEditFooter(): array {
-    if (!$this->config->footer || !$this->editor instanceof WidgetInterface || !$this->editing instanceof Field) {
+    if (!$this->footer || !$this->editor instanceof WidgetInterface || !$this->editing instanceof Field) {
       return [];
     }
 
@@ -587,7 +596,7 @@ class PanelController {
     $sections = [new HelpSection(Translator::t('Navigation'), $this->nav, ...$this->navigationHints())];
 
     $seen = [];
-    foreach ($this->config->fields() as $field) {
+    foreach ($this->form->fields() as $field) {
       if (in_array($field->type, $seen, TRUE)) {
         continue;
       }
@@ -610,7 +619,7 @@ class PanelController {
    *   TRUE when buttons are enabled and the navigator is at the root panel.
    */
   protected function buttonsVisible(): bool {
-    return $this->config->buttons && $this->navigator->isRoot();
+    return $this->form->buttons && $this->navigator->isRoot();
   }
 
   /**
@@ -627,7 +636,7 @@ class PanelController {
   /**
    * Open the editor for a field.
    *
-   * @param \DrevOps\Tui\Config\Field $field
+   * @param \DrevOps\Tui\Model\Field $field
    *   The field.
    */
   protected function openEditor(Field $field): void {

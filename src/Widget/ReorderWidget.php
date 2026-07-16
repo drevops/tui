@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Widget;
 
-use DrevOps\Tui\Config\Field;
-use DrevOps\Tui\Config\FieldType;
-use DrevOps\Tui\Config\Option;
+use DrevOps\Tui\Model\Field;
+use DrevOps\Tui\Model\FieldType;
+use DrevOps\Tui\Model\Option;
 use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
@@ -33,7 +33,7 @@ class ReorderWidget extends AbstractWidget implements OptionsCapableInterface, P
   /**
    * The items in their current arrangement.
    *
-   * @var list<\DrevOps\Tui\Config\Option>
+   * @var list<\DrevOps\Tui\Model\Option>
    */
   protected array $items;
 
@@ -50,7 +50,7 @@ class ReorderWidget extends AbstractWidget implements OptionsCapableInterface, P
   /**
    * Construct a reorder widget.
    *
-   * @param array<int|string,\DrevOps\Tui\Config\Option|string> $options
+   * @param array<int|string,\DrevOps\Tui\Model\Option|string> $options
    *   The items to rank, in display order - a list of options or the
    *   value => label shorthand map.
    * @param list<string> $default
@@ -157,7 +157,7 @@ class ReorderWidget extends AbstractWidget implements OptionsCapableInterface, P
   /**
    * The rows currently shown: the full arrangement, in its current order.
    *
-   * @return list<\DrevOps\Tui\Config\Option>
+   * @return list<\DrevOps\Tui\Model\Option>
    *   The visible rows.
    */
   public function visible(): array {
@@ -185,7 +185,7 @@ class ReorderWidget extends AbstractWidget implements OptionsCapableInterface, P
    *
    * @param \DrevOps\Tui\Theme\ThemeInterface $theme
    *   The theme.
-   * @param \DrevOps\Tui\Config\Option $option
+   * @param \DrevOps\Tui\Model\Option $option
    *   The item row.
    * @param bool $current
    *   Whether the row holds the cursor.

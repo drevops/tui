@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\Tui\Tests\Unit\Config;
+namespace DrevOps\Tui\Tests\Unit\Model;
 
-use DrevOps\Tui\Config\NumberBounds;
+use DrevOps\Tui\Model\NumberBounds;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
@@ -14,7 +14,7 @@ use PHPUnit\Framework\TestCase;
  * Tests the number bounds value object.
  */
 #[CoversClass(NumberBounds::class)]
-#[Group('config')]
+#[Group('model')]
 final class NumberBoundsTest extends TestCase {
 
   #[DataProvider('dataProviderContains')]

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\Tui\Tests\Unit\Config;
+namespace DrevOps\Tui\Tests\Unit\Model;
 
-use DrevOps\Tui\Config\ConfigException;
-use DrevOps\Tui\Config\DateBounds;
-use DrevOps\Tui\Config\Weekday;
+use DrevOps\Tui\Model\FormException;
+use DrevOps\Tui\Model\DateBounds;
+use DrevOps\Tui\Model\Weekday;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
@@ -16,7 +16,7 @@ use PHPUnit\Framework\TestCase;
  * Tests the date bounds value object.
  */
 #[CoversClass(DateBounds::class)]
-#[Group('config')]
+#[Group('model')]
 final class DateBoundsTest extends TestCase {
 
   #[DataProvider('dataProviderParse')]
@@ -101,7 +101,7 @@ final class DateBoundsTest extends TestCase {
   }
 
   public function testConstructorRejectsReversedBounds(): void {
-    $this->expectException(ConfigException::class);
+    $this->expectException(FormException::class);
     $this->expectExceptionMessage('Date bounds declare a minimum of 2026-12-31 after the maximum of 2026-01-01.');
 
     new DateBounds(new \DateTimeImmutable('2026-12-31'), new \DateTimeImmutable('2026-01-01'));

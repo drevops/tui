@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Input;
 
-use DrevOps\Tui\Config\FieldType;
+use DrevOps\Tui\Model\FieldType;
 
 /**
  * The resolved, validated key bindings for a whole form.
@@ -84,7 +84,7 @@ final class KeyMap {
   /**
    * The scope for a widget type, or the base when the type has no overrides.
    *
-   * @param \DrevOps\Tui\Config\FieldType $type
+   * @param \DrevOps\Tui\Model\FieldType $type
    *   The field type.
    *
    * @return \DrevOps\Tui\Input\ScopedKeyMap

@@ -7,7 +7,7 @@ namespace DrevOps\Tui\Theme;
 /**
  * The theme registry and factory.
  *
- * Themes are self-contained classes; this manager is how a config's theme name
+ * Themes are self-contained classes; this manager is how a theme name
  * becomes an instance. The built-in theme is pre-registered ("default"), a
  * consumer registers its own under a short name with {@see register()}, and
  * {@see create()} also accepts a fully-qualified theme class name directly, so
@@ -34,7 +34,7 @@ final class ThemeManager {
   ];
 
   /**
-   * Register a theme class under a name so a config can select it.
+   * Register a theme class under a name so an appearance can select it.
    *
    * @param string $name
    *   The theme name.
@@ -57,7 +57,7 @@ final class ThemeManager {
    * Create a theme by name.
    *
    * Lowest friction first: a fully-qualified theme class name is instantiated
-   * directly, so a config can point at a consumer's own theme class with no
+   * directly, so a consumer can point at their own theme class with no
    * registration. Otherwise the name is looked up in the registry ("default" or
    * a name passed to {@see register()}). An unknown name fails loudly - a typo
    * should not silently render the default theme. Colour, Unicode and the

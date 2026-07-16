@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Tests\Unit\Input;
 
-use DrevOps\Tui\Config\FieldType;
+use DrevOps\Tui\Model\FieldType;
 use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Binding;
 use DrevOps\Tui\Input\DefaultKeyMap;

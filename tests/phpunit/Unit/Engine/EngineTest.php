@@ -133,10 +133,10 @@ final class EngineTest extends TestCase {
    *   The callback receiving the panel builder to declare its fields.
    */
   protected function engine(\Closure $build): Engine {
-    $config = Form::create('T')->panel('p', 'p', $build)->build();
+    $form = Form::create('T')->panel('p', 'p', $build)->build();
     $registry = new HandlerRegistry(['DrevOps\\Tui\\Tests\\Fixtures\\Handler']);
 
-    return new Engine($config, $registry);
+    return new Engine($form, $registry);
   }
 
 }

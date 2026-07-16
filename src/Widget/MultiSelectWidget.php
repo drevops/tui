@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Widget;
 
-use DrevOps\Tui\Config\Option;
-use DrevOps\Tui\Config\OptionKind;
+use DrevOps\Tui\Model\Option;
+use DrevOps\Tui\Model\OptionKind;
 use DrevOps\Tui\Theme\ThemeInterface;
 use DrevOps\Tui\Widget\Capability\FilterCapableInterface;
 use DrevOps\Tui\Widget\Capability\FilterCapableTrait;
@@ -38,7 +38,7 @@ class MultiSelectWidget extends AbstractWidget implements
   /**
    * Construct a multiselect widget.
    *
-   * @param array<int|string,\DrevOps\Tui\Config\Option|string> $options
+   * @param array<int|string,\DrevOps\Tui\Model\Option|string> $options
    *   Option rows in display order - a list of options or the value => label
    *   shorthand map.
    * @param list<string> $default
@@ -63,7 +63,7 @@ class MultiSelectWidget extends AbstractWidget implements
    * @param string $needle
    *   The query.
    *
-   * @return list<\DrevOps\Tui\Config\Option>
+   * @return list<\DrevOps\Tui\Model\Option>
    *   The matching option rows.
    */
   protected function filterOptions(string $needle): array {

@@ -39,7 +39,7 @@ trait FilterCapableTrait {
    * @param string $needle
    *   The query.
    *
-   * @return list<\DrevOps\Tui\Config\Option>
+   * @return list<\DrevOps\Tui\Model\Option>
    *   The matching option rows.
    */
   abstract protected function filterOptions(string $needle): array;
@@ -86,7 +86,7 @@ trait FilterCapableTrait {
    * matching options show - structural headings and separators drop away so
    * the result reads as a flat list.
    *
-   * @return list<\DrevOps\Tui\Config\Option>
+   * @return list<\DrevOps\Tui\Model\Option>
    *   The visible rows.
    */
   public function visible(): array {

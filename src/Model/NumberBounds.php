@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\Tui\Config;
+namespace DrevOps\Tui\Model;
 
 use DrevOps\Tui\Translation\Translator;
 
@@ -14,7 +14,7 @@ use DrevOps\Tui\Translation\Translator;
  * human range phrase live here once, so the interactive widget, the headless
  * engine and the answer-set validator all agree.
  *
- * @package DrevOps\Tui\Config
+ * @package DrevOps\Tui\Model
  */
 final readonly class NumberBounds {
 
@@ -28,7 +28,7 @@ final readonly class NumberBounds {
    * @param int|null $step
    *   The Up/Down increment, or NULL to step by one.
    *
-   * @throws \DrevOps\Tui\Config\ConfigException
+   * @throws \DrevOps\Tui\Model\FormException
    *   When both bounds are declared and the minimum exceeds the maximum -
    *   mirroring the {@see DateBounds} constructor guard.
    */
@@ -38,7 +38,7 @@ final readonly class NumberBounds {
     public ?int $step = NULL,
   ) {
     if ($this->min !== NULL && $this->max !== NULL && $this->min > $this->max) {
-      throw new ConfigException(sprintf('Number bounds declare a minimum of %d above the maximum of %d.', $this->min, $this->max));
+      throw new FormException(sprintf('Number bounds declare a minimum of %d above the maximum of %d.', $this->min, $this->max));
     }
   }
 

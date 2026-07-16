@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Widget\Capability;
 
-use DrevOps\Tui\Config\Option;
+use DrevOps\Tui\Model\Option;
 use DrevOps\Tui\Theme\ThemeInterface;
 
 /**
@@ -21,7 +21,7 @@ interface OptionsCapableInterface {
   /**
    * The rows the widget currently shows.
    *
-   * @return list<\DrevOps\Tui\Config\Option>
+   * @return list<\DrevOps\Tui\Model\Option>
    *   The visible rows.
    */
   public function visible(): array;
@@ -31,7 +31,7 @@ interface OptionsCapableInterface {
    *
    * @param \DrevOps\Tui\Theme\ThemeInterface $theme
    *   The theme.
-   * @param \DrevOps\Tui\Config\Option $option
+   * @param \DrevOps\Tui\Model\Option $option
    *   The option row.
    * @param bool $current
    *   Whether the row holds the cursor.

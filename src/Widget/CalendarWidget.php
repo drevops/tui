@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Widget;
 
-use DrevOps\Tui\Config\DateBounds;
-use DrevOps\Tui\Config\FieldType;
-use DrevOps\Tui\Config\Weekday;
+use DrevOps\Tui\Model\DateBounds;
+use DrevOps\Tui\Model\FieldType;
+use DrevOps\Tui\Model\Weekday;
 use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
@@ -60,7 +60,7 @@ class CalendarWidget extends AbstractWidget implements StepCapableInterface {
    *   Optional validator (see AbstractWidget).
    * @param \Closure|null $transform
    *   Optional transformer (see AbstractWidget).
-   * @param \DrevOps\Tui\Config\DateBounds|null $bounds
+   * @param \DrevOps\Tui\Model\DateBounds|null $bounds
    *   Optional min/max range and week-start day; NULL for an open range that
    *   starts the week on Monday.
    */

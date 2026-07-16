@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Tests\Unit\Widget;
 
-use DrevOps\Tui\Config\FieldType;
-use DrevOps\Tui\Config\FilePickerMode;
+use DrevOps\Tui\Model\FieldType;
+use DrevOps\Tui\Model\FilePickerMode;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyMapManager;
 use DrevOps\Tui\Input\KeyName;

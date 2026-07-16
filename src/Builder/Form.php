@@ -4,45 +4,24 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Builder;
 
-use DrevOps\Tui\Config\Config;
-use DrevOps\Tui\Config\ConfigException;
-use DrevOps\Tui\Config\FieldType;
-use DrevOps\Tui\Config\Fixup;
-use DrevOps\Tui\Config\Option;
-use DrevOps\Tui\Config\Panel;
-use DrevOps\Tui\Input\KeyMapManager;
-use DrevOps\Tui\Translation\Translator;
+use DrevOps\Tui\Model\FieldType;
+use DrevOps\Tui\Model\FormDefinition;
+use DrevOps\Tui\Model\FormException;
+use DrevOps\Tui\Model\Fixup;
+use DrevOps\Tui\Model\Option;
+use DrevOps\Tui\Model\Panel;
 
 /**
- * A fluent builder declaring a form: its panels, fields and TUI options.
+ * A fluent builder declaring a form: its panels, fields and own chrome.
+ *
+ * Declares only what belongs to a specific questionnaire - its title, panels
+ * and fields, its start banner and submit/cancel buttons, its fix-ups and
+ * env-variable prefix. The global TUI runtime (theme, key bindings, colour,
+ * language) is configured on the {@see \DrevOps\Tui\Tui} facade, not here.
  *
  * @package DrevOps\Tui\Builder
  */
 final class Form {
-
-  /**
-   * The theme name or class (empty for the default).
-   */
-  protected string $theme = '';
-
-  /**
-   * Display options passed to the interactive theme.
-   *
-   * @var array<string,mixed>
-   */
-  protected array $themeOptions = [];
-
-  /**
-   * The key-map preset name or class (empty for the default).
-   */
-  protected string $keymap = '';
-
-  /**
-   * Bindings overriding the preset, applied on top of it.
-   *
-   * @var list<\DrevOps\Tui\Input\Binding>
-   */
-  protected array $keymapOverrides = [];
 
   /**
    * The start banner (logo).
@@ -65,39 +44,14 @@ final class Form {
   protected string $cancelLabel = 'Cancel';
 
   /**
-   * Whether to clear the screen when the interactive TUI exits.
-   */
-  protected bool $clearOnExit = TRUE;
-
-  /**
-   * Whether the interactive TUI shows the contextual key-hint footer.
-   */
-  protected bool $footer = TRUE;
-
-  /**
-   * Force ANSI colour on/off; NULL auto-detects.
-   */
-  protected ?bool $color = NULL;
-
-  /**
-   * Force Unicode/ASCII glyphs; NULL auto-detects.
-   */
-  protected ?bool $unicode = NULL;
-
-  /**
    * The prefix namespacing per-question env-variable overrides.
    */
   protected string $envPrefix = '';
 
   /**
-   * The translator localizing chrome and questions (NULL leaves English).
-   */
-  protected ?Translator $translator = NULL;
-
-  /**
    * The post-settle fix-up rules.
    *
-   * @var \DrevOps\Tui\Config\Fixup[]
+   * @var \DrevOps\Tui\Model\Fixup[]
    */
   protected array $fixups = [];
 
@@ -132,51 +86,6 @@ final class Form {
    */
   public static function create(string $title, string $subject = ''): self {
     return new self($title, $subject);
-  }
-
-  /**
-   * Set the theme name or class.
-   *
-   * @param string $theme
-   *   The theme name or class. Empty (or "auto") auto-detects light/dark from
-   *   the terminal background.
-   * @param array<string,mixed> $options
-   *   Display options for the theme, keyed by name - e.g.
-   *   `['spacing' => Spacing::Padded, 'border' => Border::Rounded]` - plus any
-   *   a custom theme reads.
-   *
-   * @return $this
-   *   The builder.
-   */
-  public function theme(string $theme, array $options = []): self {
-    $this->theme = $theme;
-    $this->themeOptions = $options;
-
-    return $this;
-  }
-
-  /**
-   * Set the key-binding preset and optional overrides.
-   *
-   * The preset names the base bindings ("default", "vim", a registered name, or
-   * a preset class); the overrides retune individual bindings on top of it,
-   * each a {@see \DrevOps\Tui\Input\Binding} naming a scope, an action and its
-   * keys. Conflicting, un-typeable or malformed bindings throw when the form is
-   * built, not mid-session.
-   *
-   * @param string $preset
-   *   The preset name or class. Empty selects the default preset.
-   * @param list<\DrevOps\Tui\Input\Binding> $overrides
-   *   Bindings applied on top of the preset.
-   *
-   * @return $this
-   *   The builder.
-   */
-  public function keys(string $preset = '', array $overrides = []): self {
-    $this->keymap = $preset;
-    $this->keymapOverrides = $overrides;
-
-    return $this;
   }
 
   /**
@@ -216,66 +125,6 @@ final class Form {
   }
 
   /**
-   * Set whether to clear the screen when the TUI exits.
-   *
-   * @param bool $clear
-   *   Whether to clear on exit.
-   *
-   * @return $this
-   *   The builder.
-   */
-  public function clearOnExit(bool $clear): self {
-    $this->clearOnExit = $clear;
-
-    return $this;
-  }
-
-  /**
-   * Set whether the contextual key-hint footer is shown.
-   *
-   * @param bool $show
-   *   Whether to show the footer.
-   *
-   * @return $this
-   *   The builder.
-   */
-  public function footer(bool $show): self {
-    $this->footer = $show;
-
-    return $this;
-  }
-
-  /**
-   * Force ANSI colour on or off.
-   *
-   * @param bool|null $color
-   *   TRUE/FALSE to force, NULL to auto-detect.
-   *
-   * @return $this
-   *   The builder.
-   */
-  public function color(?bool $color): self {
-    $this->color = $color;
-
-    return $this;
-  }
-
-  /**
-   * Force Unicode or ASCII glyphs.
-   *
-   * @param bool|null $unicode
-   *   TRUE/FALSE to force, NULL to auto-detect.
-   *
-   * @return $this
-   *   The builder.
-   */
-  public function unicode(?bool $unicode): self {
-    $this->unicode = $unicode;
-
-    return $this;
-  }
-
-  /**
    * Set the prefix namespacing per-question env-variable overrides.
    *
    * @param string $prefix
@@ -291,28 +140,9 @@ final class Form {
   }
 
   /**
-   * Set the translator localizing chrome and questions.
-   *
-   * The translator carries the active language and catalog directories; the
-   * {@see \DrevOps\Tui\Tui} facade activates it so `t()` resolves during a run.
-   * Without one, every string renders in its English source.
-   *
-   * @param \DrevOps\Tui\Translation\Translator $translator
-   *   The translator.
-   *
-   * @return $this
-   *   The builder.
-   */
-  public function translator(Translator $translator): self {
-    $this->translator = $translator;
-
-    return $this;
-  }
-
-  /**
    * Add a post-settle fix-up rule.
    *
-   * @param \DrevOps\Tui\Config\Fixup $fixup
+   * @param \DrevOps\Tui\Model\Fixup $fixup
    *   The fix-up, evaluated by the engine.
    *
    * @return $this
@@ -346,53 +176,45 @@ final class Form {
   }
 
   /**
-   * Build the immutable Config model.
+   * Build the immutable form definition.
    *
-   * @return \DrevOps\Tui\Config\Config
-   *   The config.
+   * @return \DrevOps\Tui\Model\FormDefinition
+   *   The form definition.
    */
-  public function build(): Config {
+  public function build(): FormDefinition {
     $panels = array_map(static fn(PanelBuilder $panel): Panel => $panel->build(), $this->panels);
 
-    $config = new Config(
+    $form = new FormDefinition(
       $this->title,
       $this->subject,
       $panels,
       $this->fixups,
-      $this->theme,
+      $this->envPrefix,
       $this->banner,
       $this->buttons,
       $this->submitLabel,
       $this->cancelLabel,
-      $this->clearOnExit,
-      $this->color,
-      $this->unicode,
-      $this->envPrefix,
-      $this->themeOptions,
-      KeyMapManager::create($this->keymap, $this->keymapOverrides),
-      $this->footer,
-      $this->translator,
     );
 
-    $this->assertUniqueFieldIds($config);
-    $this->assertToggleOptions($config);
-    $this->assertReorderOptions($config);
+    $this->assertUniqueFieldIds($form);
+    $this->assertToggleOptions($form);
+    $this->assertReorderOptions($form);
 
-    return $config;
+    return $form;
   }
 
   /**
    * Assert that every field id is unique across the panel tree.
    *
-   * @param \DrevOps\Tui\Config\Config $config
-   *   The built config.
+   * @param \DrevOps\Tui\Model\FormDefinition $form
+   *   The built form definition.
    */
-  protected function assertUniqueFieldIds(Config $config): void {
+  protected function assertUniqueFieldIds(FormDefinition $form): void {
     $seen = [];
 
-    foreach ($config->fields() as $field) {
+    foreach ($form->fields() as $field) {
       if (isset($seen[$field->id])) {
-        throw new ConfigException(sprintf('Duplicate field id "%s".', $field->id));
+        throw new FormException(sprintf('Duplicate field id "%s".', $field->id));
       }
 
       $seen[$field->id] = TRUE;
@@ -402,17 +224,17 @@ final class Form {
   /**
    * Assert that every toggle field declares exactly two options.
    *
-   * @param \DrevOps\Tui\Config\Config $config
-   *   The built config.
+   * @param \DrevOps\Tui\Model\FormDefinition $form
+   *   The built form definition.
    */
-  protected function assertToggleOptions(Config $config): void {
-    foreach ($config->fields() as $field) {
+  protected function assertToggleOptions(FormDefinition $form): void {
+    foreach ($form->fields() as $field) {
       if ($field->type !== FieldType::Toggle) {
         continue;
       }
 
       if (count($field->options) !== 2) {
-        throw new ConfigException(sprintf('Toggle field "%s" must have exactly two options, %d given.', $field->id, count($field->options)));
+        throw new FormException(sprintf('Toggle field "%s" must have exactly two options, %d given.', $field->id, count($field->options)));
       }
 
       // A dynamic default is a closure resolved at runtime; every literal
@@ -425,7 +247,7 @@ final class Form {
       $values = array_map(static fn(Option $option): string => $option->value, $field->options);
 
       if (!is_string($field->default) || !in_array($field->default, $values, TRUE)) {
-        throw new ConfigException(sprintf('Toggle field "%s" default must be one of: %s.', $field->id, implode(', ', $values)));
+        throw new FormException(sprintf('Toggle field "%s" default must be one of: %s.', $field->id, implode(', ', $values)));
       }
     }
   }
@@ -436,23 +258,23 @@ final class Form {
    * A ranking arranges a flat list, so headings, separators and disabled rows
    * have no place in it, and fewer than two items is nothing to reorder.
    *
-   * @param \DrevOps\Tui\Config\Config $config
-   *   The built config.
+   * @param \DrevOps\Tui\Model\FormDefinition $form
+   *   The built form definition.
    */
-  protected function assertReorderOptions(Config $config): void {
-    foreach ($config->fields() as $field) {
+  protected function assertReorderOptions(FormDefinition $form): void {
+    foreach ($form->fields() as $field) {
       if ($field->type !== FieldType::Reorder) {
         continue;
       }
 
       foreach ($field->options as $option) {
         if (!$option->selectable()) {
-          throw new ConfigException(sprintf('Reorder field "%s" allows only plain options - no headings, separators or disabled rows.', $field->id));
+          throw new FormException(sprintf('Reorder field "%s" allows only plain options - no headings, separators or disabled rows.', $field->id));
         }
       }
 
       if (count($field->options) < 2) {
-        throw new ConfigException(sprintf('Reorder field "%s" must have at least two options, %d given.', $field->id, count($field->options)));
+        throw new FormException(sprintf('Reorder field "%s" must have at least two options, %d given.', $field->id, count($field->options)));
       }
     }
   }

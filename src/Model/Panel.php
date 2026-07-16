@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\Tui\Config;
+namespace DrevOps\Tui\Model;
 
 /**
  * A panel: an ordered group of fields and nested sub-panels.
  *
- * @package DrevOps\Tui\Config
+ * @package DrevOps\Tui\Model
  */
 final readonly class Panel {
 
@@ -20,9 +20,9 @@ final readonly class Panel {
    *   The panel title.
    * @param string $description
    *   The panel description.
-   * @param \DrevOps\Tui\Config\Field[] $fields
+   * @param \DrevOps\Tui\Model\Field[] $fields
    *   Ordered fields in this panel.
-   * @param \DrevOps\Tui\Config\Panel[] $panels
+   * @param \DrevOps\Tui\Model\Panel[] $panels
    *   Ordered nested sub-panels.
    */
   public function __construct(

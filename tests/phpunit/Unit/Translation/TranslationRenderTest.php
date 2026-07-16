@@ -9,8 +9,8 @@ use DrevOps\Tui\Answers\Provenance;
 use DrevOps\Tui\Answers\SummaryFormatter;
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Builder\PanelBuilder;
-use DrevOps\Tui\Config\Config;
-use DrevOps\Tui\Config\Field;
+use DrevOps\Tui\Model\Field;
+use DrevOps\Tui\Model\FormDefinition;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Render\Ansi;
@@ -44,7 +44,7 @@ final class TranslationRenderTest extends TestCase {
     Translator::setShared(new Translator('es', [dirname(__DIR__, 2) . '/Fixtures/translations-render']));
   }
 
-  protected function config(): Config {
+  protected function form(): FormDefinition {
     return Form::create('Demo')
       ->panel('general', 'General', function (PanelBuilder $panel): void {
         $panel->text('name', 'Site name')->description('The name.');
@@ -55,10 +55,10 @@ final class TranslationRenderTest extends TestCase {
   }
 
   public function testInteractiveChromeAndQuestionsTranslated(): void {
-    $controller = new PanelController($this->config(), new DefaultTheme(60, ['color' => FALSE]), [], []);
+    $controller = new PanelController($this->form(), new DefaultTheme(60, ['color' => FALSE]), NULL, TRUE, TRUE, [], []);
 
     $root = Ansi::strip($controller->frame(16));
-    // The breadcrumb (config title) and the drill-in panel row (panel title).
+    // The breadcrumb (form title) and the drill-in panel row (panel title).
     $this->assertStringContainsString('Demostracion', $root);
     $this->assertStringContainsString('General ES', $root);
     // Chrome: the submit/cancel buttons and a footer hint label.
@@ -74,7 +74,7 @@ final class TranslationRenderTest extends TestCase {
   }
 
   public function testOptionLabelsTranslated(): void {
-    $field = $this->config()->field('plan');
+    $field = $this->form()->field('plan');
     $this->assertInstanceOf(Field::class, $field);
 
     $widget = (new WidgetFactory())->create($field, 'basic');
@@ -83,7 +83,7 @@ final class TranslationRenderTest extends TestCase {
   }
 
   public function testSummaryTranslated(): void {
-    $answers = Answers::forConfig($this->config(), ['agree' => TRUE], ['agree' => Provenance::Edited]);
+    $answers = Answers::forForm($this->form(), ['agree' => TRUE], ['agree' => Provenance::Edited]);
 
     $summary = (new SummaryFormatter())->format($answers);
 
@@ -94,15 +94,15 @@ final class TranslationRenderTest extends TestCase {
   }
 
   public function testHeadlessMessagesTranslated(): void {
-    $config = Form::create('Demo')
+    $form = Form::create('Demo')
       ->panel('general', 'General', function (PanelBuilder $panel): void {
         $panel->text('name', 'Site name')->required();
       })
       ->build();
 
     // A headless validation error and the agent help both localize.
-    $this->assertContains('Falta la pregunta obligatoria "name".', (new SchemaValidator($config))->validate([]));
-    $this->assertStringContainsString('Preguntas:', (new AgentHelp($config, 'TUI_'))->generate());
+    $this->assertContains('Falta la pregunta obligatoria "name".', (new SchemaValidator($form))->validate([]));
+    $this->assertStringContainsString('Preguntas:', (new AgentHelp($form, 'TUI_'))->generate());
   }
 
 }

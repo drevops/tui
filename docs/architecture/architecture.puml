@@ -13,8 +13,8 @@ package "Builder" #F0F4C3 {
   [Form]
 }
 
-package "Configuration" #E3F2FD {
-  [Config]
+package "Model" #E3F2FD {
+  [FormDefinition]
   [Panel]
   [Field]
 }
@@ -56,11 +56,11 @@ package "Interactive TUI" #FFEBEE {
   [KeyParser]
 }
 
-[Form] --> [Config]
-[Config] *-- [Panel]
+[Form] --> [FormDefinition]
+[FormDefinition] *-- [Panel]
 [Panel] *-- [Field]
 
-[Engine] --> [Config]
+[Engine] --> [FormDefinition]
 [Engine] --> [InputResolver]
 [Engine] --> [Discover specs]
 [Engine] --> [Deriver]
@@ -70,15 +70,13 @@ package "Interactive TUI" #FFEBEE {
 [Engine] --> [HandlerRegistry]
 [Engine] --> [Answers]
 
-[SchemaGenerator] --> [Config]
-[SchemaValidator] --> [Config]
+[SchemaGenerator] --> [FormDefinition]
+[SchemaValidator] --> [FormDefinition]
 
-[PanelController] --> [Config]
+[PanelController] --> [FormDefinition]
 [ThemeManager] --> [Theme]
 [PanelController] --> [Theme]
-[Form] --> [KeyMapManager]
 [KeyMapManager] --> [KeyMap]
-[Config] --> [KeyMap]
 [PanelController] --> [KeyMap]
 [PanelController] --> [WidgetFactory]
 [WidgetFactory] --> [KeyMap]

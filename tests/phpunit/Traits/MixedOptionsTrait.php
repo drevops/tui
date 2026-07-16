@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Tests\Traits;
 
-use DrevOps\Tui\Config\Option;
-use DrevOps\Tui\Config\OptionKind;
+use DrevOps\Tui\Model\Option;
+use DrevOps\Tui\Model\OptionKind;
 
 /**
  * Provides a choice-list fixture mixing every option kind.
@@ -15,7 +15,7 @@ trait MixedOptionsTrait {
   /**
    * A list mixing selectable options with a heading, separator and disabled.
    *
-   * @return list<\DrevOps\Tui\Config\Option>
+   * @return list<\DrevOps\Tui\Model\Option>
    *   The option rows: Apple, a heading, Banana, a separator, a disabled
    *   Cherry and Date.
    */

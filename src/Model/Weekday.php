@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\Tui\Config;
+namespace DrevOps\Tui\Model;
 
 use DrevOps\Tui\Translation\Translator;
 
@@ -12,7 +12,7 @@ use DrevOps\Tui\Translation\Translator;
  * The calendar's week-start day is one of these, and the widget builds its
  * weekday header and column layout from the sequence starting at that day.
  *
- * @package DrevOps\Tui\Config
+ * @package DrevOps\Tui\Model
  */
 enum Weekday: int {
 

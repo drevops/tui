@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Tests\Unit\Derive;
 
-use DrevOps\Tui\Config\ConfigException;
+use DrevOps\Tui\Model\FormException;
 use DrevOps\Tui\Derive\Derive;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -49,7 +49,7 @@ final class DeriveTest extends TestCase {
   }
 
   public function testUnknownTransformThrows(): void {
-    $this->expectException(ConfigException::class);
+    $this->expectException(FormException::class);
     $this->expectExceptionMessage('Unknown derive transform "bogus".');
 
     new Derive('{{name}}', 'bogus');

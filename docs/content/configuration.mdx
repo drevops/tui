@@ -39,13 +39,15 @@ optional `disabled` state), `->heading()` / `->separator()` (non-selectable
 option-list structure), `->when(new Condition(...))`, `->derive(new Derive(...))`,
 `->discover(...)`, `->validate(...)` and `->transform(...)`.
 
-Form-level methods tune the interactive TUI: `->theme()` names a theme,
-auto-detected from the terminal background when unset (see [Themes](/themes)),
-`->banner()` sets a start banner, `->buttons()` controls the submit/cancel
-buttons, `->clearOnExit()` keeps or clears the final frame, `->color()` /
-`->unicode()` force a [display mode](/display-modes), and `->translator()`
-presents chrome and questions in another language (see
-[Translations](/translations)).
+The form declares its own chrome: `->banner()` sets a start banner and
+`->buttons()` controls the submit/cancel buttons. The global TUI runtime - shared
+by every form an app runs - is configured on the `Tui` facade instead: `->theme()`
+names a theme, auto-detected from the terminal background when unset (see
+[Themes](/themes)), `->keys()` sets the key bindings (see
+[Key bindings](/key-bindings)), `->footer()` toggles the key-hint footer,
+`->clearOnExit()` keeps or clears the final frame, `->color()` / `->unicode()`
+force a [display mode](/display-modes), and `->translator()` presents chrome and
+questions in another language (see [Translations](/translations)).
 
 ## Derived values
 

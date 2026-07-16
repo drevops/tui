@@ -7,7 +7,7 @@ namespace DrevOps\Tui\Input;
 /**
  * The key-map preset registry and factory.
  *
- * Presets are self-contained classes; this manager is how a config's preset
+ * Presets are self-contained classes; this manager is how a preset
  * name becomes a resolved {@see KeyMap}. The built-ins are pre-registered
  * ("default" and "vim"), a consumer registers its own under a short name with
  * {@see register()}, and {@see create()} also accepts a fully-qualified preset
@@ -30,7 +30,7 @@ final class KeyMapManager {
   ];
 
   /**
-   * Register a preset class under a name so a config can select it.
+   * Register a preset class under a name so an appearance can select it.
    *
    * @param string $name
    *   The preset name.
@@ -53,7 +53,7 @@ final class KeyMapManager {
    * Create a resolved key map from a preset and optional overrides.
    *
    * Lowest friction first: a fully-qualified preset class name is instantiated
-   * directly, so a config can point at a consumer's own preset class with no
+   * directly, so a consumer can point at their own preset class with no
    * registration. Otherwise the name is looked up in the registry ("default",
    * "vim" or a name passed to {@see register()}). An unknown name fails
    * loudly - a typo should not silently fall back to the defaults.

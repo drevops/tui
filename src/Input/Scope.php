@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Input;
 
-use DrevOps\Tui\Config\FieldType;
+use DrevOps\Tui\Model\FieldType;
 
 /**
  * The binding context a key resolves in: base, navigation, or one widget type.
@@ -62,7 +62,7 @@ final readonly class Scope {
   /**
    * Construct a scope.
    *
-   * @param \DrevOps\Tui\Config\FieldType|null $fieldType
+   * @param \DrevOps\Tui\Model\FieldType|null $fieldType
    *   The widget type this scope targets, or NULL for the base and navigation
    *   scopes.
    * @param bool $navigation
@@ -97,7 +97,7 @@ final readonly class Scope {
   /**
    * The scope for a single widget type.
    *
-   * @param \DrevOps\Tui\Config\FieldType $type
+   * @param \DrevOps\Tui\Model\FieldType $type
    *   The field type.
    *
    * @return self

@@ -7,8 +7,8 @@ namespace DrevOps\Tui\Engine;
 use DrevOps\Tui\Answers\Answers;
 use DrevOps\Tui\Answers\Provenance;
 use DrevOps\Tui\Condition\ConditionInterface;
-use DrevOps\Tui\Config\Config;
-use DrevOps\Tui\Config\Field;
+use DrevOps\Tui\Model\FormDefinition;
+use DrevOps\Tui\Model\Field;
 use DrevOps\Tui\Derive\Deriver;
 use DrevOps\Tui\Discovery\DiscoverInterface;
 use DrevOps\Tui\Handler\Context;
@@ -16,7 +16,7 @@ use DrevOps\Tui\Handler\HandlerRegistry;
 use DrevOps\Tui\Translation\Translator;
 
 /**
- * Orchestrates the question lifecycle generically over a configuration.
+ * Orchestrates the question lifecycle generically over a form definition.
  *
  * For each configured field the engine resolves a value (supplied input, else
  * a value detected in update mode, else the field default) and normalizes the
@@ -40,13 +40,13 @@ class Engine {
   /**
    * Construct an engine.
    *
-   * @param \DrevOps\Tui\Config\Config $config
-   *   The configuration to run.
+   * @param \DrevOps\Tui\Model\FormDefinition $form
+   *   The form definition to run.
    * @param \DrevOps\Tui\Handler\HandlerRegistry $handlers
    *   The registry resolving a field id to its handler.
    */
   public function __construct(
-    protected Config $config,
+    protected FormDefinition $form,
     protected HandlerRegistry $handlers,
   ) {
     $this->deriver = new Deriver();
@@ -64,7 +64,7 @@ class Engine {
    *   The self-describing answer set with values and provenance.
    */
   public function collect(array $inputs, Context $context): Answers {
-    $fields = $this->config->fields();
+    $fields = $this->form->fields();
 
     [$values, $sources] = $this->resolveAll($fields, $inputs, $context);
     $values = $this->transformInputs($fields, $values, $sources);
@@ -72,13 +72,13 @@ class Engine {
     [$active, $values] = $this->stabilize($fields, $values, $rules, $pinned);
     $this->guardInputs($fields, $values, $sources, $active);
 
-    return Answers::forConfig($this->config, $this->activeAnswers($fields, $values, $active), $this->provenanceFor($fields, $sources, $active));
+    return Answers::forForm($this->form, $this->activeAnswers($fields, $values, $active), $this->provenanceFor($fields, $sources, $active));
   }
 
   /**
    * Resolve every field's initial value and its source, in field order.
    *
-   * @param \DrevOps\Tui\Config\Field[] $fields
+   * @param \DrevOps\Tui\Model\Field[] $fields
    *   The fields, in order.
    * @param array<string,mixed> $inputs
    *   Pre-supplied values keyed by field id.
@@ -105,7 +105,7 @@ class Engine {
   /**
    * The derive rules and the pinned map of externally-supplied derive targets.
    *
-   * @param \DrevOps\Tui\Config\Field[] $fields
+   * @param \DrevOps\Tui\Model\Field[] $fields
    *   The fields, in order.
    * @param array<string,\DrevOps\Tui\Engine\Source> $sources
    *   The initial source per field id.
@@ -133,10 +133,10 @@ class Engine {
    * Normalization happens before stabilization: conditions, derivations and
    * fix-ups must evaluate against the transformed value (e.g. a trimmed
    * string), not the raw input. Only supplied inputs transform: defaults and
-   * derived values are the configuration's own, and discovered values were
+   * derived values are the form's own, and discovered values were
    * validated (with a default fallback) at detection time.
    *
-   * @param \DrevOps\Tui\Config\Field[] $fields
+   * @param \DrevOps\Tui\Model\Field[] $fields
    *   The fields, in order.
    * @param array<string,mixed> $values
    *   The resolved values keyed by field id.
@@ -160,10 +160,10 @@ class Engine {
    * Validate the active supplied inputs, throwing on the first error.
    *
    * Only supplied inputs pass through the guard: defaults and derived values
-   * are the configuration's own, and discovered values were validated (with a
+   * are the form's own, and discovered values were validated (with a
    * default fallback) at detection time.
    *
-   * @param \DrevOps\Tui\Config\Field[] $fields
+   * @param \DrevOps\Tui\Model\Field[] $fields
    *   The fields, in order.
    * @param array<string,mixed> $values
    *   The settled values keyed by field id.
@@ -197,7 +197,7 @@ class Engine {
   /**
    * Resolve the initial value and its source for a field.
    *
-   * @param \DrevOps\Tui\Config\Field $field
+   * @param \DrevOps\Tui\Model\Field $field
    *   The field.
    * @param array<string,mixed> $inputs
    *   Pre-supplied values keyed by field id.
@@ -233,7 +233,7 @@ class Engine {
    * so one that fails the field's type, bounds or options falls back to the
    * default instead of poisoning the answers.
    *
-   * @param \DrevOps\Tui\Config\Field $field
+   * @param \DrevOps\Tui\Model\Field $field
    *   The field.
    * @param mixed $value
    *   The discovered value.
@@ -248,7 +248,7 @@ class Engine {
   /**
    * Validate a supplied value: type, bounds, validator, then options.
    *
-   * @param \DrevOps\Tui\Config\Field $field
+   * @param \DrevOps\Tui\Model\Field $field
    *   The field.
    * @param mixed $value
    *   The value to validate.
@@ -278,7 +278,7 @@ class Engine {
   /**
    * Transform a value: the declared transformer, else a reusable static one.
    *
-   * @param \DrevOps\Tui\Config\Field $field
+   * @param \DrevOps\Tui\Model\Field $field
    *   The field.
    * @param mixed $value
    *   The accepted value.
@@ -295,7 +295,7 @@ class Engine {
   /**
    * Detect a value from the declared discovery rule.
    *
-   * @param \DrevOps\Tui\Config\Field $field
+   * @param \DrevOps\Tui\Model\Field $field
    *   The field.
    * @param \DrevOps\Tui\Handler\Context $context
    *   The run context.
@@ -318,7 +318,7 @@ class Engine {
   /**
    * Settle derived values, conditional activation and fix-ups to a fixpoint.
    *
-   * @param \DrevOps\Tui\Config\Field[] $fields
+   * @param \DrevOps\Tui\Model\Field[] $fields
    *   The fields, in order.
    * @param array<string,mixed> $values
    *   The resolved values keyed by field id.
@@ -367,7 +367,7 @@ class Engine {
   /**
    * Compute the provenance of every active field.
    *
-   * @param \DrevOps\Tui\Config\Field[] $fields
+   * @param \DrevOps\Tui\Model\Field[] $fields
    *   The fields, in order.
    * @param array<string,\DrevOps\Tui\Engine\Source> $sources
    *   The initial source per field id.
@@ -400,7 +400,7 @@ class Engine {
   /**
    * Restrict values to the active fields, in field order.
    *
-   * @param \DrevOps\Tui\Config\Field[] $fields
+   * @param \DrevOps\Tui\Model\Field[] $fields
    *   The fields, in order.
    * @param array<string,mixed> $values
    *   The resolved values.
@@ -422,7 +422,7 @@ class Engine {
   }
 
   /**
-   * Apply the config fix-up rules to the values.
+   * Apply the form's fix-up rules to the values.
    *
    * A fix-up sets its target field's value when its guard matches (or when it
    * has no guard): a literal `to`, or a copy of the `from` field's value.
@@ -436,7 +436,7 @@ class Engine {
    *   The values after fix-ups.
    */
   protected function applyFixups(array $values, array $answers): array {
-    foreach ($this->config->fixups as $fixup) {
+    foreach ($this->form->fixups as $fixup) {
       if ($fixup->when instanceof ConditionInterface && !$fixup->when->matches($answers)) {
         continue;
       }

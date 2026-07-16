@@ -31,7 +31,7 @@ rejected - and are reflected in the JSON schema as `min_date`, `max_date` and
 `week_start` on the prompt.
 
 ```php
-use DrevOps\Tui\Config\Weekday;
+use DrevOps\Tui\Model\Weekday;
 
 $p->calendar('release', 'Release date')->minDate('2026-01-01')->maxDate('2026-12-31')->weekStart(Weekday::Sunday);
 ```

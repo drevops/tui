@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Tests\Unit\Widget;
 
-use DrevOps\Tui\Config\DateBounds;
-use DrevOps\Tui\Config\Field;
-use DrevOps\Tui\Config\FieldType;
-use DrevOps\Tui\Config\NumberBounds;
-use DrevOps\Tui\Config\Option;
-use DrevOps\Tui\Config\OptionKind;
+use DrevOps\Tui\Model\DateBounds;
+use DrevOps\Tui\Model\Field;
+use DrevOps\Tui\Model\FieldType;
+use DrevOps\Tui\Model\NumberBounds;
+use DrevOps\Tui\Model\Option;
+use DrevOps\Tui\Model\OptionKind;
 use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyMapManager;
@@ -252,7 +252,7 @@ final class WidgetFactoryTest extends TestCase {
   /**
    * A field of the given type.
    *
-   * @param \DrevOps\Tui\Config\FieldType $type
+   * @param \DrevOps\Tui\Model\FieldType $type
    *   The field type.
    */
   protected function field(FieldType $type): Field {
@@ -262,7 +262,7 @@ final class WidgetFactoryTest extends TestCase {
   /**
    * A choice field of the given type with two options.
    *
-   * @param \DrevOps\Tui\Config\FieldType $type
+   * @param \DrevOps\Tui\Model\FieldType $type
    *   The field type.
    */
   protected function fieldWithOptions(FieldType $type): Field {

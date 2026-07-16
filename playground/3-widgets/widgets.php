@@ -28,8 +28,6 @@ require __DIR__ . '/../../vendor/autoload.php';
 $opts = getopt('', ['no-unicode', 'no-ansi']);
 
 $form = Form::create('Widgets')
-  ->color(isset($opts['no-ansi']) ? FALSE : NULL)
-  ->unicode(isset($opts['no-unicode']) ? FALSE : NULL)
   ->panel('widgets', 'Widgets', function (PanelBuilder $p): void {
     $p->text('text', 'Text')->default('Acme Site');
     $p->number('number', 'Number')->default(8080);
@@ -77,4 +75,4 @@ $form = Form::create('Widgets')
     $p->pause('pause', 'Pause');
   });
 
-echo (new Tui($form))->run()->toSummary() . "\n";
+echo (new Tui($form))->color(isset($opts['no-ansi']) ? FALSE : NULL)->unicode(isset($opts['no-unicode']) ? FALSE : NULL)->run()->toSummary() . "\n";

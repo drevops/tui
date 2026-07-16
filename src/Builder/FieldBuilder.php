@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Builder;
 
 use DrevOps\Tui\Condition\ConditionInterface;
-use DrevOps\Tui\Config\ConfigException;
-use DrevOps\Tui\Config\DateBounds;
-use DrevOps\Tui\Config\Field;
-use DrevOps\Tui\Config\FieldType;
-use DrevOps\Tui\Config\FilePickerMode;
-use DrevOps\Tui\Config\NumberBounds;
-use DrevOps\Tui\Config\Option;
-use DrevOps\Tui\Config\OptionKind;
-use DrevOps\Tui\Config\RenderMode;
-use DrevOps\Tui\Config\Weekday;
+use DrevOps\Tui\Model\FormException;
+use DrevOps\Tui\Model\DateBounds;
+use DrevOps\Tui\Model\Field;
+use DrevOps\Tui\Model\FieldType;
+use DrevOps\Tui\Model\FilePickerMode;
+use DrevOps\Tui\Model\NumberBounds;
+use DrevOps\Tui\Model\Option;
+use DrevOps\Tui\Model\OptionKind;
+use DrevOps\Tui\Model\RenderMode;
+use DrevOps\Tui\Model\Weekday;
 use DrevOps\Tui\Derive\Derive;
 use DrevOps\Tui\Discovery\DiscoverInterface;
 
@@ -43,7 +43,7 @@ final class FieldBuilder {
   /**
    * The option rows, in display order.
    *
-   * @var list<\DrevOps\Tui\Config\Option>
+   * @var list<\DrevOps\Tui\Model\Option>
    */
   protected array $options = [];
 
@@ -173,7 +173,7 @@ final class FieldBuilder {
    *   The unique field id.
    * @param string $label
    *   The human-readable label.
-   * @param \DrevOps\Tui\Config\FieldType $fieldType
+   * @param \DrevOps\Tui\Model\FieldType $fieldType
    *   The widget type.
    */
   public function __construct(protected string $id, protected string $label, protected FieldType $fieldType) {
@@ -444,12 +444,12 @@ final class FieldBuilder {
    * @return $this
    *   The builder.
    *
-   * @throws \DrevOps\Tui\Config\ConfigException
+   * @throws \DrevOps\Tui\Model\FormException
    *   When the size is not positive.
    */
   public function pageSize(int $size): self {
     if ($size < 1) {
-      throw new ConfigException(sprintf('Field "%s" declares a non-positive page size %d.', $this->id, $size));
+      throw new FormException(sprintf('Field "%s" declares a non-positive page size %d.', $this->id, $size));
     }
 
     $this->pageSize = $size;
@@ -490,7 +490,7 @@ final class FieldBuilder {
   /**
    * Date only: set the day the calendar week begins on.
    *
-   * @param \DrevOps\Tui\Config\Weekday $weekday
+   * @param \DrevOps\Tui\Model\Weekday $weekday
    *   The week-start day.
    *
    * @return $this
@@ -683,7 +683,7 @@ final class FieldBuilder {
   /**
    * Build the immutable Field.
    *
-   * @return \DrevOps\Tui\Config\Field
+   * @return \DrevOps\Tui\Model\Field
    *   The field.
    */
   public function build(): Field {
@@ -767,10 +767,10 @@ final class FieldBuilder {
   /**
    * Assemble the number bounds from the declared min/max/step, if any.
    *
-   * @return \DrevOps\Tui\Config\NumberBounds|null
+   * @return \DrevOps\Tui\Model\NumberBounds|null
    *   The bounds, or NULL when none were declared.
    *
-   * @throws \DrevOps\Tui\Config\ConfigException
+   * @throws \DrevOps\Tui\Model\FormException
    *   When min exceeds max, or the step is not positive.
    */
   protected function buildBounds(): ?NumberBounds {
@@ -779,11 +779,11 @@ final class FieldBuilder {
     }
 
     if ($this->min !== NULL && $this->max !== NULL && $this->min > $this->max) {
-      throw new ConfigException(sprintf('Field "%s" declares min %d greater than max %d.', $this->id, $this->min, $this->max));
+      throw new FormException(sprintf('Field "%s" declares min %d greater than max %d.', $this->id, $this->min, $this->max));
     }
 
     if ($this->step !== NULL && $this->step < 1) {
-      throw new ConfigException(sprintf('Field "%s" declares a non-positive step %d.', $this->id, $this->step));
+      throw new FormException(sprintf('Field "%s" declares a non-positive step %d.', $this->id, $this->step));
     }
 
     return new NumberBounds($this->min, $this->max, $this->step);
@@ -792,10 +792,10 @@ final class FieldBuilder {
   /**
    * Assemble the date bounds for a date field from the declared min/max/start.
    *
-   * @return \DrevOps\Tui\Config\DateBounds|null
+   * @return \DrevOps\Tui\Model\DateBounds|null
    *   The bounds for a date field, or NULL for any other field type.
    *
-   * @throws \DrevOps\Tui\Config\ConfigException
+   * @throws \DrevOps\Tui\Model\FormException
    *   When a declared date is not a valid `Y-m-d` date, or min is after max.
    */
   protected function buildDateBounds(): ?DateBounds {
@@ -807,7 +807,7 @@ final class FieldBuilder {
     $max = $this->parseBoundDate($this->maxDate);
 
     if ($min instanceof \DateTimeImmutable && $max instanceof \DateTimeImmutable && $min > $max) {
-      throw new ConfigException(sprintf('Field "%s" declares min date %s after max date %s.', $this->id, $min->format('Y-m-d'), $max->format('Y-m-d')));
+      throw new FormException(sprintf('Field "%s" declares min date %s after max date %s.', $this->id, $min->format('Y-m-d'), $max->format('Y-m-d')));
     }
 
     return new DateBounds($min, $max, $this->weekStart ?? Weekday::Monday);
@@ -822,7 +822,7 @@ final class FieldBuilder {
    * @return \DateTimeImmutable|null
    *   The parsed date, or NULL when none was declared.
    *
-   * @throws \DrevOps\Tui\Config\ConfigException
+   * @throws \DrevOps\Tui\Model\FormException
    *   When the value is not a valid `Y-m-d` date.
    */
   protected function parseBoundDate(?string $value): ?\DateTimeImmutable {
@@ -832,7 +832,7 @@ final class FieldBuilder {
 
     $date = DateBounds::parse($value);
     if (!$date instanceof \DateTimeImmutable) {
-      throw new ConfigException(sprintf('Field "%s" declares an invalid date "%s".', $this->id, $value));
+      throw new FormException(sprintf('Field "%s" declares an invalid date "%s".', $this->id, $value));
     }
 
     return $date;
@@ -841,7 +841,7 @@ final class FieldBuilder {
   /**
    * The engine default for a field type when none is declared.
    *
-   * @param \DrevOps\Tui\Config\FieldType $type
+   * @param \DrevOps\Tui\Model\FieldType $type
    *   The field type.
    *
    * @return mixed

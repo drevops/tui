@@ -32,7 +32,7 @@ use DrevOps\Tui\Tui;
 $form = Form::create('My form')
   ->panel('general', 'General', fn(PanelBuilder $p) => $p->text('name', 'Your name')->required());
 
-$tui = new Tui($form, ['App\\Handler']);
+$tui = new Tui($form, handler_namespaces: ['App\\Handler']);
 
 // Interactive panel TUI on a terminal, headless otherwise.
 $answers = $tui->run();
@@ -45,7 +45,7 @@ $answers = $tui->interact();                     // interactive panel TUI
 `run()` picks the mode automatically: it drives the interactive panel TUI on a
 terminal and collects headlessly otherwise (or whenever prompts are supplied).
 The facade also exposes `schema()`, `agentHelp()` and `validate()`, and - when
-you want finer control - the internals via `config()`, `engine()` and
+you want finer control - the internals via `form()`, `engine()` and
 `registry()`.
 
 ## Next steps

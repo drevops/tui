@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\Tui\Tests\Unit\Config;
+namespace DrevOps\Tui\Tests\Unit\Model;
 
-use DrevOps\Tui\Config\Weekday;
+use DrevOps\Tui\Model\Weekday;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
@@ -14,7 +14,7 @@ use PHPUnit\Framework\TestCase;
  * Tests the weekday enum.
  */
 #[CoversClass(Weekday::class)]
-#[Group('config')]
+#[Group('model')]
 final class WeekdayTest extends TestCase {
 
   #[DataProvider('dataProviderAbbreviation')]

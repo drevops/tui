@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Widget;
 
-use DrevOps\Tui\Config\Field;
-use DrevOps\Tui\Config\FieldType;
-use DrevOps\Tui\Config\Option;
+use DrevOps\Tui\Model\Field;
+use DrevOps\Tui\Model\FieldType;
+use DrevOps\Tui\Model\Option;
 use DrevOps\Tui\Input\KeyMap;
 use DrevOps\Tui\Input\KeyMapManager;
 use DrevOps\Tui\Translation\Translator;
@@ -39,7 +39,7 @@ class WidgetFactory {
   /**
    * Create a widget for a field, wired with its scope's key bindings.
    *
-   * @param \DrevOps\Tui\Config\Field $field
+   * @param \DrevOps\Tui\Model\Field $field
    *   The field.
    * @param mixed $current
    *   The current value to seed the widget with.
@@ -79,7 +79,7 @@ class WidgetFactory {
    * coerced to a list of strings, so a mistyped source degrades to no
    * completion rather than erroring.
    *
-   * @param \DrevOps\Tui\Config\Field $field
+   * @param \DrevOps\Tui\Model\Field $field
    *   The field.
    * @param array<string,mixed> $answers
    *   The answers collected so far.
@@ -96,7 +96,7 @@ class WidgetFactory {
   /**
    * The selectable value => label map for a field's options.
    *
-   * @param \DrevOps\Tui\Config\Field $field
+   * @param \DrevOps\Tui\Model\Field $field
    *   The field.
    *
    * @return array<string,string>
@@ -121,10 +121,10 @@ class WidgetFactory {
    * widget searches identical to the list it shows, so a match runs against the
    * same text the user reads.
    *
-   * @param \DrevOps\Tui\Config\Field $field
+   * @param \DrevOps\Tui\Model\Field $field
    *   The field.
    *
-   * @return list<\DrevOps\Tui\Config\Option>
+   * @return list<\DrevOps\Tui\Model\Option>
    *   The options in display order, localized to the active language.
    */
   protected function options(Field $field): array {

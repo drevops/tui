@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\Tui\Config;
+namespace DrevOps\Tui\Model;
 
 use DrevOps\Tui\Translation\Translator;
 
 /**
  * The set of supported field (widget) types.
  *
- * @package DrevOps\Tui\Config
+ * @package DrevOps\Tui\Model
  */
 enum FieldType: string {
 
