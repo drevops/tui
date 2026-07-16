@@ -12,8 +12,8 @@
  *
  * Usage:
  *   php 3-widgets/widget-select-multiple-groups.php
- *   php 3-widgets/widget-select-multiple-groups.php --no-unicode   # textual glyphs
- *   php 3-widgets/widget-select-multiple-groups.php --no-ansi      # no colour.
+ *   php 3-widgets/widget-select-multiple-groups.php --no-unicode # ASCII glyphs
+ *   php 3-widgets/widget-select-multiple-groups.php --no-ansi    # no colour.
  */
 
 declare(strict_types=1);
