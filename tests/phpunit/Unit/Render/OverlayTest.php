@@ -31,8 +31,8 @@ final class OverlayTest extends TestCase {
 
     $out = Overlay::composite($backdrop, $box, 4, 1, 3, static fn(string $segment): string => '<' . $segment . '>');
 
-    // Rows outside the box's vertical span are wholly styled; rows within it keep
-    // the box verbatim between a styled prefix and suffix sliced by column.
+    // Rows outside the box's vertical span are wholly styled; within it the box
+    // sits verbatim between a styled prefix and suffix sliced by column.
     $this->assertSame([
       '<0123456789>',
       '<abc>[XX]<hij>',
@@ -49,7 +49,7 @@ final class OverlayTest extends TestCase {
   }
 
   public function testCompositeClipsBoxRowsPastTheBackdrop(): void {
-    // A box taller than the backdrop loses the overflow: the backdrop bounds it.
+    // A box taller than the backdrop is clipped: the backdrop bounds it.
     $out = Overlay::composite(['aaaa'], ['[XX]', '[YY]'], 4, 0, 0, static fn(string $segment): string => $segment);
 
     $this->assertSame(['[XX]'], $out);

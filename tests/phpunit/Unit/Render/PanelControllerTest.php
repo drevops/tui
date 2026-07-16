@@ -715,7 +715,7 @@ final class PanelControllerTest extends TestCase {
     $controller->handle(Key::named(KeyName::Down));
     $controller->handle(Key::named(KeyName::Enter));
 
-    // Past the single field to Submit (index 1), then Left/Right between buttons.
+    // Past the field to Submit (index 1), then Left/Right between buttons.
     $controller->handle(Key::named(KeyName::Down));
     $this->assertSame(1, $controller->cursor());
     $controller->handle(Key::named(KeyName::Right));

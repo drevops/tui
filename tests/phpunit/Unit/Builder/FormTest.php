@@ -14,6 +14,7 @@ use DrevOps\Tui\Model\Field;
 use DrevOps\Tui\Model\FieldType;
 use DrevOps\Tui\Model\FilePickerMode;
 use DrevOps\Tui\Model\Fixup;
+use DrevOps\Tui\Model\Modal;
 use DrevOps\Tui\Model\NumberBounds;
 use DrevOps\Tui\Model\OptionKind;
 use DrevOps\Tui\Model\RenderMode;
@@ -543,9 +544,12 @@ final class FormTest extends TestCase {
     $modal = $form->panels[0]->panels[0];
     $this->assertTrue($modal->isModal());
     $this->assertSame('This cannot be undone.', $modal->description);
-    $this->assertSame('Yes', $modal->modal?->buttons->submitLabel);
-    $this->assertSame('No', $modal->modal?->buttons->cancelLabel);
-    $this->assertTrue($modal->modal?->buttons->show);
+
+    $config = $modal->modal;
+    $this->assertInstanceOf(Modal::class, $config);
+    $this->assertSame('Yes', $config->buttons->submitLabel);
+    $this->assertSame('No', $config->buttons->cancelLabel);
+    $this->assertTrue($config->buttons->show);
   }
 
   public function testModalDefaultsButtonLabels(): void {
@@ -553,8 +557,10 @@ final class FormTest extends TestCase {
       ->panel('m', 'M', fn(PanelBuilder $p): PanelBuilder => $p->modal())
       ->build();
 
-    $this->assertSame('Submit', $form->panels[0]->modal?->buttons->submitLabel);
-    $this->assertSame('Cancel', $form->panels[0]->modal?->buttons->cancelLabel);
+    $config = $form->panels[0]->modal;
+    $this->assertInstanceOf(Modal::class, $config);
+    $this->assertSame('Submit', $config->buttons->submitLabel);
+    $this->assertSame('Cancel', $config->buttons->cancelLabel);
   }
 
   public function testModalPanelWithSubPanelThrows(): void {

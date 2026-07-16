@@ -120,16 +120,19 @@ final class TuiTesterTest extends TestCase {
   public function testModalSubmitFlowsThroughTheInputPipe(): void {
     $tester = new TuiTester($this->modalForm());
 
+    // Open the modal from the hub (Down to the modal item, Enter), edit its
+    // field (Enter, type, Enter), Apply it (Down, Enter), then submit the form
+    // (Down to Submit, Enter).
     $answers = $tester->run(
-      Key::named(KeyName::Down),   // hub: move to the modal panel item
-      Key::named(KeyName::Enter),  // open the dialog
-      Key::named(KeyName::Enter),  // edit the nickname field
+      Key::named(KeyName::Down),
+      Key::named(KeyName::Enter),
+      Key::named(KeyName::Enter),
       'Zed',
-      Key::named(KeyName::Enter),  // commit the field
-      Key::named(KeyName::Down),   // move to the dialog's Apply button
-      Key::named(KeyName::Enter),  // apply, returning to the hub
-      Key::named(KeyName::Down),   // hub: move to Submit
-      Key::named(KeyName::Enter),  // submit the form
+      Key::named(KeyName::Enter),
+      Key::named(KeyName::Down),
+      Key::named(KeyName::Enter),
+      Key::named(KeyName::Down),
+      Key::named(KeyName::Enter),
     );
 
     $this->assertSame('Zed', $answers->value('nick'));
@@ -139,17 +142,19 @@ final class TuiTesterTest extends TestCase {
   public function testModalDiscardRestoresThroughTheInputPipe(): void {
     $tester = new TuiTester($this->modalForm());
 
+    // Same as the submit flow but Discard the dialog (Down to Discard, Enter)
+    // instead of Apply, so the edit is rolled back before the form submits.
     $answers = $tester->run(
-      Key::named(KeyName::Down),   // hub: move to the modal panel item
-      Key::named(KeyName::Enter),  // open the dialog
-      Key::named(KeyName::Enter),  // edit the nickname field
+      Key::named(KeyName::Down),
+      Key::named(KeyName::Enter),
+      Key::named(KeyName::Enter),
       'Zed',
-      Key::named(KeyName::Enter),  // commit the field
-      Key::named(KeyName::Down),   // dialog: Apply
-      Key::named(KeyName::Down),   // dialog: Discard
-      Key::named(KeyName::Enter),  // discard, restoring the answer
-      Key::named(KeyName::Down),   // hub: move to Submit
-      Key::named(KeyName::Enter),  // submit the form
+      Key::named(KeyName::Enter),
+      Key::named(KeyName::Down),
+      Key::named(KeyName::Down),
+      Key::named(KeyName::Enter),
+      Key::named(KeyName::Down),
+      Key::named(KeyName::Enter),
     );
 
     $this->assertSame('', $answers->value('nick'));

@@ -710,8 +710,8 @@ class PanelController {
    * Close the current modal dialog, restoring the parent's cursor.
    *
    * @param bool $cancel
-   *   TRUE to discard the dialog's edits (restoring the opening snapshot); FALSE
-   *   to keep them.
+   *   TRUE to discard the dialog's edits (restoring the opening snapshot);
+   *   FALSE to keep them.
    */
   protected function closeModal(bool $cancel): void {
     if ($cancel) {

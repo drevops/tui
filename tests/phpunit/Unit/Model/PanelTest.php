@@ -33,7 +33,7 @@ final class PanelTest extends TestCase {
   public function testIsModal(): void {
     $plain = new Panel('p', 'P', '');
     $this->assertFalse($plain->isModal());
-    $this->assertNull($plain->modal);
+    $this->assertNotInstanceOf(Modal::class, $plain->modal);
 
     $dialog = new Panel('d', 'D', '', [], [], new Modal());
     $this->assertTrue($dialog->isModal());

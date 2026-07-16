@@ -883,8 +883,8 @@ class DefaultTheme implements ThemeInterface {
   /**
    * Compose a frame at an explicit width and border, else the same as a frame.
    *
-   * The width/border are parameters so a modal can reuse the theme's boxing in a
-   * narrower box; the standard frame passes its own outer width and border.
+   * The width/border are parameters so a modal can reuse the theme's boxing in
+   * a narrower box; the standard frame passes its own outer width and border.
    *
    * @param list<string> $header
    *   The pinned header lines.
@@ -1284,7 +1284,10 @@ class DefaultTheme implements ThemeInterface {
       $body[] = '';
     }
 
-    $body[] = $this->renderButtonBar([Translator::t($config->buttons->submitLabel), Translator::t($config->buttons->cancelLabel)], $selectedButton);
+    $body[] = $this->renderButtonBar([
+      Translator::t($config->buttons->submitLabel),
+      Translator::t($config->buttons->cancelLabel),
+    ], $selectedButton);
 
     $inset = max(2, intdiv($this->outerWidth, 8));
     $modal_width = max(1, $this->outerWidth - 2 * $inset);
