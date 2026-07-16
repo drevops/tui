@@ -94,6 +94,11 @@ const config = {
         },
         items: [
           {
+            to: '/introduction',
+            label: 'Docs',
+            position: 'left',
+          },
+          {
             label: 'Download',
             href: 'https://github.com/drevops/tui/releases/latest',
             position: 'right',
