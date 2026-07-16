@@ -178,6 +178,17 @@ if (dos) {
   theme.brightCyan = [85, 255, 255];   // #55ffff CGA bright cyan
   theme.brightYellow = [255, 255, 85]; // #ffff55 CGA bright yellow
   theme.brightBlack = [128, 128, 128]; // #808080 - legible on the blue
+
+  // svg-term paints a cell's background from its own bundled palette, not the
+  // theme above: its Word renderer builds the background rect without passing
+  // the custom theme through, so the rect falls back to svg-term's own
+  // DEFAULT_THEME. The dos screen wash is ANSI background 4 (OnBlue), which in
+  // that default palette is a light Atom One Dark blue - so the wash renders
+  // light over the dark-blue surface while the surface itself (which does read
+  // theme.background) stays dark. Point palette entry 4 at the same CGA blue so
+  // the whole screen washes one uniform blue.
+  const svgTermPalette = require('svg-term/lib/default-theme');
+  svgTermPalette[4] = [0, 0, 170];
 }
 
 // Render options.
