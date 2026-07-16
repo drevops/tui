@@ -17,6 +17,7 @@ use DrevOps\Tui\Render\Terminal;
 use DrevOps\Tui\Render\TerminalControl;
 use DrevOps\Tui\Testing\BufferedTerminal;
 use DrevOps\Tui\Testing\KeyEncoder;
+use DrevOps\Tui\Theme\Border;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Theme\DosTheme;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -794,6 +795,142 @@ final class PanelControllerTest extends TestCase {
       });
 
     return new PanelController($builder->build(), new DefaultTheme(50, ['color' => FALSE]), NULL, TRUE, TRUE, ['name' => 'Acme', 'nick' => 'ace'], []);
+  }
+
+  public function testRunFullscreenFillsTheTerminalExactly(): void {
+    $controller = $this->fullscreenController(['fullscreen' => TRUE]);
+    $terminal = new BufferedTerminal([], 14, 40);
+
+    $controller->run($terminal);
+
+    // The stretched frame is exactly the terminal height, footer pinned last.
+    $lines = explode("\n", Ansi::strip($terminal->output()));
+    $this->assertCount(14, $lines);
+    $this->assertStringContainsString('quit', $lines[13]);
+  }
+
+  public function testRunFullscreenCentersTheBodyBlock(): void {
+    $controller = $this->fullscreenController(['fullscreen' => TRUE, 'halign' => 'center']);
+    $terminal = new BufferedTerminal([], 14, 40);
+
+    $controller->run($terminal);
+
+    // The widest block row is the 24-column button bar, so the block indents
+    // (40 - 24) / 2 = 8 columns as one unit.
+    $this->assertStringContainsString(str_repeat(' ', 8) . '> General', Ansi::strip($terminal->output()));
+  }
+
+  public function testRunFullscreenBottomAlignsTheBodyBlock(): void {
+    $controller = $this->fullscreenController(['fullscreen' => TRUE, 'valign' => 'bottom']);
+    $terminal = new BufferedTerminal([], 14, 40);
+
+    $controller->run($terminal);
+
+    $lines = explode("\n", Ansi::strip($terminal->output()));
+
+    // The body window spans rows 1-11: the block sinks to its bottom.
+    $this->assertSame('', $lines[1]);
+    $this->assertStringContainsString('> General', $lines[8]);
+    $this->assertStringContainsString('[ Submit ]', $lines[11]);
+  }
+
+  public function testRunFullscreenPositionsACappedFrame(): void {
+    $controller = $this->fullscreenController(['fullscreen' => TRUE, 'max_width' => 30, 'halign' => 'center', 'border' => Border::Line], 60);
+    $terminal = new BufferedTerminal([], 12, 60);
+
+    $controller->run($terminal);
+
+    $lines = explode("\n", Ansi::strip($terminal->output()));
+
+    // The capped 30-column box floats centered in the 60-column terminal.
+    $this->assertCount(12, $lines);
+    $this->assertSame(str_repeat(' ', 15) . '+' . str_repeat('-', 28) . '+', rtrim($lines[0]));
+  }
+
+  public function testRunFullscreenTooSmallGuardSwallowsAllButQuit(): void {
+    $controller = $this->fullscreenController(['fullscreen' => TRUE]);
+    // Six rows are below the ten-row minimum; Down must be swallowed by the
+    // guard screen, then quit ends the loop.
+    $terminal = new BufferedTerminal([KeyEncoder::encode(Key::named(KeyName::Down)), 'q'], 6, 40);
+
+    $controller->run($terminal);
+
+    $output = Ansi::strip($terminal->output());
+    $this->assertStringContainsString('Terminal too small.', $output);
+    $this->assertStringContainsString('Need at least 24 x 10 - have 40 x 6.', $output);
+    $this->assertTrue($controller->isDone());
+    $this->assertSame(0, $controller->cursor());
+  }
+
+  public function testRunFullscreenTooSmallGuardStillInterrupts(): void {
+    $controller = $this->fullscreenController(['fullscreen' => TRUE]);
+    $terminal = new BufferedTerminal(["\x03"], 6, 40);
+
+    $controller->run($terminal);
+
+    $this->assertTrue($controller->isInterrupted());
+    $this->assertFalse($controller->isDone());
+  }
+
+  public function testRunFullscreenMinWidthIsMeasuredFromContent(): void {
+    $builder = Form::create('Demo')
+      ->panel('general', 'General', function (PanelBuilder $p): void {
+        $p->text('window', 'Preferred delivery window of the season');
+      });
+    $controller = new PanelController($builder->build(), new DefaultTheme(30, ['color' => FALSE, 'unicode' => FALSE, 'fullscreen' => TRUE]), NULL, TRUE, TRUE, ['window' => 'Morning'], []);
+
+    // Thirty columns cannot fit the measured 50-column field row.
+    $terminal = new BufferedTerminal([], 24, 30);
+    $controller->run($terminal);
+
+    $this->assertStringContainsString('Terminal too small.', Ansi::strip($terminal->output()));
+  }
+
+  public function testRunFullscreenExplicitMinWidthOverridesTheMeasure(): void {
+    $builder = Form::create('Demo')
+      ->panel('general', 'General', function (PanelBuilder $p): void {
+        $p->text('window', 'Preferred delivery window of the season');
+      });
+    $controller = new PanelController($builder->build(), new DefaultTheme(30, ['color' => FALSE, 'unicode' => FALSE, 'fullscreen' => TRUE, 'min_width' => 10]), NULL, TRUE, TRUE, ['window' => 'Morning'], []);
+
+    $terminal = new BufferedTerminal([], 24, 30);
+    $controller->run($terminal);
+
+    $output = Ansi::strip($terminal->output());
+    $this->assertStringNotContainsString('Terminal too small.', $output);
+    $this->assertStringContainsString('General', $output);
+  }
+
+  public function testRunOutsideFullscreenIgnoresTheMinimums(): void {
+    // The same six-row terminal renders the plain frame when not fullscreen.
+    $controller = $this->fullscreenController([]);
+    $terminal = new BufferedTerminal([], 6, 40);
+
+    $controller->run($terminal);
+
+    $output = Ansi::strip($terminal->output());
+    $this->assertStringNotContainsString('Terminal too small.', $output);
+    $this->assertStringContainsString('General', $output);
+  }
+
+  /**
+   * A controller over a one-panel form with configurable layout options.
+   *
+   * @param array<string,mixed> $options
+   *   Theme options merged over colourless ASCII defaults.
+   * @param int $width
+   *   The theme width (the terminal width in fullscreen).
+   *
+   * @return \DrevOps\Tui\Render\PanelController
+   *   The controller.
+   */
+  protected function fullscreenController(array $options, int $width = 40): PanelController {
+    $builder = Form::create('Demo')
+      ->panel('general', 'General', function (PanelBuilder $p): void {
+        $p->text('name', 'Name');
+      });
+
+    return new PanelController($builder->build(), new DefaultTheme($width, ['color' => FALSE, 'unicode' => FALSE] + $options), NULL, TRUE, TRUE, ['name' => 'Acme'], []);
   }
 
   /**

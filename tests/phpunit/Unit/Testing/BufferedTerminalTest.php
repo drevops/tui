@@ -31,6 +31,11 @@ final class BufferedTerminalTest extends TestCase {
     $this->assertSame(30, (new BufferedTerminal([], 30))->height());
   }
 
+  public function testWidthIsFixed(): void {
+    $this->assertSame(80, (new BufferedTerminal())->width());
+    $this->assertSame(120, (new BufferedTerminal([], 24, 120))->width());
+  }
+
   public function testSetupAndRestoreProduceNoOutput(): void {
     $terminal = new BufferedTerminal();
 

@@ -163,6 +163,16 @@ class Terminal {
   }
 
   /**
+   * The terminal width in columns.
+   *
+   * @return int
+   *   The number of columns available for rendering.
+   */
+  public function width(): int {
+    return (new ConsoleTerminal())->getWidth();
+  }
+
+  /**
    * Query the terminal background colour via OSC 11.
    *
    * Writes the query and polls for the reply with stream_select() so a terminal

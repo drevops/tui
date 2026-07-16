@@ -17,8 +17,10 @@ use DrevOps\Tui\Tests\Fixtures\Theme\AccentOptionTheme;
 use DrevOps\Tui\Theme\Border;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Theme\FieldStyle;
+use DrevOps\Tui\Theme\HAlign;
 use DrevOps\Tui\Theme\Mode;
 use DrevOps\Tui\Theme\Spacing;
+use DrevOps\Tui\Theme\VAlign;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
@@ -249,6 +251,70 @@ final class ThemeOptionsTest extends TestCase {
     $this->expectExceptionMessage('is not a valid "spacing"');
 
     new DefaultTheme(40, ['spacing' => 'padd']);
+  }
+
+  #[DataProvider('dataProviderLayoutOptionAccessors')]
+  public function testLayoutOptionAccessors(array $options, bool $fullscreen, HAlign $halign, VAlign $valign): void {
+    $theme = new DefaultTheme(40, $options);
+
+    $this->assertSame($fullscreen, $theme->isFullscreen());
+    $this->assertSame($halign, $theme->halign());
+    $this->assertSame($valign, $theme->valign());
+  }
+
+  public static function dataProviderLayoutOptionAccessors(): \Iterator {
+    yield 'defaults' => [[], FALSE, HAlign::Left, VAlign::Top];
+    yield 'enum cases' => [['fullscreen' => TRUE, 'halign' => HAlign::Center, 'valign' => VAlign::Middle], TRUE, HAlign::Center, VAlign::Middle];
+    yield 'string values' => [['fullscreen' => TRUE, 'halign' => 'right', 'valign' => 'bottom'], TRUE, HAlign::Right, VAlign::Bottom];
+  }
+
+  #[DataProvider('dataProviderLayoutOptionInvalidValueThrows')]
+  public function testLayoutOptionInvalidValueThrows(string $option, mixed $value, string $message): void {
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessage($message);
+
+    new DefaultTheme(40, [$option => $value]);
+  }
+
+  public static function dataProviderLayoutOptionInvalidValueThrows(): \Iterator {
+    yield 'halign typo' => ['halign', 'centre', 'is not a valid "halign"'];
+    yield 'valign typo' => ['valign', 'center', 'is not a valid "valign"'];
+    yield 'fullscreen non-bool' => ['fullscreen', 'yes', 'is not a valid "fullscreen"'];
+    yield 'negative min width' => ['min_width', -1, 'is not a valid "min_width"'];
+    yield 'non-integer max width' => ['max_width', '100', 'is not a valid "max_width"'];
+  }
+
+  public function testUnknownOptionMessageListsIntegerOptions(): void {
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessage('min_width');
+
+    new DefaultTheme(40, ['min_wdith' => 10]);
+  }
+
+  public function testSizeOptionAccessorsAndDefaults(): void {
+    $defaults = new DefaultTheme(40);
+    $this->assertSame(0, $defaults->minWidth());
+    $this->assertSame(10, $defaults->minHeight());
+    $this->assertSame(0, $defaults->maxWidth());
+    $this->assertSame(0, $defaults->maxHeight());
+
+    $theme = new DefaultTheme(40, ['min_width' => 50, 'min_height' => 12, 'max_width' => 100, 'max_height' => 40]);
+    $this->assertSame(50, $theme->minWidth());
+    $this->assertSame(12, $theme->minHeight());
+    $this->assertSame(100, $theme->maxWidth());
+    $this->assertSame(40, $theme->maxHeight());
+  }
+
+  public function testFullscreenMaxWidthCapsTheFrame(): void {
+    // The cap narrows a fullscreen frame; uncapped keeps the terminal width.
+    $this->assertSame(100, (new DefaultTheme(200, ['fullscreen' => TRUE, 'max_width' => 100]))->outerWidth());
+    $this->assertSame(200, (new DefaultTheme(200, ['fullscreen' => TRUE]))->outerWidth());
+
+    // A cap wider than the terminal never widens the frame.
+    $this->assertSame(80, (new DefaultTheme(80, ['fullscreen' => TRUE, 'max_width' => 100]))->outerWidth());
+
+    // Outside fullscreen the cap has no effect on sizing.
+    $this->assertSame(200, (new DefaultTheme(200, ['max_width' => 100]))->outerWidth());
   }
 
   public function testCustomOptionDeclaredBySchema(): void {

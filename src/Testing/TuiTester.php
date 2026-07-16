@@ -9,6 +9,7 @@ use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Model\FormDefinition;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Render\Ansi;
+use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Theme\Mode;
 use DrevOps\Tui\Tui;
 
@@ -57,6 +58,11 @@ final class TuiTester {
    * The reported terminal height.
    */
   protected int $rows = 24;
+
+  /**
+   * The reported terminal width.
+   */
+  protected int $cols = 80;
 
   /**
    * The version stamped into the run context.
@@ -148,6 +154,21 @@ final class TuiTester {
   }
 
   /**
+   * Set the reported terminal width.
+   *
+   * @param int $cols
+   *   The number of columns.
+   *
+   * @return $this
+   *   The tester.
+   */
+  public function cols(int $cols): self {
+    $this->cols = $cols;
+
+    return $this;
+  }
+
+  /**
    * Set the version stamped into the run context.
    *
    * @param string $version
@@ -193,8 +214,13 @@ final class TuiTester {
       $keystrokes[] = $item instanceof Key ? KeyEncoder::encode($item) : $item;
     }
 
-    $terminal = new BufferedTerminal($keystrokes, $this->rows);
-    $controller = $this->tui->controller($this->options, $this->theme, '', $this->version, $this->directory);
+    $terminal = new BufferedTerminal($keystrokes, $this->rows, $this->cols);
+
+    // Mirror Tui::interact(): a fullscreen frame lays out to the terminal's
+    // width - here the scripted terminal's columns.
+    $width = ($this->options['fullscreen'] ?? FALSE) === TRUE ? $this->cols : DefaultTheme::DEFAULT_WIDTH;
+
+    $controller = $this->tui->controller($this->options, $this->theme, '', $this->version, $this->directory, $width);
 
     $this->answers = $controller->run($terminal);
     $this->output = $terminal->output();

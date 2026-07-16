@@ -32,8 +32,10 @@ final class BufferedTerminal extends Terminal {
    * @param int $rows
    *   The reported terminal height, fixed so rendered frames do not depend on
    *   the machine running the test.
+   * @param int $cols
+   *   The reported terminal width, fixed for the same reason.
    */
-  public function __construct(protected array $keystrokes = [], protected int $rows = 24) {
+  public function __construct(protected array $keystrokes = [], protected int $rows = 24, protected int $cols = 80) {
     $output = fopen('php://memory', 'r+');
     $input = fopen('php://memory', 'r+');
 
@@ -76,6 +78,14 @@ final class BufferedTerminal extends Terminal {
   #[\Override]
   public function height(): int {
     return $this->rows;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  public function width(): int {
+    return $this->cols;
   }
 
   /**

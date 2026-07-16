@@ -61,6 +61,10 @@ final class TerminalTest extends TestCase {
     $this->assertGreaterThan(0, (new Terminal())->height());
   }
 
+  public function testWidth(): void {
+    $this->assertGreaterThan(0, (new Terminal())->width());
+  }
+
   public function testClear(): void {
     $stream = fopen('php://memory', 'rw');
     $this->assertIsResource($stream);

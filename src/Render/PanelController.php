@@ -156,6 +156,11 @@ class PanelController {
   protected int $modalReturnOffset = 0;
 
   /**
+   * The resolved fullscreen minimum width, measured lazily from the content.
+   */
+  protected ?int $minWidth = NULL;
+
+  /**
    * Construct a controller.
    *
    * @param \DrevOps\Tui\Model\FormDefinition $form
@@ -289,7 +294,7 @@ class PanelController {
 
     try {
       if ($this->banner !== '') {
-        $terminal->render($this->theme->renderBanner($this->banner, $this->version) . "\n\n" . Translator::t('Press any key to continue...'));
+        $terminal->render($this->positioned($this->theme->renderBanner($this->banner, $this->version) . "\n\n" . Translator::t('Press any key to continue...'), $terminal));
 
         // Any key dismisses the banner, but Ctrl-C here aborts like it does
         // mid-form rather than dropping the user into the questionnaire.
@@ -301,9 +306,8 @@ class PanelController {
       }
 
       while (!$this->done && !$this->interrupted) {
-        // Fill the terminal, reserving four rows of chrome: the breadcrumb
-        // header, the status footer and the two scroll indicators.
-        $terminal->render($this->frame(max(3, $terminal->height() - 4)));
+        $too_small = $this->tooSmall($terminal);
+        $terminal->render($too_small ? $this->tooSmallFrame($terminal) : $this->positioned($this->frame($this->rows($terminal)), $terminal));
 
         $bytes = $terminal->read();
 
@@ -319,6 +323,16 @@ class PanelController {
           // teardown, leaving the collected answers as they stand.
           if ($this->consumeInterrupt($key)) {
             break 2;
+          }
+
+          // The too-small guard screen accepts only quit: any other key would
+          // mutate state invisibly behind the notice.
+          if ($too_small) {
+            if ($this->nav->matches($key, Action::Quit)) {
+              $this->done = TRUE;
+            }
+
+            continue;
           }
 
           $this->handle($key);
@@ -389,13 +403,13 @@ class PanelController {
   /**
    * Render the current frame: the help overlay, the editor or the panel hub.
    *
-   * @param int $height
-   *   The body viewport height.
+   * @param int $rows
+   *   The screen rows the frame may fill.
    *
    * @return string
    *   The frame.
    */
-  public function frame(int $height): string {
+  public function frame(int $rows): string {
     if ($this->help) {
       return $this->theme->renderHelp($this->nav, ...$this->helpSections());
     }
@@ -403,14 +417,14 @@ class PanelController {
     // A standalone field takes the whole screen; an inline field expands inside
     // the hub, which hubFrame() splices in.
     if ($this->editor instanceof WidgetInterface && $this->editing instanceof Field && $this->editing->render === RenderMode::Standalone) {
-      return $this->editorFrame($this->editor);
+      return $this->editorFrame($this->editor, $rows);
     }
 
     if ($this->navigator->current()->isModal()) {
-      return $this->modalFrame($height);
+      return $this->modalFrame($rows);
     }
 
-    return $this->hubFrame($height);
+    return $this->hubFrame($rows);
   }
 
   /**
@@ -418,28 +432,30 @@ class PanelController {
    *
    * @param \DrevOps\Tui\Widget\WidgetInterface $editor
    *   The active editor widget.
+   * @param int $rows
+   *   The screen rows a fullscreen editor stretches to.
    *
    * @return string
    *   The editor frame.
    */
-  protected function editorFrame(WidgetInterface $editor): string {
+  protected function editorFrame(WidgetInterface $editor, int $rows): string {
     $label = $this->editing instanceof Field ? Translator::t($this->editing->label) : '';
     $keys = $this->editing instanceof Field ? $this->keymap->forField($this->editing->type) : $this->nav;
     $hints = $this->footer ? $editor->hints() : [];
 
-    return $this->theme->renderEditor($label, $editor->view($this->theme), $hints, $keys);
+    return $this->theme->renderEditor($label, $editor->view($this->theme), $hints, $keys, $rows);
   }
 
   /**
    * Render the panel hub: the body with buttons, scrolled, framed by chrome.
    *
-   * @param int $height
-   *   The body viewport height.
+   * @param int $rows
+   *   The screen rows the frame may fill.
    *
    * @return string
    *   The hub frame.
    */
-  protected function hubFrame(int $height): string {
+  protected function hubFrame(int $rows): string {
     $panel = $this->navigator->current();
 
     // When an inline field is being edited, hand its field and rendered view to
@@ -470,23 +486,60 @@ class PanelController {
       ], $selected);
     }
 
-    $viewport = $this->resolveViewport(count($body), $cursor_line, $height);
     $header = [$this->theme->renderBreadcrumbLine($this->navigator)];
     $footer = $editing instanceof Field ? $this->inlineEditFooter() : $this->hubFooter();
+    $height = $this->viewportHeight($rows, count($header), count($footer));
+    $viewport = $this->resolveViewport(count($body), $cursor_line, $height);
 
     return $this->theme->renderFrame($header, $body, $footer, $viewport, $height);
   }
 
   /**
+   * The body viewport height that fits a frame into the screen rows.
+   *
+   * The theme owns the chrome accounting, so a bordered or padded frame never
+   * overflows the terminal.
+   *
+   * @param int $rows
+   *   The screen rows the frame may fill.
+   * @param int $header_lines
+   *   The header line count.
+   * @param int $footer_lines
+   *   The footer line count.
+   *
+   * @return int
+   *   The viewport height, at least 3.
+   */
+  protected function viewportHeight(int $rows, int $header_lines, int $footer_lines): int {
+    return max(3, $rows - $header_lines - $footer_lines - $this->theme->chromeHeight($footer_lines > 0));
+  }
+
+  /**
+   * The screen rows a frame may fill: the terminal's, capped by the theme.
+   *
+   * @param \DrevOps\Tui\Render\Terminal $terminal
+   *   The terminal.
+   *
+   * @return int
+   *   The row budget.
+   */
+  protected function rows(Terminal $terminal): int {
+    $max = $this->theme->maxHeight();
+    $rows = $terminal->height();
+
+    return $max > 0 ? min($rows, $max) : $rows;
+  }
+
+  /**
    * Render the current modal dialog floating over its dimmed parent.
    *
-   * @param int $height
-   *   The body viewport height.
+   * @param int $rows
+   *   The screen rows the frame may fill.
    *
    * @return string
    *   The modal frame.
    */
-  protected function modalFrame(int $height): string {
+  protected function modalFrame(int $rows): string {
     $modal = $this->navigator->current();
 
     $editing = NULL;
@@ -498,8 +551,9 @@ class PanelController {
 
     $base = $modal->itemCount();
     $selected = $this->cursor >= $base ? $this->cursor - $base : -1;
+    $height = $this->viewportHeight($rows, 1, count($this->hubFooter()));
 
-    return $this->theme->renderModal($modal, $this->answers(), $this->cursor, $editing, $view, $selected, $this->backdrop($height), $height);
+    return $this->theme->renderModal($modal, $this->answers(), $this->cursor, $editing, $view, $selected, $this->backdrop($rows), $height);
   }
 
   /**
@@ -508,13 +562,13 @@ class PanelController {
    * The parent renders un-highlighted; the theme dims it while compositing the
    * dialog on top, so what shows through the padding reads as recessed.
    *
-   * @param int $height
-   *   The body viewport height.
+   * @param int $rows
+   *   The screen rows the frame may fill.
    *
    * @return string
    *   The parent frame.
    */
-  protected function backdrop(int $height): string {
+  protected function backdrop(int $rows): string {
     $parent = $this->navigator->parent();
 
     if (!$parent instanceof Panel) {
@@ -525,10 +579,118 @@ class PanelController {
     }
 
     [$body] = $this->theme->renderBody($parent, $this->answers(), -1);
-    $viewport = $this->scroller->viewport(0, count($body), $height);
     $header = [$this->theme->renderBreadcrumbLine($this->navigator)];
+    $footer = $this->hubFooter();
+    $height = $this->viewportHeight($rows, count($header), count($footer));
+    $viewport = $this->scroller->viewport(0, count($body), $height);
 
-    return $this->theme->renderFrame($header, $body, $this->hubFooter(), $viewport, $height);
+    return $this->theme->renderFrame($header, $body, $footer, $viewport, $height);
+  }
+
+  /**
+   * Position a frame within the terminal area per the layout options.
+   *
+   * Outside fullscreen the frame renders where the cursor homes, as always.
+   * In fullscreen a frame smaller than the terminal - a capped hub, an
+   * unboxed editor, the help overlay, the banner - anchors to the alignment
+   * the theme options pick, padded with blank space.
+   *
+   * @param string $frame
+   *   The rendered frame.
+   * @param \DrevOps\Tui\Render\Terminal $terminal
+   *   The terminal.
+   *
+   * @return string
+   *   The positioned frame.
+   */
+  protected function positioned(string $frame, Terminal $terminal): string {
+    if (!$this->theme->isFullscreen()) {
+      return $frame;
+    }
+
+    $lines = explode("\n", $frame);
+    $area_width = $terminal->width();
+    $area_height = $terminal->height();
+
+    $box_width = 0;
+    foreach ($lines as $line) {
+      $box_width = max($box_width, Ansi::width($line));
+    }
+
+    if (count($lines) >= $area_height && $box_width >= $area_width) {
+      return $frame;
+    }
+
+    [$top, $left] = Overlay::place($area_width, $area_height, $box_width, count($lines), $this->theme->halign(), $this->theme->valign());
+    $backdrop = array_fill(0, $area_height, str_repeat(' ', $area_width));
+
+    return implode("\n", Overlay::composite($backdrop, $lines, $box_width, $top, $left, static fn(string $segment): string => $segment));
+  }
+
+  /**
+   * Whether the terminal is too small for the fullscreen layout.
+   *
+   * @param \DrevOps\Tui\Render\Terminal $terminal
+   *   The terminal.
+   *
+   * @return bool
+   *   TRUE when fullscreen is on and the terminal is below the minimums.
+   */
+  protected function tooSmall(Terminal $terminal): bool {
+    if (!$this->theme->isFullscreen()) {
+      return FALSE;
+    }
+
+    return $terminal->width() < $this->minWidth() || $terminal->height() < $this->theme->minHeight();
+  }
+
+  /**
+   * The effective fullscreen minimum width.
+   *
+   * An explicit "min_width" option wins; otherwise the content is measured
+   * once, at the initial answers, so the guard never flaps as values grow
+   * mid-session.
+   *
+   * @return int
+   *   The minimum width, in columns.
+   */
+  protected function minWidth(): int {
+    return $this->minWidth ??= $this->theme->minWidth() > 0 ? $this->theme->minWidth() : $this->theme->measureContentWidth($this->form, $this->answers());
+  }
+
+  /**
+   * Render the centered notice shown while the terminal is too small.
+   *
+   * Always centered - the alignment options position content on a screen the
+   * layout fits into, which this one is not.
+   *
+   * @param \DrevOps\Tui\Render\Terminal $terminal
+   *   The terminal.
+   *
+   * @return string
+   *   The notice screen.
+   */
+  protected function tooSmallFrame(Terminal $terminal): string {
+    $lines = [
+      $this->theme->error(Translator::t('Terminal too small.')),
+      Translator::t('Need at least @width x @height - have @w x @h.', [
+        '@width' => (string) $this->minWidth(),
+        '@height' => (string) $this->theme->minHeight(),
+        '@w' => (string) $terminal->width(),
+        '@h' => (string) $terminal->height(),
+      ]),
+      $this->theme->renderHints($this->nav, new Hint('quit', Action::Quit)),
+    ];
+
+    $width = 0;
+    foreach ($lines as $line) {
+      $width = max($width, Ansi::width($line));
+    }
+
+    [$top, $left] = Overlay::center($terminal->width(), $terminal->height(), $width, count($lines));
+    $backdrop = array_fill(0, max(count($lines), $terminal->height()), str_repeat(' ', max($width, $terminal->width())));
+
+    return implode("\n", Overlay::composite($backdrop, $lines, $width, $top, $left, static fn(string $segment): string => $segment));
   }
 
   /**

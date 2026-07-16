@@ -117,6 +117,16 @@ final class TuiTesterTest extends TestCase {
     yield 'is interrupted' => [static fn(TuiTester $tester): mixed => $tester->isInterrupted()];
   }
 
+  public function testFullscreenLaysOutToTheScriptedColumns(): void {
+    $tester = new TuiTester($this->form());
+
+    // No input: one frame renders, stretched to the scripted terminal's rows
+    // and laid out to its columns.
+    $tester->options(['fullscreen' => TRUE, 'color' => FALSE])->rows(12)->cols(48)->run();
+
+    $this->assertCount(12, explode("\n", $tester->display()));
+  }
+
   public function testModalSubmitFlowsThroughTheInputPipe(): void {
     $tester = new TuiTester($this->modalForm());
 
