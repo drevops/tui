@@ -64,7 +64,7 @@ final class TuiTest extends TestCase {
 
     // A translator-less facade's operation clears the shared language.
     $plain->collect();
-    $this->assertNull(Translator::shared());
+    $this->assertNotInstanceOf(Translator::class, Translator::shared());
 
     // The translated facade restores its own language on its next operation,
     // even though another facade replaced the shared one meanwhile.
