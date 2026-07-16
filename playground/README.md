@@ -145,6 +145,16 @@ composer install
   php playground/10-builtin-themes/run.php --theme=dos      # its own blue screen
   ```
 
+- **[`11-modal-panel/`](11-modal-panel)** - a panel marked `->modal()` opens as a
+  centered dialog over the dimmed parent instead of drilling in, with its own
+  configurable submit/cancel buttons. One dialog collects fields (Save keeps the
+  edits, Discard or Escape restores them); a second is a text-only warning.
+
+  ```bash
+  php playground/11-modal-panel/run.php                        # TUI
+  php playground/11-modal-panel/run.php --prompts='{"gift_wrap":true}'
+  ```
+
 ## How the TUI picks a theme
 
 Set it on the `Tui` facade with `->theme(...)`, lowest friction first:

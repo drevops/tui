@@ -79,6 +79,44 @@ $form = Form::create('Basket settings')
   <ThemedImage sources={{light: useBaseUrl('/nested-panels-light-animated.svg'), dark: useBaseUrl('/nested-panels-dark-animated.svg')}} alt="Nested panels demo" width="100%" />
 </p>
 
+## Modal panels
+
+A sub-panel usually drills in, replacing the view. A panel marked `->modal()`
+instead opens as a **centered dialog over the dimmed parent** - the better fit for
+a focused aside or a decision that should not lose the reader's place. The dialog
+carries its own **configurable submit/cancel buttons** (mandatory chrome, so a
+modal always shows them), collects whatever fields it declares - or just shows a
+message - and blocks the rest of the form while open. **Save** keeps the edits
+made inside the dialog; **Discard**, Escape or `q` restores every answer exactly
+as it was when the dialog opened. A modal cannot itself hold sub-panels:
+
+```php
+$form = Form::create('Produce order')
+  ->buttons(TRUE, 'Place order', 'Cancel')
+  ->panel('basket', 'Basket', function (PanelBuilder $p): void {
+    $p->text('item', 'Item')->default('Pear');
+    $p->number('quantity', 'Quantity')->default(6)->min(1)->max(99);
+
+    // A dialog collecting fields: Save keeps them, Discard restores them.
+    $p->panel('gift', 'Gift options', function (PanelBuilder $m): void {
+      $m->modal('Save', 'Discard');
+      $m->description('Wrap this order as a gift.');
+      $m->confirm('gift_wrap', 'Gift wrap?')->default(TRUE);
+      $m->text('gift_note', 'Gift message')->default('Enjoy the harvest');
+    });
+
+    // A text-only dialog: the message is the whole content, either button dismisses.
+    $p->panel('empty', 'Empty the basket', function (PanelBuilder $m): void {
+      $m->modal('Empty it', 'Keep it');
+      $m->description('This clears every item from your basket.');
+    });
+  });
+```
+
+<p align="center">
+  <ThemedImage sources={{light: useBaseUrl('/modal-panels-light-animated.svg'), dark: useBaseUrl('/modal-panels-dark-animated.svg')}} alt="A modal panel dialog centered over the dimmed basket" width="100%" />
+</p>
+
 ## Bordered panels
 
 The whole panel browser can be wrapped in a border. The border is a theme option -

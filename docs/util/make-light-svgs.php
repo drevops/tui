@@ -55,6 +55,7 @@ $subjects = [
   'bordered-panels',
   'borderless-panels',
   'nested-panels',
+  'modal-panels',
   'discovery',
 ];
 
