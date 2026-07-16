@@ -34,8 +34,9 @@ Read it in three bands:
 ## Step 1 - describe the questions
 
 You declare the questions in PHP with the fluent `Form` builder: panels holding
-fields. A field has an `id`, a `type` (text, select, suggest, search, confirm;
-select, search and file picker collect a list with `->multiple()`) and optional
+fields. A field has an `id`, a `type` (text, select, suggest, search, file
+picker, confirm; select, search and file picker collect a list with
+`->multiple()`) and optional
 rules - `default`, `required`, `options`, `when` (show it
 only when a condition holds), `derive` (compute it from other fields) and
 `discover` (detect it from the target directory). The builder validates the
