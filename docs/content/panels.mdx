@@ -145,7 +145,39 @@ $tui = (new Tui($form))->theme('default', ['border' => 'rounded', 'spacing' => '
   <ThemedImage sources={{light: useBaseUrl('/bordered-panels-light-animated.svg'), dark: useBaseUrl('/bordered-panels-dark-animated.svg')}} alt="Panel browser with a rounded border" width="100%" />
 </p>
 
-Nesting, modal dialogs and both border looks are runnable in
+## Fullscreen
+
+The facade's `->fullscreen()` expands the frame to the whole terminal: the border hugs the screen edges, the key-hint footer pins to the bottom row, and the body stretches between them. Where the fields sit inside the stretched frame is a pair of theme options - `halign` (`left`, `center` or `right`) and `valign` (`top`, `middle` or `bottom`) - passed as plain strings like the border, and the fields move as one block so their left edges stay aligned:
+
+```php
+$form = Form::create('Market stall')
+  ->buttons(TRUE, 'Place order', 'Cancel')
+  ->panel('order', 'Order', function (PanelBuilder $p): void {
+    $p->description('What goes in the box.');
+    $p->text('name', 'Order name')->default('Weekly Box')->required();
+    $p->select('fruit', 'Fruit')->default('apple')->options(['apple' => 'Apple', 'banana' => 'Banana', 'cherry' => 'Cherry']);
+    $p->number('quantity', 'Quantity')->default(6)->min(1)->max(99);
+    $p->confirm('organic', 'Organic only?')->default(TRUE);
+  });
+
+// Fullscreen is a facade switch; the alignment and size limits are theme options.
+$tui = (new Tui($form))
+  ->theme('default', ['border' => 'rounded', 'halign' => 'center', 'valign' => 'middle'])
+  ->fullscreen();
+```
+
+<p align="center">
+  <ThemedImage sources={{light: useBaseUrl('/fullscreen-panels-light-animated.svg'), dark: useBaseUrl('/fullscreen-panels-dark-animated.svg')}} alt="The panel browser stretched to the whole terminal with centered fields" width="100%" />
+</p>
+
+Four sizing options bound the stretch, each a non-negative integer:
+
+- `max_width` / `max_height` (default `0`, uncapped) stop the frame short of a very wide or tall terminal; the capped frame then floats at the `halign` / `valign` anchor, like a dialog.
+- `min_width` / `min_height` guard against a terminal too small for the layout: below either, the TUI shows a centered resize notice (only quit works there) until the terminal grows. `min_height` defaults to `10`; `min_width` defaults to `0`, which measures the form's own content - the widest label, value, badge and description row across every panel - so the guard adapts to the questionnaire without configuration.
+
+Fullscreen affects only the interactive TUI; headless collection ignores it. The terminal width is read once at start-up, so a window resized mid-session reflows on height but keeps its width until the next run.
+
+Nesting, modal dialogs, both border looks and the fullscreen stretch are runnable in
 [`playground/03-panels/`](https://github.com/drevops/tui/tree/main/playground/03-panels),
 and inline editing in
 [`playground/04-inline-editing/`](https://github.com/drevops/tui/tree/main/playground/04-inline-editing).

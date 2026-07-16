@@ -439,6 +439,35 @@ EXPECT;
 }
 
 /**
+ * The expect body driving the fullscreen panel TUI.
+ *
+ * @return string
+ *   The expect script body.
+ */
+function fullscreenInteraction(): string {
+  return <<<'EXPECT'
+# Wait for the centered hub, then drill into Order.
+expect "Order" {
+    pause 2000
+    safe_send "\r"
+}
+
+# Walk the centered fields inside the stretched frame.
+pause 1500
+arrow_down
+arrow_down
+arrow_down
+
+# Back to the hub, then submit via Place order.
+press_escape
+pause 1000
+arrow_down
+pause 600
+safe_send "\r"
+EXPECT;
+}
+
+/**
  * The expect body driving the modal-panels panel TUI.
  *
  * @return string
@@ -633,6 +662,16 @@ function getJobs(string $project_dir): array {
     'rows' => TERMINAL_ROWS,
     'cols' => TERMINAL_COLS,
     'verify' => 'Basics',
+  ];
+
+  // Fullscreen: the frame stretched to the whole terminal, the fields anchored
+  // to the centered halign/valign layout inside the border.
+  $jobs['fullscreen-panels'] = [
+    'command' => 'env LINES=' . TERMINAL_ROWS . ' COLUMNS=' . TERMINAL_COLS . ' php ' . $project_dir . '/playground/03-panels/fullscreen.php',
+    'interact' => fullscreenInteraction(),
+    'rows' => TERMINAL_ROWS,
+    'cols' => TERMINAL_COLS,
+    'verify' => 'Order name',
   ];
 
   // A modal panel: a dialog centered over the dimmed parent, dismissed by its
