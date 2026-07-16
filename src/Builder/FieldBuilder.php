@@ -247,7 +247,7 @@ final class FieldBuilder {
    *   When the field type does not support collecting several values.
    */
   public function multiple(bool $multiple = TRUE): self {
-    if ($multiple && !in_array($this->fieldType, [FieldType::Select, FieldType::Search, FieldType::FilePicker], TRUE)) {
+    if ($multiple && !$this->fieldType->supportsMultiple()) {
       throw new FormException(sprintf('Field "%s" of type "%s" does not collect several values; ->multiple() applies to select, search and file picker fields.', $this->id, $this->fieldType->value));
     }
 

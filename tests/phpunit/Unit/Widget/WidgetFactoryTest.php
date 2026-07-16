@@ -74,6 +74,15 @@ final class WidgetFactoryTest extends TestCase {
     $this->assertSame(['/a', '/b'], (new WidgetFactory())->create($multi, ['/a', '/b'])->value());
   }
 
+  public function testMultipleChoiceThreadsTheFlag(): void {
+    $factory = new WidgetFactory();
+
+    // A multiple choice field yields a widget seeded from the list value,
+    // proving the multiple flag reaches the select and search widgets.
+    $this->assertSame(['a', 'b'], $factory->create($this->multiFieldWithOptions(FieldType::Select), ['a', 'b'])->value());
+    $this->assertSame(['a'], $factory->create($this->multiFieldWithOptions(FieldType::Search), ['a'])->value());
+  }
+
   public function testPasswordFlagsPassedThrough(): void {
     $field = new Field('f', 'F', '', FieldType::Password, '', revealable: TRUE, confirm: TRUE);
 

@@ -129,6 +129,10 @@ final readonly class Field {
     public RenderMode $render = RenderMode::Inline,
     public bool $multiple = FALSE,
   ) {
+    if ($this->multiple && !$this->type->supportsMultiple()) {
+      throw new FormException(sprintf('Field "%s" of type "%s" does not collect several values; only select, search and file picker fields may be multiple.', $this->id, $this->type->value));
+    }
+
     $this->options = Option::list($options);
   }
 

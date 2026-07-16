@@ -71,4 +71,14 @@ enum FieldType: string {
     ], TRUE);
   }
 
+  /**
+   * Whether a field of this type may collect several values via `->multiple()`.
+   *
+   * @return bool
+   *   TRUE for the choice and file-picker types a multiple field builds on.
+   */
+  public function supportsMultiple(): bool {
+    return in_array($this, [self::Select, self::Search, self::FilePicker], TRUE);
+  }
+
 }

@@ -6,6 +6,7 @@ namespace DrevOps\Tui\Tests\Unit\Model;
 
 use DrevOps\Tui\Model\Field;
 use DrevOps\Tui\Model\FieldType;
+use DrevOps\Tui\Model\FormException;
 use DrevOps\Tui\Model\Option;
 use DrevOps\Tui\Model\OptionKind;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -153,6 +154,27 @@ final class OptionTest extends TestCase {
     yield 'number' => [FieldType::Number, FALSE, 'a number'];
     yield 'calendar' => [FieldType::Calendar, FALSE, 'a date (YYYY-MM-DD)'];
     yield 'text' => [FieldType::Text, FALSE, 'a string'];
+  }
+
+  #[DataProvider('dataProviderSupportsMultiple')]
+  public function testSupportsMultiple(FieldType $type, bool $expected): void {
+    $this->assertSame($expected, $type->supportsMultiple());
+  }
+
+  public static function dataProviderSupportsMultiple(): \Iterator {
+    yield 'select' => [FieldType::Select, TRUE];
+    yield 'search' => [FieldType::Search, TRUE];
+    yield 'file picker' => [FieldType::FilePicker, TRUE];
+    yield 'reorder' => [FieldType::Reorder, FALSE];
+    yield 'number' => [FieldType::Number, FALSE];
+    yield 'text' => [FieldType::Text, FALSE];
+  }
+
+  public function testConstructorRejectsMultipleOnUnsupportedType(): void {
+    $this->expectException(FormException::class);
+    $this->expectExceptionMessage('Field "n" of type "number" does not collect several values');
+
+    new Field('n', 'N', '', FieldType::Number, 0, multiple: TRUE);
   }
 
   public function testFieldOptionScan(): void {
