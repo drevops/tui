@@ -608,7 +608,7 @@ function getJobs(string $project_dir): array {
   // The built-in themes, each as a static frame of the drilled-in Preview
   // fields. Every theme is captured twice: dark (the dark palette on a dark
   // surface) and light (--mode forces the light palette, rendered on a light
-  // surface), giving the README's dark/light picture twins.
+  // surface), giving the docs' dark/light picture twins.
   foreach (['midnight', 'frost', 'ember', 'mono'] as $theme_name) {
     $jobs['theme-' . $theme_name] = [
       'command' => 'env LINES=15 COLUMNS=64 php ' . $project_dir . '/playground/10-builtin-themes/run.php --theme=' . $theme_name . ' --mode=dark',
@@ -627,16 +627,23 @@ function getJobs(string $project_dir): array {
     ];
   }
 
-  // The dos theme is the same drilled-in frame, rendered on the CGA blue
-  // surface (the EDIT.COM / QBasic look) that it paints regardless of mode.
-  $jobs['theme-dos'] = [
-    'command' => 'env LINES=16 COLUMNS=80 php ' . $project_dir . '/playground/10-builtin-themes/run.php --theme=dos --mode=dark',
-    'interact' => builtinThemeInteraction(),
-    'rows' => 16,
-    'cols' => 80,
-    'at_needle' => 'Box name',
-    'dos' => TRUE,
-  ];
+  // The dos theme is the same drilled-in frame, rendered on the CGA blue surface
+  // (the EDIT.COM / QBasic look) that it paints regardless of mode. It is
+  // captured dark and light like every other theme for the docs' picture twins;
+  // both land on the blue surface, since the wash ignores the mode. Its
+  // double-line box wraps the whole field list on the classic 80x16 DOS screen:
+  // at the borderless themes' 64x15 the bordered list scrolls and clips the
+  // first field, so it keeps the wider, taller screen.
+  foreach (['dark', 'light'] as $dos_mode) {
+    $jobs['theme-dos' . ($dos_mode === 'light' ? '-light' : '')] = [
+      'command' => 'env LINES=16 COLUMNS=80 php ' . $project_dir . '/playground/10-builtin-themes/run.php --theme=dos --mode=' . $dos_mode,
+      'interact' => builtinThemeInteraction(),
+      'rows' => 16,
+      'cols' => 80,
+      'at_needle' => 'Box name',
+      'dos' => TRUE,
+    ];
+  }
 
   // Update-mode discovery: headless, shows the provenance-badged summary.
   $jobs['discovery'] = [
