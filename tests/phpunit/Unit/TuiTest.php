@@ -16,6 +16,7 @@ use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyMap;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Input\Scope;
+use DrevOps\Tui\InterruptException;
 use DrevOps\Tui\Render\PanelController;
 use DrevOps\Tui\Render\Terminal;
 use DrevOps\Tui\Testing\BufferedTerminal;
@@ -178,6 +179,14 @@ final class TuiTest extends TestCase {
 
     $this->assertInstanceOf(Answers::class, $answers);
     $this->assertStringContainsString('Demo', $terminal->output());
+  }
+
+  public function testInteractThrowsOnInterrupt(): void {
+    // Ctrl-C ("\x03") aborts mid-form: the facade raises rather than returning
+    // the partial answers, so a caller never mistakes an abort for a submit.
+    $this->expectException(InterruptException::class);
+
+    $this->tui()->interact(terminal: new BufferedTerminal(["\x03"]));
   }
 
   #[DataProvider('dataProviderResolveTheme')]

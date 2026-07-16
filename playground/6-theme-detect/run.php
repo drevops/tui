@@ -23,6 +23,7 @@ declare(strict_types=1);
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Builder\PanelBuilder;
 use DrevOps\Tui\Engine\EngineException;
+use DrevOps\Tui\InterruptException;
 use DrevOps\Tui\Theme\Mode;
 use DrevOps\Tui\Tui;
 
@@ -54,6 +55,10 @@ $form = Form::create('Theme detection demo')
 try {
   // run() picks interactive vs headless; the theme resolves inside interact().
   $answers = (new Tui($form))->theme('', $theme_options)->run($prompts, '1.0.0');
+}
+catch (InterruptException) {
+  // Leave quietly on Ctrl-C.
+  exit(130);
 }
 catch (EngineException $exception) {
   fwrite(STDERR, $exception->getMessage() . PHP_EOL);

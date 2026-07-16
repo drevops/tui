@@ -121,6 +121,15 @@ composer install
   docs, the scripts and the screenshots stay consistent, and never introduce a
   programming language, framework, service, tool or brand into an example.
 
+### Playground scripts
+
+- **Each playground script is self-contained.** A demo requires the Composer
+  autoloader directly (`require __DIR__ . '/../../vendor/autoload.php';`) and
+  handles its own concerns inline - argument parsing, its own `try`/`catch`
+  around collection (including the `InterruptException` a Ctrl-C abort raises,
+  caught to `exit(130)`), and its own output. There is no shared bootstrap or
+  helper include: a reader can copy a single script and run it standalone.
+
 ## Testing Patterns
 
 ### PHPUnit Structure

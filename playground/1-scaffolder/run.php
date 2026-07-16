@@ -18,6 +18,7 @@ use DrevOps\Tui\Condition\Condition;
 use DrevOps\Tui\Derive\Derive;
 use DrevOps\Tui\Engine\EngineException;
 use DrevOps\Tui\Handler\Context;
+use DrevOps\Tui\InterruptException;
 use DrevOps\Tui\Tui;
 
 require __DIR__ . '/../../vendor/autoload.php';
@@ -86,6 +87,10 @@ $prompts = array_key_exists('prompts', $options) && is_string($options['prompts'
 try {
   // Interactive TUI on a terminal; headless when prompts are given or piped.
   $answers = $tui->run($prompts, '1.0.0');
+}
+catch (InterruptException) {
+  // Leave quietly on Ctrl-C.
+  exit(130);
 }
 catch (EngineException $exception) {
   fwrite(STDERR, $exception->getMessage() . PHP_EOL);

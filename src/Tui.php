@@ -259,6 +259,11 @@ final class Tui {
    *
    * @return \DrevOps\Tui\Answers\Answers
    *   The collected answers.
+   *
+   * @throws \DrevOps\Tui\Engine\EngineException
+   *   When the engine cannot process the configuration or answers.
+   * @throws \DrevOps\Tui\InterruptException
+   *   When the user aborts the interactive session with the interrupt key.
    */
   public function run(string $prompts = '', string $version = '', string $directory = '', ?bool $interactive = NULL): Answers {
     $interactive ??= $prompts === '' && defined('STDIN') && stream_isatty(STDIN);
@@ -308,6 +313,11 @@ final class Tui {
    *
    * @return \DrevOps\Tui\Answers\Answers
    *   The collected answers.
+   *
+   * @throws \DrevOps\Tui\Engine\EngineException
+   *   When the engine cannot process the configuration or answers.
+   * @throws \DrevOps\Tui\InterruptException
+   *   When the user aborts the interactive session with the interrupt key.
    */
   public function interact(string $theme = '', string $banner = '', string $version = '', string $directory = '', ?Terminal $terminal = NULL): Answers {
     if (!$terminal instanceof Terminal) {
@@ -320,7 +330,15 @@ final class Tui {
     // when set, otherwise they are auto-detected from the terminal.
     $controller = $this->controller($this->resolveThemeOptions($terminal), $theme, $banner, $version, $directory);
 
-    return $controller->run($terminal);
+    $answers = $controller->run($terminal);
+
+    // An interrupt is an abort, not a submit: surface it so the partial answers
+    // collected before the abort are never mistaken for a completed form.
+    if ($controller->isInterrupted()) {
+      throw new InterruptException('The interactive session was interrupted.');
+    }
+
+    return $answers;
   }
 
   /**

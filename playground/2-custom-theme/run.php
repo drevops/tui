@@ -11,11 +11,12 @@
 
 declare(strict_types=1);
 
-use Playground\CustomTheme\OceanTheme;
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Builder\PanelBuilder;
 use DrevOps\Tui\Engine\EngineException;
+use DrevOps\Tui\InterruptException;
 use DrevOps\Tui\Tui;
+use Playground\CustomTheme\OceanTheme;
 
 require __DIR__ . '/../../vendor/autoload.php';
 // The require makes the class loadable; the form names it directly, so no
@@ -44,6 +45,10 @@ $form = Form::create('Ocean theme demo')
 try {
   // The banner comes from the form; the theme is set on the facade.
   $answers = (new Tui($form))->theme(OceanTheme::class)->run($prompts, '1.0.0');
+}
+catch (InterruptException) {
+  // Leave quietly on Ctrl-C.
+  exit(130);
 }
 catch (EngineException $exception) {
   fwrite(STDERR, $exception->getMessage() . PHP_EOL);
