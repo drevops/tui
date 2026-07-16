@@ -42,7 +42,7 @@ $form = Form::create('Quick start')
     ]);
 
     // A multi-select, with one option pre-checked.
-    $p->multiSelect('veg', 'Vegetables')->default(['carrot'])->options([
+    $p->select('veg', 'Vegetables')->multiple()->default(['carrot'])->options([
       'carrot' => 'Carrot',
       'tomato' => 'Tomato',
       'spinach' => 'Spinach',

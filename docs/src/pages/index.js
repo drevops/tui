@@ -44,10 +44,7 @@ const FEATURES = [
 const WIDGETS = [
   {name: 'Calendar', file: 'widget-calendar-dark-animated.svg', desc: <>A month calendar returning a normalized ISO <code className={styles.tok}>YYYY-MM-DD</code>; arrows move by day and week.</>},
   {name: 'Confirm', file: 'widget-confirm-dark-animated.svg', desc: <>Yes/No toggle; arrows or Space switch, <code className={styles.tok}>y</code>/<code className={styles.tok}>n</code> set the choice directly, Enter accepts.</>},
-  {name: 'File picker', file: 'widget-filepicker-dark-animated.svg', desc: <>Browse the filesystem for a single path; <code className={styles.tok}>{'->'}</code> enters a directory, <code className={styles.tok}>{'<-'}</code> returns to its parent.</>},
-  {name: 'Multi file picker', file: 'widget-multifilepicker-dark-animated.svg', desc: <>Like the file picker, but several paths accumulate as you browse; Space toggles.</>},
-  {name: 'MultiSearch', file: 'widget-multisearch-dark-animated.svg', desc: <>A multi-select whose filter query shows as a search line; typing fuzzy-matches and ranks.</>},
-  {name: 'MultiSelect', file: 'widget-multiselect-dark-animated.svg', desc: <>Multiple choice from a checkbox list; Space toggles, typing narrows, select/deselect-all in one key.</>},
+  {name: 'File picker', file: 'widget-filepicker-dark-animated.svg', desc: <>Browse the filesystem for a path, or several with <code className={styles.tok}>{'->multiple()'}</code>; <code className={styles.tok}>{'->'}</code> enters a directory, <code className={styles.tok}>{'<-'}</code> returns to its parent.</>},
   {name: 'Number', file: 'widget-number-dark-animated.svg', desc: <>Integer entry accepted as an <code className={styles.tok}>int</code>, with optional min, max and step.</>},
   {name: 'Password', file: 'widget-password-dark-animated.svg', desc: <>Text rendered as a mask everywhere; the accepted value stays plain for the consumer, and can be made revealable.</>},
   {name: 'Pause', file: 'widget-pause-dark-animated.svg', desc: <>An acknowledgement gate; Enter or Space accepts. Unattended runs auto-acknowledge it.</>},

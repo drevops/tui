@@ -71,3 +71,43 @@ In all four [display modes](/display-modes) - Unicode or ASCII, colour on or off
     <td><ThemedImage sources={{light: useBaseUrl('/widget-search-light-static-ascii-no-ansi.svg'), dark: useBaseUrl('/widget-search-dark-static-ascii-no-ansi.svg')}} alt="Search: ASCII + No ANSI" /></td>
   </tr>
 </table>
+
+## Multiple selection
+
+Add `->multiple()` to collect a **`list<string>`** of checked values under the
+filter line. Typing fuzzy-matches and ranks with the matched characters
+highlighted, `Space` toggles, and `Enter` accepts the checked set.
+
+```php
+$p->search('basket', 'Basket')
+  ->multiple()
+  ->options([
+    'apple' => 'Apple',
+    'banana' => 'Banana',
+    'carrot' => 'Carrot',
+    'tomato' => 'Tomato',
+  ])
+  ->default(['apple']);
+```
+
+<p align="center">
+  <ThemedImage sources={{light: useBaseUrl('/widget-search-multiple-light-animated.svg'), dark: useBaseUrl('/widget-search-multiple-dark-animated.svg')}} alt="Search widget in multiple mode" />
+</p>
+
+<table>
+  <tr>
+    <td></td>
+    <td align="center"><strong>ANSI</strong></td>
+    <td align="center"><strong>No ANSI</strong></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>Unicode</strong></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-search-multiple-light-static.svg'), dark: useBaseUrl('/widget-search-multiple-dark-static.svg')}} alt="Search (multiple): Unicode + ANSI" /></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-search-multiple-light-static-no-ansi.svg'), dark: useBaseUrl('/widget-search-multiple-dark-static-no-ansi.svg')}} alt="Search (multiple): Unicode + No ANSI" /></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>ASCII</strong></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-search-multiple-light-static-ascii.svg'), dark: useBaseUrl('/widget-search-multiple-dark-static-ascii.svg')}} alt="Search (multiple): ASCII + ANSI" /></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-search-multiple-light-static-ascii-no-ansi.svg'), dark: useBaseUrl('/widget-search-multiple-dark-static-ascii-no-ansi.svg')}} alt="Search (multiple): ASCII + No ANSI" /></td>
+  </tr>
+</table>

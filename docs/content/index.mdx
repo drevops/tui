@@ -27,7 +27,7 @@ the collected answers is the consumer's job, not the TUI's**.
 ## Features
 
 - 🧭 [**Full-screen TUI**](/panels) - a scrollable, keyboard-driven form: fields group into sections that drill in to any depth, with a contextual key-hint footer and a `?` help overlay
-- 🧩 [**Widgets**](/widgets) - `confirm`, `date`, `filepicker`, `multifilepicker`, `multisearch`, `multiselect`, `number`, `password`, `pause`, `search`, `select`, `suggest`, `text`, `textarea`, `toggle`
+- 🧩 [**Widgets**](/widgets) - `confirm`, `date`, `filepicker`, `number`, `password`, `pause`, `search`, `select`, `suggest`, `text`, `textarea`, `toggle`
 - 🏗️ [**Builder-driven**](/configuration) - the form is declared in PHP with a fluent builder; the common cases need no code
 - 🎛️ [**Interactive or unattended**](/headless-collection) - answer the form by keyboard, or supply the answers up front as a JSON payload and environment variables so it runs without prompting (and emit a JSON schema for agents and forms)
 - 🔗 [**Derived values**](/configuration#derived-values) - compute one field from others with [str2name](https://github.com/AlexSkrypnyk/str2name) transforms; chains settle to a fixpoint
@@ -63,7 +63,7 @@ $form = Form::create('Quick start')
     ]);
 
     // A multi-select, with one option pre-checked.
-    $p->multiSelect('veg', 'Vegetables')->default(['carrot'])->options([
+    $p->select('veg', 'Vegetables')->multiple()->default(['carrot'])->options([
       'carrot' => 'Carrot',
       'tomato' => 'Tomato',
       'spinach' => 'Spinach',

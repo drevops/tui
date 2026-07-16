@@ -98,19 +98,7 @@ There's a widget for most things you'd want to ask: text entry, numbers and date
 </tr>
 <tr>
 <td width="50%"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/widget-filepicker-dark-animated.svg"><img src="docs/assets/widget-filepicker-light-animated.svg" width="100%" alt="File picker widget"></picture></td>
-<td><strong><a href="https://phptui.dev/widgets/filepicker">File picker</a></strong><br>Browse the filesystem for a single path; arrows move, <code>→</code> enters a directory and <code>←</code> returns to its parent.</td>
-</tr>
-<tr>
-<td width="50%"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/widget-multifilepicker-dark-animated.svg"><img src="docs/assets/widget-multifilepicker-light-animated.svg" width="100%" alt="Multi file picker widget"></picture></td>
-<td><strong><a href="https://phptui.dev/widgets/multifilepicker">Multi file picker</a></strong><br>Like the file picker, but several paths accumulate as you browse; <code>Space</code> toggles the highlighted entry.</td>
-</tr>
-<tr>
-<td width="50%"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/widget-multisearch-dark-animated.svg"><img src="docs/assets/widget-multisearch-light-animated.svg" width="100%" alt="MultiSearch widget"></picture></td>
-<td><strong><a href="https://phptui.dev/widgets/multisearch">MultiSearch</a></strong><br>A multi-select whose filter query shows as a search line; typing fuzzy-matches and ranks, Space toggles matches.</td>
-</tr>
-<tr>
-<td width="50%"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/widget-multiselect-dark-animated.svg"><img src="docs/assets/widget-multiselect-light-animated.svg" width="100%" alt="MultiSelect widget"></picture></td>
-<td><strong><a href="https://phptui.dev/widgets/multiselect">MultiSelect</a></strong><br>Multiple choice from a checkbox list; Space toggles, typing narrows the list, select-all and deselect-all in one key.</td>
+<td><strong><a href="https://phptui.dev/widgets/filepicker">File picker</a></strong><br>Browse the filesystem for a path; arrows move, <code>→</code> enters a directory and <code>←</code> returns to its parent. Add <code>-&gt;multiple()</code> for several paths.</td>
 </tr>
 <tr>
 <td width="50%"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/widget-number-dark-animated.svg"><img src="docs/assets/widget-number-light-animated.svg" width="100%" alt="Number widget"></picture></td>

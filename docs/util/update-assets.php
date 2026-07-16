@@ -681,7 +681,7 @@ EXPECT,
   // static frame holds the initial grouped list before the widget accepts.
   $group_demos = [
     'select-groups' => ['gate' => 'Select with groups', 'rows' => 10],
-    'multiselect-groups' => ['gate' => 'MultiSelect with groups', 'rows' => 13],
+    'select-multiple-groups' => ['gate' => 'MultiSelect with groups', 'rows' => 13],
   ];
 
   foreach ($group_demos as $demo => $meta) {

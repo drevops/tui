@@ -66,3 +66,43 @@ In all four [display modes](/display-modes) - Unicode or ASCII, colour on or off
     <td><ThemedImage sources={{light: useBaseUrl('/widget-select-light-static-ascii-no-ansi.svg'), dark: useBaseUrl('/widget-select-dark-static-ascii-no-ansi.svg')}} alt="Select: ASCII + No ANSI" /></td>
   </tr>
 </table>
+
+## Multiple selection
+
+Add `->multiple()` to collect a **`list<string>`** of checked values instead of
+one. `Space` toggles the highlighted option, typing narrows the list by
+substring, `→` / `←` select or deselect all visible, and `Enter` accepts the
+checked set.
+
+```php
+$p->select('basket', 'Basket')
+  ->multiple()
+  ->options([
+    'apple' => 'Apple',
+    'carrot' => 'Carrot',
+    'tomato' => 'Tomato',
+  ])
+  ->default(['apple']); // Values pre-checked when the field opens.
+```
+
+<p align="center">
+  <ThemedImage sources={{light: useBaseUrl('/widget-select-multiple-light-animated.svg'), dark: useBaseUrl('/widget-select-multiple-dark-animated.svg')}} alt="Select widget in multiple mode" />
+</p>
+
+<table>
+  <tr>
+    <td></td>
+    <td align="center"><strong>ANSI</strong></td>
+    <td align="center"><strong>No ANSI</strong></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>Unicode</strong></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-select-multiple-light-static.svg'), dark: useBaseUrl('/widget-select-multiple-dark-static.svg')}} alt="Select (multiple): Unicode + ANSI" /></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-select-multiple-light-static-no-ansi.svg'), dark: useBaseUrl('/widget-select-multiple-dark-static-no-ansi.svg')}} alt="Select (multiple): Unicode + No ANSI" /></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>ASCII</strong></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-select-multiple-light-static-ascii.svg'), dark: useBaseUrl('/widget-select-multiple-dark-static-ascii.svg')}} alt="Select (multiple): ASCII + ANSI" /></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-select-multiple-light-static-ascii-no-ansi.svg'), dark: useBaseUrl('/widget-select-multiple-dark-static-ascii-no-ansi.svg')}} alt="Select (multiple): ASCII + No ANSI" /></td>
+  </tr>
+</table>

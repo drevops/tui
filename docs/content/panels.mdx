@@ -20,7 +20,7 @@ relabels them.
 A **contextual help footer** runs along the foot of every screen, listing exactly
 the keys valid right now and updating as focus moves between the hub and each
 editor. The hub shows move, select, back, quit and `?`; each widget contributes
-its own bindings on top of accept/cancel - a select adds move, a multiselect adds
+its own bindings on top of accept/cancel - a select adds move, a multiple select adds
 toggle and select-all/none, a bounded number adds the step keys, a textarea adds
 newline and the external-editor handoff, a revealable password adds the reveal
 toggle. Pressing `?` at the hub opens a fuller overlay that lists the hub and
@@ -66,7 +66,7 @@ $form = Form::create('Basket settings')
     $p->confirm('organic', 'Organic only?')->default(TRUE);
 
     $p->panel('extras', 'Extras', function (PanelBuilder $sp): void {
-      $sp->multiSelect('extras', 'Add extras')->options(['herbs' => 'Herbs', 'nuts' => 'Nuts', 'seeds' => 'Seeds']);
+      $sp->select('extras', 'Add extras')->multiple()->options(['herbs' => 'Herbs', 'nuts' => 'Nuts', 'seeds' => 'Seeds']);
 
       $sp->panel('portion', 'Portion', function (PanelBuilder $tp): void {
         $tp->suggest('serving', 'Serving size')->default('medium')->options(['small' => 'Small', 'medium' => 'Medium', 'large' => 'Large']);
