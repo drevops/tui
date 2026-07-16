@@ -52,12 +52,12 @@ always match.
 
 ## Quick-start order form
 
-The quick start and its playground script (`playground/0-quickstart`) build a
+The quick start and its playground script (`playground/01-quickstart`) build a
 `New order` panel:
 
 - `text('name', 'Order name')->required()`
 - `select('fruit', 'Fruit')->default('banana')` - Apple / Banana / Cherry
-- `multiSelect('veg', 'Vegetables')->default(['carrot'])` - Carrot / Tomato / Spinach
+- `select('veg', 'Vegetables')->multiple()->default(['carrot'])` - Carrot / Tomato / Spinach
 - `number('quantity', 'Quantity')->min(1)->max(99)->default(6)`
 - `confirm('organic', 'Organic only?')->default(FALSE)`
 

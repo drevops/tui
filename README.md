@@ -25,11 +25,14 @@
   </picture>
 </p>
 
-This is a PHP engine for building **terminal user interfaces** - the keyboard-driven forms that walk someone through a set of questions and hand the answers back to your code. You describe the questions in PHP with a fluent builder, drop in a handler class wherever a question needs real behaviour, and the engine does the rest: a scrollable, themeable TUI when there's a person at the keyboard, or a straight non-interactive read from a JSON payload when there isn't. It travels light, with barely any dependencies.
+`drevops/tui` is a PHP engine for panel-based terminal forms: keyboard-driven questionnaires that collect a set of answers and hand them back to the caller as typed values.
 
-The engine deliberately knows nothing about the application it serves. It stays generic, your application-specific questions and handlers live in your code, and **what happens to the answers afterwards is your job, not the TUI's**. It collects; you apply.
+- **Declarative form model.** A form is declared with a fluent builder (`Form` / `PanelBuilder` / `FieldBuilder`): panels of typed fields, each field a widget with its own options, conditions, derivation rules and behaviour.
+- **Two collection modes, one declaration.** The same form runs as a full-screen interactive TUI on a terminal, or resolves non-interactively from a JSON payload, per-field environment variables, discovery rules and defaults.
+- **Application-agnostic.** The engine knows nothing about the application it serves; questions and handlers live in the consumer, and applying the collected answers is the consumer's job. It collects; you apply.
+- **Dependency-light.** The runtime dependency surface is a single string-transform package.
 
-That border is optional. Here's the same form without one, at normal spacing:
+The border above is a display option. The same form at the default borderless look, normal spacing:
 
 <p align="center">
   <picture>
@@ -40,18 +43,30 @@ That border is optional. Here's the same form without one, at normal spacing:
 
 ## 📖 Documentation
 
-The full documentation - every widget, all the configuration, theming, key bindings and how the engine fits together - lives at **[phptui.dev](https://phptui.dev)**. The in-development build, rebuilt from `main` ahead of each release, is previewed at **[tui-docs.netlify.app](https://tui-docs.netlify.app/)**.
+Full documentation lives at **[phptui.dev](https://phptui.dev)**. The in-development build, rebuilt from `main` ahead of each release, is previewed at **[tui-docs.netlify.app](https://tui-docs.netlify.app/)**.
 
-- 🧭 [**Full-screen TUI**](https://phptui.dev/panels) - a scrollable, keyboard-driven form with a contextual key-hint footer and a `?` help overlay
-- ⚡ [**Inline editing**](https://phptui.dev/panels#inline-editing) - a field's editor opens in place on the panel row (the widget's own view and keys), no separate screen; opt a field out to full-screen with `->standalone()`
-- 🧩 [**Widgets**](https://phptui.dev/widgets) - field types for text, numbers, dates, choices, file browsing, fuzzy search and gates
-- 🏗️ [**Builder-driven**](https://phptui.dev/configuration) - the form is declared in PHP with a fluent builder
-- 🎛️ [**Interactive or unattended**](https://phptui.dev/headless-collection) - answer the form by keyboard, or supply the answers up front as a JSON payload and environment variables so it runs without prompting
-- 🔗 [**Derived values**](https://phptui.dev/configuration#derived-values) and 🔀 [**conditional fields**](https://phptui.dev/configuration#conditional-fields) that settle to a fixpoint
-- 🔍 [**Discovery**](https://phptui.dev/discovery), ⚙️ [**declared behaviour**](https://phptui.dev/field-behaviour) and 📦 [**self-describing answers**](https://phptui.dev/self-describing-answers)
-- 🎨 [**Themes**](https://phptui.dev/themes), ⌨️ [**key bindings**](https://phptui.dev/key-bindings) and ✨ [**Unicode and ASCII**](https://phptui.dev/display-modes) display modes
-- 🧪 [**Test harness**](https://phptui.dev/testing) - drive a form from scripted keystrokes and assert on the answers and rendered output
-- 🌍 [**Translations**](https://phptui.dev/translations) - present chrome and questions in another language, falling back to English
+## Features
+
+Every feature has a reference page and a runnable, self-contained example in [`playground/`](playground):
+
+| Feature | Summary | Docs | Example |
+|---|---|---|---|
+| 🧭 Full-screen TUI | Scrollable panel browser: hubs drill into sub-panels to any depth, contextual key-hint footer, `?` help overlay | [panels](https://phptui.dev/panels) | [`03-panels`](playground/03-panels) |
+| 🪟 Modal panels | A panel marked `->modal()` opens as a centered dialog over its dimmed parent, with its own submit/cancel buttons | [panels](https://phptui.dev/panels#modal-panels) | [`03-panels`](playground/03-panels) |
+| ⚡ Inline editing | A field's editor opens in place on the panel row; `->standalone()` opts a field out to full-screen | [panels](https://phptui.dev/panels#inline-editing) | [`04-inline-editing`](playground/04-inline-editing) |
+| 🧩 Widgets | 13 field types: text, number, calendar, textarea, password, select, reorder, suggest, search, file picker, confirm, toggle, pause | [widgets](https://phptui.dev/widgets) | [`02-widgets`](playground/02-widgets) |
+| 🏗️ Builder-driven | The form is declared in PHP with a fluent builder; the common cases need no code | [configuration](https://phptui.dev/configuration) | [`01-quickstart`](playground/01-quickstart) |
+| 🎛️ Interactive or unattended | `run()` picks the mode: keyboard on a terminal, otherwise JSON payload + `TUI_<ID>` environment variables | [headless collection](https://phptui.dev/headless-collection) | [`05-headless`](playground/05-headless) |
+| 🔗 Derived values | Fields computed from other answers via `{{field}}` templates and str2name transforms, settling to a fixpoint | [configuration](https://phptui.dev/configuration#derived-values) | [`06-form-logic`](playground/06-form-logic) |
+| 🔀 Conditional fields | `->when()` conditions (eq/ne/in/contains, composable with all/any/not) drive visibility; form-level fix-ups reconcile answers | [configuration](https://phptui.dev/configuration#conditional-fields) | [`06-form-logic`](playground/06-form-logic) |
+| ⚙️ Declared behaviour | Dynamic defaults, validation and transforms as field closures, or as per-field handler classes resolved by naming convention | [field behaviour](https://phptui.dev/field-behaviour) | [`07-field-behaviour`](playground/07-field-behaviour) |
+| 🔍 Discovery | Update mode detects defaults from an existing directory: dotenv keys, JSON dot-paths, path checks, directory scans | [discovery](https://phptui.dev/discovery) | [`08-discovery`](playground/08-discovery) |
+| 📦 Self-describing answers | Answers carry provenance; `toSummary()` renders a badged, panel-grouped report and `toJson()` the machine result; `schema()`, `validate()` and `agentHelp()` describe the form itself | [self-describing answers](https://phptui.dev/self-describing-answers) | [`05-headless`](playground/05-headless) |
+| 🎨 Themes | Six built-ins selected by name; a custom theme is a `DefaultTheme` subclass overriding palette atoms and render methods | [themes](https://phptui.dev/themes) | [`09-themes`](playground/09-themes) |
+| ⌨️ Key bindings | Presets (`default`, `vim`, or a class) plus per-binding overrides scoped to navigation or a widget type; conflicts throw at setup | [key bindings](https://phptui.dev/key-bindings) | [`10-key-bindings`](playground/10-key-bindings) |
+| ✨ Display modes | Dark/light follows the terminal background, glyphs follow the locale, colour honours `NO_COLOR`; all three can be forced | [display modes](https://phptui.dev/display-modes) | [`11-display-modes`](playground/11-display-modes) |
+| 🧪 Test harness | `TuiTester` drives the real panel loop from scripted keystrokes, no TTY; assert on answers, output and rendered frames | [testing](https://phptui.dev/testing) | [`12-testing`](playground/12-testing) |
+| 🌍 Translations | A `Translator` with per-language catalog files localizes chrome and questions, falling back to English | [translations](https://phptui.dev/translations) | [`13-translations`](playground/13-translations) |
 
 ## Installation
 
@@ -61,7 +76,7 @@ composer require drevops/tui
 
 ## Quick start
 
-Declare a form with the fluent `Form` builder, then drive it through the `Tui` facade - the one class that wires up the engine, resolver, schema tools and TUI so you don't have to:
+Declare a form with the `Form` builder, then drive it through the `Tui` facade - the one class that wires the engine, resolver, schema tools and TUI:
 
 ```php
 use DrevOps\Tui\Builder\Form;
@@ -73,15 +88,22 @@ $form = Form::create('My form')
 
 $tui = new Tui($form, handler_namespaces: ['App\\Handler']);
 
-// Interactive on a terminal, non-interactive otherwise.
 $answers = $tui->run();
-
-// Or call a mode directly:
-echo $tui->collect('{"name":"Ada"}')->toJson();  // non-interactive: JSON + environment
-$answers = $tui->interact();                     // interactive TUI
 ```
 
-Read the [full guide at phptui.dev](https://phptui.dev), and browse [`playground/`](playground) when you want complete, runnable examples to poke at.
+The facade's surface:
+
+| Call | Purpose |
+|---|---|
+| `run($prompts, $version, $directory, $interactive)` | Collect answers; interactive on a TTY, headless otherwise (or forced via `$interactive`) |
+| `collect($prompts, $directory, $update, $version)` | Headless collection from JSON + environment; `$update` enables discovery |
+| `interact()` | The interactive panel TUI, explicitly |
+| `schema()` / `validate($answers)` / `agentHelp()` | Describe the form as a JSON schema, validate a payload against it, emit agent-facing instructions |
+| `theme($name, $options)` / `keys($preset, $overrides)` | Select the theme and key bindings |
+| `color($bool)` / `unicode($bool)` / `footer($bool)` / `clearOnExit($bool)` / `translator($t)` | Display and runtime switches |
+| `form()` / `engine()` / `registry()` | The internals, for finer control |
+
+Read the [full guide at phptui.dev](https://phptui.dev), and browse [`playground/`](playground) for complete, runnable examples - one directory per feature in the table above.
 
 ## Widgets
 
@@ -144,7 +166,7 @@ There's a widget for most things you'd want to ask: text entry, numbers and date
 
 ## Themes
 
-The TUI is themeable. Six themes ship built-in, selected by name on the `Tui` facade - and any of them can be forced light or dark, or left to auto-detect from the terminal:
+Six themes ship built-in, selected by name on the `Tui` facade. Dark or light is a separate `mode` display option auto-detected from the terminal background, so every adaptive theme serves both:
 
 ```php
 $tui = (new Tui($form))->theme('midnight');
@@ -159,44 +181,44 @@ $tui = (new Tui($form))->theme('midnight');
 | `mono` | Hue-free - bold weight, grey levels and reverse video for maximum compatibility. |
 | `dos` | Retro MS-DOS: the bright white/cyan/yellow CGA palette in a double-line window, made for a blue terminal background. |
 
-Each renders across every widget and degrades to plain text without ANSI. Every theme adapts to the terminal - here the dark palette (left) and the light palette (right):
+Each renders across every widget and degrades to plain text without ANSI. Here the dark palette (left) and the light palette (right); the [themes docs](https://phptui.dev/themes) also show every theme inside the rounded border frame:
 
 **`midnight`**
 
 <p>
-  <img src="docs/assets/theme-midnight.svg" width="48%" alt="midnight theme, dark mode">
-  <img src="docs/assets/theme-midnight-light.svg" width="48%" alt="midnight theme, light mode">
+  <img src="docs/assets/theme-midnight-dark-static.svg" width="48%" alt="midnight theme, dark mode">
+  <img src="docs/assets/theme-midnight-light-static.svg" width="48%" alt="midnight theme, light mode">
 </p>
 
 **`frost`**
 
 <p>
-  <img src="docs/assets/theme-frost.svg" width="48%" alt="frost theme, dark mode">
-  <img src="docs/assets/theme-frost-light.svg" width="48%" alt="frost theme, light mode">
+  <img src="docs/assets/theme-frost-dark-static.svg" width="48%" alt="frost theme, dark mode">
+  <img src="docs/assets/theme-frost-light-static.svg" width="48%" alt="frost theme, light mode">
 </p>
 
 **`ember`**
 
 <p>
-  <img src="docs/assets/theme-ember.svg" width="48%" alt="ember theme, dark mode">
-  <img src="docs/assets/theme-ember-light.svg" width="48%" alt="ember theme, light mode">
+  <img src="docs/assets/theme-ember-dark-static.svg" width="48%" alt="ember theme, dark mode">
+  <img src="docs/assets/theme-ember-light-static.svg" width="48%" alt="ember theme, light mode">
 </p>
 
 **`mono`**
 
 <p>
-  <img src="docs/assets/theme-mono.svg" width="48%" alt="mono theme, dark mode">
-  <img src="docs/assets/theme-mono-light.svg" width="48%" alt="mono theme, light mode">
+  <img src="docs/assets/theme-mono-dark-static.svg" width="48%" alt="mono theme, dark mode">
+  <img src="docs/assets/theme-mono-light-static.svg" width="48%" alt="mono theme, light mode">
 </p>
 
 **`dos`** - the CGA blue screen, painted regardless of the terminal background
 
 <p>
-  <img src="docs/assets/theme-dos.svg" width="48%" alt="dos theme, dark terminal">
-  <img src="docs/assets/theme-dos-light.svg" width="48%" alt="dos theme, light terminal">
+  <img src="docs/assets/theme-dos-dark-static.svg" width="48%" alt="dos theme, dark terminal">
+  <img src="docs/assets/theme-dos-light-static.svg" width="48%" alt="dos theme, light terminal">
 </p>
 
-Write your own by subclassing `DefaultTheme` and overriding just its palette - see the [theming guide](https://phptui.dev/themes).
+Write your own by subclassing `DefaultTheme` and overriding just its palette - see the [theming guide](https://phptui.dev/themes) and the playground's [`OceanTheme`](playground/09-themes/OceanTheme.php).
 
 ## Maintenance
 
@@ -206,7 +228,9 @@ composer lint
 composer test
 ```
 
-See the [Contributing guide](https://phptui.dev/contributing) when you're ready to dig into the full development workflow.
+## Contributing
+
+See the [Contributing guide](https://tui-docs.netlify.app/contributing) for the development workflow, quality gates and how the documentation and SVG assets are built.
 
 ---
 _This repository was created using the [Scaffold](https://getscaffold.dev/) project template_

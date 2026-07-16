@@ -10,7 +10,8 @@
  * SVGs; it also renders the option-group, password-reveal and discovery static
  * frames. Every per-widget card - both its animations and its static
  * display-mode screenshots - is rendered deterministically by
- * render-widget-svgs.php instead, and the light twins by make-light-svgs.php.
+ * render-widget-svgs.php instead, the built-in theme previews by
+ * render-theme-svgs.php, and the light twins by make-light-svgs.php.
  * Static frames are anchored to the moment the demo's gate text first appears in
  * the recording; every animated SVG is slowed to ANIMATION_SLOWDOWN, and every
  * generated SVG is verified to contain the expected content before the job
@@ -56,153 +57,165 @@ define('FRAME_SETTLE_MS', 500);
 require_once __DIR__ . '/svg-slowdown.php';
 
 /**
- * The expect snippets driving each widget demo, keyed by widget name.
+ * The expect body walking the all-widgets montage field by field.
  *
- * Each snippet gates on the widget title rendered by the playground script,
- * then drives the widget to completion. The snippets serve the per-widget
- * static screenshots and, concatenated, the all-widgets sequence.
- *
- * @return array<string, string>
- *   The expect script bodies keyed by widget name.
- */
-function widgetInteractions(): array {
-  return [
-    'text' => <<<'EXPECT'
-# Text: clear the default, type "Apple", accept.
-expect "Text widget" {
-    pause 1000
-    press_backspace
-    press_backspace
-    press_backspace
-    press_backspace
-    type_text "Apple"
-    wait_and_enter
-}
-EXPECT,
-    'number' => <<<'EXPECT'
-# Number: clear the default, type a new one, accept.
-expect "Number widget" {
-    pause 1000
-    press_backspace
-    press_backspace
-    press_backspace
-    press_backspace
-    type_text "4200"
-    wait_and_enter
-}
-EXPECT,
-    'calendar' => <<<'EXPECT'
-# Calendar: move down a week, accept.
-expect "Calendar widget" {
-    pause 1000
-    arrow_down
-    wait_and_enter
-}
-EXPECT,
-    'textarea' => <<<'EXPECT'
-# Textarea: Enter adds a line, type, Tab accepts.
-expect "Textarea widget" {
-    pause 1000
-    safe_send "\r"
-    type_text "Slightly tart"
-    pause 1000
-    press_tab
-}
-EXPECT,
-    'password' => <<<'EXPECT'
-# Password: type extra characters (masked), accept.
-expect "Password widget" {
-    pause 1000
-    type_text "grape5"
-    wait_and_enter
-}
-EXPECT,
-    'select' => <<<'EXPECT'
-# Select: down to the next option, accept.
-expect "Select widget" {
-    pause 1000
-    arrow_down
-    wait_and_enter
-}
-EXPECT,
-    'multiselect' => <<<'EXPECT'
-# MultiSelect: toggle the second option, accept.
-expect "MultiSelect widget" {
-    pause 1000
-    arrow_down
-    toggle_space
-    wait_and_enter
-}
-EXPECT,
-    'reorder' => <<<'EXPECT'
-# Reorder: open the field, grab the top item, move it down, drop, accept.
-expect "Reorder widget" {
-    pause 1000
-    safe_send "\r"
-    toggle_space
-    arrow_down
-    toggle_space
-    wait_and_enter
-}
-EXPECT,
-    'suggest' => <<<'EXPECT'
-# Suggest: type to filter, highlight a suggestion, accept.
-expect "Suggest widget" {
-    pause 1000
-    type_text "Ch"
-    arrow_down
-    wait_and_enter
-}
-EXPECT,
-    'search' => <<<'EXPECT'
-# Search: type to filter down to one option, accept.
-expect "Search widget" {
-    pause 1000
-    type_text "on"
-    wait_and_enter
-}
-EXPECT,
-    'multisearch' => <<<'EXPECT'
-# MultiSearch: filter, toggle the match, accept.
-expect "MultiSearch widget" {
-    pause 1000
-    type_text "to"
-    toggle_space
-    wait_and_enter
-}
-EXPECT,
-    'confirm' => <<<'EXPECT'
-# Confirm: switch to No, accept.
-expect "Confirm widget" {
-    pause 1000
-    type_text "n"
-    wait_and_enter
-}
-EXPECT,
-    'toggle' => <<<'EXPECT'
-# Toggle: select the second value by its first letter, accept.
-expect "Toggle widget" {
-    pause 1000
-    type_text "u"
-    wait_and_enter
-}
-EXPECT,
-    'pause' => <<<'EXPECT'
-# Pause: acknowledge.
-expect "Pause widget" {
-    wait_and_enter
-}
-EXPECT,
-  ];
-}
-
-/**
- * The expect body driving the package-scaffolder panel TUI.
+ * The montage form (playground/02-widgets/all-widgets.php) is one panel with
+ * every widget type. Fields edit inline and accepting keeps the cursor on
+ * the field, so each step is: open with Enter, drive the widget with its own
+ * keys, accept, then arrow down to the next field. The calendar is the one
+ * standalone field - its month grid takes the whole screen and returns to
+ * the panel on accept.
  *
  * @return string
  *   The expect script body.
  */
-function scaffolderInteraction(): string {
+function allWidgetsInteraction(): string {
+  return <<<'EXPECT'
+# Wait for the hub, then drill into the montage panel.
+expect "Widgets" {
+    pause 2000
+    safe_send "\r"
+}
+
+# Text: clear the default, type "Apple", accept.
+pause 1500
+safe_send "\r"
+pause 1000
+press_backspace
+press_backspace
+press_backspace
+press_backspace
+type_text "Apple"
+wait_and_enter
+arrow_down
+
+# Number: clear the default, type a new one, accept.
+pause 800
+safe_send "\r"
+pause 1000
+press_backspace
+press_backspace
+press_backspace
+press_backspace
+type_text "4200"
+wait_and_enter
+arrow_down
+
+# Calendar (standalone): the full-screen grid, down a week, accept.
+pause 800
+safe_send "\r"
+pause 1500
+arrow_down
+wait_and_enter
+arrow_down
+
+# Textarea: Enter adds a line, type, Tab accepts.
+pause 800
+safe_send "\r"
+pause 1000
+safe_send "\r"
+type_text "Slightly tart"
+pause 1000
+press_tab
+arrow_down
+
+# Password: type extra characters (masked), accept.
+pause 800
+safe_send "\r"
+pause 1000
+type_text "grape5"
+wait_and_enter
+arrow_down
+
+# Select: down to the next option, accept.
+pause 800
+safe_send "\r"
+pause 1000
+arrow_down
+wait_and_enter
+arrow_down
+
+# MultiSelect: toggle the second option, accept.
+pause 800
+safe_send "\r"
+pause 1000
+arrow_down
+toggle_space
+wait_and_enter
+arrow_down
+
+# Reorder: grab the top item, move it down, drop, accept.
+pause 800
+safe_send "\r"
+pause 1000
+toggle_space
+arrow_down
+toggle_space
+wait_and_enter
+arrow_down
+
+# Suggest: type to filter, highlight a suggestion, accept.
+pause 800
+safe_send "\r"
+pause 1000
+type_text "Ch"
+arrow_down
+wait_and_enter
+arrow_down
+
+# Search: type to filter down to one option, accept.
+pause 800
+safe_send "\r"
+pause 1000
+type_text "on"
+wait_and_enter
+arrow_down
+
+# MultiSearch: filter, toggle the match, accept.
+pause 800
+safe_send "\r"
+pause 1000
+type_text "to"
+toggle_space
+wait_and_enter
+arrow_down
+
+# Confirm: switch to No, accept.
+pause 800
+safe_send "\r"
+pause 1000
+type_text "n"
+wait_and_enter
+arrow_down
+
+# Toggle: select the second value by its first letter, accept.
+pause 800
+safe_send "\r"
+pause 1000
+type_text "u"
+wait_and_enter
+arrow_down
+
+# Pause: acknowledge.
+pause 800
+safe_send "\r"
+
+# Back to the hub and submit.
+press_escape
+pause 1000
+arrow_down
+pause 600
+safe_send "\r"
+EXPECT;
+}
+
+/**
+ * The expect body driving the produce-box capstone panel TUI.
+ *
+ * @return string
+ *   The expect script body.
+ */
+function produceBoxInteraction(): string {
   return <<<'EXPECT'
 # Wait for the hub, then drill into the Basics panel.
 expect "Contents & options" {
@@ -488,13 +501,13 @@ expect "continue" {
     safe_send " "
 }
 
-# Drill into the profile panel.
-expect "Diver profile" {
+# Drill into the stall panel.
+expect "Seaside stall" {
     pause 1500
     safe_send "\r"
 }
 
-# Rename the diver.
+# Rename the stall: clear "Harbour", type the new name.
 pause 1500
 safe_send "\r"
 pause 1000
@@ -505,12 +518,11 @@ press_backspace
 press_backspace
 press_backspace
 press_backspace
-press_backspace
-type_text "Nemo"
+type_text "Seaview"
 pause 600
 safe_send "\r"
 
-# Preferred depth: pick Abyss.
+# Stock: pick Vegetables.
 pause 1000
 arrow_down
 pause 400
@@ -520,7 +532,7 @@ arrow_down
 pause 600
 safe_send "\r"
 
-# Gear: take the mask and fins.
+# Crates: take the apples and pears.
 pause 1000
 arrow_down
 pause 400
@@ -542,26 +554,6 @@ EXPECT;
 }
 
 /**
- * The expect body driving the built-in-themes preview.
- *
- * Drills into the Preview panel so the static frame shows the themed fields -
- * labels, values, descriptions and the selection marker in one screen.
- *
- * @return string
- *   The expect script body.
- */
-function builtinThemeInteraction(): string {
-  return <<<'EXPECT'
-# Drill into the Preview panel to show the themed fields.
-expect "Preview" {
-    pause 1500
-    safe_send "\r"
-}
-pause 1500
-EXPECT;
-}
-
-/**
  * Get all job definitions.
  *
  * @param string $project_dir
@@ -578,31 +570,29 @@ EXPECT;
 function getJobs(string $project_dir): array {
   $jobs = [];
 
-  // Flag variants for the widget demo scripts (forced by script flags).
-  $flag_variants = ['' => '', '-ascii' => ' --no-unicode', '-no-ansi' => ' --no-ansi', '-ascii-no-ansi' => ' --no-unicode --no-ansi'];
-
-  // Env variants for the panel TUI runners: glyphs follow the locale and
-  // colour follows NO_COLOR, so the modes are forced via the environment.
+  // Display-mode variants are forced through the environment - the playground
+  // scripts take no flags: glyphs follow the locale (LC_ALL=C is ASCII) and
+  // colour follows the NO_COLOR convention.
   $env_variants = ['' => '', '-ascii' => 'LC_ALL=C ', '-no-ansi' => 'NO_COLOR=1 ', '-ascii-no-ansi' => 'LC_ALL=C NO_COLOR=1 '];
 
-  // The all-widgets sequence, in the order widgets.php runs them. The last
-  // widget's title proves the whole sequence was recorded.
-  $sequence = implode("\n\n", widgetInteractions());
-  foreach ($flag_variants as $suffix => $flags) {
+  // The all-widgets montage: every widget on one panel, walked field by
+  // field, in all display modes. "Pause" is the last field walked, so its
+  // label proves the whole sequence was recorded.
+  foreach ($env_variants as $suffix => $env) {
     $jobs['widgets' . $suffix] = [
-      'command' => 'php ' . $project_dir . '/playground/3-widgets/widgets.php' . $flags,
-      'interact' => $sequence,
-      'rows' => 14,
-      'cols' => 60,
-      'verify' => 'Pause widget',
+      'command' => 'env LINES=16 COLUMNS=64 ' . $env . 'php ' . $project_dir . '/playground/02-widgets/all-widgets.php',
+      'interact' => allWidgetsInteraction(),
+      'rows' => 16,
+      'cols' => 64,
+      'verify' => 'Pause',
     ];
   }
 
-  // The package scaffolder: the hero panel TUI demo, in all display modes.
+  // The produce box: the capstone panel TUI demo, in all display modes.
   foreach ($env_variants as $suffix => $env) {
-    $jobs['scaffolder' . $suffix] = [
-      'command' => 'env LINES=' . TERMINAL_ROWS . ' COLUMNS=' . TERMINAL_COLS . ' ' . $env . 'php ' . $project_dir . '/playground/1-scaffolder/run.php',
-      'interact' => scaffolderInteraction(),
+    $jobs['produce-box' . $suffix] = [
+      'command' => 'env LINES=' . TERMINAL_ROWS . ' COLUMNS=' . TERMINAL_COLS . ' ' . $env . 'php ' . $project_dir . '/playground/14-produce-box/run.php',
+      'interact' => produceBoxInteraction(),
       'rows' => TERMINAL_ROWS,
       'cols' => TERMINAL_COLS,
       'verify' => 'Contents & options',
@@ -611,16 +601,16 @@ function getJobs(string $project_dir): array {
 
   // The quick-start form: a static frame of the single panel's fields.
   $jobs['quickstart'] = [
-    'command' => 'env LINES=14 COLUMNS=72 php ' . $project_dir . '/playground/0-quickstart/run.php',
+    'command' => 'env LINES=14 COLUMNS=72 php ' . $project_dir . '/playground/01-quickstart/run.php',
     'interact' => quickstartInteraction(),
     'rows' => 14,
     'cols' => 72,
     'at_needle' => 'Vegetables',
   ];
 
-  // Nested panels with drill-in sub-panels, custom buttons and a fix-up.
+  // Nested panels with drill-in sub-panels and custom buttons.
   $jobs['nested-panels'] = [
-    'command' => 'env LINES=' . TERMINAL_ROWS . ' COLUMNS=' . TERMINAL_COLS . ' php ' . $project_dir . '/playground/4-nested-panels/run.php',
+    'command' => 'env LINES=' . TERMINAL_ROWS . ' COLUMNS=' . TERMINAL_COLS . ' php ' . $project_dir . '/playground/03-panels/nested.php',
     'interact' => nestedPanelsInteraction(),
     'rows' => TERMINAL_ROWS,
     'cols' => TERMINAL_COLS,
@@ -629,16 +619,16 @@ function getJobs(string $project_dir): array {
 
   // The panel browser wrapped in a rounded border frame.
   $jobs['bordered-panels'] = [
-    'command' => 'env LINES=' . TERMINAL_ROWS . ' COLUMNS=' . TERMINAL_COLS . ' php ' . $project_dir . '/playground/9-bordered-panels/run.php',
+    'command' => 'env LINES=' . TERMINAL_ROWS . ' COLUMNS=' . TERMINAL_COLS . ' php ' . $project_dir . '/playground/03-panels/bordered.php',
     'interact' => borderedPanelsInteraction(),
     'rows' => TERMINAL_ROWS,
     'cols' => TERMINAL_COLS,
     'verify' => 'Basics',
   ];
 
-  // The same panel browser without a border, at normal spacing.
+  // The same form at the default borderless look, normal spacing.
   $jobs['borderless-panels'] = [
-    'command' => 'env LINES=' . TERMINAL_ROWS . ' COLUMNS=' . TERMINAL_COLS . ' php ' . $project_dir . '/playground/9-bordered-panels/run.php --border=none --spacing=normal',
+    'command' => 'env LINES=' . TERMINAL_ROWS . ' COLUMNS=' . TERMINAL_COLS . ' php ' . $project_dir . '/playground/03-panels/borderless.php',
     'interact' => borderedPanelsInteraction(),
     'rows' => TERMINAL_ROWS,
     'cols' => TERMINAL_COLS,
@@ -648,7 +638,7 @@ function getJobs(string $project_dir): array {
   // A modal panel: a dialog centered over the dimmed parent, dismissed by its
   // own buttons - one dialog collecting fields, one a text-only warning.
   $jobs['modal-panels'] = [
-    'command' => 'env LINES=' . TERMINAL_ROWS . ' COLUMNS=' . TERMINAL_COLS . ' php ' . $project_dir . '/playground/11-modal-panel/run.php',
+    'command' => 'env LINES=' . TERMINAL_ROWS . ' COLUMNS=' . TERMINAL_COLS . ' php ' . $project_dir . '/playground/03-panels/modal.php',
     'interact' => modalPanelsInteraction(),
     'rows' => TERMINAL_ROWS,
     'cols' => TERMINAL_COLS,
@@ -657,56 +647,19 @@ function getJobs(string $project_dir): array {
 
   // The custom ocean theme with a banner.
   $jobs['theme-ocean'] = [
-    'command' => 'env LINES=20 COLUMNS=' . TERMINAL_COLS . ' php ' . $project_dir . '/playground/2-custom-theme/run.php',
+    'command' => 'env LINES=20 COLUMNS=' . TERMINAL_COLS . ' php ' . $project_dir . '/playground/09-themes/custom.php',
     'interact' => themeOceanInteraction(),
     'rows' => 20,
     'cols' => TERMINAL_COLS,
-    'verify' => 'Diver profile',
+    'verify' => 'Seaside stall',
   ];
 
-  // The built-in themes, each as a static frame of the drilled-in Preview
-  // fields. Every theme is captured twice: dark (the dark palette on a dark
-  // surface) and light (--mode forces the light palette, rendered on a light
-  // surface), giving the docs' dark/light picture twins.
-  foreach (['midnight', 'frost', 'ember', 'mono'] as $theme_name) {
-    $jobs['theme-' . $theme_name] = [
-      'command' => 'env LINES=15 COLUMNS=64 php ' . $project_dir . '/playground/10-builtin-themes/run.php --theme=' . $theme_name . ' --mode=dark',
-      'interact' => builtinThemeInteraction(),
-      'rows' => 15,
-      'cols' => 64,
-      'at_needle' => 'Box name',
-    ];
-    $jobs['theme-' . $theme_name . '-light'] = [
-      'command' => 'env LINES=15 COLUMNS=64 php ' . $project_dir . '/playground/10-builtin-themes/run.php --theme=' . $theme_name . ' --mode=light',
-      'interact' => builtinThemeInteraction(),
-      'rows' => 15,
-      'cols' => 64,
-      'at_needle' => 'Box name',
-      'light' => TRUE,
-    ];
-  }
-
-  // The dos theme is the same drilled-in frame, rendered on the CGA blue surface
-  // (the EDIT.COM / QBasic look) that it paints regardless of mode. It is
-  // captured dark and light like every other theme for the docs' picture twins;
-  // both land on the blue surface, since the wash ignores the mode. Its
-  // double-line box wraps the whole field list on the classic 80x16 DOS screen:
-  // at the borderless themes' 64x15 the bordered list scrolls and clips the
-  // first field, so it keeps the wider, taller screen.
-  foreach (['dark', 'light'] as $dos_mode) {
-    $jobs['theme-dos' . ($dos_mode === 'light' ? '-light' : '')] = [
-      'command' => 'env LINES=16 COLUMNS=80 php ' . $project_dir . '/playground/10-builtin-themes/run.php --theme=dos --mode=' . $dos_mode,
-      'interact' => builtinThemeInteraction(),
-      'rows' => 16,
-      'cols' => 80,
-      'at_needle' => 'Box name',
-      'dos' => TRUE,
-    ];
-  }
-
+  // The built-in theme previews (dark/light, bordered/borderless) are
+  // rendered deterministically by render-theme-svgs.php through the scripted
+  // keystroke harness, so no theme recordings run here.
   // Update-mode discovery: headless, shows the provenance-badged summary.
   $jobs['discovery'] = [
-    'command' => 'php ' . $project_dir . '/playground/5-discovery/run.php',
+    'command' => 'php ' . $project_dir . '/playground/08-discovery/run.php',
     'interact' => '# Headless run: wait for the summary output.',
     'rows' => 8,
     'cols' => TERMINAL_COLS,
@@ -718,7 +671,7 @@ function getJobs(string $project_dir): array {
   // The masked value hides "melon7", so the plaintext only appears once
   // revealed - anchoring on it captures the revealed frame, not the initial one.
   $jobs['widget-password-reveal'] = [
-    'command' => 'php ' . $project_dir . '/playground/3-widgets/widget-password-reveal.php',
+    'command' => 'php ' . $project_dir . '/playground/02-widgets/password-reveal.php',
     'interact' => <<<'EXPECT'
 # Drill into the field, reveal the value with Tab, hold the plaintext frame, then accept.
 expect "Password widget" {
@@ -740,26 +693,28 @@ EXPECT,
   // Every per-widget card - the animated unicode-colour hero README.md embeds
   // and all four static display-mode screenshots the documentation pages show -
   // is rendered deterministically by render-widget-svgs.php, so no per-widget
-  // recordings run here. widgetInteractions() still feeds the montage above.
+  // recordings run here.
 
   // Option-kind demos: a select and a multiselect showing group headings,
   // separators and disabled options, each in all four display modes. The
-  // static frame holds the initial grouped list before the widget accepts.
+  // static frame is anchored to an option only visible once the list is open
+  // (the hub shows the form title too, so gating on it would capture the hub).
   $group_demos = [
-    'select-groups' => ['gate' => 'Select with groups', 'rows' => 10],
-    'select-multiple-groups' => ['gate' => 'MultiSelect with groups', 'rows' => 13],
+    'select-groups' => ['gate' => 'Select with groups', 'needle' => 'Rhubarb', 'rows' => 12],
+    'select-multiple-groups' => ['gate' => 'MultiSelect with groups', 'needle' => 'Leek', 'rows' => 15],
   ];
 
   foreach ($group_demos as $demo => $meta) {
-    $interact = sprintf("# Grouped options: hold the initial frame, then accept.\nexpect \"%s\" {\n    pause 1000\n    wait_and_enter\n}", $meta['gate']);
+    $interact = sprintf("# Grouped options: open the field, hold the grouped list, accept, submit.\nexpect \"%s\" {\n    pause 1000\n    safe_send \"\\r\"\n    pause 800\n    safe_send \"\\r\"\n    pause 1500\n    wait_and_enter\n    press_escape\n    pause 600\n    arrow_down\n    pause 400\n    safe_send \"\\r\"\n}", $meta['gate']);
 
-    foreach ($flag_variants as $suffix => $flags) {
+    foreach ($env_variants as $suffix => $env) {
+      // spawn does not parse VAR=value prefixes, so route them through env.
       $jobs['widget-' . $demo . $suffix] = [
-        'command' => 'php ' . $project_dir . '/playground/3-widgets/widget-' . $demo . '.php' . $flags,
+        'command' => 'env ' . $env . 'php ' . $project_dir . '/playground/02-widgets/' . $demo . '.php',
         'interact' => $interact,
         'rows' => $meta['rows'],
         'cols' => 44,
-        'at_needle' => $meta['gate'],
+        'at_needle' => $meta['needle'],
       ];
     }
   }

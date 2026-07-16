@@ -57,10 +57,12 @@ const DISPLAY_MODES = [
 /**
  * The per-widget forms and the keystrokes that drive them.
  *
- * Each single-field form mirrors its playground example. The keystrokes follow
- * the panel model: Enter drills the hub into the panel, a second Enter opens the
- * field editor, then the widget-specific keys exercise it and Enter (or Tab)
- * accepts - the same path a person walks.
+ * Each single-field form mirrors its playground/02-widgets script - same ids,
+ * labels, defaults and options - so the rendered cards match the code a
+ * reader runs. The keystrokes follow the panel model: Enter drills the hub
+ * into the panel, a second Enter opens the field editor, then the
+ * widget-specific keys exercise it and Enter (or Tab) accepts - the same path
+ * a person walks.
  *
  * @param string $tree
  *   The fixture directory the file-picker widgets browse.
@@ -80,82 +82,82 @@ function widgetSpecs(string $tree): array {
 
   return [
     'text' => [
-      'form' => Form::create('Text widget')->panel('main', 'Text', function (PanelBuilder $p): void { $p->text('text', 'Text')->default('Pear'); }),
+      'form' => Form::create('Text widget')->panel('main', 'Text', function (PanelBuilder $p): void { $p->text('item', 'Item')->default('Pear')->complete(['Pear', 'Peach', 'Plum']); }),
       'keys' => [...$open, $bs, $bs, $bs, $bs, 'A', 'p', 'p', 'l', 'e'],
       'rows' => 6,
     ],
     'number' => [
-      'form' => Form::create('Number widget')->panel('main', 'Number', function (PanelBuilder $p): void { $p->number('number', 'Number')->default(1200); }),
+      'form' => Form::create('Number widget')->panel('main', 'Number', function (PanelBuilder $p): void { $p->number('weight', 'Basket weight (g)')->default(1200)->min(200)->max(9000)->step(100); }),
       'keys' => [...$open, $bs, $bs, $bs, $bs, '4', '2', '0', '0'],
       'rows' => 6,
     ],
     'calendar' => [
-      'form' => Form::create('Calendar widget')->panel('main', 'Calendar', function (PanelBuilder $p): void { $p->calendar('date', 'Calendar')->default('2026-07-15'); }),
+      'form' => Form::create('Calendar widget')->panel('main', 'Calendar', function (PanelBuilder $p): void { $p->calendar('harvest', 'Harvest date')->default('2026-07-15'); }),
       'keys' => [...$open, $down],
       'rows' => 14,
     ],
     'textarea' => [
-      'form' => Form::create('Textarea widget')->panel('main', 'Textarea', function (PanelBuilder $p): void { $p->textarea('textarea', 'Textarea')->default('Crisp and sweet' . chr(10) . 'Hint of citrus'); }),
+      'form' => Form::create('Textarea widget')->panel('main', 'Textarea', function (PanelBuilder $p): void { $p->textarea('notes', 'Tasting notes')->default('Crisp and sweet' . chr(10) . 'Hint of citrus'); }),
       'keys' => [...$open, $enter, 'S', 'l', 'i', 'g', 'h', 't', 'l', 'y', ' ', 't', 'a', 'r', 't'],
       'rows' => 8,
     ],
     'password' => [
-      'form' => Form::create('Password widget')->panel('main', 'Password', function (PanelBuilder $p): void { $p->password('password', 'Password')->default('melon7'); }),
+      'form' => Form::create('Password widget')->panel('main', 'Password', function (PanelBuilder $p): void { $p->password('code', 'Order code')->default('melon7'); }),
       'keys' => [...$open, $bs, $bs, $bs, $bs, $bs, $bs, 'g', 'r', 'a', 'p', 'e', '5'],
       'rows' => 6,
     ],
     'select' => [
-      'form' => Form::create('Select widget')->panel('main', 'Select', function (PanelBuilder $p): void { $p->select('select', 'Select')->default('apple')->options(['apple' => 'Apple', 'banana' => 'Banana', 'cherry' => 'Cherry']); }),
+      'form' => Form::create('Select widget')->panel('main', 'Select', function (PanelBuilder $p): void { $p->select('fruit', 'Fruit')->default('apple')->options(['apple' => 'Apple', 'banana' => 'Banana', 'cherry' => 'Cherry']); }),
       'keys' => [...$open, $down],
       'rows' => 8,
     ],
     'select-multiple' => [
-      'form' => Form::create('Select widget')->panel('main', 'Select', function (PanelBuilder $p): void { $p->select('select', 'Select')->multiple()->default(['apple'])->options(['apple' => 'Apple', 'carrot' => 'Carrot', 'tomato' => 'Tomato']); }),
+      'form' => Form::create('MultiSelect widget')->panel('main', 'MultiSelect', function (PanelBuilder $p): void { $p->select('basket', 'Basket')->multiple()->default(['apple'])->options(['apple' => 'Apple', 'carrot' => 'Carrot', 'tomato' => 'Tomato']); }),
       'keys' => [...$open, $down, $space],
       'rows' => 8,
     ],
     'reorder' => [
-      'form' => Form::create('Reorder widget')->panel('main', 'Reorder', function (PanelBuilder $p): void { $p->reorder('reorder', 'Reorder')->options(['apple' => 'Apple', 'carrot' => 'Carrot', 'tomato' => 'Tomato']); }),
+      'form' => Form::create('Reorder widget')->panel('main', 'Reorder', function (PanelBuilder $p): void { $p->reorder('basket', 'Basket')->options(['apple' => 'Apple', 'carrot' => 'Carrot', 'tomato' => 'Tomato']); }),
       'keys' => [...$open, $space, $down, $space],
       'rows' => 12,
     ],
     'suggest' => [
-      'form' => Form::create('Suggest widget')->panel('main', 'Suggest', function (PanelBuilder $p): void { $p->suggest('suggest', 'Suggest')->options(['Apple' => 'Apple', 'Apricot' => 'Apricot', 'Banana' => 'Banana', 'Cherry' => 'Cherry', 'Mango' => 'Mango']); }),
+      'form' => Form::create('Suggest widget')->panel('main', 'Suggest', function (PanelBuilder $p): void { $p->suggest('fruit', 'Fruit')->options(['Apple' => 'Apple', 'Apricot' => 'Apricot', 'Banana' => 'Banana', 'Cherry' => 'Cherry', 'Mango' => 'Mango']); }),
       'keys' => [...$open, 'C', 'h', $down],
       'rows' => 10,
     ],
     'search' => [
-      'form' => Form::create('Search widget')->panel('main', 'Search', function (PanelBuilder $p): void { $p->search('search', 'Search')->default('carrot')->options(['carrot' => 'Carrot', 'potato' => 'Potato', 'onion' => 'Onion', 'pepper' => 'Pepper']); }),
+      'form' => Form::create('Search widget')->panel('main', 'Search', function (PanelBuilder $p): void { $p->search('vegetable', 'Vegetable')->default('carrot')->options(['carrot' => 'Carrot', 'potato' => 'Potato', 'onion' => 'Onion', 'pepper' => 'Pepper']); }),
       'keys' => [...$open, 'o', 'n'],
       'rows' => 10,
     ],
     'search-multiple' => [
-      'form' => Form::create('Search widget')->panel('main', 'Search', function (PanelBuilder $p): void { $p->search('search', 'Search')->multiple()->default(['apple'])->options(['apple' => 'Apple', 'banana' => 'Banana', 'carrot' => 'Carrot', 'tomato' => 'Tomato']); }),
+      'form' => Form::create('MultiSearch widget')->panel('main', 'MultiSearch', function (PanelBuilder $p): void { $p->search('basket', 'Basket')->multiple()->default(['apple'])->options(['apple' => 'Apple', 'banana' => 'Banana', 'carrot' => 'Carrot', 'tomato' => 'Tomato']); }),
       'keys' => [...$open, 't', 'o', $space],
       'rows' => 10,
     ],
     'confirm' => [
-      'form' => Form::create('Confirm widget')->panel('main', 'Confirm', function (PanelBuilder $p): void { $p->confirm('confirm', 'Confirm')->default(TRUE); }),
+      'form' => Form::create('Confirm widget')->panel('main', 'Confirm', function (PanelBuilder $p): void { $p->confirm('organic', 'Organic only?')->default(TRUE); }),
       'keys' => [...$open, 'n'],
       'rows' => 6,
     ],
     'toggle' => [
-      'form' => Form::create('Toggle widget')->panel('main', 'Toggle', function (PanelBuilder $p): void { $p->toggle('toggle', 'Toggle')->default('ripe')->options(['ripe' => 'Ripe', 'unripe' => 'Unripe']); }),
+      'form' => Form::create('Toggle widget')->panel('main', 'Toggle', function (PanelBuilder $p): void { $p->toggle('ripeness', 'Ripeness')->default('ripe')->options(['ripe' => 'Ripe', 'unripe' => 'Unripe']); }),
       'keys' => [...$open, 'u'],
       'rows' => 6,
     ],
     'pause' => [
-      'form' => Form::create('Pause widget')->panel('main', 'Pause', function (PanelBuilder $p): void { $p->pause('pause', 'Pause'); }),
+      'form' => Form::create('Pause widget')->panel('main', 'Pause', function (PanelBuilder $p): void { $p->pause('review', 'Review your basket'); }),
       'keys' => [$enter],
       'rows' => 6,
     ],
     'filepicker' => [
-      'form' => Form::create('File picker widget')->panel('main', 'File picker', function (PanelBuilder $p) use ($tree): void { $p->filePicker('file', 'File picker')->startIn($tree)->filesOnly()->extensions(['csv']); }),
+      'form' => Form::create('File picker widget')->panel('main', 'File picker', function (PanelBuilder $p) use ($tree): void { $p->filePicker('price_list', 'Price list')->startIn($tree)->filesOnly()->extensions(['csv']); }),
       'keys' => [...$open, $down],
       'rows' => 8,
     ],
     'filepicker-multiple' => [
-      'form' => Form::create('File picker widget')->panel('main', 'File picker', function (PanelBuilder $p) use ($tree): void { $p->filePicker('files', 'File picker')->multiple()->startIn($tree); }),
+      'form' => Form::create('File picker widget')->panel('main', 'File picker', function (PanelBuilder $p) use ($tree): void { $p->filePicker('price_lists', 'Price lists')->multiple()->startIn($tree); }),
       'keys' => [...$open, $space, $down, $space],
       'rows' => 10,
     ],
@@ -178,9 +180,12 @@ function widgetSpecs(string $tree): array {
  */
 function renderWidget(string $name, array $spec, string $assets_dir, string $util_dir, string $tmp_dir): void {
   foreach (DISPLAY_MODES as $suffix => $mode) {
+    // The animated hero cards render inside the rounded border - the same
+    // frame the panel demos use - so every animation on the site shares one
+    // look. The border adds a row above and below the content.
     $tester = (new TuiTester($spec['form']))
-      ->options(['color' => $mode['color'], 'unicode' => $mode['unicode'], 'mode' => Mode::Dark])
-      ->rows($spec['rows']);
+      ->options(['color' => $mode['color'], 'unicode' => $mode['unicode'], 'mode' => Mode::Dark, 'border' => 'rounded'])
+      ->rows($spec['rows'] + 2);
     $tester->run(...$spec['keys']);
 
     $frames = splitFrames($tester->output());
@@ -190,7 +195,7 @@ function renderWidget(string $name, array $spec, string $assets_dir, string $uti
     }
 
     $cast_file = $tmp_dir . '/widget-' . $name . '-animated' . $suffix . '.cast';
-    file_put_contents($cast_file, buildCast($frames, $spec['rows']));
+    file_put_contents($cast_file, buildCast($frames, $spec['rows'] + 2));
 
     // The unmarked mode is the unicode, colour hero README.md embeds;
     // make-light-svgs.php derives its light twin.
@@ -380,7 +385,7 @@ if (PHP_SAPI !== 'cli') {
 $util_dir = __DIR__;
 $assets_dir = dirname(__DIR__) . '/assets';
 $tmp_dir = dirname(__DIR__, 2) . '/.artifacts/tmp/widget-svgs';
-$tree = dirname(__DIR__, 2) . '/playground/3-widgets/filepicker-tree';
+$tree = dirname(__DIR__, 2) . '/playground/02-widgets/filepicker-tree';
 
 if (!is_dir($tmp_dir)) {
   mkdir($tmp_dir, 0755, TRUE);

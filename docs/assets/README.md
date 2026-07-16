@@ -6,31 +6,40 @@ site. Do not edit these by hand - they are produced by the scripts in
 
 ## Naming convention
 
-Every file spells out four properties, so you can tell what it is from the name
+Every file spells out its properties, so you can tell what it is from the name
 alone:
 
 ```text
-<subject>-<theme>-<motion>[-ascii][-no-ansi].svg
+<subject>-<theme>-<motion>[-bordered][-ascii][-no-ansi].svg
 ```
 
-| Segment    | Values              | Meaning                                            |
-|------------|---------------------|----------------------------------------------------|
-| `subject`  | e.g. `widget-text`  | What is shown (a widget, a panel demo, the montage) |
-| `theme`    | `dark` \| `light`   | Colour scheme                                       |
-| `motion`   | `animated` \| `static` | An animation, or a single frame                  |
-| `-ascii`   | present when set    | Textual glyphs instead of Unicode (default Unicode) |
-| `-no-ansi` | present when set    | No colour (default colour)                          |
+| Segment     | Values                 | Meaning                                            |
+|-------------|------------------------|----------------------------------------------------|
+| `subject`   | e.g. `widget-text`     | What is shown (a widget, a panel demo, a theme)    |
+| `theme`     | `dark` \| `light`      | Colour scheme                                      |
+| `motion`    | `animated` \| `static` | An animation, or a single frame                    |
+| `-bordered` | present when set       | Inside the rounded border frame (theme previews)   |
+| `-ascii`    | present when set       | Textual glyphs instead of Unicode (default Unicode)|
+| `-no-ansi`  | present when set       | No colour (default colour)                         |
 
 Unicode and colour are the unmarked defaults, so `widget-text-dark-animated.svg`
 is the dark, Unicode, colour animation, and
 `widget-text-dark-static-ascii-no-ansi.svg` is its ASCII, no-colour static twin.
+Animated demos render inside the rounded border frame by design and carry no
+marker; the `-bordered` marker distinguishes the theme previews' framed statics
+from their borderless twins.
 
 ## What generates what
 
 - **`render-widget-svgs.php`** - every per-widget asset, driven deterministically
   through the library's own keystroke harness with no terminal: the animated
   cards in all four display modes (`widget-*-dark-animated*.svg`, the unmarked one
-  being the hero) and the matching static screenshots (`widget-*-dark-static*.svg`).
+  being the hero, framed by the rounded border) and the matching static
+  screenshots (`widget-*-dark-static*.svg`, borderless).
+- **`render-theme-svgs.php`** - the built-in theme previews, also through the
+  keystroke harness: `theme-<name>-<dark|light>-static[-bordered].svg` for the
+  adaptive themes, and the dark/light pair for `dos` (which draws its own window
+  on its own surface, so it has no bordered twin).
 - **`make-light-svgs.php`** - the light twins, recoloured from the dark
   originals: each widget's whole dark set (both motions, all four display modes)
   mirrored into `widget-*-light-*.svg`, plus each panel hero's `-light-animated`.
