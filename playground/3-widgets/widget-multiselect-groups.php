@@ -31,7 +31,7 @@ $opts = getopt('', ['no-unicode', 'no-ansi']);
 
 $form = Form::create('MultiSelect with groups')
   ->panel('main', 'MultiSelect', function (PanelBuilder $p): void {
-    $p->multiSelect('multiselect', 'MultiSelect')->default(['apple'])
+    $p->select('multiselect', 'MultiSelect')->multiple()->default(['apple'])
       ->heading('Basket')
       ->option('apple', 'Apple')
       ->option('banana', 'Banana')

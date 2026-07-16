@@ -40,7 +40,7 @@ $form = Form::create('Widgets')
       'banana' => 'Banana',
       'cherry' => 'Cherry',
     ]);
-    $p->multiSelect('multiselect', 'MultiSelect')->default(['apple'])->options([
+    $p->select('multiselect', 'MultiSelect')->multiple()->default(['apple'])->options([
       'apple' => 'Apple',
       'carrot' => 'Carrot',
       'tomato' => 'Tomato',
@@ -63,7 +63,7 @@ $form = Form::create('Widgets')
       'onion' => 'Onion',
       'pepper' => 'Pepper',
     ]);
-    $p->multiSearch('multisearch', 'MultiSearch')->default(['apple'])->options([
+    $p->search('multisearch', 'MultiSearch')->multiple()->default(['apple'])->options([
       'apple' => 'Apple',
       'banana' => 'Banana',
       'carrot' => 'Carrot',

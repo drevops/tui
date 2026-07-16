@@ -41,7 +41,7 @@ $form = Form::create('Theme options demo')
       'medium' => 'Medium',
       'large' => 'Large',
     ]);
-    $p->multiSelect('extras', 'Extras')->options([
+    $p->select('extras', 'Extras')->multiple()->options([
       'herbs' => 'Herbs',
       'nuts' => 'Nuts',
       'seeds' => 'Seeds',

@@ -28,7 +28,7 @@ $opts = getopt('', ['no-unicode', 'no-ansi']);
 
 $form = Form::create('MultiSelect widget')
   ->panel('main', 'MultiSelect', function (PanelBuilder $p): void {
-    $p->multiSelect('multiselect', 'MultiSelect')->default(['apple'])->options([
+    $p->select('multiselect', 'MultiSelect')->multiple()->default(['apple'])->options([
       'apple' => 'Apple',
       'carrot' => 'Carrot',
       'tomato' => 'Tomato',

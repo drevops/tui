@@ -52,7 +52,7 @@ $form = Form::create('Produce box')
       'large' => 'Large',
     ]);
     // A multi-select list.
-    $p->multiSelect('contents', 'Contents')->description('Space to toggle, type to filter.')->options([
+    $p->select('contents', 'Contents')->multiple()->description('Space to toggle, type to filter.')->options([
       'fruit' => 'Fruit',
       'veg' => 'Vegetables',
       'herbs' => 'Herbs',

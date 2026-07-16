@@ -110,7 +110,7 @@ function widgetSpecs(string $tree): array {
       'rows' => 8,
     ],
     'multiselect' => [
-      'form' => Form::create('MultiSelect widget')->panel('main', 'MultiSelect', function (PanelBuilder $p): void { $p->multiSelect('multiselect', 'MultiSelect')->default(['apple'])->options(['apple' => 'Apple', 'carrot' => 'Carrot', 'tomato' => 'Tomato']); }),
+      'form' => Form::create('MultiSelect widget')->panel('main', 'MultiSelect', function (PanelBuilder $p): void { $p->select('multiselect', 'MultiSelect')->multiple()->default(['apple'])->options(['apple' => 'Apple', 'carrot' => 'Carrot', 'tomato' => 'Tomato']); }),
       'keys' => [...$open, $down, $space],
       'rows' => 8,
     ],
@@ -130,7 +130,7 @@ function widgetSpecs(string $tree): array {
       'rows' => 10,
     ],
     'multisearch' => [
-      'form' => Form::create('MultiSearch widget')->panel('main', 'MultiSearch', function (PanelBuilder $p): void { $p->multiSearch('multisearch', 'MultiSearch')->default(['apple'])->options(['apple' => 'Apple', 'banana' => 'Banana', 'carrot' => 'Carrot', 'tomato' => 'Tomato']); }),
+      'form' => Form::create('MultiSearch widget')->panel('main', 'MultiSearch', function (PanelBuilder $p): void { $p->search('multisearch', 'MultiSearch')->multiple()->default(['apple'])->options(['apple' => 'Apple', 'banana' => 'Banana', 'carrot' => 'Carrot', 'tomato' => 'Tomato']); }),
       'keys' => [...$open, 't', 'o', $space],
       'rows' => 10,
     ],
@@ -155,7 +155,7 @@ function widgetSpecs(string $tree): array {
       'rows' => 8,
     ],
     'multifilepicker' => [
-      'form' => Form::create('Multi file picker widget')->panel('main', 'Multi file picker', function (PanelBuilder $p) use ($tree): void { $p->multiFilePicker('files', 'Multi file picker')->startIn($tree); }),
+      'form' => Form::create('Multi file picker widget')->panel('main', 'Multi file picker', function (PanelBuilder $p) use ($tree): void { $p->filePicker('files', 'Multi file picker')->multiple()->startIn($tree); }),
       'keys' => [...$open, $space, $down, $space],
       'rows' => 10,
     ],

@@ -28,7 +28,7 @@ $opts = getopt('', ['no-unicode', 'no-ansi']);
 
 $form = Form::create('MultiSearch widget')
   ->panel('main', 'MultiSearch', function (PanelBuilder $p): void {
-    $p->multiSearch('multisearch', 'MultiSearch')->default(['apple'])->options([
+    $p->search('multisearch', 'MultiSearch')->multiple()->default(['apple'])->options([
       'apple' => 'Apple',
       'banana' => 'Banana',
       'carrot' => 'Carrot',

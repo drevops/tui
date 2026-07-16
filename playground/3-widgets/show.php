@@ -19,8 +19,6 @@ declare(strict_types=1);
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Widget\CalendarWidget;
 use DrevOps\Tui\Widget\ConfirmWidget;
-use DrevOps\Tui\Widget\MultiSearchWidget;
-use DrevOps\Tui\Widget\MultiSelectWidget;
 use DrevOps\Tui\Widget\NumberWidget;
 use DrevOps\Tui\Widget\PasswordWidget;
 use DrevOps\Tui\Widget\PauseWidget;
@@ -55,11 +53,11 @@ $widgets = [
     'banana' => 'Banana',
     'cherry' => 'Cherry',
   ], 'apple'),
-  'MultiSelect' => static fn(): WidgetInterface => new MultiSelectWidget([
+  'MultiSelect' => static fn(): WidgetInterface => new SelectWidget([
     'apple' => 'Apple',
     'carrot' => 'Carrot',
     'tomato' => 'Tomato',
-  ], ['apple', 'carrot']),
+  ], ['apple', 'carrot'], TRUE),
   'Reorder' => static fn(): WidgetInterface => new ReorderWidget([
     'apple' => 'Apple',
     'carrot' => 'Carrot',
@@ -78,12 +76,12 @@ $widgets = [
     'onion' => 'Onion',
     'pepper' => 'Pepper',
   ], 'carrot'),
-  'MultiSearch' => static fn(): WidgetInterface => new MultiSearchWidget([
+  'MultiSearch' => static fn(): WidgetInterface => new SearchWidget([
     'apple' => 'Apple',
     'banana' => 'Banana',
     'carrot' => 'Carrot',
     'tomato' => 'Tomato',
-  ], ['apple']),
+  ], ['apple'], TRUE),
   'Confirm' => static fn(): WidgetInterface => new ConfirmWidget(TRUE),
   'Toggle' => static fn(): WidgetInterface => new ToggleWidget([
     'ripe' => 'Ripe',

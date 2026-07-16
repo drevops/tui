@@ -43,7 +43,7 @@ $form = Form::create('Discovery demo', 'an existing box')
     // Whether a path exists.
     $p->confirm('inseason', 'In season?')->discover(new PathExists('harvest.csv'));
     // List directory entries (the type keeps dirs, files or any entry).
-    $p->multiSelect('baskets', 'Baskets')->options(['apples' => 'Apples', 'pears' => 'Pears', 'plums' => 'Plums'])->discover(new Scan('baskets', type: ScanType::Dir));
+    $p->select('baskets', 'Baskets')->multiple()->options(['apples' => 'Apples', 'pears' => 'Pears', 'plums' => 'Plums'])->discover(new Scan('baskets', type: ScanType::Dir));
   });
 
 $tui = new Tui($form);

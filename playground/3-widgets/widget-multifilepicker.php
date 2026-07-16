@@ -29,7 +29,7 @@ $opts = getopt('', ['no-unicode', 'no-ansi']);
 
 $form = Form::create('Multi file picker widget')
   ->panel('main', 'Multi file picker', function (PanelBuilder $p): void {
-    $p->multiFilePicker('files', 'Multi file picker')->startIn(__DIR__ . '/filepicker-tree');
+    $p->filePicker('files', 'Multi file picker')->multiple()->startIn(__DIR__ . '/filepicker-tree');
   });
 
 try {

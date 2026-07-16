@@ -45,7 +45,7 @@ $form = Form::create('Produce order')
     // A nested sub-panel: rendered as a drillable row with a value summary.
     $p->panel('extras', 'Extras', function (PanelBuilder $sp): void {
       $sp->description('Optional add-ons.');
-      $sp->multiSelect('addons', 'Add-ons')->options([
+      $sp->select('addons', 'Add-ons')->multiple()->options([
         'herbs' => 'Herbs',
         'nuts' => 'Nuts',
         'seeds' => 'Seeds',
