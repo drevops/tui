@@ -128,7 +128,7 @@ class FilePickerWidget extends AbstractWidget implements FilterCapableInterface,
    */
   #[\Override]
   protected function keyScope(): Scope {
-    return Scope::field($this->multiple ? FieldType::MultiFilePicker : FieldType::FilePicker);
+    return Scope::field(FieldType::FilePicker, $this->multiple);
   }
 
   /**

@@ -53,6 +53,11 @@ final class FieldBuilder {
   protected bool $required = FALSE;
 
   /**
+   * Whether the field collects several values as a list rather than one.
+   */
+  protected bool $multiple = FALSE;
+
+  /**
    * The conditional-visibility rule.
    */
   protected ?ConditionInterface $when = NULL;
@@ -222,6 +227,31 @@ final class FieldBuilder {
    */
   public function required(bool $required = TRUE): self {
     $this->required = $required;
+
+    return $this;
+  }
+
+  /**
+   * Collect several values as a list rather than a single value.
+   *
+   * Honoured by the select, search and file picker types; a reorder field
+   * already collects a full ranking and does not take this modifier.
+   *
+   * @param bool $multiple
+   *   Whether the field collects several values.
+   *
+   * @return $this
+   *   The builder.
+   *
+   * @throws \DrevOps\Tui\Model\FormException
+   *   When the field type does not support collecting several values.
+   */
+  public function multiple(bool $multiple = TRUE): self {
+    if ($multiple && !$this->fieldType->supportsMultiple()) {
+      throw new FormException(sprintf('Field "%s" of type "%s" does not collect several values; ->multiple() applies to select, search and file picker fields.', $this->id, $this->fieldType->value));
+    }
+
+    $this->multiple = $multiple;
 
     return $this;
   }
@@ -435,8 +465,8 @@ final class FieldBuilder {
    * List widgets only: bound the visible option list to a page size.
    *
    * Longer lists page around the cursor rather than overflowing the viewport.
-   * Honoured by the select, multiselect, suggest, search, multisearch,
-   * reorder and file picker widgets; ignored by other types.
+   * Honoured by the select, suggest, search, reorder and file picker widgets;
+   * ignored by other types.
    *
    * @param int $size
    *   The number of option rows shown at once; must be positive.
@@ -713,6 +743,7 @@ final class FieldBuilder {
       $this->completion,
       $this->buildDateBounds(),
       $this->render,
+      $this->multiple,
     );
   }
 
@@ -731,6 +762,12 @@ final class FieldBuilder {
 
     if ($this->hasDefault) {
       return $this->default;
+    }
+
+    // A multiple choice or file picker collects a list, so with nothing
+    // declared it defaults to no values.
+    if ($this->multiple) {
+      return [];
     }
 
     // A toggle is always in one of its two states, so it defaults to the first
@@ -849,7 +886,6 @@ final class FieldBuilder {
    */
   protected function defaultFor(FieldType $type): mixed {
     return match ($type) {
-      FieldType::MultiSelect, FieldType::MultiSearch, FieldType::MultiFilePicker => [],
       FieldType::Confirm => FALSE,
       FieldType::Number => 0,
       // A pause is an interactive acknowledgement; headless runs have nothing

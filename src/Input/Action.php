@@ -47,7 +47,7 @@ enum Action {
   case Increment;
   case Decrement;
 
-  // List and multiselect.
+  // Multiple choice.
   case Toggle;
   case SelectAll;
   case SelectNone;

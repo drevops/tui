@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Widget;
 
-use DrevOps\Tui\Model\Option;
+use DrevOps\Tui\Model\FieldType;
 use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Theme\ThemeInterface;
@@ -20,10 +20,11 @@ use DrevOps\Tui\Widget\Capability\SelectionCapableInterface;
 use DrevOps\Tui\Widget\Capability\SelectionCapableTrait;
 
 /**
- * A single-choice list with fuzzy type-to-filter over the option labels.
+ * A fuzzy type-to-filter choice list under a query line.
  *
- * A radio list under a query line: printable characters narrow the list,
- * ranked by fuzzy relevance, and the matched characters are highlighted.
+ * A single-choice radio list or a multiple-choice checkbox list: printable
+ * characters narrow the list, ranked by fuzzy relevance, and the matched
+ * characters are highlighted.
  *
  * @package DrevOps\Tui\Widget
  */
@@ -46,8 +47,10 @@ class SearchWidget extends AbstractWidget implements
    * @param array<int|string,\DrevOps\Tui\Model\Option|string> $options
    *   Option rows in display order - a list of options or the value => label
    *   shorthand map.
-   * @param string $default
-   *   The initially highlighted value.
+   * @param string|list<string> $default
+   *   The initially highlighted value (single) or selected values (multiple).
+   * @param bool $multiple
+   *   Whether several options are collected as a list.
    * @param \Closure|null $validate
    *   Optional validator (see AbstractWidget).
    * @param \Closure|null $transform
@@ -56,17 +59,29 @@ class SearchWidget extends AbstractWidget implements
    *   The number of option rows shown at once before the list pages; NULL uses
    *   the default.
    */
-  public function __construct(array $options, string $default = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL, ?int $page_size = NULL) {
+  public function __construct(array $options, string|array $default = '', bool $multiple = FALSE, ?\Closure $validate = NULL, ?\Closure $transform = NULL, ?int $page_size = NULL) {
     parent::__construct($validate, $transform);
-    $this->initSingleChoice($options, $default);
+    $this->initChoice($options, $default, $multiple);
     $this->pageSize = $this->resolvePageSize($page_size);
   }
 
   /**
-   * {@inheritdoc}
+   * The field type this widget binds its keys under.
+   *
+   * @return \DrevOps\Tui\Model\FieldType
+   *   The search field type.
    */
-  public function handle(Key $key): void {
-    // Space is part of the query, so it cannot double as a select key here.
+  protected function choiceType(): FieldType {
+    return FieldType::Search;
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * Space is part of the query in single mode, so it cannot double as a select
+   * key there; multiple mode binds Space to toggle the highlighted option.
+   */
+  protected function handleSingleMode(Key $key): void {
     if ($this->keys()->matches($key, Action::InsertSpace)) {
       $this->filter .= ' ';
       $this->resetFilterCursor();
@@ -79,27 +94,6 @@ class SearchWidget extends AbstractWidget implements
     }
 
     $this->handleSingleChoiceKey($key);
-  }
-
-  /**
-   * Render one option row: the radio glyph and the match-highlighted label.
-   *
-   * @param \DrevOps\Tui\Theme\ThemeInterface $theme
-   *   The theme.
-   * @param \DrevOps\Tui\Model\Option $option
-   *   The option row.
-   * @param bool $current
-   *   Whether the row holds the cursor.
-   *
-   * @return string
-   *   The rendered row.
-   */
-  public function renderOptionRow(ThemeInterface $theme, Option $option, bool $current): string {
-    if ($option->disabled) {
-      return $theme->radio(FALSE) . ' ' . $this->renderDisabledLabel($theme, $option);
-    }
-
-    return $theme->radio($current) . ' ' . $this->renderMatchedLabel($theme, $option->label, $this->matchPositions($option->label), $current);
   }
 
   /**

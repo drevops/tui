@@ -53,14 +53,11 @@ class WidgetFactory {
     $widget = match ($field->type) {
       FieldType::Confirm => new ConfirmWidget((bool) $current),
       FieldType::Toggle => new ToggleWidget($this->labels($field), is_string($current) ? $current : ''),
-      FieldType::Select => new SelectWidget($this->options($field), is_string($current) ? $current : '', page_size: $field->pageSize),
-      FieldType::MultiSelect => new MultiSelectWidget($this->options($field), Field::stringList($current), page_size: $field->pageSize),
-      FieldType::MultiSearch => new MultiSearchWidget($this->options($field), Field::stringList($current), page_size: $field->pageSize),
+      FieldType::Select => new SelectWidget($this->options($field), $this->seed($field, $current), $field->multiple, page_size: $field->pageSize),
       FieldType::Reorder => new ReorderWidget($this->options($field), Field::stringList($current), page_size: $field->pageSize),
       FieldType::Suggest => new SuggestWidget($field->selectableValues(), is_string($current) ? $current : '', page_size: $field->pageSize),
-      FieldType::Search => new SearchWidget($this->options($field), is_string($current) ? $current : '', page_size: $field->pageSize),
-      FieldType::FilePicker => new FilePickerWidget($field->pickerStart, is_string($current) ? $current : '', $field->pickerMode, $field->pickerExtensions, $field->pickerShowHidden, page_size: $field->pageSize),
-      FieldType::MultiFilePicker => new FilePickerWidget($field->pickerStart, Field::stringList($current), $field->pickerMode, $field->pickerExtensions, $field->pickerShowHidden, multiple: TRUE, page_size: $field->pageSize),
+      FieldType::Search => new SearchWidget($this->options($field), $this->seed($field, $current), $field->multiple, page_size: $field->pageSize),
+      FieldType::FilePicker => new FilePickerWidget($field->pickerStart, $this->seed($field, $current), $field->pickerMode, $field->pickerExtensions, $field->pickerShowHidden, multiple: $field->multiple, page_size: $field->pageSize),
       FieldType::Number => new NumberWidget(is_int($current) || is_float($current) ? (string) (int) $current : '', bounds: $field->bounds),
       FieldType::Calendar => new CalendarWidget(is_string($current) ? $current : '', bounds: $field->dateBounds),
       FieldType::Textarea => new TextareaWidget(is_string($current) ? $current : '', externalEdit: $field->externalEditor && $this->externalEditorAvailable),
@@ -69,7 +66,23 @@ class WidgetFactory {
       FieldType::Text => new TextWidget(is_string($current) ? $current : '', completions: $this->completionsFor($field, $answers)),
     };
 
-    return $widget->setKeys($this->keymap->forField($field->type));
+    return $widget->setKeys($this->keymap->forField($field->type, $field->multiple));
+  }
+
+  /**
+   * The widget seed value for a field: a scalar, or a list when multiple.
+   *
+   * @param \DrevOps\Tui\Model\Field $field
+   *   The field.
+   * @param mixed $current
+   *   The current value to seed the widget with.
+   *
+   * @return string|list<string>
+   *   The string current value for a single field, or the list of string
+   *   values for a multiple one.
+   */
+  protected function seed(Field $field, mixed $current): string|array {
+    return $field->multiple ? Field::stringList($current) : (is_string($current) ? $current : '');
   }
 
   /**

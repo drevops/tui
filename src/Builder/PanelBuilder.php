@@ -76,7 +76,7 @@ final class PanelBuilder {
   }
 
   /**
-   * Add a select field.
+   * Add a select field. Call ->multiple() to collect several values as a list.
    *
    * @param string $id
    *   The field id.
@@ -88,21 +88,6 @@ final class PanelBuilder {
    */
   public function select(string $id, string $label = ''): FieldBuilder {
     return $this->field($id, $label, FieldType::Select);
-  }
-
-  /**
-   * Add a multi-select field.
-   *
-   * @param string $id
-   *   The field id.
-   * @param string $label
-   *   The label (defaults to the id).
-   *
-   * @return \DrevOps\Tui\Builder\FieldBuilder
-   *   The field builder.
-   */
-  public function multiSelect(string $id, string $label = ''): FieldBuilder {
-    return $this->field($id, $label, FieldType::MultiSelect);
   }
 
   /**
@@ -226,7 +211,9 @@ final class PanelBuilder {
   }
 
   /**
-   * Add a search field (single choice with type-to-filter).
+   * Add a search field: a fuzzy type-to-filter choice list.
+   *
+   * Call ->multiple() to collect several values.
    *
    * @param string $id
    *   The field id.
@@ -241,22 +228,9 @@ final class PanelBuilder {
   }
 
   /**
-   * Add a multi-search field (multi-select with a visible search line).
+   * Add a file picker field (browse the filesystem for a path).
    *
-   * @param string $id
-   *   The field id.
-   * @param string $label
-   *   The label (defaults to the id).
-   *
-   * @return \DrevOps\Tui\Builder\FieldBuilder
-   *   The field builder.
-   */
-  public function multiSearch(string $id, string $label = ''): FieldBuilder {
-    return $this->field($id, $label, FieldType::MultiSearch);
-  }
-
-  /**
-   * Add a file picker field (browse the filesystem for a single path).
+   * Call ->multiple() to collect several paths.
    *
    * @param string $id
    *   The field id.
@@ -268,21 +242,6 @@ final class PanelBuilder {
    */
   public function filePicker(string $id, string $label = ''): FieldBuilder {
     return $this->field($id, $label, FieldType::FilePicker);
-  }
-
-  /**
-   * Add a multi file picker field (browse the filesystem for several paths).
-   *
-   * @param string $id
-   *   The field id.
-   * @param string $label
-   *   The label (defaults to the id).
-   *
-   * @return \DrevOps\Tui\Builder\FieldBuilder
-   *   The field builder.
-   */
-  public function multiFilePicker(string $id, string $label = ''): FieldBuilder {
-    return $this->field($id, $label, FieldType::MultiFilePicker);
   }
 
   /**

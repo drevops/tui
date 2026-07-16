@@ -71,3 +71,38 @@ In all four [display modes](/display-modes) - Unicode or ASCII, colour on or off
     <td><ThemedImage sources={{light: useBaseUrl('/widget-filepicker-light-static-ascii-no-ansi.svg'), dark: useBaseUrl('/widget-filepicker-dark-static-ascii-no-ansi.svg')}} alt="File picker: ASCII + No ANSI" /></td>
   </tr>
 </table>
+
+## Multiple selection
+
+Add `->multiple()` to accumulate **several paths** (a `list<string>`) instead of
+one: `Space` toggles the highlighted entry and selections accumulate as you
+browse between directories, and `Enter` accepts them all.
+
+```php
+$p->filePicker('lists', 'Price lists')
+  ->multiple()
+  ->startIn(getcwd())
+  ->extensions(['csv']);
+```
+
+<p align="center">
+  <ThemedImage sources={{light: useBaseUrl('/widget-filepicker-multiple-light-animated.svg'), dark: useBaseUrl('/widget-filepicker-multiple-dark-animated.svg')}} alt="FilePicker widget in multiple mode" />
+</p>
+
+<table>
+  <tr>
+    <td></td>
+    <td align="center"><strong>ANSI</strong></td>
+    <td align="center"><strong>No ANSI</strong></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>Unicode</strong></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-filepicker-multiple-light-static.svg'), dark: useBaseUrl('/widget-filepicker-multiple-dark-static.svg')}} alt="File picker (multiple): Unicode + ANSI" /></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-filepicker-multiple-light-static-no-ansi.svg'), dark: useBaseUrl('/widget-filepicker-multiple-dark-static-no-ansi.svg')}} alt="File picker (multiple): Unicode + No ANSI" /></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>ASCII</strong></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-filepicker-multiple-light-static-ascii.svg'), dark: useBaseUrl('/widget-filepicker-multiple-dark-static-ascii.svg')}} alt="File picker (multiple): ASCII + ANSI" /></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-filepicker-multiple-light-static-ascii-no-ansi.svg'), dark: useBaseUrl('/widget-filepicker-multiple-dark-static-ascii-no-ansi.svg')}} alt="File picker (multiple): ASCII + No ANSI" /></td>
+  </tr>
+</table>

@@ -376,7 +376,7 @@ final class FilePickerWidgetTest extends TestCase {
     $this->assertStringContainsString('tab hidden', $single);
 
     // Multiple mode leads with the toggle key and Accept reads "accept".
-    $multiple = Ansi::strip($theme->renderHints(KeyMapManager::create()->forField(FieldType::MultiFilePicker), ...(new FilePickerWidget($this->root, multiple: TRUE))->hints()));
+    $multiple = Ansi::strip($theme->renderHints(KeyMapManager::create()->forField(FieldType::FilePicker, TRUE), ...(new FilePickerWidget($this->root, multiple: TRUE))->hints()));
     $this->assertStringContainsString('space select', $multiple);
     $this->assertStringContainsString('accept', $multiple);
   }

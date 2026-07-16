@@ -53,11 +53,11 @@ composer install
 
   Per-widget files: `widget-text.php`, `widget-number.php`,
   `widget-textarea.php`, `widget-password.php`, `widget-select.php`,
-  `widget-multiselect.php`, `widget-suggest.php`, `widget-search.php`,
-  `widget-multisearch.php`, `widget-filepicker.php`,
-  `widget-multifilepicker.php`, `widget-confirm.php`, `widget-toggle.php`,
+  `widget-select-multiple.php`, `widget-suggest.php`, `widget-search.php`,
+  `widget-search-multiple.php`, `widget-filepicker.php`,
+  `widget-filepicker-multiple.php`, `widget-confirm.php`, `widget-toggle.php`,
   `widget-pause.php`.
-  The `widget-select-groups.php` and `widget-multiselect-groups.php` demos show
+  The `widget-select-groups.php` and `widget-select-multiple-groups.php` demos show
   group headings, separators and disabled options.
 
 - **[`4-nested-panels/`](4-nested-panels)** - a hub with drill-in sub-panels

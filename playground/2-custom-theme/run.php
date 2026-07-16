@@ -39,7 +39,7 @@ $form = Form::create('Ocean theme demo')
       'reef' => 'Reef',
       'abyss' => 'Abyss',
     ]);
-    $p->multiSelect('gear', 'Gear')->options(['mask' => 'Mask', 'fins' => 'Fins', 'tank' => 'Tank']);
+    $p->select('gear', 'Gear')->multiple()->options(['mask' => 'Mask', 'fins' => 'Fins', 'tank' => 'Tank']);
   });
 
 try {

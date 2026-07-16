@@ -79,7 +79,7 @@ final class BuiltModelTest extends TestCase {
   public function testTypeDefaults(): void {
     $form = Form::create('T')
       ->panel('p', 'p', function (PanelBuilder $p): void {
-        $p->multiSelect('ms');
+        $p->select('ms')->multiple();
         $p->confirm('cb');
         $p->text('tx');
       })

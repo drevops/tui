@@ -97,6 +97,9 @@ final readonly class Field {
    * @param \DrevOps\Tui\Model\RenderMode $render
    *   Where the field's editor is drawn: inline in the panel (the default) or
    *   full-screen on its own standalone editor.
+   * @param bool $multiple
+   *   Whether the field collects several values as a list rather than one;
+   *   honoured by the select, search and file picker types.
    */
   public function __construct(
     public string $id,
@@ -124,8 +127,73 @@ final readonly class Field {
     public array|\Closure $completion = [],
     public ?DateBounds $dateBounds = NULL,
     public RenderMode $render = RenderMode::Inline,
+    public bool $multiple = FALSE,
   ) {
+    if ($this->multiple && !$this->type->supportsMultiple()) {
+      throw new FormException(sprintf('Field "%s" of type "%s" does not collect several values; only select, search and file picker fields may be multiple.', $this->id, $this->type->value));
+    }
+
     $this->options = Option::list($options);
+  }
+
+  /**
+   * Whether the field collects a list of values rather than a single value.
+   *
+   * @return bool
+   *   TRUE for a reorder field and for any multiple choice or file picker.
+   */
+  public function collectsList(): bool {
+    return $this->multiple || $this->type === FieldType::Reorder;
+  }
+
+  /**
+   * Whether the field is a multi-selection over its declared option set.
+   *
+   * Narrower than {@see collectsList()}: a multiple file picker collects a
+   * list too, but its entries come from the filesystem, not the options.
+   *
+   * @return bool
+   *   TRUE for the option-backed multi-choice fields.
+   */
+  public function isMultiChoice(): bool {
+    return $this->type === FieldType::Reorder || ($this->multiple && $this->type->constrainsToOptions());
+  }
+
+  /**
+   * Whether a headless value has the shape this field collects.
+   *
+   * @param mixed $value
+   *   The candidate value.
+   *
+   * @return bool
+   *   TRUE when the value's type matches the field.
+   */
+  public function acceptsValue(mixed $value): bool {
+    return match (TRUE) {
+      $this->type === FieldType::Confirm, $this->type === FieldType::Pause => is_bool($value),
+      $this->collectsList() => is_array($value),
+      $this->type === FieldType::Number => is_int($value) || is_float($value),
+      // An empty string is an unset date, left to the required check; any
+      // other value must be a strict `Y-m-d` calendar date.
+      $this->type === FieldType::Calendar => is_string($value) && ($value === '' || DateBounds::parse($value) instanceof \DateTimeImmutable),
+      default => is_string($value),
+    };
+  }
+
+  /**
+   * The human name of the value shape this field collects, translated.
+   *
+   * @return string
+   *   The value-kind fragment (e.g. "a string", "a list").
+   */
+  public function valueKind(): string {
+    return match (TRUE) {
+      $this->type === FieldType::Confirm, $this->type === FieldType::Pause => Translator::t('a boolean'),
+      $this->collectsList() => Translator::t('a list'),
+      $this->type === FieldType::Number => Translator::t('a number'),
+      $this->type === FieldType::Calendar => Translator::t('a date (YYYY-MM-DD)'),
+      default => Translator::t('a string'),
+    };
   }
 
   /**
@@ -196,7 +264,7 @@ final readonly class Field {
       return NULL;
     }
 
-    if ($this->type->isMultiChoice()) {
+    if ($this->isMultiChoice()) {
       if (!is_array($value)) {
         return Translator::t('value must be a list');
       }

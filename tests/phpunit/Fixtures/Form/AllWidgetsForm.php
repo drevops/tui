@@ -37,15 +37,15 @@ final class AllWidgetsForm {
         $p->textarea('textarea', 'Textarea')->default('note');
         $p->password('password', 'Password')->default('pw');
         $p->select('select', 'Select')->options(['a' => 'Alpha', 'b' => 'Beta'])->default('b');
-        $p->multiSelect('multiselect', 'MultiSelect')->options(['a' => 'Alpha', 'b' => 'Beta'])->default(['a']);
+        $p->select('multiselect', 'MultiSelect')->multiple()->options(['a' => 'Alpha', 'b' => 'Beta'])->default(['a']);
         $p->suggest('suggest', 'Suggest')->options(['utc' => 'UTC', 'gmt' => 'GMT'])->default('utc');
         $p->search('search', 'Search')->options(['a' => 'Alpha', 'b' => 'Beta'])->default('b');
-        $p->multiSearch('multisearch', 'MultiSearch')->options(['a' => 'Alpha', 'b' => 'Beta'])->default(['b']);
+        $p->search('multisearch', 'MultiSearch')->multiple()->options(['a' => 'Alpha', 'b' => 'Beta'])->default(['b']);
         $p->reorder('reorder', 'Reorder')->options(['a' => 'Alpha', 'b' => 'Beta', 'c' => 'Gamma']);
         $p->confirm('confirm', 'Confirm')->default(TRUE);
         $p->toggle('toggle', 'Toggle')->options(['on' => 'On', 'off' => 'Off'])->default('off');
         $p->filePicker('filepicker', 'FilePicker')->startIn($picker_start);
-        $p->multiFilePicker('multifilepicker', 'MultiFilePicker')->startIn($picker_start);
+        $p->filePicker('multifilepicker', 'MultiFilePicker')->multiple()->startIn($picker_start);
         $p->pause('pause', 'Pause');
       });
   }

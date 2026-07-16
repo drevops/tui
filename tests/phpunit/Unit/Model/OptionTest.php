@@ -6,6 +6,7 @@ namespace DrevOps\Tui\Tests\Unit\Model;
 
 use DrevOps\Tui\Model\Field;
 use DrevOps\Tui\Model\FieldType;
+use DrevOps\Tui\Model\FormException;
 use DrevOps\Tui\Model\Option;
 use DrevOps\Tui\Model\OptionKind;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -75,8 +76,6 @@ final class OptionTest extends TestCase {
   public static function dataProviderConstrainsToOptions(): \Iterator {
     yield [FieldType::Select, TRUE];
     yield [FieldType::Search, TRUE];
-    yield [FieldType::MultiSelect, TRUE];
-    yield [FieldType::MultiSearch, TRUE];
     yield [FieldType::Reorder, TRUE];
     yield [FieldType::Suggest, FALSE];
     yield [FieldType::Text, FALSE];
@@ -84,33 +83,98 @@ final class OptionTest extends TestCase {
   }
 
   #[DataProvider('dataProviderIsMultiChoice')]
-  public function testIsMultiChoice(FieldType $type, bool $expected): void {
-    $this->assertSame($expected, $type->isMultiChoice());
+  public function testIsMultiChoice(FieldType $type, bool $multiple, bool $expected): void {
+    $field = new Field('f', 'F', '', $type, $multiple ? [] : '', multiple: $multiple);
+
+    $this->assertSame($expected, $field->isMultiChoice());
   }
 
   public static function dataProviderIsMultiChoice(): \Iterator {
-    yield [FieldType::MultiSelect, TRUE];
-    yield [FieldType::MultiSearch, TRUE];
-    yield [FieldType::Reorder, TRUE];
-    yield [FieldType::MultiFilePicker, FALSE];
-    yield [FieldType::Select, FALSE];
-    yield [FieldType::Search, FALSE];
-    yield [FieldType::Text, FALSE];
+    yield 'multiple select' => [FieldType::Select, TRUE, TRUE];
+    yield 'multiple search' => [FieldType::Search, TRUE, TRUE];
+    yield 'reorder' => [FieldType::Reorder, FALSE, TRUE];
+    yield 'multiple file picker' => [FieldType::FilePicker, TRUE, FALSE];
+    yield 'single select' => [FieldType::Select, FALSE, FALSE];
+    yield 'single search' => [FieldType::Search, FALSE, FALSE];
+    yield 'text' => [FieldType::Text, FALSE, FALSE];
   }
 
   #[DataProvider('dataProviderCollectsList')]
-  public function testCollectsList(FieldType $type, bool $expected): void {
-    $this->assertSame($expected, $type->collectsList());
+  public function testCollectsList(FieldType $type, bool $multiple, bool $expected): void {
+    $field = new Field('f', 'F', '', $type, $multiple ? [] : '', multiple: $multiple);
+
+    $this->assertSame($expected, $field->collectsList());
   }
 
   public static function dataProviderCollectsList(): \Iterator {
-    yield [FieldType::MultiSelect, TRUE];
-    yield [FieldType::MultiSearch, TRUE];
-    yield [FieldType::MultiFilePicker, TRUE];
-    yield [FieldType::Reorder, TRUE];
-    yield [FieldType::Select, FALSE];
-    yield [FieldType::FilePicker, FALSE];
-    yield [FieldType::Text, FALSE];
+    yield 'multiple select' => [FieldType::Select, TRUE, TRUE];
+    yield 'multiple search' => [FieldType::Search, TRUE, TRUE];
+    yield 'multiple file picker' => [FieldType::FilePicker, TRUE, TRUE];
+    yield 'reorder' => [FieldType::Reorder, FALSE, TRUE];
+    yield 'single select' => [FieldType::Select, FALSE, FALSE];
+    yield 'single file picker' => [FieldType::FilePicker, FALSE, FALSE];
+    yield 'text' => [FieldType::Text, FALSE, FALSE];
+  }
+
+  #[DataProvider('dataProviderAcceptsValue')]
+  public function testAcceptsValue(FieldType $type, bool $multiple, mixed $value, bool $expected): void {
+    $field = new Field('f', 'F', '', $type, $multiple ? [] : '', multiple: $multiple);
+
+    $this->assertSame($expected, $field->acceptsValue($value));
+  }
+
+  public static function dataProviderAcceptsValue(): \Iterator {
+    yield 'confirm accepts bool' => [FieldType::Confirm, FALSE, TRUE, TRUE];
+    yield 'confirm rejects string' => [FieldType::Confirm, FALSE, 'yes', FALSE];
+    yield 'pause accepts bool' => [FieldType::Pause, FALSE, FALSE, TRUE];
+    yield 'multiple accepts list' => [FieldType::Select, TRUE, ['a'], TRUE];
+    yield 'multiple rejects scalar' => [FieldType::Select, TRUE, 'a', FALSE];
+    yield 'reorder accepts list' => [FieldType::Reorder, FALSE, ['a'], TRUE];
+    yield 'number accepts int' => [FieldType::Number, FALSE, 42, TRUE];
+    yield 'number rejects numeric string' => [FieldType::Number, FALSE, '42', FALSE];
+    yield 'calendar accepts empty' => [FieldType::Calendar, FALSE, '', TRUE];
+    yield 'calendar accepts iso date' => [FieldType::Calendar, FALSE, '2026-07-16', TRUE];
+    yield 'calendar rejects non-date' => [FieldType::Calendar, FALSE, 'nope', FALSE];
+    yield 'text accepts string' => [FieldType::Text, FALSE, 'x', TRUE];
+    yield 'text rejects int' => [FieldType::Text, FALSE, 1, FALSE];
+  }
+
+  #[DataProvider('dataProviderValueKind')]
+  public function testValueKind(FieldType $type, bool $multiple, string $expected): void {
+    $field = new Field('f', 'F', '', $type, $multiple ? [] : '', multiple: $multiple);
+
+    $this->assertSame($expected, $field->valueKind());
+  }
+
+  public static function dataProviderValueKind(): \Iterator {
+    yield 'confirm' => [FieldType::Confirm, FALSE, 'a boolean'];
+    yield 'pause' => [FieldType::Pause, FALSE, 'a boolean'];
+    yield 'multiple' => [FieldType::Select, TRUE, 'a list'];
+    yield 'reorder' => [FieldType::Reorder, FALSE, 'a list'];
+    yield 'number' => [FieldType::Number, FALSE, 'a number'];
+    yield 'calendar' => [FieldType::Calendar, FALSE, 'a date (YYYY-MM-DD)'];
+    yield 'text' => [FieldType::Text, FALSE, 'a string'];
+  }
+
+  #[DataProvider('dataProviderSupportsMultiple')]
+  public function testSupportsMultiple(FieldType $type, bool $expected): void {
+    $this->assertSame($expected, $type->supportsMultiple());
+  }
+
+  public static function dataProviderSupportsMultiple(): \Iterator {
+    yield 'select' => [FieldType::Select, TRUE];
+    yield 'search' => [FieldType::Search, TRUE];
+    yield 'file picker' => [FieldType::FilePicker, TRUE];
+    yield 'reorder' => [FieldType::Reorder, FALSE];
+    yield 'number' => [FieldType::Number, FALSE];
+    yield 'text' => [FieldType::Text, FALSE];
+  }
+
+  public function testConstructorRejectsMultipleOnUnsupportedType(): void {
+    $this->expectException(FormException::class);
+    $this->expectExceptionMessage('Field "n" of type "number" does not collect several values');
+
+    new Field('n', 'N', '', FieldType::Number, 0, multiple: TRUE);
   }
 
   public function testFieldOptionScan(): void {
@@ -129,8 +193,8 @@ final class OptionTest extends TestCase {
   }
 
   #[DataProvider('dataProviderOptionError')]
-  public function testOptionError(FieldType $type, array $options, mixed $value, ?string $expected): void {
-    $field = new Field('f', 'F', '', $type, $type->isMultiChoice() ? [] : '', $options);
+  public function testOptionError(FieldType $type, bool $multiple, array $options, mixed $value, ?string $expected): void {
+    $field = new Field('f', 'F', '', $type, $multiple ? [] : '', $options, multiple: $multiple);
 
     $this->assertSame($expected, $field->optionError($value));
   }
@@ -143,20 +207,20 @@ final class OptionTest extends TestCase {
       new Option('legacy', 'Legacy', '', OptionKind::Option, TRUE),
       new Option('', '', '', OptionKind::Separator),
     ];
-    yield 'selectable value' => [FieldType::Select, $options, 'standard', NULL];
-    yield 'disabled with reason' => [FieldType::Select, $options, 'demo', 'option "demo" is disabled: unavailable'];
-    yield 'disabled without reason' => [FieldType::Select, $options, 'legacy', 'option "legacy" is disabled'];
-    yield 'unknown value' => [FieldType::Select, $options, 'bogus', 'value "bogus" is not one of: standard, minimal'];
-    yield 'unconstrained type' => [FieldType::Suggest, $options, 'bogus', NULL];
-    yield 'no options' => [FieldType::Select, [], 'bogus', NULL];
-    yield 'multi valid' => [FieldType::MultiSelect, $options, ['standard', 'minimal'], NULL];
-    yield 'multi disabled item' => [FieldType::MultiSelect, $options, ['standard', 'demo'], 'option "demo" is disabled: unavailable'];
-    yield 'multi non-array' => [FieldType::MultiSelect, $options, 'standard', 'value must be a list'];
-    yield 'reorder full permutation' => [FieldType::Reorder, $options, ['minimal', 'standard'], NULL];
-    yield 'reorder partial' => [FieldType::Reorder, $options, ['standard'], 'must rank every option exactly once (standard, minimal)'];
-    yield 'reorder duplicate' => [FieldType::Reorder, $options, ['standard', 'standard'], 'must rank every option exactly once (standard, minimal)'];
-    yield 'reorder unknown item' => [FieldType::Reorder, $options, ['standard', 'bogus'], 'value "bogus" is not one of: standard, minimal'];
-    yield 'reorder non-array' => [FieldType::Reorder, $options, 'standard', 'value must be a list'];
+    yield 'selectable value' => [FieldType::Select, FALSE, $options, 'standard', NULL];
+    yield 'disabled with reason' => [FieldType::Select, FALSE, $options, 'demo', 'option "demo" is disabled: unavailable'];
+    yield 'disabled without reason' => [FieldType::Select, FALSE, $options, 'legacy', 'option "legacy" is disabled'];
+    yield 'unknown value' => [FieldType::Select, FALSE, $options, 'bogus', 'value "bogus" is not one of: standard, minimal'];
+    yield 'unconstrained type' => [FieldType::Suggest, FALSE, $options, 'bogus', NULL];
+    yield 'no options' => [FieldType::Select, FALSE, [], 'bogus', NULL];
+    yield 'multi valid' => [FieldType::Select, TRUE, $options, ['standard', 'minimal'], NULL];
+    yield 'multi disabled item' => [FieldType::Select, TRUE, $options, ['standard', 'demo'], 'option "demo" is disabled: unavailable'];
+    yield 'multi non-array' => [FieldType::Select, TRUE, $options, 'standard', 'value must be a list'];
+    yield 'reorder full permutation' => [FieldType::Reorder, FALSE, $options, ['minimal', 'standard'], NULL];
+    yield 'reorder partial' => [FieldType::Reorder, FALSE, $options, ['standard'], 'must rank every option exactly once (standard, minimal)'];
+    yield 'reorder duplicate' => [FieldType::Reorder, FALSE, $options, ['standard', 'standard'], 'must rank every option exactly once (standard, minimal)'];
+    yield 'reorder unknown item' => [FieldType::Reorder, FALSE, $options, ['standard', 'bogus'], 'value "bogus" is not one of: standard, minimal'];
+    yield 'reorder non-array' => [FieldType::Reorder, FALSE, $options, 'standard', 'value must be a list'];
   }
 
   /**

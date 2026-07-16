@@ -109,8 +109,8 @@ function widgetSpecs(string $tree): array {
       'keys' => [...$open, $down],
       'rows' => 8,
     ],
-    'multiselect' => [
-      'form' => Form::create('MultiSelect widget')->panel('main', 'MultiSelect', function (PanelBuilder $p): void { $p->multiSelect('multiselect', 'MultiSelect')->default(['apple'])->options(['apple' => 'Apple', 'carrot' => 'Carrot', 'tomato' => 'Tomato']); }),
+    'select-multiple' => [
+      'form' => Form::create('Select widget')->panel('main', 'Select', function (PanelBuilder $p): void { $p->select('select', 'Select')->multiple()->default(['apple'])->options(['apple' => 'Apple', 'carrot' => 'Carrot', 'tomato' => 'Tomato']); }),
       'keys' => [...$open, $down, $space],
       'rows' => 8,
     ],
@@ -129,8 +129,8 @@ function widgetSpecs(string $tree): array {
       'keys' => [...$open, 'o', 'n'],
       'rows' => 10,
     ],
-    'multisearch' => [
-      'form' => Form::create('MultiSearch widget')->panel('main', 'MultiSearch', function (PanelBuilder $p): void { $p->multiSearch('multisearch', 'MultiSearch')->default(['apple'])->options(['apple' => 'Apple', 'banana' => 'Banana', 'carrot' => 'Carrot', 'tomato' => 'Tomato']); }),
+    'search-multiple' => [
+      'form' => Form::create('Search widget')->panel('main', 'Search', function (PanelBuilder $p): void { $p->search('search', 'Search')->multiple()->default(['apple'])->options(['apple' => 'Apple', 'banana' => 'Banana', 'carrot' => 'Carrot', 'tomato' => 'Tomato']); }),
       'keys' => [...$open, 't', 'o', $space],
       'rows' => 10,
     ],
@@ -154,8 +154,8 @@ function widgetSpecs(string $tree): array {
       'keys' => [...$open, $down],
       'rows' => 8,
     ],
-    'multifilepicker' => [
-      'form' => Form::create('Multi file picker widget')->panel('main', 'Multi file picker', function (PanelBuilder $p) use ($tree): void { $p->multiFilePicker('files', 'Multi file picker')->startIn($tree); }),
+    'filepicker-multiple' => [
+      'form' => Form::create('File picker widget')->panel('main', 'File picker', function (PanelBuilder $p) use ($tree): void { $p->filePicker('files', 'File picker')->multiple()->startIn($tree); }),
       'keys' => [...$open, $space, $down, $space],
       'rows' => 10,
     ],

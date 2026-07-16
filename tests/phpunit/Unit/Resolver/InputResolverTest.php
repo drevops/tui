@@ -131,13 +131,13 @@ final class InputResolverTest extends TestCase {
     return [
       new Field('name', 'Name', '', FieldType::Text, ''),
       new Field('agree', 'Agree', '', FieldType::Confirm, FALSE),
-      new Field('mods', 'Mods', '', FieldType::MultiSelect, []),
+      new Field('mods', 'Mods', '', FieldType::Select, [], multiple: TRUE),
       new Field('port', 'Port', '', FieldType::Number, 0),
       new Field('ack', 'Ack', '', FieldType::Pause, TRUE),
-      new Field('tags', 'Tags', '', FieldType::MultiSearch, []),
+      new Field('tags', 'Tags', '', FieldType::Search, [], multiple: TRUE),
       new Field('rank', 'Rank', '', FieldType::Reorder, []),
       new Field('vis', 'Visibility', '', FieldType::Toggle, 'public'),
-      new Field('paths', 'Paths', '', FieldType::MultiFilePicker, []),
+      new Field('paths', 'Paths', '', FieldType::FilePicker, [], multiple: TRUE),
       new Field('cfg', 'Config', '', FieldType::FilePicker, ''),
       new Field('due', 'Due', '', FieldType::Calendar, ''),
     ];

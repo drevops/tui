@@ -242,7 +242,7 @@ class Engine {
    *   TRUE when the value passes the field's shape and constraints.
    */
   protected function acceptsDetected(Field $field, mixed $value): bool {
-    return $field->type->acceptsValue($value) && $field->boundsViolation($value) === NULL && $field->optionError($value) === NULL;
+    return $field->acceptsValue($value) && $field->boundsViolation($value) === NULL && $field->optionError($value) === NULL;
   }
 
   /**
@@ -257,8 +257,8 @@ class Engine {
    *   An error message, or NULL when the value is valid.
    */
   protected function validateValue(Field $field, mixed $value): ?string {
-    if (!$field->type->acceptsValue($value)) {
-      return Translator::t('must be @constraint.', ['@constraint' => $field->type->valueKind()]);
+    if (!$field->acceptsValue($value)) {
+      return Translator::t('must be @constraint.', ['@constraint' => $field->valueKind()]);
     }
 
     $violation = $field->boundsViolation($value);

@@ -65,7 +65,7 @@ final class SummaryFormatterTest extends TestCase {
   public function testFormatsListValues(): void {
     $form = Form::create('T')
       ->panel('p', 'P', function (PanelBuilder $p): void {
-        $p->multiSelect('mods', 'Mods');
+        $p->select('mods', 'Mods')->multiple();
       })
       ->build();
     $answers = Answers::forForm($form, ['mods' => ['a', 'b']], ['mods' => Provenance::Edited]);
