@@ -187,7 +187,12 @@ if (dos) {
   // light over the dark-blue surface while the surface itself (which does read
   // theme.background) stays dark. Point palette entry 4 at the same CGA blue so
   // the whole screen washes one uniform blue.
-  const svgTermPalette = require('svg-term/lib/default-theme');
+  //
+  // svg-term 1.3.1 exports that palette object directly; a later major wraps it
+  // as { defaultTheme }. Resolve both shapes so a version bump cannot leave the
+  // mutation stranded on an empty wrapper and silently revert the wash.
+  const svgTermDefault = require('svg-term/lib/default-theme');
+  const svgTermPalette = svgTermDefault.defaultTheme || svgTermDefault;
   svgTermPalette[4] = [0, 0, 170];
 }
 
