@@ -26,6 +26,11 @@ final readonly class Modal {
   public function __construct(
     public Buttons $buttons = new Buttons(),
   ) {
+    // The buttons are a modal's only on-screen way out, so hiding them would
+    // strand the dialog; the invariant is enforced rather than silently ignored.
+    if (!$this->buttons->show) {
+      throw new \InvalidArgumentException('A modal dialog must show its buttons.');
+    }
   }
 
 }

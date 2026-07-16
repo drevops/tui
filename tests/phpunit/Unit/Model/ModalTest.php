@@ -32,4 +32,11 @@ final class ModalTest extends TestCase {
     $this->assertSame('No', $modal->buttons->cancelLabel);
   }
 
+  public function testHiddenButtonsRejected(): void {
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessage('A modal dialog must show its buttons.');
+
+    new Modal(new Buttons(FALSE));
+  }
+
 }
