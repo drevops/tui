@@ -21,7 +21,7 @@ class AgentHelp {
    * Construct the help generator.
    *
    * @param \DrevOps\Tui\Model\FormDefinition $form
-   *   The configuration to describe.
+   *   The form definition to describe.
    * @param string $envPrefix
    *   The prefix for per-question env variable names (e.g. "APP_").
    */

@@ -40,8 +40,9 @@ option-list structure), `->when(new Condition(...))`, `->derive(new Derive(...))
 `->discover(...)`, `->validate(...)` and `->transform(...)`.
 
 The form declares its own chrome: `->banner()` sets a start banner and
-`->buttons()` controls the submit/cancel buttons. The global TUI runtime - shared
-by every form an app runs - is configured on the `Tui` facade instead: `->theme()`
+`->buttons()` controls the submit/cancel buttons. The global TUI runtime -
+describing the terminal, not the questionnaire - is configured on the `Tui` facade
+instead: `->theme()`
 names a theme, auto-detected from the terminal background when unset (see
 [Themes](/themes)), `->keys()` sets the key bindings (see
 [Key bindings](/key-bindings)), `->footer()` toggles the key-hint footer,

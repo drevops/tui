@@ -116,10 +116,6 @@ final class Tui {
     $this->envPrefix = $env_prefix !== '' ? $env_prefix : ($this->form->envPrefix !== '' ? $this->form->envPrefix : 'TUI_');
     $this->registry = new HandlerRegistry($handler_namespaces);
     $this->engine = new Engine($this->form, $this->registry);
-
-    // A fresh facade starts in English; a later translator() call activates a
-    // language, so a translator-less run never inherits an earlier instance's.
-    Translator::setShared(NULL);
   }
 
   /**
@@ -240,7 +236,6 @@ final class Tui {
    */
   public function translator(Translator $translator): self {
     $this->translator = $translator;
-    Translator::setShared($translator);
 
     return $this;
   }
@@ -287,6 +282,9 @@ final class Tui {
    *   The collected answers.
    */
   public function collect(string $prompts = '', string $directory = '', bool $update = FALSE, string $version = ''): Answers {
+    // Restore this facade's language at the operation boundary: another facade
+    // constructed or configured meanwhile may have replaced the shared one.
+    Translator::setShared($this->translator);
     $inputs = (new InputResolver($this->envPrefix))->resolve($this->form->fields(), $prompts, getenv());
 
     return $this->engine->collect($inputs, $this->context($directory, $update, $version));
@@ -352,6 +350,8 @@ final class Tui {
    *   collect through run(), collect() or interact().
    */
   public function controller(array $options, string $theme = '', string $banner = '', string $version = '', string $directory = ''): PanelController {
+    // Restore this facade's language before rendering (see collect()).
+    Translator::setShared($this->translator);
     $answers = $this->engine->collect([], $this->context($directory, FALSE, $version));
 
     $banner_text = $banner !== '' ? $banner : $this->form->banner;

@@ -122,7 +122,7 @@ method instead.
 Lowest friction: the facade names the class directly, with no registration:
 
 ```php
-$tui = (new Tui($form))->theme('\App\AquaTheme');
+$tui = (new \DrevOps\Tui\Tui($form))->theme(AquaTheme::class);
 ```
 
 Or register a short alias with `ThemeManager::register('aqua', AquaTheme::class)`,

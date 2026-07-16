@@ -47,24 +47,29 @@ final class TuiTest extends TestCase {
     $this->translatorTearDown();
   }
 
-  public function testActivatesTranslator(): void {
+  public function testActivatesTranslatorOnRun(): void {
     $this->assertNotInstanceOf(Translator::class, Translator::shared());
 
     $translator = new Translator('es', [dirname(__DIR__) . '/Fixtures/translations']);
 
-    (new Tui($this->demoForm()))->translator($translator);
+    // An operation activates this facade's own language.
+    (new Tui($this->demoForm()))->translator($translator)->collect();
 
     $this->assertSame($translator, Translator::shared());
   }
 
-  public function testTranslatorClearedWhenFacadeHasNone(): void {
-    // Setting a translator on the facade activates its language.
-    (new Tui($this->demoForm()))->translator(new Translator('es', [dirname(__DIR__) . '/Fixtures/translations']));
-    $this->assertInstanceOf(Translator::class, Translator::shared());
+  public function testEachOperationRestoresItsOwnTranslator(): void {
+    $spanish = (new Tui($this->demoForm()))->translator(new Translator('es', [dirname(__DIR__) . '/Fixtures/translations']));
+    $plain = new Tui($this->demoForm());
 
-    // A later translator-less facade clears it, so its language does not leak.
-    new Tui($this->demoForm());
+    // A translator-less facade's operation clears the shared language.
+    $plain->collect();
     $this->assertNull(Translator::shared());
+
+    // The translated facade restores its own language on its next operation,
+    // even though another facade replaced the shared one meanwhile.
+    $spanish->collect();
+    $this->assertInstanceOf(Translator::class, Translator::shared());
   }
 
   public function testKeysResolvesPresetAndOverrides(): void {

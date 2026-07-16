@@ -17,7 +17,7 @@ $answers = $tui->run($prompts, '1.0.0'); // TUI on a terminal, headless otherwis
 
 Environment overrides are named `<PREFIX><FIELD_ID>` (the uppercased field id).
 `->envPrefix('MYAPP_')` declares that namespace on the form, a
-`new Tui($config, env_prefix: 'MYAPP_')` constructor argument overrides it, and
+`new Tui($form, env_prefix: 'MYAPP_')` constructor argument overrides it, and
 without either the prefix is
 `TUI_`:
 
