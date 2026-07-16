@@ -8,25 +8,18 @@ use DrevOps\Tui\Builder\FieldBuilder;
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Builder\PanelBuilder;
 use DrevOps\Tui\Condition\Condition;
-use DrevOps\Tui\Config\ConfigException;
-use DrevOps\Tui\Config\DateBounds;
-use DrevOps\Tui\Config\Field;
-use DrevOps\Tui\Config\FieldType;
-use DrevOps\Tui\Config\FilePickerMode;
-use DrevOps\Tui\Config\Fixup;
-use DrevOps\Tui\Config\NumberBounds;
-use DrevOps\Tui\Config\OptionKind;
-use DrevOps\Tui\Config\RenderMode;
-use DrevOps\Tui\Config\Weekday;
+use DrevOps\Tui\Model\FormException;
+use DrevOps\Tui\Model\DateBounds;
+use DrevOps\Tui\Model\Field;
+use DrevOps\Tui\Model\FieldType;
+use DrevOps\Tui\Model\FilePickerMode;
+use DrevOps\Tui\Model\Fixup;
+use DrevOps\Tui\Model\NumberBounds;
+use DrevOps\Tui\Model\OptionKind;
+use DrevOps\Tui\Model\RenderMode;
+use DrevOps\Tui\Model\Weekday;
 use DrevOps\Tui\Derive\Derive;
 use DrevOps\Tui\Discovery\Dotenv;
-use DrevOps\Tui\Input\Action;
-use DrevOps\Tui\Input\Binding;
-use DrevOps\Tui\Input\Key;
-use DrevOps\Tui\Input\KeyMap;
-use DrevOps\Tui\Input\KeyName;
-use DrevOps\Tui\Input\Scope;
-use DrevOps\Tui\Translation\Translator;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
@@ -38,29 +31,15 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Form::class)]
 #[CoversClass(PanelBuilder::class)]
 #[CoversClass(FieldBuilder::class)]
-#[CoversClass(Translator::class)]
-#[Group('config')]
+#[Group('model')]
 final class FormTest extends TestCase {
 
-  public function testTranslator(): void {
-    $translator = new Translator('es');
-
-    $config = Form::create('Demo')->translator($translator)->build();
-
-    $this->assertSame($translator, $config->translator);
-  }
-
-  public function testBuildsExpectedConfig(): void {
+  public function testBuildsExpectedForm(): void {
     $fixup = new Fixup(set: 'a', to: 'b', when: new Condition('x', eq: 'y'));
 
-    $config = Form::create('My app', 'the project')
-      ->theme('midnight')
+    $form = Form::create('My app', 'the project')
       ->banner('LOGO')
       ->buttons(TRUE, 'Install', 'Quit')
-      ->clearOnExit(FALSE)
-      ->footer(FALSE)
-      ->color(TRUE)
-      ->unicode(FALSE)
       ->envPrefix('APP_')
       ->fixup($fixup)
       ->panel('general', 'General', function (PanelBuilder $p): void {
@@ -80,24 +59,17 @@ final class FormTest extends TestCase {
       })
       ->build();
 
-    $this->assertSame('My app', $config->title);
-    $this->assertSame('the project', $config->subject);
-    $this->assertSame('midnight', $config->theme);
-    $this->assertSame('LOGO', $config->banner);
-    $this->assertTrue($config->buttons);
-    $this->assertSame('Install', $config->submitLabel);
-    $this->assertSame('Quit', $config->cancelLabel);
-    $this->assertFalse($config->clearOnExit);
-    $this->assertFalse($config->footer);
-    $this->assertTrue($config->color);
-    $this->assertFalse($config->unicode);
-    $this->assertSame('APP_', $config->envPrefix);
-    $this->assertSame([$fixup], $config->fixups);
-    // A form declares no translator by default, leaving every string English.
-    $this->assertNotInstanceOf(Translator::class, $config->translator);
-    $this->assertSame('General settings.', $config->panels[0]->description);
+    $this->assertSame('My app', $form->title);
+    $this->assertSame('the project', $form->subject);
+    $this->assertSame('LOGO', $form->banner);
+    $this->assertTrue($form->buttons);
+    $this->assertSame('Install', $form->submitLabel);
+    $this->assertSame('Quit', $form->cancelLabel);
+    $this->assertSame('APP_', $form->envPrefix);
+    $this->assertSame([$fixup], $form->fixups);
+    $this->assertSame('General settings.', $form->panels[0]->description);
 
-    $name = $config->field('name');
+    $name = $form->field('name');
     $this->assertInstanceOf(Field::class, $name);
     $this->assertSame('Site name', $name->label);
     $this->assertSame('The name.', $name->description);
@@ -106,60 +78,60 @@ final class FormTest extends TestCase {
     $this->assertTrue($name->required);
     $this->assertSame(10, $name->weight);
 
-    $machine = $config->field('machine_name');
+    $machine = $form->field('machine_name');
     $this->assertInstanceOf(Field::class, $machine);
     $this->assertSame('{{ name }}', $machine->derive?->template);
 
-    $profile = $config->field('profile');
+    $profile = $form->field('profile');
     $this->assertInstanceOf(Field::class, $profile);
     $this->assertSame(FieldType::Select, $profile->type);
     $this->assertSame('standard', $profile->default);
     $this->assertSame('Standard', $profile->option('standard')?->label);
 
-    $services = $config->field('services');
+    $services = $form->field('services');
     $this->assertInstanceOf(Field::class, $services);
     $this->assertSame(FieldType::MultiSelect, $services->type);
     $this->assertSame('Search', $services->option('solr')?->description);
 
-    $docs = $config->field('docs');
+    $docs = $form->field('docs');
     $this->assertInstanceOf(Field::class, $docs);
     $this->assertSame(FieldType::Confirm, $docs->type);
     $this->assertTrue($docs->default);
     $this->assertSame(['field' => 'profile', 'eq' => 'standard'], $docs->when?->toArray());
 
-    $visibility = $config->field('visibility');
+    $visibility = $form->field('visibility');
     $this->assertInstanceOf(Field::class, $visibility);
     $this->assertSame(FieldType::Toggle, $visibility->type);
     $this->assertSame('private', $visibility->default);
     $this->assertSame('Public', $visibility->option('public')?->label);
 
-    $secret = $config->field('secret');
+    $secret = $form->field('secret');
     $this->assertInstanceOf(Field::class, $secret);
     $this->assertSame(FieldType::Password, $secret->type);
     $this->assertTrue($secret->revealable);
     $this->assertTrue($secret->confirm);
 
-    $timezone = $config->field('timezone');
+    $timezone = $form->field('timezone');
     $this->assertInstanceOf(Field::class, $timezone);
     $this->assertSame(FieldType::Suggest, $timezone->type);
     $this->assertInstanceOf(Dotenv::class, $timezone->discover);
     $this->assertSame('TZ', $timezone->discover->key);
 
-    $ranking = $config->field('ranking');
+    $ranking = $form->field('ranking');
     $this->assertInstanceOf(Field::class, $ranking);
     $this->assertSame(FieldType::Reorder, $ranking->type);
     // A partial declared default is completed to a full ranking in declared
     // order: the given values first, the remaining options appended.
     $this->assertSame(['good', 'fast', 'cheap'], $ranking->default);
 
-    $webroot = $config->field('webroot');
+    $webroot = $form->field('webroot');
     $this->assertInstanceOf(Field::class, $webroot);
     $this->assertSame('web', $webroot->default);
-    $this->assertSame('Advanced', $config->panels[0]->panels[0]->title);
+    $this->assertSame('Advanced', $form->panels[0]->panels[0]->title);
   }
 
   public function testDefaultsAndFallbacks(): void {
-    $config = Form::create('T')
+    $form = Form::create('T')
       ->panel('p', 'P', function (PanelBuilder $panel): void {
         $panel->text('t');
         $panel->select('s')->option('a');
@@ -181,53 +153,50 @@ final class FormTest extends TestCase {
       ->build();
 
     // Type defaults when none is declared.
-    $this->assertSame('', $config->field('t')?->default);
-    $this->assertSame('', $config->field('s')?->default);
-    $this->assertSame([], $config->field('m')?->default);
-    $this->assertFalse($config->field('c')?->default);
-    $this->assertSame('', $config->field('g')?->default);
-    $this->assertSame(0, $config->field('n')?->default);
+    $this->assertSame('', $form->field('t')?->default);
+    $this->assertSame('', $form->field('s')?->default);
+    $this->assertSame([], $form->field('m')?->default);
+    $this->assertFalse($form->field('c')?->default);
+    $this->assertSame('', $form->field('g')?->default);
+    $this->assertSame(0, $form->field('n')?->default);
     // A date with no explicit default is empty; the widget opens on today.
-    $this->assertSame('', $config->field('dt')?->default);
-    $this->assertSame('', $config->field('ta')?->default);
-    $this->assertSame('', $config->field('pw')?->default);
+    $this->assertSame('', $form->field('dt')?->default);
+    $this->assertSame('', $form->field('ta')?->default);
+    $this->assertSame('', $form->field('pw')?->default);
     // The password options are opt-in, so they default off.
-    $this->assertFalse($config->field('pw')->revealable);
-    $this->assertFalse($config->field('pw')->confirm);
-    $this->assertSame('', $config->field('se')?->default);
-    $this->assertSame([], $config->field('ms')?->default);
+    $this->assertFalse($form->field('pw')->revealable);
+    $this->assertFalse($form->field('pw')->confirm);
+    $this->assertSame('', $form->field('se')?->default);
+    $this->assertSame([], $form->field('ms')?->default);
     // A toggle defaults to its first option, since it always holds a value.
-    $this->assertSame('on', $config->field('tg')?->default);
+    $this->assertSame('on', $form->field('tg')?->default);
     // A single picker defaults to an empty path; a multiple picker to no paths.
-    $this->assertSame('', $config->field('fp')?->default);
-    $this->assertSame([], $config->field('mfp')?->default);
+    $this->assertSame('', $form->field('fp')?->default);
+    $this->assertSame([], $form->field('mfp')?->default);
     // A reorder with no declared default ranks every option in declared order.
-    $this->assertSame(['a', 'b', 'c'], $config->field('rk')?->default);
+    $this->assertSame(['a', 'b', 'c'], $form->field('rk')?->default);
     // The picker options are opt-in, so they default off.
-    $this->assertSame(FilePickerMode::Any, $config->field('fp')->pickerMode);
-    $this->assertSame('', $config->field('fp')->pickerStart);
-    $this->assertSame([], $config->field('fp')->pickerExtensions);
-    $this->assertFalse($config->field('fp')->pickerShowHidden);
+    $this->assertSame(FilePickerMode::Any, $form->field('fp')->pickerMode);
+    $this->assertSame('', $form->field('fp')->pickerStart);
+    $this->assertSame([], $form->field('fp')->pickerExtensions);
+    $this->assertFalse($form->field('fp')->pickerShowHidden);
     // A pause defaults to acknowledged so headless runs never block on it.
-    $this->assertTrue($config->field('pa')?->default);
+    $this->assertTrue($form->field('pa')?->default);
 
     // Label and option-label fall back to the id/value.
-    $this->assertSame('t', $config->field('t')->label);
-    $this->assertSame('a', $config->field('s')->option('a')?->label);
+    $this->assertSame('t', $form->field('t')->label);
+    $this->assertSame('a', $form->field('s')->option('a')?->label);
 
-    // Config-level defaults.
-    $this->assertSame('', $config->subject);
-    $this->assertTrue($config->buttons);
-    $this->assertTrue($config->footer);
-    $this->assertSame('Submit', $config->submitLabel);
-    $this->assertSame('', $config->theme);
-    $this->assertNull($config->color);
-    $this->assertSame('', $config->envPrefix);
-    $this->assertSame('', $config->panels[0]->description);
+    // Form-level defaults (the global TUI runtime is tested on the Tui facade).
+    $this->assertSame('', $form->subject);
+    $this->assertTrue($form->buttons);
+    $this->assertSame('Submit', $form->submitLabel);
+    $this->assertSame('', $form->envPrefix);
+    $this->assertSame('', $form->panels[0]->description);
   }
 
   public function testStandaloneOptsOutOfInlineEditing(): void {
-    $config = Form::create('T')
+    $form = Form::create('T')
       ->panel('p', 'P', function (PanelBuilder $panel): void {
         $panel->confirm('a');
         $panel->select('b')->option('x')->standalone();
@@ -237,36 +206,36 @@ final class FormTest extends TestCase {
       ->build();
 
     // A field is edited inline by default.
-    $this->assertSame(RenderMode::Inline, $config->field('a')?->render);
+    $this->assertSame(RenderMode::Inline, $form->field('a')?->render);
     // Declaring it standalone opts out to the full-screen editor.
-    $this->assertSame(RenderMode::Standalone, $config->field('b')?->render);
+    $this->assertSame(RenderMode::Standalone, $form->field('b')?->render);
     // standalone(FALSE) restores inline editing.
-    $this->assertSame(RenderMode::Inline, $config->field('c')?->render);
+    $this->assertSame(RenderMode::Inline, $form->field('c')?->render);
   }
 
   public function testExternalEditorFlag(): void {
-    $config = Form::create('T')
+    $form = Form::create('T')
       ->panel('p', 'P', function (PanelBuilder $panel): void {
         $panel->textarea('notes', 'Notes')->externalEditor();
         $panel->textarea('plain', 'Plain');
       })
       ->build();
 
-    $this->assertTrue($config->field('notes')?->externalEditor);
-    $this->assertFalse($config->field('plain')?->externalEditor);
+    $this->assertTrue($form->field('notes')?->externalEditor);
+    $this->assertFalse($form->field('plain')?->externalEditor);
   }
 
   public function testValidateAndTransformStored(): void {
     $validator = fn (mixed $v): ?string => NULL;
     $transformer = fn (mixed $v): mixed => $v;
 
-    $config = Form::create('T')
+    $form = Form::create('T')
       ->panel('p', 'P', function (PanelBuilder $panel) use ($validator, $transformer): void {
         $panel->text('x')->validate($validator)->transform($transformer);
       })
       ->build();
 
-    $field = $config->field('x');
+    $field = $form->field('x');
     $this->assertInstanceOf(Field::class, $field);
     $this->assertSame($validator, $field->validate);
     $this->assertSame($transformer, $field->transform);
@@ -276,7 +245,7 @@ final class FormTest extends TestCase {
     $list = ['acme-site', 'acme-app'];
     $closure = fn (array $answers): array => [];
 
-    $config = Form::create('T')
+    $form = Form::create('T')
       ->panel('p', 'P', function (PanelBuilder $panel) use ($list, $closure): void {
         $panel->text('name', 'Name')->complete($list);
         $panel->text('repo', 'Repo')->complete($closure);
@@ -284,21 +253,21 @@ final class FormTest extends TestCase {
       })
       ->build();
 
-    $this->assertSame($list, $config->field('name')?->completion);
-    $this->assertSame($closure, $config->field('repo')?->completion);
+    $this->assertSame($list, $form->field('name')?->completion);
+    $this->assertSame($closure, $form->field('repo')?->completion);
     // A field with no completion source defaults to an empty list.
-    $this->assertSame([], $config->field('plain')?->completion);
+    $this->assertSame([], $form->field('plain')?->completion);
   }
 
   public function testNumberBoundsAssembled(): void {
-    $config = Form::create('T')
+    $form = Form::create('T')
       ->panel('p', 'P', function (PanelBuilder $panel): void {
         $panel->number('port', 'Port')->min(1)->max(65535)->step(5);
         $panel->number('plain', 'Plain');
       })
       ->build();
 
-    $port = $config->field('port');
+    $port = $form->field('port');
     $this->assertInstanceOf(Field::class, $port);
     $this->assertInstanceOf(NumberBounds::class, $port->bounds);
     $this->assertSame(1, $port->bounds->min);
@@ -306,18 +275,18 @@ final class FormTest extends TestCase {
     $this->assertSame(5, $port->bounds->step);
 
     // A number with nothing declared carries no bounds - behaviour unchanged.
-    $this->assertNotInstanceOf(NumberBounds::class, $config->field('plain')?->bounds);
+    $this->assertNotInstanceOf(NumberBounds::class, $form->field('plain')?->bounds);
   }
 
   public function testDateBoundsAssembled(): void {
-    $config = Form::create('T')
+    $form = Form::create('T')
       ->panel('p', 'P', function (PanelBuilder $panel): void {
         $panel->calendar('birthday', 'Birthday')->minDate('2000-01-01')->maxDate('2030-12-31')->weekStart(Weekday::Sunday);
         $panel->calendar('plain', 'Plain');
       })
       ->build();
 
-    $birthday = $config->field('birthday');
+    $birthday = $form->field('birthday');
     $this->assertInstanceOf(Field::class, $birthday);
     $this->assertInstanceOf(DateBounds::class, $birthday->dateBounds);
     $this->assertSame('2000-01-01', $birthday->dateBounds->min?->format('Y-m-d'));
@@ -326,7 +295,7 @@ final class FormTest extends TestCase {
 
     // A date with nothing declared still carries bounds, defaulting to a
     // Monday-first, open range.
-    $plain = $config->field('plain');
+    $plain = $form->field('plain');
     $this->assertInstanceOf(DateBounds::class, $plain?->dateBounds);
     $this->assertNotInstanceOf(\DateTimeImmutable::class, $plain->dateBounds->min);
     $this->assertNotInstanceOf(\DateTimeImmutable::class, $plain->dateBounds->max);
@@ -334,7 +303,7 @@ final class FormTest extends TestCase {
   }
 
   public function testDateInvalidBoundThrows(): void {
-    $this->expectException(ConfigException::class);
+    $this->expectException(FormException::class);
     $this->expectExceptionMessage('Field "d" declares an invalid date "2026-13-01".');
 
     Form::create('T')
@@ -343,7 +312,7 @@ final class FormTest extends TestCase {
   }
 
   public function testDateMinAfterMaxThrows(): void {
-    $this->expectException(ConfigException::class);
+    $this->expectException(FormException::class);
     $this->expectExceptionMessage('Field "d" declares min date 2026-12-31 after max date 2026-01-01.');
 
     Form::create('T')
@@ -352,16 +321,16 @@ final class FormTest extends TestCase {
   }
 
   public function testDateBoundsIgnoredOnNonDateField(): void {
-    $config = Form::create('T')
+    $form = Form::create('T')
       ->panel('p', 'P', fn(PanelBuilder $p): FieldBuilder => $p->text('t')->minDate('2020-01-01')->weekStart(Weekday::Sunday))
       ->build();
 
     // The date setters are inert on a non-date field: no bounds are attached.
-    $this->assertNotInstanceOf(DateBounds::class, $config->field('t')?->dateBounds);
+    $this->assertNotInstanceOf(DateBounds::class, $form->field('t')?->dateBounds);
   }
 
   public function testNumberMinGreaterThanMaxThrows(): void {
-    $this->expectException(ConfigException::class);
+    $this->expectException(FormException::class);
     $this->expectExceptionMessage('Field "n" declares min 10 greater than max 1.');
 
     Form::create('T')
@@ -370,7 +339,7 @@ final class FormTest extends TestCase {
   }
 
   public function testNumberNonPositiveStepThrows(): void {
-    $this->expectException(ConfigException::class);
+    $this->expectException(FormException::class);
     $this->expectExceptionMessage('Field "n" declares a non-positive step 0.');
 
     Form::create('T')
@@ -379,21 +348,21 @@ final class FormTest extends TestCase {
   }
 
   public function testPageSizeAssembled(): void {
-    $config = Form::create('T')
+    $form = Form::create('T')
       ->panel('p', 'P', function (PanelBuilder $panel): void {
         $panel->search('paged', 'Paged')->options(['a' => 'A'])->pageSize(5);
         $panel->search('plain', 'Plain')->options(['a' => 'A']);
       })
       ->build();
 
-    $this->assertSame(5, $config->field('paged')?->pageSize);
+    $this->assertSame(5, $form->field('paged')?->pageSize);
 
     // A field with nothing declared carries no page size and uses the default.
-    $this->assertNull($config->field('plain')?->pageSize);
+    $this->assertNull($form->field('plain')?->pageSize);
   }
 
   public function testNonPositivePageSizeThrows(): void {
-    $this->expectException(ConfigException::class);
+    $this->expectException(FormException::class);
     $this->expectExceptionMessage('Field "n" declares a non-positive page size 0.');
 
     Form::create('T')
@@ -402,29 +371,29 @@ final class FormTest extends TestCase {
   }
 
   public function testFilePickerOptions(): void {
-    $config = Form::create('T')
+    $form = Form::create('T')
       ->panel('p', 'P', function (PanelBuilder $panel): void {
         $panel->filePicker('config', 'Config')->startIn('/opt')->filesOnly()->extensions(['yml', 'yaml'])->showHidden();
         $panel->multiFilePicker('assets', 'Assets')->directoriesOnly();
       })
       ->build();
 
-    $config_field = $config->field('config');
-    $this->assertInstanceOf(Field::class, $config_field);
-    $this->assertSame(FieldType::FilePicker, $config_field->type);
-    $this->assertSame(FilePickerMode::File, $config_field->pickerMode);
-    $this->assertSame('/opt', $config_field->pickerStart);
-    $this->assertSame(['yml', 'yaml'], $config_field->pickerExtensions);
-    $this->assertTrue($config_field->pickerShowHidden);
+    $form_field = $form->field('config');
+    $this->assertInstanceOf(Field::class, $form_field);
+    $this->assertSame(FieldType::FilePicker, $form_field->type);
+    $this->assertSame(FilePickerMode::File, $form_field->pickerMode);
+    $this->assertSame('/opt', $form_field->pickerStart);
+    $this->assertSame(['yml', 'yaml'], $form_field->pickerExtensions);
+    $this->assertTrue($form_field->pickerShowHidden);
 
-    $assets = $config->field('assets');
+    $assets = $form->field('assets');
     $this->assertInstanceOf(Field::class, $assets);
     $this->assertSame(FieldType::MultiFilePicker, $assets->type);
     $this->assertSame(FilePickerMode::Directory, $assets->pickerMode);
   }
 
   public function testOptionKindsAndDisabled(): void {
-    $config = Form::create('T')
+    $form = Form::create('T')
       ->panel('p', 'P', function (PanelBuilder $p): void {
         $p->select('profile')
           ->heading('Recommended')
@@ -434,7 +403,7 @@ final class FormTest extends TestCase {
       })
       ->build();
 
-    $profile = $config->field('profile');
+    $profile = $form->field('profile');
     $this->assertInstanceOf(Field::class, $profile);
 
     $options = $profile->options;
@@ -450,13 +419,13 @@ final class FormTest extends TestCase {
   }
 
   public function testRepeatedOptionValueOverridesInPlace(): void {
-    $config = Form::create('T')
+    $form = Form::create('T')
       ->panel('p', 'P', function (PanelBuilder $p): void {
         $p->select('s')->option('a', 'First')->separator()->option('a', 'Second');
       })
       ->build();
 
-    $field = $config->field('s');
+    $field = $form->field('s');
     $this->assertInstanceOf(Field::class, $field);
 
     // The second declaration overrides the first in place; the separator stays.
@@ -466,7 +435,7 @@ final class FormTest extends TestCase {
   }
 
   public function testDuplicateFieldIdThrows(): void {
-    $this->expectException(ConfigException::class);
+    $this->expectException(FormException::class);
     $this->expectExceptionMessage('Duplicate field id "x".');
 
     Form::create('T')
@@ -476,7 +445,7 @@ final class FormTest extends TestCase {
   }
 
   public function testToggleWithoutTwoOptionsThrows(): void {
-    $this->expectException(ConfigException::class);
+    $this->expectException(FormException::class);
     $this->expectExceptionMessage('Toggle field "t" must have exactly two options, 1 given.');
 
     Form::create('T')
@@ -486,7 +455,7 @@ final class FormTest extends TestCase {
 
   #[DataProvider('dataProviderToggleInvalidDefaultThrows')]
   public function testToggleInvalidDefaultThrows(mixed $default): void {
-    $this->expectException(ConfigException::class);
+    $this->expectException(FormException::class);
     $this->expectExceptionMessage('Toggle field "t" default must be one of: a, b.');
 
     Form::create('T')
@@ -508,17 +477,17 @@ final class FormTest extends TestCase {
   }
 
   public function testToggleNumericStringOptionsDefaultToFirstValue(): void {
-    $config = Form::create('T')
+    $form = Form::create('T')
       ->panel('p', 'P', fn(PanelBuilder $p): FieldBuilder => $p->toggle('flag')->option('0', 'Off')->option('1', 'On'))
       ->build();
 
     // The implicit default is the first option's value "0" as a string, not a
     // numeric-string coerced to int by the array key.
-    $this->assertSame('0', $config->field('flag')?->default);
+    $this->assertSame('0', $form->field('flag')?->default);
   }
 
   public function testReorderToleratesDirtyDefault(): void {
-    $config = Form::create('T')
+    $form = Form::create('T')
       ->panel('p', 'P', function (PanelBuilder $p): void {
         $p->reorder('rk')->option('a')->option('b')->default('notalist');
         $p->reorder('rk2')->option('a')->option('b')->default(['b', 42, 'a']);
@@ -526,13 +495,13 @@ final class FormTest extends TestCase {
       ->build();
 
     // A non-list default falls back to the full declared order.
-    $this->assertSame(['a', 'b'], $config->field('rk')?->default);
+    $this->assertSame(['a', 'b'], $form->field('rk')?->default);
     // Non-string entries are ignored; the remaining values still complete it.
-    $this->assertSame(['b', 'a'], $config->field('rk2')?->default);
+    $this->assertSame(['b', 'a'], $form->field('rk2')?->default);
   }
 
   public function testReorderWithFewerThanTwoOptionsThrows(): void {
-    $this->expectException(ConfigException::class);
+    $this->expectException(FormException::class);
     $this->expectExceptionMessage('Reorder field "r" must have at least two options, 1 given.');
 
     Form::create('T')
@@ -541,41 +510,11 @@ final class FormTest extends TestCase {
   }
 
   public function testReorderWithStructuralOptionThrows(): void {
-    $this->expectException(ConfigException::class);
+    $this->expectException(FormException::class);
     $this->expectExceptionMessage('Reorder field "r" allows only plain options - no headings, separators or disabled rows.');
 
     Form::create('T')
       ->panel('p', 'P', fn(PanelBuilder $p): FieldBuilder => $p->reorder('r')->option('a')->separator()->option('b'))
-      ->build();
-  }
-
-  public function testDefaultKeymapWhenUnset(): void {
-    $config = Form::create('T')
-      ->panel('a', 'A', fn(PanelBuilder $p): FieldBuilder => $p->text('x'))
-      ->build();
-
-    $this->assertInstanceOf(KeyMap::class, $config->keymap);
-    $this->assertTrue($config->keymap->navigation()->matches(Key::named(KeyName::Up), Action::MoveUp));
-  }
-
-  public function testKeysAppliesPresetAndOverrides(): void {
-    $config = Form::create('T')
-      ->keys('vim', [new Binding(Scope::navigation(), Action::Quit, 'x')])
-      ->panel('a', 'A', fn(PanelBuilder $p): FieldBuilder => $p->text('x'))
-      ->build();
-
-    $this->assertInstanceOf(KeyMap::class, $config->keymap);
-    $nav = $config->keymap->navigation();
-    $this->assertTrue($nav->matches(Key::char('j'), Action::MoveDown));
-    $this->assertTrue($nav->matches(Key::char('x'), Action::Quit));
-  }
-
-  public function testInvalidKeyBindingThrowsAtBuild(): void {
-    $this->expectException(\InvalidArgumentException::class);
-
-    Form::create('T')
-      ->keys('default', [new Binding(Scope::navigation(), Action::Quit, KeyName::Enter)])
-      ->panel('a', 'A', fn(PanelBuilder $p): FieldBuilder => $p->text('x'))
       ->build();
   }
 

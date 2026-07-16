@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Widget\Capability;
 
-use DrevOps\Tui\Config\FieldType;
-use DrevOps\Tui\Config\Option;
+use DrevOps\Tui\Model\FieldType;
+use DrevOps\Tui\Model\Option;
 use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
@@ -50,7 +50,7 @@ trait MultiSelectionCapableTrait {
   /**
    * Seed the option rows and the selection set from the default values.
    *
-   * @param array<int|string,\DrevOps\Tui\Config\Option|string> $options
+   * @param array<int|string,\DrevOps\Tui\Model\Option|string> $options
    *   Option rows in display order - a list of options or the value => label
    *   shorthand map.
    * @param list<string> $default
@@ -220,7 +220,7 @@ trait MultiSelectionCapableTrait {
    *
    * @param \DrevOps\Tui\Theme\ThemeInterface $theme
    *   The theme.
-   * @param \DrevOps\Tui\Config\Option $option
+   * @param \DrevOps\Tui\Model\Option $option
    *   The option row.
    * @param bool $current
    *   Whether the row holds the cursor.

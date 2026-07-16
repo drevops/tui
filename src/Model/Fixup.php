@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\Tui\Config;
+namespace DrevOps\Tui\Model;
 
 use DrevOps\Tui\Condition\ConditionInterface;
 
@@ -14,7 +14,7 @@ use DrevOps\Tui\Condition\ConditionInterface;
  * or a copy of another field's value when `from` names one. With no condition
  * the fix-up always applies.
  *
- * @package DrevOps\Tui\Config
+ * @package DrevOps\Tui\Model
  */
 final readonly class Fixup {
 

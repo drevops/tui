@@ -9,7 +9,7 @@ use DrevOps\Tui\Answers\Answers;
 use DrevOps\Tui\Answers\Provenance;
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Builder\PanelBuilder;
-use DrevOps\Tui\Config\FieldType;
+use DrevOps\Tui\Model\FieldType;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -49,8 +49,8 @@ final class AnswersTest extends TestCase {
     $this->assertSame('', $answers->toSummary());
   }
 
-  public function testForConfigSnapshotsQuestions(): void {
-    $config = Form::create('T')
+  public function testForFormSnapshotsQuestions(): void {
+    $form = Form::create('T')
       ->panel('general', 'General', function (PanelBuilder $p): void {
         $p->text('name', 'Site name')->weight(10);
         $p->text('inactive', 'Inactive');
@@ -60,7 +60,7 @@ final class AnswersTest extends TestCase {
       })
       ->build();
 
-    $answers = Answers::forConfig($config, ['name' => 'Acme', 'debug' => TRUE], ['name' => Provenance::Edited]);
+    $answers = Answers::forForm($form, ['name' => 'Acme', 'debug' => TRUE], ['name' => Provenance::Edited]);
 
     // Snapshots exist only for active questions, in form order.
     $this->assertSame(['name', 'debug'], array_keys($answers->items));
@@ -82,13 +82,13 @@ final class AnswersTest extends TestCase {
   }
 
   public function testToSummaryDelegates(): void {
-    $config = Form::create('T')
+    $form = Form::create('T')
       ->panel('p', 'P', function (PanelBuilder $p): void {
         $p->text('name', 'Name');
       })
       ->build();
 
-    $summary = Answers::forConfig($config, ['name' => 'Acme'], ['name' => Provenance::Edited])->toSummary();
+    $summary = Answers::forForm($form, ['name' => 'Acme'], ['name' => Provenance::Edited])->toSummary();
 
     $this->assertStringContainsString('P', $summary);
     $this->assertStringContainsString('Name: Acme (edited)', $summary);

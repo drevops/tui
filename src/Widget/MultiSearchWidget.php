@@ -37,7 +37,7 @@ class MultiSearchWidget extends AbstractWidget implements
   /**
    * Construct a multi-search widget.
    *
-   * @param array<int|string,\DrevOps\Tui\Config\Option|string> $options
+   * @param array<int|string,\DrevOps\Tui\Model\Option|string> $options
    *   Option rows in display order - a list of options or the value => label
    *   shorthand map.
    * @param list<string> $default

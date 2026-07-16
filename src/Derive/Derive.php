@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Derive;
 
-use DrevOps\Tui\Config\ConfigException;
+use DrevOps\Tui\Model\FormException;
 
 /**
  * A derive rule: a `{{field}}` template and an optional named transform.
@@ -29,7 +29,7 @@ final readonly class Derive {
    */
   public function __construct(public string $template, public string $transform = '') {
     if ($this->transform !== '' && !Transform::supports($this->transform)) {
-      throw new ConfigException(sprintf('Unknown derive transform "%s".', $this->transform));
+      throw new FormException(sprintf('Unknown derive transform "%s".', $this->transform));
     }
   }
 

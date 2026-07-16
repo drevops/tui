@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Render;
 
-use DrevOps\Tui\Config\Panel;
+use DrevOps\Tui\Model\Panel;
 
 /**
  * Tracks recursive panel navigation: drill into sub-panels, Escape pops.
@@ -16,14 +16,14 @@ class Navigator {
   /**
    * The ancestor panels, outermost first.
    *
-   * @var \DrevOps\Tui\Config\Panel[]
+   * @var \DrevOps\Tui\Model\Panel[]
    */
   protected array $parents = [];
 
   /**
    * Construct a navigator at a root panel.
    *
-   * @param \DrevOps\Tui\Config\Panel $current
+   * @param \DrevOps\Tui\Model\Panel $current
    *   The root (hub) panel.
    */
   public function __construct(protected Panel $current) {
@@ -32,7 +32,7 @@ class Navigator {
   /**
    * The current panel.
    *
-   * @return \DrevOps\Tui\Config\Panel
+   * @return \DrevOps\Tui\Model\Panel
    *   The current panel.
    */
   public function current(): Panel {
@@ -42,7 +42,7 @@ class Navigator {
   /**
    * Drill into a sub-panel.
    *
-   * @param \DrevOps\Tui\Config\Panel $panel
+   * @param \DrevOps\Tui\Model\Panel $panel
    *   The panel to enter.
    */
   public function enter(Panel $panel): void {

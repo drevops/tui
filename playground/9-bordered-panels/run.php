@@ -31,12 +31,7 @@ $border = array_key_exists('border', $options) && is_string($options['border']) 
 $spacing = array_key_exists('spacing', $options) && is_string($options['spacing']) ? $options['spacing'] : 'padded';
 
 $form = Form::create('New service')
-  // The border and spacing frame the whole panel browser; both come from the
-  // flags and default to the rounded, padded look.
-  ->theme('default', ['border' => $border, 'spacing' => $spacing])
   ->buttons(TRUE, 'Create', 'Cancel')
-  // Keep the final bordered frame on screen after the TUI exits.
-  ->clearOnExit(FALSE)
   ->panel('basics', 'Basics', function (PanelBuilder $p): void {
     $p->description('What the service is.');
     $p->text('name', 'Service name')->default('api')->required();
@@ -64,7 +59,12 @@ $form = Form::create('New service')
 
 try {
   // Interactive TUI on a terminal; headless when prompts are given or piped.
-  $answers = (new Tui($form))->run($prompts, '1.0.0');
+  // The border and spacing frame the whole panel browser; clearOnExit keeps the
+  // final bordered frame on screen after the TUI exits.
+  $answers = (new Tui($form))
+    ->theme('default', ['border' => $border, 'spacing' => $spacing])
+    ->clearOnExit(FALSE)
+    ->run($prompts, '1.0.0');
 }
 catch (EngineException $exception) {
   fwrite(STDERR, $exception->getMessage() . "\n");

@@ -7,7 +7,7 @@ namespace DrevOps\Tui\Tests\Unit\Schema;
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Builder\PanelBuilder;
 use DrevOps\Tui\Condition\Condition;
-use DrevOps\Tui\Config\Weekday;
+use DrevOps\Tui\Model\Weekday;
 use DrevOps\Tui\Derive\Derive;
 use DrevOps\Tui\Schema\SchemaGenerator;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -22,7 +22,7 @@ use PHPUnit\Framework\TestCase;
 final class SchemaGeneratorTest extends TestCase {
 
   public function testGenerate(): void {
-    $config = Form::create('T')
+    $form = Form::create('T')
       ->panel('p', 'p', function (PanelBuilder $p): void {
         $profile = $p->select('profile', 'Profile')->description('The profile')->default('standard')->required();
         $profile->option('standard', 'Standard', 'Std')->option('minimal', 'Minimal');
@@ -116,11 +116,11 @@ final class SchemaGeneratorTest extends TestCase {
       ],
     ];
 
-    $this->assertSame($expected, (new SchemaGenerator($config))->generate());
+    $this->assertSame($expected, (new SchemaGenerator($form))->generate());
   }
 
   public function testExcludesNonSelectableOptions(): void {
-    $config = Form::create('T')
+    $form = Form::create('T')
       ->panel('p', 'p', function (PanelBuilder $p): void {
         $p->select('profile', 'Profile')
           ->heading('Recommended')
@@ -156,11 +156,11 @@ final class SchemaGeneratorTest extends TestCase {
       ],
     ];
 
-    $this->assertSame($expected, (new SchemaGenerator($config))->generate());
+    $this->assertSame($expected, (new SchemaGenerator($form))->generate());
   }
 
   public function testDependsOnCollectsNestedFieldRefs(): void {
-    $config = Form::create('T')
+    $form = Form::create('T')
       ->panel('p', 'p', function (PanelBuilder $p): void {
         $p->text('a');
         $p->text('b');
@@ -168,19 +168,19 @@ final class SchemaGeneratorTest extends TestCase {
       })
       ->build();
 
-    $json = (string) json_encode((new SchemaGenerator($config))->generate());
+    $json = (string) json_encode((new SchemaGenerator($form))->generate());
 
     $this->assertStringContainsString('"depends_on":["a","b"]', $json);
   }
 
   public function testToggleDescribesBothValues(): void {
-    $config = Form::create('T')
+    $form = Form::create('T')
       ->panel('p', 'p', function (PanelBuilder $p): void {
         $p->toggle('visibility', 'Visibility')->options(['public' => 'Public', 'private' => 'Private'])->default('public');
       })
       ->build();
 
-    $json = (string) json_encode((new SchemaGenerator($config))->generate());
+    $json = (string) json_encode((new SchemaGenerator($form))->generate());
 
     $this->assertStringContainsString('"type":"toggle"', $json);
     $this->assertStringContainsString('"value":"public"', $json);
@@ -188,13 +188,13 @@ final class SchemaGeneratorTest extends TestCase {
   }
 
   public function testDescribesReorderField(): void {
-    $config = Form::create('T')
+    $form = Form::create('T')
       ->panel('p', 'p', function (PanelBuilder $p): void {
         $p->reorder('ranking', 'Ranking')->options(['a' => 'A', 'b' => 'B', 'c' => 'C'])->default(['c']);
       })
       ->build();
 
-    $json = (string) json_encode((new SchemaGenerator($config))->generate());
+    $json = (string) json_encode((new SchemaGenerator($form))->generate());
 
     $this->assertStringContainsString('"type":"reorder"', $json);
     // The partial default is completed to a full ranking in the schema.
@@ -203,13 +203,13 @@ final class SchemaGeneratorTest extends TestCase {
   }
 
   public function testRoundTripsThroughJson(): void {
-    $config = Form::create('T')
+    $form = Form::create('T')
       ->panel('p', 'p', function (PanelBuilder $p): void {
         $p->confirm('x')->default(TRUE);
       })
       ->build();
 
-    $schema = (new SchemaGenerator($config))->generate();
+    $schema = (new SchemaGenerator($form))->generate();
     $decoded = json_decode((string) json_encode($schema), TRUE);
 
     $this->assertSame($schema, $decoded);

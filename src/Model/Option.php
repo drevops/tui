@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\Tui\Config;
+namespace DrevOps\Tui\Model;
 
 /**
  * A single row in a select, multiselect, search or suggest option list.
@@ -12,7 +12,7 @@ namespace DrevOps\Tui\Config;
  * Heading rows, and disabled Option rows, are visual structure that navigation
  * skips and collection never returns.
  *
- * @package DrevOps\Tui\Config
+ * @package DrevOps\Tui\Model
  */
 final readonly class Option {
 
@@ -26,7 +26,7 @@ final readonly class Option {
    *   The displayed label.
    * @param string $description
    *   The machine-schema description (not rendered in the interactive widgets).
-   * @param \DrevOps\Tui\Config\OptionKind $kind
+   * @param \DrevOps\Tui\Model\OptionKind $kind
    *   The row kind.
    * @param bool $disabled
    *   Whether a selectable Option row is shown but cannot be selected.
@@ -62,10 +62,10 @@ final readonly class Option {
    * options) are passed as {@see Option} instances. A label defaults to its
    * value when empty.
    *
-   * @param array<int|string,\DrevOps\Tui\Config\Option|string> $options
+   * @param array<int|string,\DrevOps\Tui\Model\Option|string> $options
    *   Either a value => label map, a list of options, or a mix.
    *
-   * @return list<\DrevOps\Tui\Config\Option>
+   * @return list<\DrevOps\Tui\Model\Option>
    *   The normalized option list.
    */
   public static function list(array $options): array {

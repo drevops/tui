@@ -35,10 +35,6 @@ $mode = is_string($options['mode'] ?? NULL) ? $options['mode'] : Mode::Dark->val
 $prompts = is_string($options['prompts'] ?? NULL) ? $options['prompts'] : '';
 
 $form = Form::create('Field styles')
-  ->theme('default', [
-    'field' => $field,
-    'mode' => $mode,
-  ])
   ->panel('server', 'Server settings', function (PanelBuilder $p): void {
     $p->description('Press Enter on a field to edit it and see the input style.');
     $p->text('host', 'Host')->default('localhost');
@@ -55,7 +51,9 @@ $form = Form::create('Field styles')
   });
 
 try {
-  $answers = (new Tui($form))->run($prompts, '1.0.0');
+  $answers = (new Tui($form))
+    ->theme('default', ['field' => $field, 'mode' => $mode])
+    ->run($prompts, '1.0.0');
 }
 catch (EngineException $exception) {
   fwrite(STDERR, $exception->getMessage() . PHP_EOL);

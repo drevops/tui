@@ -30,7 +30,6 @@ $banner = <<<'EOT'
 EOT;
 
 $form = Form::create('Ocean theme demo')
-  ->theme(OceanTheme::class)
   ->banner($banner)
   ->panel('profile', 'Diver profile', function (PanelBuilder $p): void {
     $p->text('name', 'Name')->default('Explorer');
@@ -43,8 +42,8 @@ $form = Form::create('Ocean theme demo')
   });
 
 try {
-  // The theme and banner come from the form; run() picks the mode.
-  $answers = (new Tui($form))->run($prompts, '1.0.0');
+  // The banner comes from the form; the theme is set on the facade.
+  $answers = (new Tui($form))->theme(OceanTheme::class)->run($prompts, '1.0.0');
 }
 catch (EngineException $exception) {
   fwrite(STDERR, $exception->getMessage() . PHP_EOL);

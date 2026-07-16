@@ -33,11 +33,6 @@ $options = getopt('', ['prompts::']);
 $prompts = array_key_exists('prompts', $options) && is_string($options['prompts']) ? $options['prompts'] : '';
 
 $form = Form::create('Theme options demo')
-  ->theme('accent', [
-    'spacing' => 'padded',
-    'border' => 'rounded',
-    'accent' => 'warm',
-  ])
   ->panel('project', 'Project', function (PanelBuilder $p): void {
     $p->text('name', 'Name')->default('Acme Site');
     $p->select('type', 'Package type')->default('library')->options([
@@ -52,7 +47,13 @@ $form = Form::create('Theme options demo')
   });
 
 try {
-  $answers = (new Tui($form))->run($prompts, '1.0.0');
+  $answers = (new Tui($form))
+    ->theme('accent', [
+      'spacing' => 'padded',
+      'border' => 'rounded',
+      'accent' => 'warm',
+    ])
+    ->run($prompts, '1.0.0');
 }
 catch (EngineException $exception) {
   fwrite(STDERR, $exception->getMessage() . PHP_EOL);

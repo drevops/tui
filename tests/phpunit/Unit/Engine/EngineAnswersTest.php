@@ -25,14 +25,14 @@ use PHPUnit\Framework\TestCase;
 final class EngineAnswersTest extends TestCase {
 
   public function testAnswersModelReflectsRun(): void {
-    $config = Form::create('T')
+    $form = Form::create('T')
       ->panel('p', 'p', function (PanelBuilder $p): void {
         $p->text('name')->default('');
         $p->text('machine')->default('')->derive(new Derive('{{name}}', 'machine'));
         $p->text('gone')->default('x')->when(new Condition('name', eq: 'never'));
       })
       ->build();
-    $engine = new Engine($config, new HandlerRegistry());
+    $engine = new Engine($form, new HandlerRegistry());
 
     $answers = $engine->collect(['name' => 'Acme Site'], new Context());
 
@@ -44,17 +44,17 @@ final class EngineAnswersTest extends TestCase {
   }
 
   public function testEmittedSetValidatesAgainstSchema(): void {
-    $config = Form::create('T')
+    $form = Form::create('T')
       ->panel('p', 'p', function (PanelBuilder $p): void {
         $p->text('name')->required()->default('Acme');
         $p->select('profile')->default('standard')->option('standard')->option('minimal');
       })
       ->build();
-    $engine = new Engine($config, new HandlerRegistry());
+    $engine = new Engine($form, new HandlerRegistry());
 
     $answers = $engine->collect([], new Context());
 
-    $errors = (new SchemaValidator($config))->validate($answers->values);
+    $errors = (new SchemaValidator($form))->validate($answers->values);
     $this->assertSame([], $errors);
   }
 

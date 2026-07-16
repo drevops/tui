@@ -2,31 +2,31 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\Tui\Tests\Unit\Config;
+namespace DrevOps\Tui\Tests\Unit\Model;
 
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Builder\PanelBuilder;
-use DrevOps\Tui\Config\Config;
-use DrevOps\Tui\Config\Field;
-use DrevOps\Tui\Config\FieldType;
-use DrevOps\Tui\Config\Option;
-use DrevOps\Tui\Config\Panel;
+use DrevOps\Tui\Model\Field;
+use DrevOps\Tui\Model\FieldType;
+use DrevOps\Tui\Model\FormDefinition;
+use DrevOps\Tui\Model\Option;
+use DrevOps\Tui\Model\Panel;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Tests the immutable configuration model built by the fluent form builder.
+ * Tests the immutable models built by the fluent form builder.
  */
-#[CoversClass(Config::class)]
+#[CoversClass(FormDefinition::class)]
 #[CoversClass(Panel::class)]
 #[CoversClass(Field::class)]
 #[CoversClass(Option::class)]
-#[Group('config')]
-final class ConfigModelTest extends TestCase {
+#[Group('model')]
+final class BuiltModelTest extends TestCase {
 
-  public function testBuildsNestedConfig(): void {
-    $config = Form::create('Demo', 'Acme')
+  public function testBuildsNestedForm(): void {
+    $form = Form::create('Demo', 'Acme')
       ->panel('general', 'General', function (PanelBuilder $p): void {
         $p->text('name')->default('Acme')->required();
         $p->text('email');
@@ -39,11 +39,11 @@ final class ConfigModelTest extends TestCase {
       })
       ->build();
 
-    $this->assertSame('Demo', $config->title);
-    $this->assertSame('Acme', $config->subject);
-    $this->assertCount(2, $config->panels);
+    $this->assertSame('Demo', $form->title);
+    $this->assertSame('Acme', $form->subject);
+    $this->assertCount(2, $form->panels);
 
-    $general = $config->panels[0];
+    $general = $form->panels[0];
     $this->assertSame('general', $general->id);
     $this->assertCount(2, $general->fields);
 
@@ -52,7 +52,7 @@ final class ConfigModelTest extends TestCase {
     $this->assertSame('Acme', $name->default);
     $this->assertTrue($name->required);
 
-    $drupal = $config->panels[1];
+    $drupal = $form->panels[1];
     $profile = $drupal->fields[0];
     $this->assertSame(FieldType::Select, $profile->type);
     $standard = $profile->option('standard');
@@ -64,9 +64,9 @@ final class ConfigModelTest extends TestCase {
     $this->assertSame('advanced', $drupal->panels[0]->id);
 
     // field() resolves nested fields across sub-panels.
-    $this->assertSame('theme_debug', $config->field('theme_debug')?->id);
-    $this->assertNotInstanceOf(Field::class, $config->field('nope'));
-    $this->assertCount(4, $config->fields());
+    $this->assertSame('theme_debug', $form->field('theme_debug')?->id);
+    $this->assertNotInstanceOf(Field::class, $form->field('nope'));
+    $this->assertCount(4, $form->fields());
   }
 
   public function testPanelItemCount(): void {
@@ -77,7 +77,7 @@ final class ConfigModelTest extends TestCase {
   }
 
   public function testTypeDefaults(): void {
-    $config = Form::create('T')
+    $form = Form::create('T')
       ->panel('p', 'p', function (PanelBuilder $p): void {
         $p->multiSelect('ms');
         $p->confirm('cb');
@@ -85,22 +85,22 @@ final class ConfigModelTest extends TestCase {
       })
       ->build();
 
-    $this->assertSame([], $config->field('ms')?->default);
-    $this->assertFalse($config->field('cb')?->default);
-    $this->assertSame('', $config->field('tx')?->default);
+    $this->assertSame([], $form->field('ms')?->default);
+    $this->assertFalse($form->field('cb')?->default);
+    $this->assertSame('', $form->field('tx')?->default);
   }
 
-  public function testRootDefaults(): void {
-    $config = Form::create('T')->build();
+  public function testFormDefaults(): void {
+    $form = Form::create('T')->build();
 
-    $this->assertTrue($config->buttons);
-    $this->assertSame('Submit', $config->submitLabel);
-    $this->assertSame('Cancel', $config->cancelLabel);
-    $this->assertTrue($config->clearOnExit);
-    $this->assertSame('', $config->banner);
-    $this->assertNull($config->color);
-    $this->assertNull($config->unicode);
-    $this->assertSame([], $config->fixups);
+    $this->assertSame('', $form->subject);
+    $this->assertSame('', $form->envPrefix);
+    $this->assertSame([], $form->fixups);
+    // Form chrome defaults (the global TUI runtime lives on the Tui facade).
+    $this->assertSame('', $form->banner);
+    $this->assertTrue($form->buttons);
+    $this->assertSame('Submit', $form->submitLabel);
+    $this->assertSame('Cancel', $form->cancelLabel);
   }
 
 }

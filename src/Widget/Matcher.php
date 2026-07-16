@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Widget;
 
-use DrevOps\Tui\Config\Option;
-use DrevOps\Tui\Config\OptionKind;
+use DrevOps\Tui\Model\Option;
+use DrevOps\Tui\Model\OptionKind;
 
 /**
  * Ranks candidates against a query by fuzzy (subsequence) relevance.
@@ -121,12 +121,12 @@ final class Matcher {
    * carry no label and drop away, so the filtered result reads as a flat
    * relevance list.
    *
-   * @param list<\DrevOps\Tui\Config\Option> $options
+   * @param list<\DrevOps\Tui\Model\Option> $options
    *   The option rows.
    * @param string $needle
    *   The query.
    *
-   * @return list<\DrevOps\Tui\Config\Option>
+   * @return list<\DrevOps\Tui\Model\Option>
    *   The matching options, most relevant first; ties keep their input order.
    */
   public function rankOptions(array $options, string $needle): array {

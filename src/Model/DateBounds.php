@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\Tui\Config;
+namespace DrevOps\Tui\Model;
 
 use DrevOps\Tui\Translation\Translator;
 
@@ -15,7 +15,7 @@ use DrevOps\Tui\Translation\Translator;
  * all agree. The week-start day is a display concern that rides along the way
  * the number field's keyboard step rides along in {@see NumberBounds}.
  *
- * @package DrevOps\Tui\Config
+ * @package DrevOps\Tui\Model
  */
 final readonly class DateBounds {
 
@@ -26,10 +26,10 @@ final readonly class DateBounds {
    *   The inclusive earliest date, or NULL for an open lower bound.
    * @param \DateTimeImmutable|null $max
    *   The inclusive latest date, or NULL for an open upper bound.
-   * @param \DrevOps\Tui\Config\Weekday $weekStart
+   * @param \DrevOps\Tui\Model\Weekday $weekStart
    *   The day the calendar week begins on.
    *
-   * @throws \DrevOps\Tui\Config\ConfigException
+   * @throws \DrevOps\Tui\Model\FormException
    *   When both bounds are declared and the minimum falls after the maximum.
    */
   public function __construct(
@@ -38,7 +38,7 @@ final readonly class DateBounds {
     public Weekday $weekStart = Weekday::Monday,
   ) {
     if ($this->min instanceof \DateTimeImmutable && $this->max instanceof \DateTimeImmutable && $this->min > $this->max) {
-      throw new ConfigException(sprintf('Date bounds declare a minimum of %s after the maximum of %s.', $this->min->format('Y-m-d'), $this->max->format('Y-m-d')));
+      throw new FormException(sprintf('Date bounds declare a minimum of %s after the maximum of %s.', $this->min->format('Y-m-d'), $this->max->format('Y-m-d')));
     }
   }
 

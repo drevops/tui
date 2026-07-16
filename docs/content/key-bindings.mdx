@@ -7,11 +7,12 @@ sidebar_position: 11
 
 Navigation, edit, accept and cancel keys are configurable. A widget asks for a
 semantic **action** - `MoveUp`, `Accept`, `Toggle`, `NewLine` and so on - rather
-than a fixed key, and a **key map** binds each action to one or more keys. Set it
-on the form with `->keys(...)`, mirroring `->theme(...)`:
+than a fixed key, and a **key map** binds each action to one or more keys. Key
+bindings are a global TUI runtime setting, so you set them on the `Tui` facade
+with `->keys(...)`, mirroring `->theme(...)`:
 
 ```php
-$form = Form::create('My form')->keys('vim');   // built-in vim navigation (h/j/k/l)
+$tui = (new Tui($form))->keys('vim');   // built-in vim navigation (h/j/k/l)
 ```
 
 Two presets ship: `default` (the bindings described in [Panels and
@@ -28,13 +29,13 @@ Space toggles a checkbox option). Retune individual bindings by passing override
 on top of a preset - each names a scope, an action and its keys:
 
 ```php
-use DrevOps\Tui\Config\FieldType;
+use DrevOps\Tui\Model\FieldType;
 use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Binding;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Input\Scope;
 
-$form = Form::create('My form')->keys('default', [
+$tui = (new Tui($form))->keys('default', [
   // Quit with x as well as q.
   new Binding(Scope::navigation(), Action::Quit, 'x'),
   // In the single-choice list, Tab accepts too.
@@ -52,8 +53,8 @@ A preset is a class listing its bindings. Subclass `DefaultKeyMap` to ship your
 own, name it directly with `->keys('\App\MyKeyMap')`, or register a short alias
 with `KeyMapManager::register('mine', MyKeyMap::class)` and then `->keys('mine')`.
 
-Bindings are validated when the form is built, so a bad key map is caught at
-declaration time, not mid-session:
+Bindings are validated the moment they are set, so a bad key map is caught at
+configuration time, not mid-session:
 
 - a key bound to two different actions in the same scope is a conflict;
 - a printable character bound in the base scope, or in a scope whose widget

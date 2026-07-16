@@ -71,7 +71,7 @@ use DrevOps\Tui\Tui;
 $form = Form::create('My form')
   ->panel('general', 'General', fn(PanelBuilder $p) => $p->text('name', 'Your name')->required());
 
-$tui = new Tui($form, ['App\\Handler']);
+$tui = new Tui($form, handler_namespaces: ['App\\Handler']);
 
 // Interactive on a terminal, non-interactive otherwise.
 $answers = $tui->run();
@@ -156,10 +156,10 @@ There's a widget for most things you'd want to ask: text entry, numbers and date
 
 ## Themes
 
-Every form is themeable. Six themes ship built-in, selected by name - and any of them can be forced light or dark, or left to auto-detect from the terminal:
+The TUI is themeable. Six themes ship built-in, selected by name on the `Tui` facade - and any of them can be forced light or dark, or left to auto-detect from the terminal:
 
 ```php
-$form = Form::create('My form')->theme('midnight')/* ... */;
+$tui = (new Tui($form))->theme('midnight');
 ```
 
 | Name | Palette |

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Playground\CustomTheme;
 
 use DrevOps\Tui\Answers\Answers;
-use DrevOps\Tui\Config\Field;
-use DrevOps\Tui\Config\Panel;
+use DrevOps\Tui\Model\Field;
+use DrevOps\Tui\Model\Panel;
 use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\ScopedKeyMap;
 use DrevOps\Tui\Render\Navigator;

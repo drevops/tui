@@ -94,13 +94,12 @@ final class PanelControllerTest extends TestCase {
   }
 
   public function testButtonsOptOut(): void {
-    $config = Form::create('Demo')
+    $builder = Form::create('Demo')
       ->buttons(FALSE)
       ->panel('p', 'p', function (PanelBuilder $p): void {
         $p->text('a', 'A');
-      })
-      ->build();
-    $controller = new PanelController($config, new DefaultTheme(40, ['color' => FALSE]), ['a' => 'x'], []);
+      });
+    $controller = new PanelController($builder->build(), new DefaultTheme(40, ['color' => FALSE]), NULL, TRUE, TRUE, ['a' => 'x'], []);
 
     $this->assertStringNotContainsString('Submit', Ansi::strip($controller->frame(12)));
 
@@ -146,14 +145,13 @@ final class PanelControllerTest extends TestCase {
   }
 
   public function testInlineEditRendersChoiceListInThePanel(): void {
-    $config = Form::create('Demo')
+    $builder = Form::create('Demo')
       ->buttons(FALSE)
       ->panel('main', 'Main', function (PanelBuilder $p): void {
         $p->select('env', 'Env')->default('dev')->options(['dev' => 'Development', 'prod' => 'Production']);
         $p->text('note', 'Note');
-      })
-      ->build();
-    $controller = new PanelController($config, new DefaultTheme(40, ['color' => FALSE]), ['env' => 'dev', 'note' => 'n'], []);
+      });
+    $controller = new PanelController($builder->build(), new DefaultTheme(40, ['color' => FALSE]), NULL, TRUE, TRUE, ['env' => 'dev', 'note' => 'n'], []);
 
     $controller->handle(Key::named(KeyName::Enter));
     $controller->handle(Key::named(KeyName::Enter));
@@ -168,13 +166,12 @@ final class PanelControllerTest extends TestCase {
   }
 
   public function testInlineEditKeepsTheFieldDescription(): void {
-    $config = Form::create('Demo')
+    $builder = Form::create('Demo')
       ->buttons(FALSE)
       ->panel('main', 'Main', function (PanelBuilder $p): void {
         $p->confirm('cdn', 'Serve via CDN?')->description('Cache assets at the edge.');
-      })
-      ->build();
-    $controller = new PanelController($config, new DefaultTheme(50, ['color' => FALSE]), ['cdn' => TRUE], []);
+      });
+    $controller = new PanelController($builder->build(), new DefaultTheme(50, ['color' => FALSE]), NULL, TRUE, TRUE, ['cdn' => TRUE], []);
 
     $controller->handle(Key::named(KeyName::Enter));
     $controller->handle(Key::named(KeyName::Enter));
@@ -184,14 +181,13 @@ final class PanelControllerTest extends TestCase {
   }
 
   public function testStandaloneEditTakesTheFullScreen(): void {
-    $config = Form::create('Demo')
+    $builder = Form::create('Demo')
       ->buttons(FALSE)
       ->panel('general', 'General', function (PanelBuilder $p): void {
         $p->text('name', 'Name')->standalone();
         $p->text('other', 'Other');
-      })
-      ->build();
-    $controller = new PanelController($config, new DefaultTheme(40, ['color' => FALSE]), ['name' => 'Acme', 'other' => 'x'], []);
+      });
+    $controller = new PanelController($builder->build(), new DefaultTheme(40, ['color' => FALSE]), NULL, TRUE, TRUE, ['name' => 'Acme', 'other' => 'x'], []);
 
     $controller->handle(Key::named(KeyName::Enter));
     $controller->handle(Key::named(KeyName::Enter));
@@ -366,14 +362,12 @@ final class PanelControllerTest extends TestCase {
   }
 
   public function testFooterHiddenWhenTurnedOff(): void {
-    $config = Form::create('Demo')
-      ->footer(FALSE)
+    $builder = Form::create('Demo')
       ->buttons(FALSE)
       ->panel('p', 'p', function (PanelBuilder $p): void {
         $p->text('a', 'A');
-      })
-      ->build();
-    $controller = new PanelController($config, new DefaultTheme(40, ['color' => FALSE]), ['a' => 'x'], []);
+      });
+    $controller = new PanelController($builder->build(), new DefaultTheme(40, ['color' => FALSE]), NULL, FALSE, TRUE, ['a' => 'x'], []);
 
     // The hub footer is gone.
     $this->assertStringNotContainsString('quit', Ansi::strip($controller->frame(12)));
@@ -412,14 +406,14 @@ final class PanelControllerTest extends TestCase {
 
     // The dos theme washes the screen blue: run() hands its background to the
     // terminal, which fills every rendered frame with it.
-    $dos = new PanelController($config, new DosTheme(40), ['name' => 'Acme'], []);
+    $dos = new PanelController($config, new DosTheme(40), NULL, TRUE, TRUE, ['name' => 'Acme'], []);
     $painted = new BufferedTerminal($keys);
     $dos->run($painted);
     $this->assertSame('44', $painted->paintedBackground);
     $this->assertStringContainsString("\033[44m", $painted->output());
 
     // A theme with no background leaves the terminal's own surface untouched.
-    $plain = new PanelController($config, new DefaultTheme(40), ['name' => 'Acme'], []);
+    $plain = new PanelController($config, new DefaultTheme(40), NULL, TRUE, TRUE, ['name' => 'Acme'], []);
     $blank = new BufferedTerminal($keys);
     $plain->run($blank);
     $this->assertNull($blank->paintedBackground);
@@ -439,12 +433,11 @@ final class PanelControllerTest extends TestCase {
   }
 
   public function testRunRendersBannerThenTheForm(): void {
-    $config = Form::create('Demo')
+    $builder = Form::create('Demo')
       ->panel('general', 'General', function (PanelBuilder $p): void {
         $p->text('name', 'Name');
-      })
-      ->build();
-    $controller = new PanelController($config, new DefaultTheme(40, ['color' => FALSE]), ['name' => 'Acme'], [], 'WELCOME', '2.0');
+      });
+    $controller = new PanelController($builder->build(), new DefaultTheme(40, ['color' => FALSE]), NULL, TRUE, TRUE, ['name' => 'Acme'], [], 'WELCOME', '2.0');
     // The first key dismisses the banner; input then ends.
     $terminal = new BufferedTerminal([KeyEncoder::encode(Key::named(KeyName::Enter))]);
 
@@ -510,14 +503,13 @@ final class PanelControllerTest extends TestCase {
    *   The external-editor service to inject.
    */
   protected function textareaController(ExternalEditor $editor): PanelController {
-    $config = Form::create('Demo')
+    $builder = Form::create('Demo')
       ->buttons(FALSE)
       ->panel('general', 'General', function (PanelBuilder $p): void {
         $p->textarea('notes', 'Notes')->externalEditor();
-      })
-      ->build();
+      });
 
-    return new PanelController($config, new DefaultTheme(40, ['color' => FALSE]), ['notes' => 'seeded'], [], '', '', $editor);
+    return new PanelController($builder->build(), new DefaultTheme(40, ['color' => FALSE]), NULL, TRUE, TRUE, ['notes' => 'seeded'], [], '', '', $editor);
   }
 
   /**
@@ -565,10 +557,10 @@ final class PanelControllerTest extends TestCase {
   }
 
   /**
-   * A controller over a two-panel config seeded with answers.
+   * A controller over a two-panel form seeded with answers.
    */
   protected function controller(): PanelController {
-    $config = Form::create('Demo')
+    $builder = Form::create('Demo')
       ->panel('general', 'General', function (PanelBuilder $p): void {
         $p->text('name', 'Name');
         $p->panel('adv', 'Advanced', function (PanelBuilder $sp): void {
@@ -577,11 +569,10 @@ final class PanelControllerTest extends TestCase {
       })
       ->panel('drupal', 'Drupal', function (PanelBuilder $p): void {
         $p->text('profile', 'Profile');
-      })
-      ->build();
+      });
     $theme = new DefaultTheme(40, ['color' => FALSE]);
 
-    return new PanelController($config, $theme, ['name' => 'Acme', 'debug' => FALSE, 'profile' => 'standard'], []);
+    return new PanelController($builder->build(), $theme, NULL, TRUE, TRUE, ['name' => 'Acme', 'debug' => FALSE, 'profile' => 'standard'], []);
   }
 
 }

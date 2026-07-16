@@ -14,7 +14,7 @@ declare(strict_types=1);
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Builder\PanelBuilder;
 use DrevOps\Tui\Condition\Condition;
-use DrevOps\Tui\Config\Fixup;
+use DrevOps\Tui\Model\Fixup;
 use DrevOps\Tui\Derive\Derive;
 use DrevOps\Tui\Engine\EngineException;
 use DrevOps\Tui\Tui;
@@ -27,8 +27,6 @@ $prompts = array_key_exists('prompts', $options) && is_string($options['prompts'
 $form = Form::create('Site settings')
   // Custom button labels; the buttons live on the root panel only.
   ->buttons(TRUE, 'Save', 'Discard')
-  // Keep the final frame on screen after the TUI exits.
-  ->clearOnExit(FALSE)
   // A fix-up reconciles dependent answers on every settle pass: no CDN outside
   // production, whatever was answered.
   ->fixup(new Fixup(set: 'cdn', to: FALSE, when: new Condition('environment', ne: 'prod')))
@@ -66,7 +64,8 @@ $form = Form::create('Site settings')
 
 try {
   // Interactive TUI on a terminal; headless when prompts are given or piped.
-  $answers = (new Tui($form))->run($prompts, '1.0.0');
+  // Keep the final frame on screen after the TUI exits.
+  $answers = (new Tui($form))->clearOnExit(FALSE)->run($prompts, '1.0.0');
 }
 catch (EngineException $exception) {
   fwrite(STDERR, $exception->getMessage() . PHP_EOL);

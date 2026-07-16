@@ -20,8 +20,9 @@ theme or key map:
 ```php
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Translation\Translator;
+use DrevOps\Tui\Tui;
 
-$form = Form::create('My form')
+$tui = (new Tui(Form::create('My form')))
   ->translator(new Translator('es', [__DIR__ . '/translations']));
 ```
 

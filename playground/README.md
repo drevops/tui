@@ -29,7 +29,7 @@ composer install
   ```
 
 - **[`2-custom-theme/`](2-custom-theme)** - a self-contained custom theme class
-  ([`OceanTheme.php`](2-custom-theme/OceanTheme.php)) named directly on the form,
+  ([`OceanTheme.php`](2-custom-theme/OceanTheme.php)) named directly on the facade,
   driving the TUI with a banner.
 
   ```bash
@@ -62,8 +62,8 @@ composer install
 
 - **[`4-nested-panels/`](4-nested-panels)** - a hub with drill-in sub-panels
   (nested to any depth), per-option descriptions, custom button labels
-  (`->buttons(TRUE, 'Save', 'Discard')`), `->clearOnExit(FALSE)` and a
-  `->fixup()` rule that reconciles dependent answers on every settle pass.
+  (`->buttons(TRUE, 'Save', 'Discard')`), a `->fixup()` rule that reconciles
+  dependent answers on every settle pass, and the facade's `->clearOnExit(FALSE)`.
 
   ```bash
   php playground/4-nested-panels/run.php                        # TUI
@@ -145,9 +145,9 @@ composer install
   php playground/10-builtin-themes/run.php --theme=dos      # its own blue screen
   ```
 
-## How a form picks a theme
+## How the TUI picks a theme
 
-Set it on the builder with `->theme(...)`, lowest friction first:
+Set it on the `Tui` facade with `->theme(...)`, lowest friction first:
 
 1. **Name the class** - `->theme('\Your\ThemeClass')`. The class is instantiated
    directly; no registration needed. This is what `2-custom-theme` does.
@@ -162,9 +162,9 @@ Set it on the builder with `->theme(...)`, lowest friction first:
    default). Setting `mode` explicitly opts out. This is what `6-theme-detect`
    demonstrates.
 
-## How a form sets key bindings
+## How the TUI sets key bindings
 
-Set them on the builder with `->keys(...)`, mirroring `->theme(...)`:
+Set them on the `Tui` facade with `->keys(...)`, mirroring `->theme(...)`:
 
 1. **A preset name** - `->keys('vim')` for the built-in vim navigation, or a name
    registered with `KeyMapManager::register('name', MyKeyMap::class)`.

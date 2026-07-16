@@ -17,8 +17,9 @@ Six themes ship built-in, each selectable by name:
 
 ```php
 use DrevOps\Tui\Builder\Form;
+use DrevOps\Tui\Tui;
 
-Form::create('My form')->theme('midnight')/* ... */;
+$tui = (new Tui(Form::create('My form')))->theme('midnight');
 ```
 
 | Name | Palette |
@@ -75,14 +76,14 @@ light palette (right):
 ## Dark and light
 
 Dark and light are not separate themes but a `mode` display option that every
-theme honours. When a form sets no theme (or the explicit `'auto'` sentinel), the
+theme honours. When no theme is set (or the explicit `'auto'` sentinel), the
 interactive TUI picks the mode from the actual terminal background: it queries the
 background colour over OSC 11, falls back to the `COLORFGBG` environment variable,
 and settles on dark when neither answers.
 
 ```php
-Form::create('My form')->theme('frost', ['mode' => 'light']);  // force light
-Form::create('My form')->theme('frost');                        // auto-detect
+(new Tui($form))->theme('frost', ['mode' => 'light']);  // force light
+(new Tui($form))->theme('frost');                        // auto-detect
 ```
 
 ## Writing a theme
@@ -118,10 +119,10 @@ the accent-coloured atoms (`title()`, `highlight()`, `marker()`, `radio()`,
 change how an element is laid out rather than coloured, override a `render*()`
 method instead.
 
-Lowest friction: a form names the class directly, with no registration:
+Lowest friction: the facade names the class directly, with no registration:
 
 ```php
-$form = Form::create('My form')->theme('\App\AquaTheme')/* ... */;
+$tui = (new \DrevOps\Tui\Tui($form))->theme(AquaTheme::class);
 ```
 
 Or register a short alias with `ThemeManager::register('aqua', AquaTheme::class)`,

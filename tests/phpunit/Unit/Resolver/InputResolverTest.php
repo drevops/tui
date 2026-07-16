@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Tests\Unit\Resolver;
 
-use DrevOps\Tui\Config\Field;
-use DrevOps\Tui\Config\FieldType;
+use DrevOps\Tui\Model\Field;
+use DrevOps\Tui\Model\FieldType;
 use DrevOps\Tui\Resolver\InputResolver;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -124,7 +124,7 @@ final class InputResolverTest extends TestCase {
   /**
    * Build one field of each coercible type for resolution.
    *
-   * @return \DrevOps\Tui\Config\Field[]
+   * @return \DrevOps\Tui\Model\Field[]
    *   The fields.
    */
   protected function fields(): array {

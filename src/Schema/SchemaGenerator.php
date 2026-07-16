@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Schema;
 
-use DrevOps\Tui\Config\Config;
-use DrevOps\Tui\Config\Field;
+use DrevOps\Tui\Model\FormDefinition;
+use DrevOps\Tui\Model\Field;
 use DrevOps\Tui\Discovery\DiscoverInterface;
 
 /**
@@ -23,10 +23,10 @@ class SchemaGenerator {
   /**
    * Construct a generator.
    *
-   * @param \DrevOps\Tui\Config\Config $config
+   * @param \DrevOps\Tui\Model\FormDefinition $form
    *   The configuration to describe.
    */
-  public function __construct(protected Config $config) {
+  public function __construct(protected FormDefinition $form) {
   }
 
   /**
@@ -38,7 +38,7 @@ class SchemaGenerator {
   public function generate(): array {
     $prompts = [];
 
-    foreach ($this->config->fields() as $field) {
+    foreach ($this->form->fields() as $field) {
       $prompts[] = [
         'id' => $field->id,
         'type' => $field->type->value,
@@ -66,7 +66,7 @@ class SchemaGenerator {
   /**
    * Describe a field's options.
    *
-   * @param \DrevOps\Tui\Config\Field $field
+   * @param \DrevOps\Tui\Model\Field $field
    *   The field.
    *
    * @return array<int,array<string,string>>

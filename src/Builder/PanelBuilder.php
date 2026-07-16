@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Builder;
 
-use DrevOps\Tui\Config\Field;
-use DrevOps\Tui\Config\FieldType;
-use DrevOps\Tui\Config\Panel;
+use DrevOps\Tui\Model\Field;
+use DrevOps\Tui\Model\FieldType;
+use DrevOps\Tui\Model\Panel;
 
 /**
  * A fluent builder for a Panel and its fields and sub-panels.
@@ -324,7 +324,7 @@ final class PanelBuilder {
   /**
    * Build the immutable Panel.
    *
-   * @return \DrevOps\Tui\Config\Panel
+   * @return \DrevOps\Tui\Model\Panel
    *   The panel.
    */
   public function build(): Panel {
@@ -344,7 +344,7 @@ final class PanelBuilder {
    *   The field id.
    * @param string $label
    *   The label (defaults to the id).
-   * @param \DrevOps\Tui\Config\FieldType $type
+   * @param \DrevOps\Tui\Model\FieldType $type
    *   The widget type.
    *
    * @return \DrevOps\Tui\Builder\FieldBuilder

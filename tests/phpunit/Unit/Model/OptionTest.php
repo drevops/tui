@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\Tui\Tests\Unit\Config;
+namespace DrevOps\Tui\Tests\Unit\Model;
 
-use DrevOps\Tui\Config\Field;
-use DrevOps\Tui\Config\FieldType;
-use DrevOps\Tui\Config\Option;
-use DrevOps\Tui\Config\OptionKind;
+use DrevOps\Tui\Model\Field;
+use DrevOps\Tui\Model\FieldType;
+use DrevOps\Tui\Model\Option;
+use DrevOps\Tui\Model\OptionKind;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
@@ -20,7 +20,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(OptionKind::class)]
 #[CoversClass(FieldType::class)]
 #[CoversClass(Field::class)]
-#[Group('config')]
+#[Group('model')]
 final class OptionTest extends TestCase {
 
   public function testListFromMap(): void {

@@ -10,6 +10,12 @@ use DrevOps\Tui\Builder\PanelBuilder;
 use DrevOps\Tui\Derive\Derive;
 use DrevOps\Tui\Engine\Engine;
 use DrevOps\Tui\Handler\HandlerRegistry;
+use DrevOps\Tui\Input\Action;
+use DrevOps\Tui\Input\Binding;
+use DrevOps\Tui\Input\Key;
+use DrevOps\Tui\Input\KeyMap;
+use DrevOps\Tui\Input\KeyName;
+use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Render\PanelController;
 use DrevOps\Tui\Render\Terminal;
 use DrevOps\Tui\Testing\BufferedTerminal;
@@ -27,6 +33,7 @@ use PHPUnit\Framework\TestCase;
  * Tests the Tui facade.
  */
 #[CoversClass(Tui::class)]
+#[CoversClass(Translator::class)]
 #[Group('tui')]
 final class TuiTest extends TestCase {
 
@@ -40,38 +47,55 @@ final class TuiTest extends TestCase {
     $this->translatorTearDown();
   }
 
-  public function testActivatesTranslator(): void {
+  public function testActivatesTranslatorOnRun(): void {
     $this->assertNotInstanceOf(Translator::class, Translator::shared());
 
     $translator = new Translator('es', [dirname(__DIR__) . '/Fixtures/translations']);
-    $form = Form::create('Demo')
-      ->translator($translator)
-      ->panel('p', 'p', function (PanelBuilder $panel): void {
-        $panel->text('name');
-      });
 
-    new Tui($form);
+    // An operation activates this facade's own language.
+    (new Tui($this->demoForm()))->translator($translator)->collect();
 
     $this->assertSame($translator, Translator::shared());
   }
 
-  public function testTranslatorClearedWhenFormHasNone(): void {
-    // A translated form activates its translator.
-    $translated = Form::create('Demo')
-      ->translator(new Translator('es', [dirname(__DIR__) . '/Fixtures/translations']))
-      ->panel('p', 'p', function (PanelBuilder $panel): void {
-        $panel->text('name');
-      });
-    new Tui($translated);
-    $this->assertInstanceOf(Translator::class, Translator::shared());
+  public function testEachOperationRestoresItsOwnTranslator(): void {
+    $spanish = (new Tui($this->demoForm()))->translator(new Translator('es', [dirname(__DIR__) . '/Fixtures/translations']));
+    $plain = new Tui($this->demoForm());
 
-    // A later translator-less form clears it, so its language does not leak.
-    $plain = Form::create('Demo')
-      ->panel('p', 'p', function (PanelBuilder $panel): void {
-        $panel->text('name');
-      });
-    new Tui($plain);
-    $this->assertNull(Translator::shared());
+    // A translator-less facade's operation clears the shared language.
+    $plain->collect();
+    $this->assertNotInstanceOf(Translator::class, Translator::shared());
+
+    // The translated facade restores its own language on its next operation,
+    // even though another facade replaced the shared one meanwhile.
+    $spanish->collect();
+    $this->assertInstanceOf(Translator::class, Translator::shared());
+  }
+
+  public function testKeysResolvesPresetAndOverrides(): void {
+    $tui = (new Tui($this->demoForm()))->keys('vim', [new Binding(Scope::navigation(), Action::Quit, 'x')]);
+
+    $keymap = (new \ReflectionProperty($tui, 'keymap'))->getValue($tui);
+    $this->assertInstanceOf(KeyMap::class, $keymap);
+    $nav = $keymap->navigation();
+    // The vim preset supplies "j" for MoveDown; the override binds "x" to Quit.
+    $this->assertTrue($nav->matches(Key::char('j'), Action::MoveDown));
+    $this->assertTrue($nav->matches(Key::char('x'), Action::Quit));
+  }
+
+  public function testKeysThrowsOnInvalidBinding(): void {
+    $this->expectException(\InvalidArgumentException::class);
+
+    (new Tui($this->demoForm()))->keys('default', [new Binding(Scope::navigation(), Action::Quit, KeyName::Enter)]);
+  }
+
+  public function testFooterAndClearOnExitFlowToController(): void {
+    $tui = (new Tui($this->demoForm()))->footer(FALSE)->clearOnExit(FALSE);
+
+    $controller = $tui->controller(['color' => FALSE, 'unicode' => TRUE, 'mode' => Mode::Dark]);
+
+    $this->assertFalse((new \ReflectionProperty($controller, 'footer'))->getValue($controller));
+    $this->assertFalse((new \ReflectionProperty($controller, 'clearOnExit'))->getValue($controller));
   }
 
   public function testCollect(): void {
@@ -101,18 +125,18 @@ final class TuiTest extends TestCase {
   }
 
   public function testEnvPrefix(): void {
-    $config = Form::create('Demo')
+    $form = Form::create('Demo')
       ->panel('p', 'p', function (PanelBuilder $panel): void {
         $panel->text('name');
       })
       ->build();
 
     // No prefix anywhere falls back to the package default.
-    $this->assertStringContainsString('TUI_<ID>', (new Tui($config))->agentHelp());
+    $this->assertStringContainsString('TUI_<ID>', (new Tui($form))->agentHelp());
     // A constructor prefix wins.
-    $this->assertStringContainsString('ARG_<ID>', (new Tui($config, [], 'ARG_'))->agentHelp());
+    $this->assertStringContainsString('ARG_<ID>', (new Tui($form, env_prefix: 'ARG_'))->agentHelp());
 
-    $config = Form::create('Demo')
+    $form = Form::create('Demo')
       ->envPrefix('FORM_')
       ->panel('p', 'p', function (PanelBuilder $panel): void {
         $panel->text('name');
@@ -120,8 +144,8 @@ final class TuiTest extends TestCase {
       ->build();
 
     // The form-declared prefix is used unless the constructor overrides it.
-    $this->assertStringContainsString('FORM_<ID>', (new Tui($config))->agentHelp());
-    $this->assertStringContainsString('ARG_<ID>', (new Tui($config, [], 'ARG_'))->agentHelp());
+    $this->assertStringContainsString('FORM_<ID>', (new Tui($form))->agentHelp());
+    $this->assertStringContainsString('ARG_<ID>', (new Tui($form, env_prefix: 'ARG_'))->agentHelp());
   }
 
   public function testValidate(): void {
@@ -132,7 +156,7 @@ final class TuiTest extends TestCase {
   public function testAccessors(): void {
     $tui = $this->tui();
 
-    $this->assertSame('Demo', $tui->config()->title);
+    $this->assertSame('Demo', $tui->form()->title);
     $this->assertInstanceOf(Engine::class, $tui->engine());
     $this->assertInstanceOf(HandlerRegistry::class, $tui->registry());
   }
@@ -157,23 +181,23 @@ final class TuiTest extends TestCase {
   }
 
   #[DataProvider('dataProviderResolveTheme')]
-  public function testResolveTheme(string $config_theme, string $theme, string $expected): void {
-    $tui = $this->themedTui($config_theme);
+  public function testResolveTheme(string $facade_theme, string $theme, string $expected): void {
+    $tui = $this->themedTui($facade_theme);
     $resolved = (new \ReflectionMethod($tui, 'resolveTheme'))->invoke($tui, $theme);
 
     $this->assertSame($expected, $resolved);
   }
 
   public static function dataProviderResolveTheme(): \Iterator {
-    // The argument wins over the config theme.
-    yield 'argument wins over config' => ['ocean', 'reef', 'reef'];
-    // An empty argument falls back to the config theme.
-    yield 'config theme used' => ['ocean', '', 'ocean'];
+    // The argument wins over the facade's theme.
+    yield 'argument wins over facade' => ['ocean', 'reef', 'reef'];
+    // An empty argument falls back to the facade's theme.
+    yield 'facade theme used' => ['ocean', '', 'ocean'];
     // Empty or the "auto" sentinel selects the default theme; the dark/light
     // mode is a separate option now, not a theme choice.
     yield 'empty is default' => ['', '', 'default'];
     yield 'auto argument is default' => ['', 'auto', 'default'];
-    yield 'auto config is default' => ['auto', '', 'default'];
+    yield 'auto facade is default' => ['auto', '', 'default'];
   }
 
   #[DataProvider('dataProviderResolveThemeOptionsDetectsMode')]
@@ -198,12 +222,7 @@ final class TuiTest extends TestCase {
   }
 
   public function testResolveThemeOptionsRespectsConsumerOptions(): void {
-    $form = Form::create('Demo')
-      ->theme('', ['mode' => 'light', 'color' => FALSE, 'unicode' => FALSE])
-      ->panel('p', 'p', function (PanelBuilder $panel): void {
-        $panel->text('name');
-      });
-    $tui = new Tui($form);
+    $tui = (new Tui($this->demoForm()))->theme('', ['mode' => 'light', 'color' => FALSE, 'unicode' => FALSE]);
 
     // A consumer's explicit options win over detection.
     $options = (array) (new \ReflectionMethod($tui, 'resolveThemeOptions'))->invoke($tui, $this->terminalReturning("\033]11;rgb:0000/0000/0000\007"));
@@ -223,34 +242,30 @@ final class TuiTest extends TestCase {
         $panel->text('machine')->derive(new Derive('{{name}}', 'machine'));
       });
 
-    return new Tui($form, [], 'TEST_');
+    return new Tui($form, env_prefix: 'TEST_');
   }
 
   /**
-   * A TUI whose config declares the given theme.
+   * A minimal Demo form builder.
+   */
+  protected function demoForm(): Form {
+    return Form::create('Demo')->panel('p', 'p', function (PanelBuilder $panel): void {
+      $panel->text('name');
+    });
+  }
+
+  /**
+   * A TUI configured with the given theme.
    */
   protected function themedTui(string $theme): Tui {
-    $form = Form::create('Demo')
-      ->theme($theme)
-      ->panel('p', 'p', function (PanelBuilder $panel): void {
-        $panel->text('name');
-      });
-
-    return new Tui($form);
+    return (new Tui($this->demoForm()))->theme($theme);
   }
 
   /**
-   * A TUI whose config forces colour on or off (and Unicode on).
+   * A TUI forcing colour on or off (and Unicode on).
    */
   protected function colouredTui(bool $color): Tui {
-    $form = Form::create('Demo')
-      ->color($color)
-      ->unicode(TRUE)
-      ->panel('p', 'p', function (PanelBuilder $panel): void {
-        $panel->text('name');
-      });
-
-    return new Tui($form);
+    return (new Tui($this->demoForm()))->color($color)->unicode(TRUE);
   }
 
   /**

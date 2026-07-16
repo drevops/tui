@@ -149,9 +149,9 @@ final class EngineDeclaredBehaviourTest extends TestCase {
    *   The callback receiving the panel builder to declare its fields.
    */
   protected function engine(\Closure $build): Engine {
-    $config = Form::create('T')->panel('p', 'p', $build)->build();
+    $form = Form::create('T')->panel('p', 'p', $build)->build();
 
-    return new Engine($config, new HandlerRegistry(['DrevOps\\Tui\\Tests\\Fixtures\\Handler']));
+    return new Engine($form, new HandlerRegistry(['DrevOps\\Tui\\Tests\\Fixtures\\Handler']));
   }
 
 }

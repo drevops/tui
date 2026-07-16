@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace DrevOps\Tui\Config;
+namespace DrevOps\Tui\Model;
 
 use DrevOps\Tui\Condition\ConditionInterface;
 use DrevOps\Tui\Derive\Derive;
@@ -12,14 +12,14 @@ use DrevOps\Tui\Translation\Translator;
 /**
  * A single question in the configuration model.
  *
- * @package DrevOps\Tui\Config
+ * @package DrevOps\Tui\Model
  */
 final readonly class Field {
 
   /**
    * The option rows for choice-based fields, in display order.
    *
-   * @var list<\DrevOps\Tui\Config\Option>
+   * @var list<\DrevOps\Tui\Model\Option>
    */
   public array $options;
 
@@ -32,12 +32,12 @@ final readonly class Field {
    *   The human-readable label.
    * @param string $description
    *   The help text.
-   * @param \DrevOps\Tui\Config\FieldType $type
+   * @param \DrevOps\Tui\Model\FieldType $type
    *   The widget type.
    * @param mixed $default
    *   The declared default value, or a `fn (Context): mixed` closure computing
    *   a dynamic default from the run context.
-   * @param array<int|string,\DrevOps\Tui\Config\Option|string> $options
+   * @param array<int|string,\DrevOps\Tui\Model\Option|string> $options
    *   Option rows for choice-based fields, in display order - a list of
    *   {@see Option} rows or the value => label shorthand map (normalized via
    *   {@see Option::list()}).
@@ -68,10 +68,10 @@ final readonly class Field {
    * @param bool $externalEditor
    *   Whether the field may hand off to the user's $EDITOR for composing its
    *   value. Honoured by the textarea widget; ignored by other types.
-   * @param \DrevOps\Tui\Config\NumberBounds|null $bounds
+   * @param \DrevOps\Tui\Model\NumberBounds|null $bounds
    *   Number only: optional min/max/step bounds; NULL for a plain integer
    *   entry with no range or keyboard stepping.
-   * @param \DrevOps\Tui\Config\FilePickerMode $pickerMode
+   * @param \DrevOps\Tui\Model\FilePickerMode $pickerMode
    *   File picker only: which entries may be selected (any, files or
    *   directories); ignored by other types.
    * @param string $pickerStart
@@ -91,10 +91,10 @@ final readonly class Field {
    *   strings, or a `fn (array<string,mixed> $answers): list<string>` closure
    *   over the answers collected so far. Empty disables ghost-text; ignored by
    *   other types.
-   * @param \DrevOps\Tui\Config\DateBounds|null $dateBounds
+   * @param \DrevOps\Tui\Model\DateBounds|null $dateBounds
    *   Date only: the min/max range and week-start day; NULL for non-date
    *   fields.
-   * @param \DrevOps\Tui\Config\RenderMode $render
+   * @param \DrevOps\Tui\Model\RenderMode $render
    *   Where the field's editor is drawn: inline in the panel (the default) or
    *   full-screen on its own standalone editor.
    */

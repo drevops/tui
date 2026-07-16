@@ -17,7 +17,7 @@ declare(strict_types=1);
 
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Builder\PanelBuilder;
-use DrevOps\Tui\Config\FieldType;
+use DrevOps\Tui\Model\FieldType;
 use DrevOps\Tui\Engine\EngineException;
 use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Binding;
@@ -52,20 +52,23 @@ $form = Form::create('Key bindings demo')
     ]);
   });
 
+$tui = new Tui($form);
+
 // Three ways to set the bindings, selected with --keys. The hints at the foot
 // of the panel and editor follow whatever is bound, so they always tell the
-// truth about the active keys.
+// truth about the active keys. Key bindings are a global TUI runtime setting,
+// so they live on the facade, not the form.
 if ($which === 'vim') {
   // The built-in vim preset: h/j/k/l navigate alongside the arrows. Letters are
   // added only where they are not typed input, so text and filter fields keep
   // the arrow keys.
-  $form->keys('vim');
+  $tui->keys('vim');
 }
 elseif ($which === 'custom') {
   // Start from the default preset and retune two bindings. Each override names
   // a scope, an action and its keys; a conflicting or un-typeable binding
-  // throws when the form is built, not mid-session.
-  $form->keys('default', [
+  // throws when it is set, not mid-session.
+  $tui->keys('default', [
     // Quit with x as well as q.
     new Binding(Scope::navigation(), Action::Quit, 'x'),
     // In the single-choice list, Tab accepts too (Enter still does).
@@ -74,7 +77,7 @@ elseif ($which === 'custom') {
 }
 // The default preset applies when --keys is default (no ->keys() call needed).
 try {
-  $answers = (new Tui($form))->run($prompts, '1.0.0');
+  $answers = $tui->run($prompts, '1.0.0');
 }
 catch (EngineException $exception) {
   fwrite(STDERR, $exception->getMessage() . PHP_EOL);

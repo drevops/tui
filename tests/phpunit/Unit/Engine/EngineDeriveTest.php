@@ -61,7 +61,7 @@ final class EngineDeriveTest extends TestCase {
    * Build an engine with a name -> machine -> domain derivation chain.
    */
   protected function engine(): Engine {
-    $config = Form::create('T')
+    $form = Form::create('T')
       ->panel('p', 'p', function (PanelBuilder $p): void {
         $p->text('name')->default('');
         $p->text('machine')->default('')->derive(new Derive('{{name}}', 'machine'));
@@ -69,7 +69,7 @@ final class EngineDeriveTest extends TestCase {
       })
       ->build();
 
-    return new Engine($config, new HandlerRegistry());
+    return new Engine($form, new HandlerRegistry());
   }
 
 }

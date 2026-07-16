@@ -29,8 +29,6 @@ require __DIR__ . '/../../vendor/autoload.php';
 $opts = getopt('', ['no-unicode', 'no-ansi']);
 
 $form = Form::create('MultiSelect with groups')
-  ->color(isset($opts['no-ansi']) ? FALSE : NULL)
-  ->unicode(isset($opts['no-unicode']) ? FALSE : NULL)
   ->panel('main', 'MultiSelect', function (PanelBuilder $p): void {
     $p->multiSelect('multiselect', 'MultiSelect')->default(['redis'])
       ->heading('Services')
@@ -40,4 +38,4 @@ $form = Form::create('MultiSelect with groups')
       ->option('clamav', 'ClamAV', disabled: TRUE, disabled_reason: 'licence required');
   });
 
-echo (new Tui($form))->run()->toJson() . "\n";
+echo (new Tui($form))->color(isset($opts['no-ansi']) ? FALSE : NULL)->unicode(isset($opts['no-unicode']) ? FALSE : NULL)->run()->toJson() . "\n";

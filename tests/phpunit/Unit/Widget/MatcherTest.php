@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Tests\Unit\Widget;
 
-use DrevOps\Tui\Config\Option;
-use DrevOps\Tui\Config\OptionKind;
+use DrevOps\Tui\Model\Option;
+use DrevOps\Tui\Model\OptionKind;
 use DrevOps\Tui\Widget\Matcher;
 use DrevOps\Tui\Widget\MatchResult;
 use DrevOps\Tui\Widget\MatchTier;

@@ -7,8 +7,8 @@ namespace DrevOps\Tui\Tests\Unit\Engine;
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Builder\PanelBuilder;
 use DrevOps\Tui\Condition\Condition;
-use DrevOps\Tui\Config\Config;
-use DrevOps\Tui\Config\Fixup;
+use DrevOps\Tui\Model\FormDefinition;
+use DrevOps\Tui\Model\Fixup;
 use DrevOps\Tui\Engine\Engine;
 use DrevOps\Tui\Handler\Context;
 use DrevOps\Tui\Handler\HandlerRegistry;
@@ -108,13 +108,13 @@ final class EngineConditionalTest extends TestCase {
   }
 
   /**
-   * Build an engine over the given config with no handlers.
+   * Build an engine over the given form definition with no handlers.
    *
-   * @param \DrevOps\Tui\Config\Config $config
-   *   The configuration.
+   * @param \DrevOps\Tui\Model\FormDefinition $form
+   *   The form definition.
    */
-  protected function engine(Config $config): Engine {
-    return new Engine($config, new HandlerRegistry());
+  protected function engine(FormDefinition $form): Engine {
+    return new Engine($form, new HandlerRegistry());
   }
 
 }

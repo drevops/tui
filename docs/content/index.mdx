@@ -52,7 +52,7 @@ use DrevOps\Tui\Tui;
 $form = Form::create('My form')
   ->panel('general', 'General', fn(PanelBuilder $p) => $p->text('name', 'Your name')->required());
 
-$tui = new Tui($form, ['App\\Handler']);
+$tui = new Tui($form, handler_namespaces: ['App\\Handler']);
 
 // Interactive on a terminal, non-interactive otherwise.
 $answers = $tui->run();
@@ -63,6 +63,6 @@ $answers = $tui->interact();                     // interactive TUI
 ```
 
 It also exposes `schema()`, `agentHelp()` and `validate()`, and - when you want
-finer control - the internals via `config()`, `engine()` and `registry()`. See
+finer control - the internals via `form()`, `engine()` and `registry()`. See
 [Installation](/installation) to get started and the
 [playground](/playground) for complete, runnable examples.

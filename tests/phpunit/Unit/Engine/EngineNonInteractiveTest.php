@@ -30,64 +30,64 @@ final class EngineNonInteractiveTest extends TestCase {
     vfsStream::setup('proj', NULL, ['.env' => "DETECTED=from_env\n"]);
     $dir = vfsStream::url('proj');
 
-    $config = Form::create('T')
+    $form = Form::create('T')
       ->panel('p', 'p', function (PanelBuilder $p): void {
         $p->text('src')->default('seed');
         $p->text('target')->default('static')->derive(new Derive('d-{{src}}'))->discover(new Dotenv('DETECTED'));
       })
       ->build();
     $resolver = new InputResolver('APP_');
-    $engine = new Engine($config, new HandlerRegistry());
+    $engine = new Engine($form, new HandlerRegistry());
 
     // Static default is overtaken by the derived value (fresh install).
-    $inputs = $resolver->resolve($config->fields(), '', []);
+    $inputs = $resolver->resolve($form->fields(), '', []);
     $this->assertSame('d-seed', $engine->collect($inputs, new Context($dir, [], FALSE))->value('target'));
 
     // Detected (update mode) wins over derived.
-    $inputs = $resolver->resolve($config->fields(), '', []);
+    $inputs = $resolver->resolve($form->fields(), '', []);
     $this->assertSame('from_env', $engine->collect($inputs, new Context($dir, [], TRUE))->value('target'));
 
     // Env wins over detected.
-    $inputs = $resolver->resolve($config->fields(), '', ['APP_TARGET' => 'from_env_var']);
+    $inputs = $resolver->resolve($form->fields(), '', ['APP_TARGET' => 'from_env_var']);
     $this->assertSame('from_env_var', $engine->collect($inputs, new Context($dir, [], TRUE))->value('target'));
 
     // --prompts wins over env.
-    $inputs = $resolver->resolve($config->fields(), '{"target": "from_prompts"}', ['APP_TARGET' => 'from_env_var']);
+    $inputs = $resolver->resolve($form->fields(), '{"target": "from_prompts"}', ['APP_TARGET' => 'from_env_var']);
     $this->assertSame('from_prompts', $engine->collect($inputs, new Context($dir, [], TRUE))->value('target'));
   }
 
   public function testReorderHeadlessParity(): void {
-    $config = Form::create('T')
+    $form = Form::create('T')
       ->panel('p', 'p', function (PanelBuilder $p): void {
         $p->reorder('ranking')->options(['a' => 'A', 'b' => 'B', 'c' => 'C'])->default(['b']);
       })
       ->build();
     $resolver = new InputResolver('APP_');
-    $engine = new Engine($config, new HandlerRegistry());
+    $engine = new Engine($form, new HandlerRegistry());
 
     // No input: the declared default, completed to a full ranking.
-    $inputs = $resolver->resolve($config->fields(), '', []);
+    $inputs = $resolver->resolve($form->fields(), '', []);
     $this->assertSame(['b', 'a', 'c'], $engine->collect($inputs, new Context('', [], FALSE))->value('ranking'));
 
     // An env comma list is coerced to an ordered ranking.
-    $inputs = $resolver->resolve($config->fields(), '', ['APP_RANKING' => 'c, a, b']);
+    $inputs = $resolver->resolve($form->fields(), '', ['APP_RANKING' => 'c, a, b']);
     $this->assertSame(['c', 'a', 'b'], $engine->collect($inputs, new Context('', [], FALSE))->value('ranking'));
 
     // A --prompts JSON array is taken as the ranking directly.
-    $inputs = $resolver->resolve($config->fields(), '{"ranking": ["c", "b", "a"]}', []);
+    $inputs = $resolver->resolve($form->fields(), '{"ranking": ["c", "b", "a"]}', []);
     $this->assertSame(['c', 'b', 'a'], $engine->collect($inputs, new Context('', [], FALSE))->value('ranking'));
   }
 
   public function testReorderRejectsIncompletePermutation(): void {
-    $config = Form::create('T')
+    $form = Form::create('T')
       ->panel('p', 'p', function (PanelBuilder $p): void {
         $p->reorder('ranking')->option('a')->option('b')->option('c');
       })
       ->build();
     $resolver = new InputResolver('APP_');
-    $engine = new Engine($config, new HandlerRegistry());
+    $engine = new Engine($form, new HandlerRegistry());
 
-    $inputs = $resolver->resolve($config->fields(), '', ['APP_RANKING' => 'a, b']);
+    $inputs = $resolver->resolve($form->fields(), '', ['APP_RANKING' => 'a, b']);
 
     $this->expectException(EngineException::class);
     $this->expectExceptionMessage('Invalid value for field "ranking": must rank every option exactly once (a, b, c)');

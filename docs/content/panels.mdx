@@ -26,11 +26,11 @@ newline and the external-editor handoff, a revealable password adds the reveal
 toggle. Pressing `?` at the hub opens a fuller overlay that lists the hub and
 every widget type the form uses, so the form teaches its own less-common widgets.
 The footer follows the active theme and key map - it degrades to ASCII glyphs and
-always reflects remapped keys - and `->footer(FALSE)` turns it off form-wide.
+always reflects remapped keys - and the facade's `->footer(FALSE)` turns it off.
 
 A form-level `->banner()` shows a start screen (with an optional version) before
-the panels, and `->clearOnExit(FALSE)` keeps the final frame on screen after the
-TUI exits.
+the panels; the facade's `->clearOnExit(FALSE)` keeps the final frame on screen
+after the TUI exits.
 
 ## Inline editing
 
@@ -88,7 +88,6 @@ all sit inside it, and every drill-in sub-panel keeps it:
 
 ```php
 $form = Form::create('New service')
-  ->theme('default', ['border' => 'rounded', 'spacing' => 'padded'])
   ->buttons(TRUE, 'Create', 'Cancel')
   ->panel('basics', 'Basics', function (PanelBuilder $p): void {
     $p->text('name', 'Service name')->default('api')->required();
@@ -99,6 +98,9 @@ $form = Form::create('New service')
     $p->select('environment', 'Environment')->default('dev')->option('dev', 'Development')->option('prod', 'Production');
     $p->confirm('autoscale', 'Enable autoscaling?')->default(FALSE);
   });
+
+// The border and spacing are theme options, set on the Tui facade.
+$tui = (new Tui($form))->theme('default', ['border' => 'rounded', 'spacing' => 'padded']);
 ```
 
 <p align="center">

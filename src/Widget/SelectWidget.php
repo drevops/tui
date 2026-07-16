@@ -27,7 +27,7 @@ class SelectWidget extends AbstractWidget implements OptionsCapableInterface, Se
   /**
    * Construct a select widget.
    *
-   * @param array<int|string,\DrevOps\Tui\Config\Option|string> $options
+   * @param array<int|string,\DrevOps\Tui\Model\Option|string> $options
    *   Option rows in display order - a list of options or the value => label
    *   shorthand map.
    * @param string $default
@@ -56,7 +56,7 @@ class SelectWidget extends AbstractWidget implements OptionsCapableInterface, Se
   /**
    * The rows currently shown: a plain select shows every declared row.
    *
-   * @return list<\DrevOps\Tui\Config\Option>
+   * @return list<\DrevOps\Tui\Model\Option>
    *   The visible rows.
    */
   public function visible(): array {

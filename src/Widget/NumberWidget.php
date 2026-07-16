@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Widget;
 
-use DrevOps\Tui\Config\FieldType;
-use DrevOps\Tui\Config\NumberBounds;
+use DrevOps\Tui\Model\FieldType;
+use DrevOps\Tui\Model\NumberBounds;
 use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
@@ -40,7 +40,7 @@ class NumberWidget extends AbstractWidget implements TextEditCapableInterface, S
    *   Optional validator (see AbstractWidget).
    * @param \Closure|null $transform
    *   Optional transformer (see AbstractWidget).
-   * @param \DrevOps\Tui\Config\NumberBounds|null $bounds
+   * @param \DrevOps\Tui\Model\NumberBounds|null $bounds
    *   Optional bounds and step; NULL for a plain integer entry.
    */
   public function __construct(string $buffer = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL, protected ?NumberBounds $bounds = NULL) {

@@ -23,7 +23,7 @@ use PHPUnit\Framework\TestCase;
 final class SummaryFormatterTest extends TestCase {
 
   public function testFormatsGroupedByPanel(): void {
-    $config = Form::create('T')
+    $form = Form::create('T')
       ->panel('general', 'General', function (PanelBuilder $p): void {
         $p->text('name', 'Name');
         $p->text('machine', 'Machine')->derive(new Derive('{{name}}'));
@@ -38,8 +38,8 @@ final class SummaryFormatterTest extends TestCase {
         $p->text('gone', 'Gone')->when(new Condition('name', eq: 'never'));
       })
       ->build();
-    $answers = Answers::forConfig(
-      $config,
+    $answers = Answers::forForm(
+      $form,
       ['name' => 'Acme', 'machine' => 'acme', 'profile' => 'standard', 'debug' => TRUE],
       ['name' => Provenance::Edited, 'machine' => Provenance::Derived, 'profile' => Provenance::Default, 'debug' => Provenance::Edited],
     );
@@ -63,12 +63,12 @@ final class SummaryFormatterTest extends TestCase {
   }
 
   public function testFormatsListValues(): void {
-    $config = Form::create('T')
+    $form = Form::create('T')
       ->panel('p', 'P', function (PanelBuilder $p): void {
         $p->multiSelect('mods', 'Mods');
       })
       ->build();
-    $answers = Answers::forConfig($config, ['mods' => ['a', 'b']], ['mods' => Provenance::Edited]);
+    $answers = Answers::forForm($form, ['mods' => ['a', 'b']], ['mods' => Provenance::Edited]);
 
     $summary = (new SummaryFormatter())->format($answers);
 
@@ -76,13 +76,13 @@ final class SummaryFormatterTest extends TestCase {
   }
 
   public function testMasksPasswordValues(): void {
-    $config = Form::create('T')
+    $form = Form::create('T')
       ->panel('p', 'P', function (PanelBuilder $p): void {
         $p->password('token', 'Token');
         $p->password('unset', 'Unset');
       })
       ->build();
-    $answers = Answers::forConfig($config, ['token' => 's3cret-long', 'unset' => ''], ['token' => Provenance::Edited, 'unset' => Provenance::Default]);
+    $answers = Answers::forForm($form, ['token' => 's3cret-long', 'unset' => ''], ['token' => Provenance::Edited, 'unset' => Provenance::Default]);
 
     $summary = (new SummaryFormatter())->format($answers);
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Tests\Unit\Testing;
 
-use DrevOps\Tui\Config\FieldType;
+use DrevOps\Tui\Model\FieldType;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Testing\TuiTester;
@@ -40,10 +40,10 @@ final class AllWidgetsFormTest extends TestCase {
   }
 
   public function testEveryWidgetTypeIsExercised(): void {
-    $config = AllWidgetsForm::create()->build();
+    $form = AllWidgetsForm::create()->build();
 
     $present = [];
-    foreach ($config->fields() as $field) {
+    foreach ($form->fields() as $field) {
       $present[$field->type->value] = TRUE;
     }
     $actual = array_keys($present);

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Widget;
 
-use DrevOps\Tui\Config\Option;
+use DrevOps\Tui\Model\Option;
 use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Theme\ThemeInterface;
@@ -43,7 +43,7 @@ class SearchWidget extends AbstractWidget implements
   /**
    * Construct a search widget.
    *
-   * @param array<int|string,\DrevOps\Tui\Config\Option|string> $options
+   * @param array<int|string,\DrevOps\Tui\Model\Option|string> $options
    *   Option rows in display order - a list of options or the value => label
    *   shorthand map.
    * @param string $default
@@ -86,7 +86,7 @@ class SearchWidget extends AbstractWidget implements
    *
    * @param \DrevOps\Tui\Theme\ThemeInterface $theme
    *   The theme.
-   * @param \DrevOps\Tui\Config\Option $option
+   * @param \DrevOps\Tui\Model\Option $option
    *   The option row.
    * @param bool $current
    *   Whether the row holds the cursor.

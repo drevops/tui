@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Widget;
 
-use DrevOps\Tui\Config\Field;
-use DrevOps\Tui\Config\FieldType;
-use DrevOps\Tui\Config\FilePickerMode;
+use DrevOps\Tui\Model\Field;
+use DrevOps\Tui\Model\FieldType;
+use DrevOps\Tui\Model\FilePickerMode;
 use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
@@ -81,7 +81,7 @@ class FilePickerWidget extends AbstractWidget implements FilterCapableInterface,
    *   The pre-selected path (single) or paths (multiple). A single path opens
    *   the browser at its directory with the entry highlighted; in multiple mode
    *   every path seeds the selection.
-   * @param \DrevOps\Tui\Config\FilePickerMode $mode
+   * @param \DrevOps\Tui\Model\FilePickerMode $mode
    *   Which entries may be selected (any, files or directories).
    * @param list<string> $extensions
    *   The extensions selectable files are limited to (dot-less,

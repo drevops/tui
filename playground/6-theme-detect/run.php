@@ -41,7 +41,6 @@ $theme_options = match ($mode) {
 };
 
 $form = Form::create('Theme detection demo')
-  ->theme('', $theme_options)
   ->panel('appearance', 'Appearance', function (PanelBuilder $p): void {
     $p->text('name', 'Your name')->default('Sam');
     $p->select('fruit', 'Favourite fruit')->default('apple')->options([
@@ -54,7 +53,7 @@ $form = Form::create('Theme detection demo')
 
 try {
   // run() picks interactive vs headless; the theme resolves inside interact().
-  $answers = (new Tui($form))->run($prompts, '1.0.0');
+  $answers = (new Tui($form))->theme('', $theme_options)->run($prompts, '1.0.0');
 }
 catch (EngineException $exception) {
   fwrite(STDERR, $exception->getMessage() . PHP_EOL);
