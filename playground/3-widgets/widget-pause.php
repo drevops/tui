@@ -17,6 +17,7 @@ declare(strict_types=1);
 
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Builder\PanelBuilder;
+use DrevOps\Tui\InterruptException;
 use DrevOps\Tui\Tui;
 
 require __DIR__ . '/../../vendor/autoload.php';
@@ -30,4 +31,10 @@ $form = Form::create('Pause widget')
     $p->pause('pause', 'Pause');
   });
 
-echo (new Tui($form))->color(isset($opts['no-ansi']) ? FALSE : NULL)->unicode(isset($opts['no-unicode']) ? FALSE : NULL)->run()->toJson() . "\n";
+try {
+  echo (new Tui($form))->color(isset($opts['no-ansi']) ? FALSE : NULL)->unicode(isset($opts['no-unicode']) ? FALSE : NULL)->run()->toJson() . "\n";
+}
+catch (InterruptException) {
+  // Leave quietly on Ctrl-C.
+  exit(130);
+}

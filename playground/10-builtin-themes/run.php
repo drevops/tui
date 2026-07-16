@@ -22,6 +22,7 @@ declare(strict_types=1);
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Builder\PanelBuilder;
 use DrevOps\Tui\Engine\EngineException;
+use DrevOps\Tui\InterruptException;
 use DrevOps\Tui\Theme\Mode;
 use DrevOps\Tui\Tui;
 
@@ -61,6 +62,10 @@ $form = Form::create('Built-in theme preview')
 try {
   // The theme is set on the facade; run() picks the dark/light mode.
   $answers = (new Tui($form))->theme($theme, $theme_options)->run($prompts);
+}
+catch (InterruptException) {
+  // Leave quietly on Ctrl-C.
+  exit(130);
 }
 catch (EngineException $exception) {
   fwrite(STDERR, $exception->getMessage() . PHP_EOL);

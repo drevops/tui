@@ -14,9 +14,10 @@ declare(strict_types=1);
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Builder\PanelBuilder;
 use DrevOps\Tui\Condition\Condition;
-use DrevOps\Tui\Model\Fixup;
 use DrevOps\Tui\Derive\Derive;
 use DrevOps\Tui\Engine\EngineException;
+use DrevOps\Tui\InterruptException;
+use DrevOps\Tui\Model\Fixup;
 use DrevOps\Tui\Tui;
 
 require __DIR__ . '/../../vendor/autoload.php';
@@ -66,6 +67,10 @@ try {
   // Interactive TUI on a terminal; headless when prompts are given or piped.
   // Keep the final frame on screen after the TUI exits.
   $answers = (new Tui($form))->clearOnExit(FALSE)->run($prompts, '1.0.0');
+}
+catch (InterruptException) {
+  // Leave quietly on Ctrl-C.
+  exit(130);
 }
 catch (EngineException $exception) {
   fwrite(STDERR, $exception->getMessage() . PHP_EOL);

@@ -117,7 +117,10 @@ class Terminal {
   public function setup(?string $background = NULL): void {
     // @codeCoverageIgnoreStart
     $this->background = $background;
-    $this->stty('-echo -icanon');
+    // Disable signal keys (-isig) so Ctrl-C arrives as an input byte rather
+    // than raising SIGINT, which would kill the process before restore() could
+    // leave the alternate screen and undo raw mode. stty sane restores them.
+    $this->stty('-echo -icanon -isig');
     $this->write(TerminalControl::altScreenOn() . TerminalControl::hideCursor() . TerminalControl::mouseOn());
     // @codeCoverageIgnoreEnd
   }

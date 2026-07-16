@@ -78,6 +78,7 @@ return [
   'cancel' => 'cancel',
   'close' => 'close',
   'continue' => 'continue',
+  'ctrl-c' => 'ctrl-c',
   'day' => 'day',
   'default' => 'default',
   'del' => 'del',

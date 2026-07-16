@@ -15,12 +15,13 @@
 
 declare(strict_types=1);
 
-use Playground\ThemeOptions\AccentTheme;
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Builder\PanelBuilder;
 use DrevOps\Tui\Engine\EngineException;
+use DrevOps\Tui\InterruptException;
 use DrevOps\Tui\Theme\ThemeManager;
 use DrevOps\Tui\Tui;
+use Playground\ThemeOptions\AccentTheme;
 
 require __DIR__ . '/../../vendor/autoload.php';
 require __DIR__ . '/AccentTheme.php';
@@ -55,6 +56,10 @@ try {
       'accent' => 'warm',
     ])
     ->run($prompts, '1.0.0');
+}
+catch (InterruptException) {
+  // Leave quietly on Ctrl-C.
+  exit(130);
 }
 catch (EngineException $exception) {
   fwrite(STDERR, $exception->getMessage() . PHP_EOL);

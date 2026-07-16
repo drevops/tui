@@ -84,6 +84,11 @@ final class TuiTester {
   protected bool $cancelled = FALSE;
 
   /**
+   * Whether the last run() ended via the interrupt key (Ctrl-C).
+   */
+  protected bool $interrupted = FALSE;
+
+  /**
    * Construct a tester for a form.
    *
    * @param \DrevOps\Tui\Model\FormDefinition|\DrevOps\Tui\Builder\Form $form
@@ -194,6 +199,7 @@ final class TuiTester {
     $this->answers = $controller->run($terminal);
     $this->output = $terminal->output();
     $this->cancelled = $controller->isCancelled();
+    $this->interrupted = $controller->isInterrupted();
 
     return $this->answers;
   }
@@ -254,6 +260,22 @@ final class TuiTester {
     $this->answers();
 
     return $this->cancelled;
+  }
+
+  /**
+   * Whether the last run() ended via the interrupt key (Ctrl-C).
+   *
+   * @return bool
+   *   TRUE when the user aborted with the interrupt key.
+   *
+   * @throws \LogicException
+   *   When run() has not been called yet.
+   */
+  public function isInterrupted(): bool {
+    // Reuse the run() guard.
+    $this->answers();
+
+    return $this->interrupted;
   }
 
 }

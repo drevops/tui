@@ -15,6 +15,7 @@ use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyMap;
 use DrevOps\Tui\Input\KeyMapManager;
+use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Input\KeyParser;
 use DrevOps\Tui\Input\ScopedKeyMap;
 use DrevOps\Tui\Theme\DefaultTheme;
@@ -121,6 +122,11 @@ class PanelController {
   protected bool $cancelled = FALSE;
 
   /**
+   * Whether the user aborted the loop with the interrupt key (Ctrl-C).
+   */
+  protected bool $interrupted = FALSE;
+
+  /**
    * Whether the help overlay is showing.
    */
   protected bool $help = FALSE;
@@ -224,6 +230,16 @@ class PanelController {
   }
 
   /**
+   * Whether the user aborted with the interrupt key (Ctrl-C).
+   *
+   * @return bool
+   *   TRUE when the loop ended on an interrupt.
+   */
+  public function isInterrupted(): bool {
+    return $this->interrupted;
+  }
+
+  /**
    * Whether the help overlay is showing.
    *
    * @return bool
@@ -234,7 +250,7 @@ class PanelController {
   }
 
   /**
-   * Run the interactive loop against a terminal until the user quits.
+   * Run the interactive loop against a terminal until the user quits or aborts.
    *
    * @param \DrevOps\Tui\Render\Terminal $terminal
    *   The terminal.
@@ -250,10 +266,17 @@ class PanelController {
     try {
       if ($this->banner !== '') {
         $terminal->render($this->theme->renderBanner($this->banner, $this->version) . "\n\n" . Translator::t('Press any key to continue...'));
-        $terminal->read();
+
+        // Any key dismisses the banner, but Ctrl-C here aborts like it does
+        // mid-form rather than dropping the user into the questionnaire.
+        foreach ($parser->parse($terminal->read()) as $key) {
+          if ($this->consumeInterrupt($key)) {
+            break;
+          }
+        }
       }
 
-      while (!$this->done) {
+      while (!$this->done && !$this->interrupted) {
         // Fill the terminal, reserving four rows of chrome: the breadcrumb
         // header, the status footer and the two scroll indicators.
         $terminal->render($this->frame(max(3, $terminal->height() - 4)));
@@ -267,18 +290,46 @@ class PanelController {
         }
 
         foreach ($parser->parse($bytes) as $key) {
+          // Ctrl-C aborts from anywhere - including mid-widget - so catch it
+          // above handle() and drop straight out of the read loop to the
+          // teardown, leaving the collected answers as they stand.
+          if ($this->consumeInterrupt($key)) {
+            break 2;
+          }
+
           $this->handle($key);
         }
       }
     }
     finally {
       $terminal->restore();
-      if ($this->clearOnExit) {
+      // An interrupt always leaves a clean screen, even when a consumer opted
+      // out of the clear-on-exit for a normal finish.
+      if ($this->clearOnExit || $this->interrupted) {
         $terminal->clear();
       }
     }
 
     return $this->answers();
+  }
+
+  /**
+   * Record an abort when the key is the interrupt (Ctrl-C).
+   *
+   * @param \DrevOps\Tui\Input\Key $key
+   *   The key to test.
+   *
+   * @return bool
+   *   TRUE when the key was the interrupt, so the caller stops reading input.
+   */
+  protected function consumeInterrupt(Key $key): bool {
+    if (!$key->is(KeyName::Interrupt)) {
+      return FALSE;
+    }
+
+    $this->interrupted = TRUE;
+
+    return TRUE;
   }
 
   /**

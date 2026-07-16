@@ -19,6 +19,7 @@ declare(strict_types=1);
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Builder\PanelBuilder;
 use DrevOps\Tui\Engine\EngineException;
+use DrevOps\Tui\InterruptException;
 use DrevOps\Tui\Tui;
 
 require __DIR__ . '/../../vendor/autoload.php';
@@ -50,6 +51,10 @@ $form = Form::create('Release settings')
 try {
   // Interactive TUI on a terminal; headless when prompts are given or piped.
   $answers = (new Tui($form))->run($prompts, '1.0.0');
+}
+catch (InterruptException) {
+  // Leave quietly on Ctrl-C.
+  exit(130);
 }
 catch (EngineException $exception) {
   fwrite(STDERR, $exception->getMessage() . PHP_EOL);

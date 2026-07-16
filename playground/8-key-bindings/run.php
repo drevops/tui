@@ -17,12 +17,13 @@ declare(strict_types=1);
 
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Builder\PanelBuilder;
-use DrevOps\Tui\Model\FieldType;
 use DrevOps\Tui\Engine\EngineException;
 use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Binding;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Input\Scope;
+use DrevOps\Tui\InterruptException;
+use DrevOps\Tui\Model\FieldType;
 use DrevOps\Tui\Tui;
 
 require __DIR__ . '/../../vendor/autoload.php';
@@ -78,6 +79,10 @@ elseif ($which === 'custom') {
 // The default preset applies when --keys is default (no ->keys() call needed).
 try {
   $answers = $tui->run($prompts, '1.0.0');
+}
+catch (InterruptException) {
+  // Leave quietly on Ctrl-C.
+  exit(130);
 }
 catch (EngineException $exception) {
   fwrite(STDERR, $exception->getMessage() . PHP_EOL);

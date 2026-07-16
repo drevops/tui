@@ -60,6 +60,16 @@ final class TuiTesterTest extends TestCase {
     $this->assertTrue($tester->isCancelled());
   }
 
+  public function testInterruptIsReported(): void {
+    $tester = new TuiTester($this->form());
+
+    // Ctrl-C mid-form aborts the loop: interrupted, not a cancel-button finish.
+    $tester->run("\x03");
+
+    $this->assertTrue($tester->isInterrupted());
+    $this->assertFalse($tester->isCancelled());
+  }
+
   public function testEmptyRunCollectsDefaults(): void {
     $answers = (new TuiTester($this->form()))->run();
 
@@ -104,6 +114,7 @@ final class TuiTesterTest extends TestCase {
     yield 'answers' => [static fn(TuiTester $tester): mixed => $tester->answers()];
     yield 'output' => [static fn(TuiTester $tester): mixed => $tester->output()];
     yield 'is cancelled' => [static fn(TuiTester $tester): mixed => $tester->isCancelled()];
+    yield 'is interrupted' => [static fn(TuiTester $tester): mixed => $tester->isInterrupted()];
   }
 
   /**

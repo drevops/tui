@@ -14,6 +14,7 @@ use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Render\ExternalEditor;
 use DrevOps\Tui\Render\PanelController;
 use DrevOps\Tui\Render\Terminal;
+use DrevOps\Tui\Render\TerminalControl;
 use DrevOps\Tui\Testing\BufferedTerminal;
 use DrevOps\Tui\Testing\KeyEncoder;
 use DrevOps\Tui\Theme\DefaultTheme;
@@ -430,6 +431,66 @@ final class PanelControllerTest extends TestCase {
     // The EOF break ends the loop without the form being submitted.
     $this->assertFalse($controller->isDone());
     $this->assertSame(1, $controller->cursor());
+  }
+
+  public function testRunInterruptStopsBeforeHandlingMoreKeys(): void {
+    $controller = $this->controller();
+    // Ctrl-C arrives first; the Down queued after it must never be handled.
+    $terminal = new BufferedTerminal(["\x03", KeyEncoder::encode(Key::named(KeyName::Down))]);
+
+    $controller->run($terminal);
+
+    $this->assertTrue($controller->isInterrupted());
+    // An interrupt is neither a quit nor a cancel-button finish.
+    $this->assertFalse($controller->isDone());
+    $this->assertFalse($controller->isCancelled());
+    // The loop broke on the interrupt, so the trailing Down never
+    // moved the cursor.
+    $this->assertSame(0, $controller->cursor());
+  }
+
+  public function testRunInterruptClearsEvenWhenClearOnExitOff(): void {
+    $config = Form::create('Demo')
+      ->buttons(FALSE)
+      ->panel('general', 'General', function (PanelBuilder $p): void {
+        $p->text('name', 'Name');
+      })
+      ->build();
+    $theme = new DefaultTheme(40, ['color' => FALSE]);
+
+    // An interrupt renders the frame once (one clear) and then forces a second
+    // clear at teardown despite clearOnExit (the fifth argument) being off.
+    $interrupted = new PanelController($config, $theme, NULL, TRUE, FALSE, ['name' => 'Acme'], []);
+    $terminal = new BufferedTerminal(["\x03"]);
+    $interrupted->run($terminal);
+    $this->assertTrue($interrupted->isInterrupted());
+    $this->assertSame(2, substr_count($terminal->output(), TerminalControl::clear()));
+
+    // Exhausting the input renders the same single frame but adds no teardown
+    // clear - so the interrupt's extra clear is what wipes the screen.
+    $exhausted = new PanelController($config, $theme, NULL, TRUE, FALSE, ['name' => 'Acme'], []);
+    $quiet = new BufferedTerminal([]);
+    $exhausted->run($quiet);
+    $this->assertFalse($exhausted->isInterrupted());
+    $this->assertSame(1, substr_count($quiet->output(), TerminalControl::clear()));
+  }
+
+  public function testRunInterruptAtBannerAbortsBeforeTheForm(): void {
+    $config = Form::create('Demo')
+      ->panel('general', 'General', function (PanelBuilder $p): void {
+        $p->text('name', 'Name');
+      })
+      ->build();
+    $controller = new PanelController($config, new DefaultTheme(40, ['color' => FALSE]), NULL, TRUE, TRUE, ['name' => 'Acme'], [], 'WELCOME', '2.0');
+    // Ctrl-C at the "press any key" banner aborts instead of entering the form.
+    $terminal = new BufferedTerminal(["\x03"]);
+
+    $controller->run($terminal);
+
+    $this->assertTrue($controller->isInterrupted());
+    $this->assertStringContainsString('Press any key to continue', Ansi::strip($terminal->output()));
+    // The loop was skipped entirely, so the form body never rendered.
+    $this->assertStringNotContainsString('Name', Ansi::strip($terminal->output()));
   }
 
   public function testRunRendersBannerThenTheForm(): void {
