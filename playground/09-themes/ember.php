@@ -2,8 +2,7 @@
 
 /**
  * @file
- * The 'ember' built-in theme: burnt-orange accents, olive values, gold
- * highlights.
+ * The 'ember' theme: burnt-orange accents, olive values, gold highlights.
  *
  * A built-in theme is selected by name on the facade. Dark or light is not
  * part of the theme - it is a separate 'mode' display option, auto-detected

@@ -4,10 +4,10 @@
  * @file
  * Self-describing forms: the JSON schema and answer validation.
  *
- * schema() renders the declared questions as a JSON schema - ids, types,
- * options, bounds, requiredness - for editors, pipelines or any tool that
- * wants to know the questions without running the form. validate() checks an
- * answer set against the same rules and returns the violations.
+ * The schema() call renders the declared questions as a JSON schema - ids,
+ * types, options, bounds, requiredness - for editors, pipelines or any tool
+ * that wants to know the questions without running the form. validate()
+ * checks an answer set against the same rules and returns the violations.
  *
  * Usage:
  *   php playground/05-headless/schema.php

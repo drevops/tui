@@ -2,8 +2,7 @@
 
 /**
  * @file
- * The 'frost' built-in theme: arctic frost-blue accents, sage values, sand
- * highlights.
+ * The 'frost' theme: frost-blue accents, sage values, sand highlights.
  *
  * A built-in theme is selected by name on the facade. Dark or light is not
  * part of the theme - it is a separate 'mode' display option, auto-detected

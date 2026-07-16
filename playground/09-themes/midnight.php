@@ -2,8 +2,7 @@
 
 /**
  * @file
- * The 'midnight' built-in theme: violet accents, green values, pink
- * highlights.
+ * The 'midnight' theme: violet accents, green values, pink highlights.
  *
  * A built-in theme is selected by name on the facade. Dark or light is not
  * part of the theme - it is a separate 'mode' display option, auto-detected

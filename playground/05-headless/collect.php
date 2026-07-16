@@ -4,10 +4,10 @@
  * @file
  * Headless collection: the same form answered without a terminal.
  *
- * collect() resolves every field from, in order of precedence: the prompts
- * JSON, per-field environment variables (TUI_<ID> by default), discovered
- * values, derived values, then the declared default. Nothing prompts, so the
- * same form drives CI and automation unchanged.
+ * The collect() call resolves every field from, in order of precedence:
+ * the prompts JSON, per-field environment variables (TUI_<ID> by default),
+ * discovered values, derived values, then the declared default. Nothing
+ * prompts, so the same form drives CI and automation unchanged.
  *
  * Usage:
  *   php playground/05-headless/collect.php

@@ -4,11 +4,11 @@
  * @file
  * Agent help: generated instructions for driving the form unattended.
  *
- * agentHelp() renders a plain-text cheat sheet for the form: every question
- * with its type, options and default, plus how to answer via the prompts JSON
- * and the per-field environment variables and where each ranks in the
- * precedence order. Print it from your tool's --help so automation (or an
- * agent) can answer the form without reading its source.
+ * The agentHelp() call renders a plain-text cheat sheet for the form: every
+ * question with its type, options and default, plus how to answer via the
+ * prompts JSON and the per-field environment variables and where each ranks
+ * in the precedence order. Print it from your tool's --help so automation
+ * (or an agent) can answer the form without reading its source.
  *
  * Usage:
  *   php playground/05-headless/agent-help.php
