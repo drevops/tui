@@ -9,9 +9,9 @@
  * instead of invoking the widget directly.
  *
  * Usage:
- *   php 3-widgets/widget-multifilepicker.php
- *   php 3-widgets/widget-multifilepicker.php --no-unicode   # textual glyphs
- *   php 3-widgets/widget-multifilepicker.php --no-ansi      # no colour.
+ *   php 3-widgets/widget-filepicker-multiple.php
+ *   php 3-widgets/widget-filepicker-multiple.php --no-unicode   # textual glyphs
+ *   php 3-widgets/widget-filepicker-multiple.php --no-ansi      # no colour.
  */
 
 declare(strict_types=1);

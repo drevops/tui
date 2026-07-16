@@ -8,9 +8,9 @@
  * multiselect widget, instead of invoking the widget directly.
  *
  * Usage:
- *   php 3-widgets/widget-multiselect.php
- *   php 3-widgets/widget-multiselect.php --no-unicode   # textual glyphs
- *   php 3-widgets/widget-multiselect.php --no-ansi      # no colour.
+ *   php 3-widgets/widget-select-multiple.php
+ *   php 3-widgets/widget-select-multiple.php --no-unicode   # textual glyphs
+ *   php 3-widgets/widget-select-multiple.php --no-ansi      # no colour.
  */
 
 declare(strict_types=1);

@@ -77,7 +77,7 @@ const CODE_LINES = [
   [{t: '      '}, {c: 's', t: "'app'"}, {t: ' => '}, {c: 's', t: "'Application'"}, {t: ','}],
   [{t: '      '}, {c: 's', t: "'library'"}, {t: ' => '}, {c: 's', t: "'Library'"}, {t: ','}],
   [{t: '    ])'}, {c: 'p', t: ';'}],
-  [{t: '    '}, {c: 'v', t: '$p'}, {t: '->'}, {c: 'm', t: 'multiSelect'}, {t: '('}, {c: 's', t: "'services'"}, {t: ', '}, {c: 's', t: "'Services'"}, {t: ')->'}, {c: 'm', t: 'default'}, {t: '(['}, {c: 's', t: "'redis'"}, {t: '])->'}, {c: 'm', t: 'options'}, {t: '(['}],
+  [{t: '    '}, {c: 'v', t: '$p'}, {t: '->'}, {c: 'm', t: 'select'}, {t: '('}, {c: 's', t: "'services'"}, {t: ', '}, {c: 's', t: "'Services'"}, {t: ')->'}, {c: 'm', t: 'multiple'}, {t: '()->'}, {c: 'm', t: 'default'}, {t: '(['}, {c: 's', t: "'redis'"}, {t: '])->'}, {c: 'm', t: 'options'}, {t: '(['}],
   [{t: '      '}, {c: 's', t: "'redis'"}, {t: ' => '}, {c: 's', t: "'Redis'"}, {t: ','}],
   [{t: '      '}, {c: 's', t: "'solr'"}, {t: ' => '}, {c: 's', t: "'Solr'"}, {t: ','}],
   [{t: '      '}, {c: 's', t: "'clamav'"}, {t: ' => '}, {c: 's', t: "'ClamAV'"}, {t: ','}],

@@ -8,9 +8,9 @@
  * multisearch widget, instead of invoking the widget directly.
  *
  * Usage:
- *   php 3-widgets/widget-multisearch.php
- *   php 3-widgets/widget-multisearch.php --no-unicode   # textual glyphs
- *   php 3-widgets/widget-multisearch.php --no-ansi      # no colour.
+ *   php 3-widgets/widget-search-multiple.php
+ *   php 3-widgets/widget-search-multiple.php --no-unicode   # textual glyphs
+ *   php 3-widgets/widget-search-multiple.php --no-ansi      # no colour.
  */
 
 declare(strict_types=1);
