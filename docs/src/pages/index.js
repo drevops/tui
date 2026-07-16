@@ -65,31 +65,45 @@ const MODES = [
   {k: 'UNATTENDED', t: 'Everywhere else', d: <>Supply the answers up front as a JSON payload and environment variables so it runs without prompting. Emits a JSON schema for agents.</>},
 ];
 
-/* Syntax-highlighted quick-start snippet. String.raw keeps the PHP namespace
- * backslashes literal; the class names are the hashed CSS-module tokens. */
-const CODE_HTML = String.raw`<code><span class="${styles.k}">use</span> <span class="${styles.t}">DrevOps\Tui\Builder\Form</span><span class="${styles.p}">;</span>
-<span class="${styles.k}">use</span> <span class="${styles.t}">DrevOps\Tui\Builder\PanelBuilder</span><span class="${styles.p}">;</span>
-<span class="${styles.k}">use</span> <span class="${styles.t}">DrevOps\Tui\Tui</span><span class="${styles.p}">;</span>
+/* Syntax-highlighted quick-start snippet, built as JSX tokens (no innerHTML).
+ * Each token is {t: text} for plain text or {c: class-key, t: text} for a
+ * highlighted span; lines are joined with newlines inside the <pre>. */
+const CODE_LINES = [
+  [{c: 'k', t: 'use'}, {t: ' '}, {c: 't', t: 'DrevOps\\Tui\\Builder\\Form'}, {c: 'p', t: ';'}],
+  [{c: 'k', t: 'use'}, {t: ' '}, {c: 't', t: 'DrevOps\\Tui\\Builder\\PanelBuilder'}, {c: 'p', t: ';'}],
+  [{c: 'k', t: 'use'}, {t: ' '}, {c: 't', t: 'DrevOps\\Tui\\Tui'}, {c: 'p', t: ';'}],
+  [],
+  [{c: 'v', t: '$form'}, {t: ' = '}, {c: 't', t: 'Form'}, {t: '::'}, {c: 'm', t: 'create'}, {t: '('}, {c: 's', t: "'New project'"}, {t: ')'}],
+  [{t: '  ->'}, {c: 'm', t: 'panel'}, {t: '('}, {c: 's', t: "'setup'"}, {t: ', '}, {c: 's', t: "'Setup'"}, {t: ', '}, {c: 'k', t: 'function'}, {t: ' ('}, {c: 't', t: 'PanelBuilder'}, {t: ' '}, {c: 'v', t: '$p'}, {t: '): '}, {c: 'k', t: 'void'}, {t: ' {'}],
+  [{t: '    '}, {c: 'v', t: '$p'}, {t: '->'}, {c: 'm', t: 'text'}, {t: '('}, {c: 's', t: "'name'"}, {t: ', '}, {c: 's', t: "'Project name'"}, {t: ')->'}, {c: 'm', t: 'required'}, {t: '()'}, {c: 'p', t: ';'}],
+  [{t: '    '}, {c: 'v', t: '$p'}, {t: '->'}, {c: 'm', t: 'select'}, {t: '('}, {c: 's', t: "'type'"}, {t: ', '}, {c: 's', t: "'Project type'"}, {t: ')->'}, {c: 'm', t: 'options'}, {t: '(['}],
+  [{t: '      '}, {c: 's', t: "'app'"}, {t: ' => '}, {c: 's', t: "'Application'"}, {t: ','}],
+  [{t: '      '}, {c: 's', t: "'library'"}, {t: ' => '}, {c: 's', t: "'Library'"}, {t: ','}],
+  [{t: '    ])'}, {c: 'p', t: ';'}],
+  [{t: '    '}, {c: 'v', t: '$p'}, {t: '->'}, {c: 'm', t: 'multiSelect'}, {t: '('}, {c: 's', t: "'services'"}, {t: ', '}, {c: 's', t: "'Services'"}, {t: ')->'}, {c: 'm', t: 'default'}, {t: '(['}, {c: 's', t: "'redis'"}, {t: '])->'}, {c: 'm', t: 'options'}, {t: '(['}],
+  [{t: '      '}, {c: 's', t: "'redis'"}, {t: ' => '}, {c: 's', t: "'Redis'"}, {t: ','}],
+  [{t: '      '}, {c: 's', t: "'solr'"}, {t: ' => '}, {c: 's', t: "'Solr'"}, {t: ','}],
+  [{t: '      '}, {c: 's', t: "'clamav'"}, {t: ' => '}, {c: 's', t: "'ClamAV'"}, {t: ','}],
+  [{t: '    ])'}, {c: 'p', t: ';'}],
+  [{t: '    '}, {c: 'v', t: '$p'}, {t: '->'}, {c: 'm', t: 'confirm'}, {t: '('}, {c: 's', t: "'ci'"}, {t: ', '}, {c: 's', t: "'Set up CI?'"}, {t: ')->'}, {c: 'm', t: 'default'}, {t: '('}, {c: 'k', t: 'TRUE'}, {t: ')'}, {c: 'p', t: ';'}],
+  [{t: '  })'}, {c: 'p', t: ';'}],
+  [],
+  [{c: 'v', t: '$tui'}, {t: ' = '}, {c: 'k', t: 'new'}, {t: ' '}, {c: 't', t: 'Tui'}, {t: '('}, {c: 'v', t: '$form'}, {t: ', ['}, {c: 's', t: "'App\\\\Handler'"}, {t: '])'}, {c: 'p', t: ';'}],
+  [],
+  [{c: 'c', t: '// Interactive on a terminal, non-interactive otherwise.'}],
+  [{c: 'v', t: '$answers'}, {t: ' = '}, {c: 'v', t: '$tui'}, {t: '->'}, {c: 'm', t: 'run'}, {t: '()'}, {c: 'p', t: ';'}],
+];
 
-<span class="${styles.v}">$form</span> = <span class="${styles.t}">Form</span>::<span class="${styles.m}">create</span>(<span class="${styles.s}">'New project'</span>)
-  -&gt;<span class="${styles.m}">panel</span>(<span class="${styles.s}">'setup'</span>, <span class="${styles.s}">'Setup'</span>, <span class="${styles.k}">function</span> (<span class="${styles.t}">PanelBuilder</span> <span class="${styles.v}">$p</span>): <span class="${styles.k}">void</span> {
-    <span class="${styles.v}">$p</span>-&gt;<span class="${styles.m}">text</span>(<span class="${styles.s}">'name'</span>, <span class="${styles.s}">'Project name'</span>)-&gt;<span class="${styles.m}">required</span>()<span class="${styles.p}">;</span>
-    <span class="${styles.v}">$p</span>-&gt;<span class="${styles.m}">select</span>(<span class="${styles.s}">'type'</span>, <span class="${styles.s}">'Project type'</span>)-&gt;<span class="${styles.m}">options</span>([
-      <span class="${styles.s}">'app'</span> =&gt; <span class="${styles.s}">'Application'</span>,
-      <span class="${styles.s}">'library'</span> =&gt; <span class="${styles.s}">'Library'</span>,
-    ])<span class="${styles.p}">;</span>
-    <span class="${styles.v}">$p</span>-&gt;<span class="${styles.m}">multiSelect</span>(<span class="${styles.s}">'services'</span>, <span class="${styles.s}">'Services'</span>)-&gt;<span class="${styles.m}">default</span>([<span class="${styles.s}">'redis'</span>])-&gt;<span class="${styles.m}">options</span>([
-      <span class="${styles.s}">'redis'</span> =&gt; <span class="${styles.s}">'Redis'</span>,
-      <span class="${styles.s}">'solr'</span> =&gt; <span class="${styles.s}">'Solr'</span>,
-      <span class="${styles.s}">'clamav'</span> =&gt; <span class="${styles.s}">'ClamAV'</span>,
-    ])<span class="${styles.p}">;</span>
-    <span class="${styles.v}">$p</span>-&gt;<span class="${styles.m}">confirm</span>(<span class="${styles.s}">'ci'</span>, <span class="${styles.s}">'Set up CI?'</span>)-&gt;<span class="${styles.m}">default</span>(<span class="${styles.k}">TRUE</span>)<span class="${styles.p}">;</span>
-  })<span class="${styles.p}">;</span>
-
-<span class="${styles.v}">$tui</span> = <span class="${styles.k}">new</span> <span class="${styles.t}">Tui</span>(<span class="${styles.v}">$form</span>, [<span class="${styles.s}">'App\\Handler'</span>])<span class="${styles.p}">;</span>
-
-<span class="${styles.c}">// Interactive on a terminal, non-interactive otherwise.</span>
-<span class="${styles.v}">$answers</span> = <span class="${styles.v}">$tui</span>-&gt;<span class="${styles.m}">run</span>()<span class="${styles.p}">;</span></code>`;
+function QuickStartCode() {
+  return (
+    <pre className={styles.code}><code>{CODE_LINES.map((line, li) => (
+      <React.Fragment key={li}>
+        {li > 0 ? '\n' : null}
+        {line.map((tok, ti) => (tok.c ? <span key={ti} className={styles[tok.c]}>{tok.t}</span> : <React.Fragment key={ti}>{tok.t}</React.Fragment>))}
+      </React.Fragment>
+    ))}</code></pre>
+  );
+}
 
 const GITHUB_PATH = 'M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z';
 
@@ -282,7 +296,7 @@ export default function Home() {
                   <span className={styles.codewinFile}>form.php</span>
                 </div>
                 <div className={styles.codewinScroll}>
-                  <pre className={styles.code} dangerouslySetInnerHTML={{__html: CODE_HTML}} />
+                  <QuickStartCode />
                 </div>
               </div>
 
