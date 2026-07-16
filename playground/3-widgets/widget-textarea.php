@@ -29,7 +29,7 @@ $opts = getopt('', ['no-unicode', 'no-ansi']);
 
 $form = Form::create('Textarea widget')
   ->panel('main', 'Textarea', function (PanelBuilder $p): void {
-    $p->textarea('textarea', 'Textarea')->default("Redis for cache\nSolr for search")->externalEditor();
+    $p->textarea('textarea', 'Textarea')->default('Crisp and sweet' . chr(10) . 'Hint of citrus')->externalEditor();
   });
 
 echo (new Tui($form))->color(isset($opts['no-ansi']) ? FALSE : NULL)->unicode(isset($opts['no-unicode']) ? FALSE : NULL)->run()->toJson() . "\n";

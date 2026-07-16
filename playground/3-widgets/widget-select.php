@@ -27,10 +27,10 @@ $opts = getopt('', ['no-unicode', 'no-ansi']);
 
 $form = Form::create('Select widget')
   ->panel('main', 'Select', function (PanelBuilder $p): void {
-    $p->select('select', 'Select')->default('minimal')->options([
-      'standard' => 'Standard',
-      'minimal' => 'Minimal',
-      'demo_umami' => 'Demo Umami',
+    $p->select('select', 'Select')->default('apple')->options([
+      'apple' => 'Apple',
+      'banana' => 'Banana',
+      'cherry' => 'Cherry',
     ]);
   });
 

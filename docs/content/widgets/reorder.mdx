@@ -12,17 +12,40 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
   <ThemedImage sources={{light: useBaseUrl('/widget-reorder-light-animated.svg'), dark: useBaseUrl('/widget-reorder-dark-animated.svg')}} alt="Reorder widget" />
 </p>
 
-Rank a list by moving items into the order you want. Up/Down move the highlight;
-Space picks the highlighted item up and, while it is held, Up/Down carry it
-through the list; Space (or Enter) drops it, and Enter accepts. The widget
-returns every item in its final order - a permutation of the options, never a
-subset. Pass `default` (a list of option keys) to seed the starting order; any
-options it omits are appended in declared order, so the ranking is always
-complete. Long lists page around the cursor - set the window with `->pageSize()`.
+Rank a list by moving items into the order you want. It returns a
+**`list<string>`** - a full permutation of the option values, never a subset.
 
 ```php
-$p->reorder('priorities', 'Rank by priority')->default(['redis', 'solr'])->options(['redis' => 'Redis', 'solr' => 'Solr', 'clamav' => 'ClamAV']);
+$p->reorder('basket', 'Rank your basket')
+  ->options([
+    'apple' => 'Apple',
+    'carrot' => 'Carrot',
+    'tomato' => 'Tomato',
+  ])
+  ->default(['apple', 'carrot']) // Seed the starting order; omitted items are appended.
+  ->pageSize(10);                // Items visible before the list pages around the cursor.
 ```
+
+## Options
+
+| Name | Description | Required | Default |
+| --- | --- | --- | --- |
+| `options()` | The items to rank, as a `value => label` map. | Yes | - |
+| `default()` | Seeds the starting order; any omitted options are appended in declared order, so the ranking is always complete. | No | Declared order |
+| `pageSize()` | Items shown before the list pages around the cursor. | No | `10` |
+
+## Keyboard
+
+| Key | Action |
+| --- | --- |
+| `↑` / `↓` | Move the highlight, or carry a held item through the list |
+| `Space` | Pick the highlighted item up, or drop a held one |
+| `Enter` | Drop a held item, or accept when nothing is held |
+| `Esc` | Cancel |
+
+## Display modes
+
+In all four [display modes](/display-modes) - Unicode or ASCII, colour on or off:
 
 <table>
   <tr>

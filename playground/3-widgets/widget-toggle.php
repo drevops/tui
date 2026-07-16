@@ -27,9 +27,9 @@ $opts = getopt('', ['no-unicode', 'no-ansi']);
 
 $form = Form::create('Toggle widget')
   ->panel('main', 'Toggle', function (PanelBuilder $p): void {
-    $p->toggle('toggle', 'Toggle')->default('enabled')->options([
-      'enabled' => 'Enabled',
-      'disabled' => 'Disabled',
+    $p->toggle('toggle', 'Toggle')->default('ripe')->options([
+      'ripe' => 'Ripe',
+      'unripe' => 'Unripe',
     ]);
   });
 

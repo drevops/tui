@@ -27,11 +27,11 @@ $opts = getopt('', ['no-unicode', 'no-ansi']);
 
 $form = Form::create('Search widget')
   ->panel('main', 'Search', function (PanelBuilder $p): void {
-    $p->search('search', 'Search')->default('london')->options([
-      'utc' => 'UTC',
-      'london' => 'Europe/London',
-      'paris' => 'Europe/Paris',
-      'sydney' => 'Australia/Sydney',
+    $p->search('search', 'Search')->default('carrot')->options([
+      'carrot' => 'Carrot',
+      'potato' => 'Potato',
+      'onion' => 'Onion',
+      'pepper' => 'Pepper',
     ]);
   });
 

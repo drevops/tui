@@ -6,7 +6,7 @@
  *
  * Arrows move, Right/Left browse, Enter selects. The form points the picker at
  * a small fixture tree with `->startIn()`, limits it to files with
- * `->filesOnly()` and to YAML with `->extensions()`, instead of invoking the
+ * `->filesOnly()` and to CSV with `->extensions()`, instead of invoking the
  * widget directly.
  *
  * Usage:
@@ -30,7 +30,7 @@ $opts = getopt('', ['no-unicode', 'no-ansi']);
 $form = Form::create('File picker widget')
   ->panel('main', 'File picker', function (PanelBuilder $p): void {
     $tree = __DIR__ . '/filepicker-tree';
-    $p->filePicker('file', 'File picker')->startIn($tree)->filesOnly()->extensions(['yml', 'yaml']);
+    $p->filePicker('file', 'File picker')->startIn($tree)->filesOnly()->extensions(['csv']);
   });
 
 echo (new Tui($form))->color(isset($opts['no-ansi']) ? FALSE : NULL)->unicode(isset($opts['no-unicode']) ? FALSE : NULL)->run()->toJson() . "\n";

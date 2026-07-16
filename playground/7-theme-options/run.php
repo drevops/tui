@@ -10,7 +10,7 @@
  *
  * Usage:
  *   php 7-theme-options/run.php
- *   php 7-theme-options/run.php --prompts='{"name":"Acme"}'
+ *   php 7-theme-options/run.php --prompts='{"name":"Weekly Box"}'
  */
 
 declare(strict_types=1);
@@ -33,16 +33,17 @@ $options = getopt('', ['prompts::']);
 $prompts = array_key_exists('prompts', $options) && is_string($options['prompts']) ? $options['prompts'] : '';
 
 $form = Form::create('Theme options demo')
-  ->panel('project', 'Project', function (PanelBuilder $p): void {
-    $p->text('name', 'Name')->default('Acme Site');
-    $p->select('type', 'Package type')->default('library')->options([
-      'library' => 'Library',
-      'project' => 'Project',
+  ->panel('order', 'Order', function (PanelBuilder $p): void {
+    $p->text('name', 'Name')->default('Weekly Box');
+    $p->select('size', 'Box size')->default('medium')->options([
+      'small' => 'Small',
+      'medium' => 'Medium',
+      'large' => 'Large',
     ]);
-    $p->multiSelect('features', 'Features')->options([
-      'tests' => 'Tests',
-      'ci' => 'CI',
-      'docker' => 'Docker',
+    $p->multiSelect('extras', 'Extras')->options([
+      'herbs' => 'Herbs',
+      'nuts' => 'Nuts',
+      'seeds' => 'Seeds',
     ]);
   });
 

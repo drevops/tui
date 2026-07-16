@@ -9,14 +9,14 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 # Discovery
 
 In update mode, `->discover()` rules detect defaults from an existing project
-directory: a `.env` key (`new Dotenv('KEY')`), a JSON dot-path (`new
-JsonValue('composer.json', 'name')`), a path check (`new
-PathExists('docker-compose.yml')`), a directory scan (`new Scan('modules', type:
+directory: a `.env` key (`new Dotenv('SEASON')`), a JSON dot-path (`new
+JsonValue('basket.json', 'name')`), a path check (`new
+PathExists('harvest.csv')`), a directory scan (`new Scan('baskets', type:
 ScanType::Dir)`), or a custom `fn(Context $c): mixed` closure:
 
 ```php
-$p->text('name', 'Project name')->discover(new JsonValue('composer.json', 'name'));
-$p->confirm('docker', 'Uses Docker?')->discover(new PathExists('docker-compose.yml'));
+$p->text('name', 'Produce name')->discover(new JsonValue('basket.json', 'name'));
+$p->confirm('inseason', 'In season?')->discover(new PathExists('harvest.csv'));
 ```
 
 Discovered values are badged in the summary, and explicit input (prompts or

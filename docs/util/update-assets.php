@@ -68,26 +68,26 @@ require_once __DIR__ . '/svg-slowdown.php';
 function widgetInteractions(): array {
   return [
     'text' => <<<'EXPECT'
-# Text: trim "Site", type "Corp", accept.
+# Text: clear the default, type "Apple", accept.
 expect "Text widget" {
     pause 1000
     press_backspace
     press_backspace
     press_backspace
     press_backspace
-    type_text "Corp"
+    type_text "Apple"
     wait_and_enter
 }
 EXPECT,
     'number' => <<<'EXPECT'
-# Number: clear the port, type a new one, accept.
+# Number: clear the default, type a new one, accept.
 expect "Number widget" {
     pause 1000
     press_backspace
     press_backspace
     press_backspace
     press_backspace
-    type_text "3000"
+    type_text "4200"
     wait_and_enter
 }
 EXPECT,
@@ -104,7 +104,7 @@ EXPECT,
 expect "Textarea widget" {
     pause 1000
     safe_send "\r"
-    type_text "ClamAV for mail"
+    type_text "Slightly tart"
     pause 1000
     press_tab
 }
@@ -113,7 +113,7 @@ EXPECT,
 # Password: type extra characters (masked), accept.
 expect "Password widget" {
     pause 1000
-    type_text "s3cret"
+    type_text "grape5"
     wait_and_enter
 }
 EXPECT,
@@ -149,7 +149,7 @@ EXPECT,
 # Suggest: type to filter, highlight a suggestion, accept.
 expect "Suggest widget" {
     pause 1000
-    type_text "Eur"
+    type_text "Ch"
     arrow_down
     wait_and_enter
 }
@@ -158,7 +158,7 @@ EXPECT,
 # Search: type to filter down to one option, accept.
 expect "Search widget" {
     pause 1000
-    type_text "par"
+    type_text "on"
     wait_and_enter
 }
 EXPECT,
@@ -166,7 +166,7 @@ EXPECT,
 # MultiSearch: filter, toggle the match, accept.
 expect "MultiSearch widget" {
     pause 1000
-    type_text "cl"
+    type_text "to"
     toggle_space
     wait_and_enter
 }
@@ -183,7 +183,7 @@ EXPECT,
 # Toggle: select the second value by its first letter, accept.
 expect "Toggle widget" {
     pause 1000
-    type_text "d"
+    type_text "u"
     wait_and_enter
 }
 EXPECT,
@@ -204,27 +204,27 @@ EXPECT,
  */
 function scaffolderInteraction(): string {
   return <<<'EXPECT'
-# Wait for the hub, then drill into the General panel.
-expect "Build & features" {
+# Wait for the hub, then drill into the Basics panel.
+expect "Contents & options" {
     pause 2000
     safe_send "\r"
 }
 
-# Walk the General fields, showing the derived values.
+# Walk the Basics fields, showing the derived values.
 pause 1500
 arrow_down
 arrow_down
 arrow_down
 arrow_down
 
-# Back to the hub, drill into Build & features.
+# Back to the hub, drill into Contents & options.
 press_escape
 pause 1000
 arrow_down
 pause 500
 safe_send "\r"
 
-# Edit the package type: pick the second option.
+# Edit the box size: pick the next option.
 pause 1500
 safe_send "\r"
 pause 1000
@@ -232,7 +232,7 @@ arrow_down
 pause 600
 safe_send "\r"
 
-# Edit the features multiselect: pick tests, ci and docker.
+# Edit the contents multiselect: pick fruit, vegetables and herbs.
 pause 1000
 arrow_down
 pause 400
@@ -246,7 +246,7 @@ toggle_space
 pause 600
 safe_send "\r"
 
-# Suggest a PHP version: trim the default, type another.
+# Suggest a delivery day: trim the default, type another.
 pause 1000
 arrow_down
 arrow_down
@@ -255,7 +255,12 @@ pause 400
 safe_send "\r"
 pause 1000
 press_backspace
-type_text "3"
+press_backspace
+press_backspace
+press_backspace
+press_backspace
+press_backspace
+type_text "Monday"
 pause 800
 safe_send "\r"
 
@@ -270,6 +275,25 @@ EXPECT;
 }
 
 /**
+ * The expect body driving the quick-start panel TUI.
+ *
+ * @return string
+ *   The expect script body.
+ */
+function quickstartInteraction(): string {
+  return <<<'EXPECT'
+# Wait for the hub, drill into the single panel to reveal its fields, hold the
+# frame, then quit.
+expect "New order" {
+    pause 2000
+    safe_send "\r"
+}
+pause 2000
+safe_send "q"
+EXPECT;
+}
+
+/**
  * The expect body driving the nested-panels panel TUI.
  *
  * @return string
@@ -277,25 +301,25 @@ EXPECT;
  */
 function nestedPanelsInteraction(): string {
   return <<<'EXPECT'
-# Wait for the hub, then drill into Identity.
-expect "Identity" {
+# Wait for the hub, then drill into Order.
+expect "Order" {
     pause 2000
     safe_send "\r"
 }
 
-# Look at Identity, then back out to the hub.
+# Look at Order, then back out to the hub.
 pause 1500
 arrow_down
 pause 1000
 press_escape
 
-# Drill into Stack.
+# Drill into Delivery.
 pause 1000
 arrow_down
 pause 500
 safe_send "\r"
 
-# Environment: pick Production (third option).
+# Delivery: pick Doorstep (third option).
 pause 1500
 safe_send "\r"
 pause 1000
@@ -304,14 +328,14 @@ arrow_down
 pause 600
 safe_send "\r"
 
-# Drill into the nested Services panel.
+# Drill into the nested Extras panel.
 pause 1000
 arrow_down
 arrow_down
 pause 500
 safe_send "\r"
 
-# Enable Solr and Redis.
+# Enable Herbs and Nuts.
 pause 1500
 safe_send "\r"
 pause 1000
@@ -321,14 +345,14 @@ toggle_space
 pause 600
 safe_send "\r"
 
-# Drill into the deeper Tuning panel.
+# Drill into the deeper Packaging panel.
 pause 1000
 arrow_down
 arrow_down
 pause 500
 safe_send "\r"
 
-# PHP memory limit: clear the default, pick from the list.
+# Bag weight: clear the default, pick from the list.
 pause 1500
 safe_send "\r"
 pause 1000
@@ -532,9 +556,18 @@ function getJobs(string $project_dir): array {
       'interact' => scaffolderInteraction(),
       'rows' => TERMINAL_ROWS,
       'cols' => TERMINAL_COLS,
-      'verify' => 'Build & features',
+      'verify' => 'Contents & options',
     ];
   }
+
+  // The quick-start form: a static frame of the single panel's fields.
+  $jobs['quickstart'] = [
+    'command' => 'env LINES=14 COLUMNS=72 php ' . $project_dir . '/playground/0-quickstart/run.php',
+    'interact' => quickstartInteraction(),
+    'rows' => 14,
+    'cols' => 72,
+    'at_needle' => 'Vegetables',
+  ];
 
   // Nested panels with drill-in sub-panels, custom buttons and a fix-up.
   $jobs['nested-panels'] = [
@@ -542,7 +575,7 @@ function getJobs(string $project_dir): array {
     'interact' => nestedPanelsInteraction(),
     'rows' => TERMINAL_ROWS,
     'cols' => TERMINAL_COLS,
-    'verify' => 'Identity',
+    'verify' => 'Order',
   ];
 
   // The panel browser wrapped in a rounded border frame.
@@ -582,14 +615,14 @@ function getJobs(string $project_dir): array {
       'interact' => builtinThemeInteraction(),
       'rows' => 15,
       'cols' => 64,
-      'at_needle' => 'Project name',
+      'at_needle' => 'Box name',
     ];
     $jobs['theme-' . $theme_name . '-light'] = [
       'command' => 'env LINES=15 COLUMNS=64 php ' . $project_dir . '/playground/10-builtin-themes/run.php --theme=' . $theme_name . ' --mode=light',
       'interact' => builtinThemeInteraction(),
       'rows' => 15,
       'cols' => 64,
-      'at_needle' => 'Project name',
+      'at_needle' => 'Box name',
       'light' => TRUE,
     ];
   }
@@ -601,7 +634,7 @@ function getJobs(string $project_dir): array {
     'interact' => builtinThemeInteraction(),
     'rows' => 16,
     'cols' => 80,
-    'at_needle' => 'Project name',
+    'at_needle' => 'Box name',
     'dos' => TRUE,
   ];
 
@@ -611,19 +644,23 @@ function getJobs(string $project_dir): array {
     'interact' => '# Headless run: wait for the summary output.',
     'rows' => 8,
     'cols' => TERMINAL_COLS,
-    'at_needle' => 'Project name',
+    'at_needle' => 'Box name',
   ];
 
   // The password reveal toggle: a static frame of the revealed plaintext with
   // the reveal hint, anchored to the moment Tab flips the display to plaintext.
-  // The masked value hides "hunter2", so the plaintext only appears once
+  // The masked value hides "melon7", so the plaintext only appears once
   // revealed - anchoring on it captures the revealed frame, not the initial one.
   $jobs['widget-password-reveal'] = [
     'command' => 'php ' . $project_dir . '/playground/3-widgets/widget-password-reveal.php',
     'interact' => <<<'EXPECT'
-# Reveal the value with Tab, hold the plaintext frame, then accept.
+# Drill into the field, reveal the value with Tab, hold the plaintext frame, then accept.
 expect "Password widget" {
     pause 1000
+    safe_send "\r"
+    pause 800
+    safe_send "\r"
+    pause 800
     press_tab
     pause 1000
     wait_and_enter
@@ -631,7 +668,7 @@ expect "Password widget" {
 EXPECT,
     'rows' => 6,
     'cols' => 44,
-    'at_needle' => 'hunter2',
+    'at_needle' => 'melon7',
   ];
 
   // Every per-widget card - the animated unicode-colour hero README.md embeds

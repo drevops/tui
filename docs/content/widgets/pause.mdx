@@ -12,12 +12,34 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
   <ThemedImage sources={{light: useBaseUrl('/widget-pause-light-animated.svg'), dark: useBaseUrl('/widget-pause-dark-animated.svg')}} alt="Pause widget" />
 </p>
 
-An acknowledgement gate: Enter (or Space) accepts `TRUE`. Headless runs
-auto-acknowledge it, so it never blocks automation.
+An acknowledgement gate: it shows its label and waits for the reader to continue.
+It collects a **`bool`** - always `TRUE` once acknowledged - and holds no other
+value.
 
 ```php
-$p->pause('ready', 'Review the summary above');
+$p->pause('ready', 'Review your basket'); // A gate; it takes no options.
 ```
+
+## Options
+
+Pause has no options of its own - it only renders its label as a gate. The shared
+field options (`when()`, `weight()`, `description()`) still apply.
+
+## Keyboard
+
+| Key | Action |
+| --- | --- |
+| `Enter` / `Space` | Acknowledge and continue |
+| `Esc` | Cancel |
+
+## Headless behaviour
+
+An unattended run has nothing to wait for, so a pause auto-acknowledges (`TRUE`)
+and never blocks automation.
+
+## Display modes
+
+In all four [display modes](/display-modes) - Unicode or ASCII, colour on or off:
 
 <table>
   <tr>

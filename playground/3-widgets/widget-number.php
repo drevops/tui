@@ -27,7 +27,7 @@ $opts = getopt('', ['no-unicode', 'no-ansi']);
 
 $form = Form::create('Number widget')
   ->panel('main', 'Number', function (PanelBuilder $p): void {
-    $p->number('number', 'Number')->default(8080);
+    $p->number('number', 'Number')->default(1200);
   });
 
 echo (new Tui($form))->color(isset($opts['no-ansi']) ? FALSE : NULL)->unicode(isset($opts['no-unicode']) ? FALSE : NULL)->run()->toJson() . "\n";

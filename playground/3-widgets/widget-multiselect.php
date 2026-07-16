@@ -27,10 +27,10 @@ $opts = getopt('', ['no-unicode', 'no-ansi']);
 
 $form = Form::create('MultiSelect widget')
   ->panel('main', 'MultiSelect', function (PanelBuilder $p): void {
-    $p->multiSelect('multiselect', 'MultiSelect')->default(['redis'])->options([
-      'redis' => 'Redis',
-      'solr' => 'Solr',
-      'clamav' => 'ClamAV',
+    $p->multiSelect('multiselect', 'MultiSelect')->default(['apple'])->options([
+      'apple' => 'Apple',
+      'carrot' => 'Carrot',
+      'tomato' => 'Tomato',
     ]);
   });
 

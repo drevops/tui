@@ -12,24 +12,43 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
   <ThemedImage sources={{light: useBaseUrl('/widget-textarea-light-animated.svg'), dark: useBaseUrl('/widget-textarea-dark-animated.svg')}} alt="Textarea widget" />
 </p>
 
-Multi-line text input: Enter inserts a newline, Up/Down move between lines keeping
-the column, Tab accepts.
+Multi-line text input. It collects a **`string`** that may contain newlines.
 
 ```php
-$p->textarea('notes', 'Provisioning notes')->default("Redis for cache\nSolr for search");
+$p->textarea('notes', 'Tasting notes')
+  ->default("Crisp and sweet\nHint of citrus") // Initial value (newlines allowed).
+  ->externalEditor();                          // Allow a handoff to $EDITOR / $VISUAL.
 ```
 
-Call `->externalEditor()` to let the field hand off to the user's `$EDITOR` (or
-`$VISUAL`) for composing long or structured text. Pressing `Ctrl-E` while editing
-suspends the TUI, opens the editor seeded with the current value, and captures
-the saved buffer on return - saving and exiting commits it as the field value,
+## Options
+
+| Name | Description | Required | Default |
+| --- | --- | --- | --- |
+| `default()` | Initial value; may contain newlines. | No | `''` (empty) |
+| `externalEditor()` | Allow a handoff to the reader's `$EDITOR` / `$VISUAL`. | No | Off |
+
+With `externalEditor()` on, `Ctrl-E` suspends the TUI, opens the editor seeded with
+the current value, and captures the saved buffer on return: saving commits it,
 while an aborted edit (a non-zero editor exit) keeps the inline value. When no
-editor is available the option is silently ignored and the field behaves as a
-plain inline textarea.
+editor is available the option is silently ignored and the field stays a plain
+inline textarea.
 
-```php
-$p->textarea('notes', 'Provisioning notes')->externalEditor();
-```
+## Keyboard
+
+| Key | Action |
+| --- | --- |
+| printable keys | Insert at the caret |
+| `Enter` | Insert a newline |
+| `Tab` | Accept (note: `Enter` adds a line, it does not accept) |
+| `↑` / `↓` | Move between lines, keeping the column |
+| `←` / `→` | Move the caret |
+| `Backspace` | Delete the character before the caret |
+| `Ctrl-E` | Open the external editor (when enabled) |
+| `Esc` | Cancel |
+
+## Display modes
+
+In all four [display modes](/display-modes) - Unicode or ASCII, colour on or off:
 
 <table>
   <tr>

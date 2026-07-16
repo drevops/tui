@@ -13,7 +13,7 @@
  * Usage:
  *   php 9-bordered-panels/run.php                          # interactive TUI
  *   php 9-bordered-panels/run.php --border=double --spacing=normal
- *   php 9-bordered-panels/run.php --prompts='{"name":"api"}'
+ *   php 9-bordered-panels/run.php --prompts='{"name":"weekly"}'
  */
 
 declare(strict_types=1);
@@ -30,29 +30,29 @@ $prompts = array_key_exists('prompts', $options) && is_string($options['prompts'
 $border = array_key_exists('border', $options) && is_string($options['border']) ? $options['border'] : 'rounded';
 $spacing = array_key_exists('spacing', $options) && is_string($options['spacing']) ? $options['spacing'] : 'padded';
 
-$form = Form::create('New service')
+$form = Form::create('Fruit basket')
   ->buttons(TRUE, 'Create', 'Cancel')
   ->panel('basics', 'Basics', function (PanelBuilder $p): void {
-    $p->description('What the service is.');
-    $p->text('name', 'Service name')->default('api')->required();
-    $p->select('runtime', 'Runtime')->default('php')->options([
-      'php' => 'PHP',
-      'node' => 'Node.js',
-      'python' => 'Python',
+    $p->description('What the basket holds.');
+    $p->text('name', 'Basket name')->default('weekly')->required();
+    $p->select('fruit', 'Fruit')->default('apple')->options([
+      'apple' => 'Apple',
+      'banana' => 'Banana',
+      'cherry' => 'Cherry',
     ]);
-    $p->number('port', 'Port')->default(8080)->min(1)->max(65535);
+    $p->number('quantity', 'Quantity')->default(6)->min(1)->max(99);
   })
-  ->panel('deploy', 'Deployment', function (PanelBuilder $p): void {
-    $p->description('Where and how it runs.');
-    $p->select('environment', 'Environment')->default('dev')->option('dev', 'Development', 'Local containers')->option('prod', 'Production', 'Live traffic');
-    $p->confirm('autoscale', 'Enable autoscaling?')->default(FALSE);
+  ->panel('deploy', 'Delivery', function (PanelBuilder $p): void {
+    $p->description('How it arrives.');
+    $p->select('method', 'Method')->default('pickup')->option('pickup', 'Pickup', 'At the stall')->option('doorstep', 'Doorstep', 'To your door');
+    $p->confirm('gift', 'Gift wrap?')->default(FALSE);
 
     // A nested sub-panel keeps the border on the drilled-in screen too.
-    $p->panel('resources', 'Resources', function (PanelBuilder $sp): void {
-      $sp->suggest('memory', 'Memory limit')->default('256M')->options([
-        '128M' => '128M',
-        '256M' => '256M',
-        '512M' => '512M',
+    $p->panel('resources', 'Extras', function (PanelBuilder $sp): void {
+      $sp->suggest('bag', 'Bag size')->default('Medium')->options([
+        'Small' => 'Small',
+        'Medium' => 'Medium',
+        'Large' => 'Large',
       ]);
     });
   });

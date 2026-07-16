@@ -112,6 +112,15 @@ composer install
   tests alike; use the enum case (and its `->value` only at a rendering or
   serialization boundary).
 
+### Demo content
+
+- **Examples use a fruit-and-vegetable theme and contain no software, product or
+  technology references.** All demo content across documentation code blocks,
+  playground scripts and generated SVG screenshots follows the canonical set in
+  `.claude/demo_content_reference.md`. Draw sample data from that reference so the
+  docs, the scripts and the screenshots stay consistent, and never introduce a
+  programming language, framework, service, tool or brand into an example.
+
 ## Testing Patterns
 
 ### PHPUnit Structure

@@ -12,7 +12,7 @@
  *   php 10-builtin-themes/run.php --theme=frost
  *   php 10-builtin-themes/run.php --theme=ember --mode=light
  *   php 10-builtin-themes/run.php --theme=dos
- *   php 10-builtin-themes/run.php --theme=mono --prompts='{"name":"Acme"}'
+ *   php 10-builtin-themes/run.php --theme=mono --prompts='{"name":"Box"}'
  *
  * Built-in themes: default, midnight, frost, ember, mono, dos.
  */
@@ -43,19 +43,19 @@ $theme_options = match ($mode) {
 
 $form = Form::create('Built-in theme preview')
   ->panel('preview', 'Preview', function (PanelBuilder $p): void {
-    $p->text('name', 'Project name')->default('Acme Corp')->description('Shown in the header.');
-    $p->select('env', 'Environment')->default('prod')->description('Deployment target.')->options([
-      'dev' => 'Development',
-      'stage' => 'Staging',
-      'prod' => 'Production',
+    $p->text('name', 'Box name')->default('Weekly Box')->description('Shown in the header.');
+    $p->select('grade', 'Grade')->default('premium')->description('Quality grade.')->options([
+      'basic' => 'Basic',
+      'premium' => 'Premium',
+      'organic' => 'Organic',
     ]);
-    $p->multiselect('features', 'Features')->default(['ssl', 'cache'])->description('Enabled features.')->options([
-      'ssl' => 'SSL',
-      'cdn' => 'CDN',
-      'cache' => 'Cache',
-      'queue' => 'Queue',
+    $p->multiSelect('extras', 'Extras')->default(['herbs', 'nuts'])->description('Added extras.')->options([
+      'herbs' => 'Herbs',
+      'nuts' => 'Nuts',
+      'seeds' => 'Seeds',
+      'flowers' => 'Flowers',
     ]);
-    $p->confirm('analytics', 'Analytics')->default(TRUE)->description('Send anonymous usage data.');
+    $p->confirm('gift', 'Gift wrap')->default(TRUE)->description('Wrap the box as a gift.');
   });
 
 try {

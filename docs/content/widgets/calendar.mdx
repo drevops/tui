@@ -12,29 +12,56 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
   <ThemedImage sources={{light: useBaseUrl('/widget-calendar-light-animated.svg'), dark: useBaseUrl('/widget-calendar-dark-animated.svg')}} alt="Calendar widget" />
 </p>
 
-A month calendar that returns a normalized ISO `YYYY-MM-DD` date. Left/Right move
-by day and Up/Down by week (the vim preset binds `h`/`l` and `k`/`j` to the same
-moves), PageUp/PageDown change month, Home/End jump to the first/last day of the
-month, and Enter accepts. Pass `default` (a `YYYY-MM-DD` string) to open on a
-specific date; with none the calendar opens on today. The move keys are
-configurable through the key map, like every other widget.
-
-```php
-$p->calendar('release', 'Release date')->default('2026-07-15');
-```
-
-Declare optional `minDate`, `maxDate` and `weekStart` to bound the range and set
-the first column of the week. Navigation is clamped to the range - the cursor
-never leaves it - and days outside it render dimmed. The bounds are enforced
-headlessly too - a `--prompts` or environment value outside the range is
-rejected - and are reflected in the JSON schema as `min_date`, `max_date` and
-`week_start` on the prompt.
+A month-grid date picker. It collects a single **normalized ISO `YYYY-MM-DD`
+string** and, with no default, opens on today.
 
 ```php
 use DrevOps\Tui\Model\Weekday;
 
-$p->calendar('release', 'Release date')->minDate('2026-01-01')->maxDate('2026-12-31')->weekStart(Weekday::Sunday);
+$p->calendar('harvest', 'Harvest date')
+  ->default('2026-07-15')       // Date the grid opens on.
+  ->minDate('2026-01-01')       // Earliest selectable date, inclusive.
+  ->maxDate('2026-12-31')       // Latest selectable date, inclusive.
+  ->weekStart(Weekday::Sunday); // Day the week grid starts on.
 ```
+
+## Options
+
+| Name | Description | Required | Default |
+| --- | --- | --- | --- |
+| `default()` | Date the grid opens on, as `YYYY-MM-DD`. | No | Today |
+| `minDate()` | Earliest selectable date, inclusive, as `YYYY-MM-DD`. | No | Unbounded |
+| `maxDate()` | Latest selectable date, inclusive, as `YYYY-MM-DD`. | No | Unbounded |
+| `weekStart()` | Day the week grid starts on, a `Weekday` enum case. | No | `Weekday::Monday` |
+
+Navigation is clamped to the `minDate()`/`maxDate()` range: the cursor never
+leaves it, days outside it render dimmed, and an opening date outside the range
+snaps to the nearest bound. These are the widget's own options; the shared field
+options (`required()`, `when()`, `validate()`, ...) are covered in
+[Field behaviour](/field-behaviour).
+
+## Keyboard
+
+| Key | Action |
+| --- | --- |
+| `←` / `→` | Move one day (vim: `h` / `l`) |
+| `↑` / `↓` | Move one week (vim: `k` / `j`) |
+| `PageUp` / `PageDown` | Previous / next month |
+| `Home` / `End` | First / last day of the visible month |
+| `Enter` | Accept the highlighted date |
+| `Esc` | Cancel |
+
+Every move key can be remapped through the [key map](/key-bindings).
+
+## Headless behaviour
+
+The bounds are enforced when the form runs [headlessly](/headless-collection)
+too - a value outside the range is rejected - and surface in the JSON schema as
+`min_date`, `max_date` and `week_start` on the prompt.
+
+## Display modes
+
+In all four [display modes](/display-modes) - Unicode or ASCII, colour on or off:
 
 <table>
   <tr>
