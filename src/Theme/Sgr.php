@@ -32,6 +32,7 @@ enum Sgr: string {
   case Blue = '34';
   case Magenta = '35';
   case Cyan = '36';
+  case White = '37';
   case Grey = '90';
   case BrightYellow = '93';
   case BrightCyan = '96';
