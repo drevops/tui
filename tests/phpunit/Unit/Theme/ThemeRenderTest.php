@@ -254,6 +254,7 @@ final class ThemeRenderTest extends TestCase {
     yield 'right' => [Key::named(KeyName::Right), '→', '>'];
     yield 'enter' => [Key::named(KeyName::Enter), '↵', '<'];
     yield 'escape' => [Key::named(KeyName::Escape), 'esc', 'esc'];
+    yield 'interrupt' => [Key::named(KeyName::Interrupt), 'ctrl-c', 'ctrl-c'];
     yield 'tab' => [Key::named(KeyName::Tab), 'tab', 'tab'];
     yield 'space' => [Key::named(KeyName::Space), 'space', 'space'];
     yield 'backspace' => [Key::named(KeyName::Backspace), '⌫', 'bksp'];

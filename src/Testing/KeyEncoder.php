@@ -46,6 +46,7 @@ final class KeyEncoder {
       KeyName::Tab => "\t",
       KeyName::Space => ' ',
       KeyName::Escape => "\033",
+      KeyName::Interrupt => "\x03",
       KeyName::Up => "\033[A",
       KeyName::Down => "\033[B",
       KeyName::Right => "\033[C",

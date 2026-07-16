@@ -1036,6 +1036,7 @@ class DefaultTheme implements ThemeInterface {
       KeyName::Right => $this->arrowRight(),
       KeyName::Enter => $this->enter(),
       KeyName::Escape => Translator::t('esc'),
+      KeyName::Interrupt => Translator::t('ctrl-c'),
       KeyName::Tab => Translator::t('tab'),
       KeyName::Space => Translator::t('space'),
       KeyName::Backspace => $this->unicode ? '⌫' : Translator::t('bksp'),

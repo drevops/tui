@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Input;
 
 /**
- * Named special keys recognised by the widgets.
+ * Named special keys recognised by the widgets and the panel loop.
  *
  * @package DrevOps\Tui\Input
  */
@@ -17,6 +17,7 @@ enum KeyName {
   case Right;
   case Enter;
   case Escape;
+  case Interrupt;
   case Space;
   case Backspace;
   case Delete;
