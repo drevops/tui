@@ -26,16 +26,21 @@ Theme --> PC: banner text
 PC -> Term: render(banner)
 
 loop until done
-  PC -> Theme: body(panel, answers, cursor)
-  Theme --> PC: rows + cursor line
-  PC -> Nav: compute viewport
-  Nav --> PC: visible window
-  alt current panel is a modal
-    PC -> Theme: renderModal(dialog, dimmed backdrop)
-    Theme --> PC: composited frame
-  else hub or field editor
-    PC -> Theme: frame(header, body, footer, viewport)
-    Theme --> PC: frame text
+  alt fullscreen and terminal below the minimum size
+    PC -> PC: centered "terminal too small" notice\n(only quit is handled)
+  else laid out
+    PC -> Theme: body(panel, answers, cursor)
+    Theme --> PC: rows + cursor line
+    PC -> Nav: compute viewport\n(theme-owned chrome height)
+    Nav --> PC: visible window
+    alt current panel is a modal
+      PC -> Theme: renderModal(dialog, dimmed backdrop)
+      Theme --> PC: composited frame
+    else hub or field editor
+      PC -> Theme: frame(header, body, footer, viewport)
+      Theme --> PC: frame text\n(fullscreen: stretched, block aligned)
+    end
+    PC -> PC: position frame in the screen\n(fullscreen: Overlay place by halign/valign)
   end
   PC -> Term: render(frame)
 
