@@ -1,7 +1,8 @@
 @startuml
 ' drevops/tui - data flow for the interactive panel TUI.
 ' Traced from src/Render/PanelController.php (run -> frame/handle), src/Theme/
-' and src/Input/ (KeyMap resolves a key press to a semantic action).
+' (frame, and renderModal composited via src/Render/Overlay) and src/Input/
+' (KeyMap resolves a key press to a semantic action).
 ' Regenerate every SVG with:  plantuml -tsvg docs/architecture/*.puml
 !theme plain
 skinparam backgroundColor white
@@ -29,8 +30,13 @@ loop until done
   Theme --> PC: rows + cursor line
   PC -> Nav: compute viewport
   Nav --> PC: visible window
-  PC -> Theme: frame(header, body, footer, viewport)
-  Theme --> PC: frame text
+  alt current panel is a modal
+    PC -> Theme: renderModal(dialog, dimmed backdrop)
+    Theme --> PC: composited frame
+  else hub or field editor
+    PC -> Theme: frame(header, body, footer, viewport)
+    Theme --> PC: frame text
+  end
   PC -> Term: render(frame)
 
   User -> Term: key press
@@ -46,7 +52,7 @@ loop until done
   else navigating
     PC -> KM: matches(key, action)?
     KM --> PC: bound action (move, activate, back, quit)
-    note right of PC: move cursor, drill panel,\nor open the field editor in place (full-screen if standalone)
+    note right of PC: move cursor, drill panel, edit a field in place,\nor open a modal dialog over the dimmed parent;\na modal's submit keeps edits, cancel restores the opening answers
   end
 end
 

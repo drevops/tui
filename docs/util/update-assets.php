@@ -426,6 +426,55 @@ EXPECT;
 }
 
 /**
+ * The expect body driving the modal-panels panel TUI.
+ *
+ * @return string
+ *   The expect script body.
+ */
+function modalPanelsInteraction(): string {
+  return <<<'EXPECT'
+# Wait for the hub, then drill into the basket.
+expect "Basket" {
+    pause 2000
+    safe_send "\r"
+}
+
+# Move past the fields to Gift options and open the modal dialog.
+pause 1500
+arrow_down
+arrow_down
+arrow_down
+pause 800
+safe_send "\r"
+
+# The dialog floats centered over the dimmed basket. Hold it, then Save.
+pause 2500
+arrow_down
+arrow_down
+pause 800
+safe_send "\r"
+
+# Back in the basket. Open the text-only warning modal and hold it.
+pause 1200
+arrow_down
+pause 800
+safe_send "\r"
+pause 2500
+
+# Keep the basket, back out to the hub, and place the order.
+arrow_down
+pause 800
+safe_send "\r"
+pause 1000
+press_escape
+pause 1000
+arrow_down
+pause 800
+safe_send "\r"
+EXPECT;
+}
+
+/**
  * The expect body driving the custom-theme (ocean) panel TUI.
  *
  * @return string
@@ -594,6 +643,16 @@ function getJobs(string $project_dir): array {
     'rows' => TERMINAL_ROWS,
     'cols' => TERMINAL_COLS,
     'verify' => 'Basics',
+  ];
+
+  // A modal panel: a dialog centered over the dimmed parent, dismissed by its
+  // own buttons - one dialog collecting fields, one a text-only warning.
+  $jobs['modal-panels'] = [
+    'command' => 'env LINES=' . TERMINAL_ROWS . ' COLUMNS=' . TERMINAL_COLS . ' php ' . $project_dir . '/playground/11-modal-panel/run.php',
+    'interact' => modalPanelsInteraction(),
+    'rows' => TERMINAL_ROWS,
+    'cols' => TERMINAL_COLS,
+    'verify' => 'Gift options',
   ];
 
   // The custom ocean theme with a banner.

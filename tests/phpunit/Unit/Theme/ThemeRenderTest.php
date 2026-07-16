@@ -6,8 +6,10 @@ namespace DrevOps\Tui\Tests\Unit\Theme;
 
 use DrevOps\Tui\Answers\Answers;
 use DrevOps\Tui\Answers\Provenance;
+use DrevOps\Tui\Model\Buttons;
 use DrevOps\Tui\Model\Field;
 use DrevOps\Tui\Model\FieldType;
+use DrevOps\Tui\Model\Modal;
 use DrevOps\Tui\Model\Panel;
 use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Hint;
@@ -18,6 +20,7 @@ use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Render\HelpSection;
 use DrevOps\Tui\Render\Navigator;
 use DrevOps\Tui\Render\Viewport;
+use DrevOps\Tui\Theme\Border;
 use DrevOps\Tui\Theme\DefaultTheme;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -334,6 +337,80 @@ final class ThemeRenderTest extends TestCase {
 
     // With none selected, nothing is cursor-styled.
     $this->assertStringNotContainsString("\033[1;7m", (new DefaultTheme())->renderButtonBar(['Submit', 'Cancel'], -1));
+  }
+
+  public function testDimRecedesText(): void {
+    // With colour, dim wraps the text; with colour off, it is left untouched.
+    $this->assertSame("\033[2mx\033[0m", (new DefaultTheme(40))->dim('x'));
+    $this->assertSame('x', $this->theme()->dim('x'));
+  }
+
+  public function testRenderModalCentersDialogOverBackdrop(): void {
+    $theme = $this->theme();
+    $modal = new Panel('c', 'Confirm', 'Proceed with care.', [
+      new Field('opt', 'Option', '', FieldType::Text, 'val'),
+    ], [], new Modal(new Buttons(TRUE, 'Yes', 'No')));
+    // A backdrop taller than the dialog, so the dialog centres within it.
+    $backdrop = $theme->renderFrame(['Demo'], ['Alpha  1', 'Beta  2', 'Gamma  3', 'Delta  4', 'Epsilon  5', 'Zeta  6', 'Eta  7', 'Theta  8'], [], new Viewport(0, FALSE, FALSE), 8);
+
+    $out = Ansi::strip($theme->renderModal($modal, new Answers(['opt' => 'val'], ['opt' => Provenance::Default]), 0, NULL, '', 0, $backdrop, 10));
+
+    $this->assertStringContainsString('Confirm', $out);
+    $this->assertStringContainsString('Proceed with care.', $out);
+    $this->assertStringContainsString('Option', $out);
+    $this->assertStringContainsString('[ Yes ]', $out);
+    $this->assertStringContainsString('[ No ]', $out);
+    // Compositing preserves the backdrop's height: the dialog floats within it.
+    $this->assertCount(count(explode("\n", Ansi::strip($backdrop))), explode("\n", $out));
+  }
+
+  public function testRenderModalWithoutFields(): void {
+    $theme = $this->theme();
+    $modal = new Panel('n', 'Notice', 'Saved successfully.', [], [], new Modal());
+    $backdrop = "aaaaaa\nbbbbbb\ncccccc\ndddddd\neeeeee\nffffff\ngggggg\nhhhhhh";
+
+    $out = Ansi::strip($theme->renderModal($modal, new Answers([], []), -1, NULL, '', -1, $backdrop, 8));
+
+    // A text-only dialog still shows its message and its default buttons.
+    $this->assertStringContainsString('Notice', $out);
+    $this->assertStringContainsString('Saved successfully.', $out);
+    $this->assertStringContainsString('[ Submit ]', $out);
+    $this->assertStringContainsString('[ Cancel ]', $out);
+  }
+
+  public function testRenderModalForcesBorderOnBorderlessTheme(): void {
+    $theme = new DefaultTheme(40, ['color' => FALSE, 'border' => Border::None]);
+    $modal = new Panel('e', 'Empty', '', [], [], new Modal());
+    $backdrop = "aaaaaa\nbbbbbb\ncccccc\ndddddd\neeeeee\nffffff";
+
+    $out = Ansi::strip($theme->renderModal($modal, new Answers([], []), -1, NULL, '', -1, $backdrop, 6));
+
+    // Even a borderless theme boxes the dialog so it reads as floating above.
+    $this->assertStringContainsString('┌', $out);
+    $this->assertStringContainsString('Empty', $out);
+    $this->assertStringContainsString('[ Submit ]', $out);
+  }
+
+  public function testRenderModalScrollsBodyAndPinsButtonsWhenTall(): void {
+    $theme = $this->theme();
+    $fields = [];
+    $values = [];
+    for ($i = 1; $i <= 10; $i++) {
+      $fields[] = new Field('f' . $i, 'Field ' . $i, '', FieldType::Text, 'v' . $i);
+      $values['f' . $i] = 'v' . $i;
+    }
+    $modal = new Panel('big', 'Big', 'Many fields.', $fields, [], new Modal(new Buttons(TRUE, 'Save', 'Discard')));
+    // A short backdrop forces the padding; a small height forces the body to
+    // scroll under the pinned button footer rather than clipping it.
+    $backdrop = "aaaa\nbbbb\ncccc";
+
+    $out = Ansi::strip($theme->renderModal($modal, new Answers($values, []), 0, NULL, '', -1, $backdrop, 12));
+
+    $this->assertStringContainsString('Field 1', $out);
+    $this->assertStringContainsString('[ Save ]', $out);
+    $this->assertStringContainsString('[ Discard ]', $out);
+    // The last field scrolls out of view, but the buttons never do.
+    $this->assertStringNotContainsString('Field 10', $out);
   }
 
   /**

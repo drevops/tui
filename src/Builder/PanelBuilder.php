@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Builder;
 
+use DrevOps\Tui\Model\Buttons;
 use DrevOps\Tui\Model\Field;
 use DrevOps\Tui\Model\FieldType;
+use DrevOps\Tui\Model\Modal;
 use DrevOps\Tui\Model\Panel;
 
 /**
@@ -35,6 +37,11 @@ final class PanelBuilder {
   protected array $panels = [];
 
   /**
+   * The modal presentation config, or NULL for an ordinary drill-in panel.
+   */
+  protected ?Modal $modal = NULL;
+
+  /**
    * Construct a panel builder.
    *
    * @param string $id
@@ -56,6 +63,27 @@ final class PanelBuilder {
    */
   public function description(string $description): self {
     $this->description = $description;
+
+    return $this;
+  }
+
+  /**
+   * Present this panel as a centered modal dialog over its parent.
+   *
+   * The panel's fields (and its description text) render in a bordered box
+   * floating over the dimmed parent; the dialog is dismissed through its own
+   * submit/cancel buttons, whose labels are configurable here.
+   *
+   * @param string $submit_label
+   *   The submit (accept) button label.
+   * @param string $cancel_label
+   *   The cancel (dismiss) button label.
+   *
+   * @return $this
+   *   The builder.
+   */
+  public function modal(string $submit_label = 'Submit', string $cancel_label = 'Cancel'): self {
+    $this->modal = new Modal(new Buttons(TRUE, $submit_label, $cancel_label));
 
     return $this;
   }
@@ -293,6 +321,7 @@ final class PanelBuilder {
       $this->description,
       array_map(static fn(FieldBuilder $field): Field => $field->build(), $this->fields),
       array_map(static fn(PanelBuilder $panel): Panel => $panel->build(), $this->panels),
+      $this->modal,
     );
   }
 

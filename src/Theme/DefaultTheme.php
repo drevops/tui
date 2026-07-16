@@ -9,6 +9,7 @@ use DrevOps\Tui\Answers\Provenance;
 use DrevOps\Tui\Answers\SummaryFormatter;
 use DrevOps\Tui\Model\Field;
 use DrevOps\Tui\Model\FieldType;
+use DrevOps\Tui\Model\Modal;
 use DrevOps\Tui\Model\Panel;
 use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Hint;
@@ -19,6 +20,7 @@ use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Render\Box;
 use DrevOps\Tui\Render\HelpSection;
 use DrevOps\Tui\Render\Navigator;
+use DrevOps\Tui\Render\Overlay;
 use DrevOps\Tui\Render\Scroller;
 use DrevOps\Tui\Render\Viewport;
 use DrevOps\Tui\Translation\Translator;
@@ -401,6 +403,19 @@ class DefaultTheme implements ThemeInterface {
    */
   public function breadcrumb(string $text): string {
     return $this->paint(Sgr::of(Sgr::Grey), $text);
+  }
+
+  /**
+   * Recede text into the background, so a modal reads as floating above it.
+   *
+   * @param string $text
+   *   The text.
+   *
+   * @return string
+   *   The dimmed text (unchanged when colour is off).
+   */
+  public function dim(string $text): string {
+    return $this->paint(Sgr::of(Sgr::Dim), $text);
   }
 
   /**
@@ -862,43 +877,71 @@ class DefaultTheme implements ThemeInterface {
    *   The composed frame.
    */
   public function renderFrame(array $header, array $body, array $footer, Viewport $viewport, int $height): string {
-    if ($this->borderStyle() === Border::None) {
+    return $this->renderBoxed($header, $body, $footer, $viewport, $height, $this->outerWidth, $this->borderStyle());
+  }
+
+  /**
+   * Compose a frame at an explicit width and border, else the same as a frame.
+   *
+   * The width/border are parameters so a modal can reuse the theme's boxing in
+   * a narrower box; the standard frame passes its own outer width and border.
+   *
+   * @param list<string> $header
+   *   The pinned header lines.
+   * @param list<string> $body
+   *   The full body lines.
+   * @param list<string> $footer
+   *   The pinned footer lines.
+   * @param \DrevOps\Tui\Render\Viewport $viewport
+   *   The computed viewport.
+   * @param int $height
+   *   The body viewport height.
+   * @param int $outer_width
+   *   The outer width, including the border columns.
+   * @param \DrevOps\Tui\Theme\Border $border
+   *   The border style to draw.
+   *
+   * @return string
+   *   The composed frame.
+   */
+  protected function renderBoxed(array $header, array $body, array $footer, Viewport $viewport, int $height, int $outer_width, Border $border): string {
+    if ($border === Border::None) {
       return $this->renderBorderless($header, $body, $footer, $viewport, $height);
     }
 
-    $chars = Box::chars($this->borderStyle(), $this->unicode);
+    $chars = Box::chars($border, $this->unicode);
     $middle = $this->scrolledBody($body, $viewport, $height);
     $pad = $this->spacing() === Spacing::Padded;
 
-    $out = [$this->borderRule($chars['tl'], $chars['tr'], $chars['h'])];
+    $out = [$this->borderRule($chars['tl'], $chars['tr'], $chars['h'], $outer_width)];
 
     foreach ($header as $line) {
-      $out[] = $this->boxLine($line, $chars['v']);
+      $out[] = $this->boxLine($line, $chars['v'], $outer_width);
     }
 
-    $out[] = $this->borderRule($chars['ml'], $chars['mr'], $chars['h']);
+    $out[] = $this->borderRule($chars['ml'], $chars['mr'], $chars['h'], $outer_width);
 
     if ($pad) {
-      $out[] = $this->boxLine('', $chars['v']);
+      $out[] = $this->boxLine('', $chars['v'], $outer_width);
     }
 
     foreach ($middle as $line) {
-      $out[] = $this->boxLine($line, $chars['v']);
+      $out[] = $this->boxLine($line, $chars['v'], $outer_width);
     }
 
     if ($pad) {
-      $out[] = $this->boxLine('', $chars['v']);
+      $out[] = $this->boxLine('', $chars['v'], $outer_width);
     }
 
     if ($footer !== []) {
-      $out[] = $this->borderRule($chars['ml'], $chars['mr'], $chars['h']);
+      $out[] = $this->borderRule($chars['ml'], $chars['mr'], $chars['h'], $outer_width);
 
       foreach ($footer as $line) {
-        $out[] = $this->boxLine($line, $chars['v']);
+        $out[] = $this->boxLine($line, $chars['v'], $outer_width);
       }
     }
 
-    $out[] = $this->borderRule($chars['bl'], $chars['br'], $chars['h']);
+    $out[] = $this->borderRule($chars['bl'], $chars['br'], $chars['h'], $outer_width);
 
     return implode("\n", $out);
   }
@@ -968,12 +1011,14 @@ class DefaultTheme implements ThemeInterface {
    *   The right corner or junction glyph.
    * @param string $fill
    *   The horizontal fill glyph.
+   * @param int $outer_width
+   *   The total width the rule spans.
    *
    * @return string
    *   The styled rule.
    */
-  protected function borderRule(string $left, string $right, string $fill): string {
-    return $this->border(Box::rule($left, $right, $fill, $this->outerWidth));
+  protected function borderRule(string $left, string $right, string $fill, int $outer_width): string {
+    return $this->border(Box::rule($left, $right, $fill, $outer_width));
   }
 
   /**
@@ -983,14 +1028,16 @@ class DefaultTheme implements ThemeInterface {
    *   The content (may carry ANSI codes and be shorter than the inner width).
    * @param string $vertical
    *   The vertical border glyph.
+   * @param int $outer_width
+   *   The outer width the line is padded to, including the border columns.
    *
    * @return string
    *   The boxed line, padded to the outer width.
    */
-  protected function boxLine(string $content, string $vertical): string {
+  protected function boxLine(string $content, string $vertical, int $outer_width): string {
     $bar = $this->border($vertical);
 
-    return $bar . ' ' . Box::fit($content, max(1, $this->outerWidth - 4)) . ' ' . $bar;
+    return $bar . ' ' . Box::fit($content, max(1, $outer_width - 4)) . ' ' . $bar;
   }
 
   /**
@@ -1182,6 +1229,106 @@ class DefaultTheme implements ThemeInterface {
     $lines[] = $this->renderHints($nav, new Hint('close', Action::Help));
 
     return implode("\n", $lines);
+  }
+
+  /**
+   * Compose a modal dialog: a centered box floating over the dimmed backdrop.
+   *
+   * The dialog's description text, its fields and its own submit/cancel buttons
+   * are boxed in a narrower frame, then spliced centered over the backdrop so
+   * the dimmed parent shows through the padding on every side.
+   *
+   * @param \DrevOps\Tui\Model\Panel $modal
+   *   The modal panel (carrying its {@see \DrevOps\Tui\Model\Modal} config).
+   * @param \DrevOps\Tui\Answers\Answers $answers
+   *   The current answers.
+   * @param int $cursor
+   *   The selected item index within the dialog.
+   * @param \DrevOps\Tui\Model\Field|null $editing
+   *   The field whose editor is expanded inline in the dialog, or NULL.
+   * @param string $editorView
+   *   The inline editor's rendered view.
+   * @param int $selectedButton
+   *   The index of the selected dialog button, or -1 when none is selected.
+   * @param string $backdrop
+   *   The rendered parent frame to dim and overlay the dialog on.
+   * @param int $height
+   *   The screen's body height, bounding the dialog so its footer never clips.
+   *
+   * @return string
+   *   The composited screen.
+   */
+  public function renderModal(Panel $modal, Answers $answers, int $cursor, ?Field $editing, string $editorView, int $selectedButton, string $backdrop, int $height): string {
+    $config = $modal->modal;
+
+    if (!$config instanceof Modal) {
+      // @codeCoverageIgnoreStart
+      return $backdrop;
+      // @codeCoverageIgnoreEnd
+    }
+
+    [$fields, $field_cursor] = $this->renderBody($modal, $answers, $cursor, $editing, $editorView);
+
+    $lead = [];
+    if ($modal->description !== '') {
+      foreach (explode("\n", Translator::t($modal->description)) as $line) {
+        $lead[] = $this->label($line);
+      }
+
+      if ($fields !== []) {
+        $lead[] = '';
+      }
+    }
+
+    $body = array_merge($lead, $fields);
+
+    // The buttons pin to a footer so a dialog taller than the terminal never
+    // clips its only way out; the body scrolls under them to keep the cursor
+    // in view.
+    $footer = [
+      $this->renderButtonBar([
+        Translator::t($config->buttons->submitLabel),
+        Translator::t($config->buttons->cancelLabel),
+      ], $selectedButton),
+    ];
+
+    $inset = max(2, intdiv($this->outerWidth, 8));
+    $modal_width = max(1, $this->outerWidth - 2 * $inset);
+    $border = $this->borderStyle() === Border::None ? Border::Line : $this->borderStyle();
+
+    // Fit the dialog within the screen height so the pinned button footer is
+    // never clipped, reserving the box chrome (four rules, the title, the
+    // footer and any spacing pad). Only the body scrolls; the footer stays put.
+    $pad = $this->spacing() === Spacing::Padded ? 1 : 0;
+    $room = max(0, $height - 6 - 2 * $pad);
+
+    if (count($body) > $room && $room >= 3) {
+      // The body overflows and there is room to scroll it under the footer.
+      $cursor_line = $selectedButton >= 0 ? max(0, count($body) - 1) : count($lead) + $field_cursor;
+      $body_height = $room - 2;
+      $viewport = (new Scroller())->follow(count($body), $body_height, $cursor_line, 0);
+    }
+    else {
+      // The body fits, or there is too little room to scroll: show what fits.
+      $body = array_slice($body, 0, $room);
+      $viewport = new Viewport(0, FALSE, FALSE);
+      $body_height = count($body);
+    }
+
+    $box = explode("\n", $this->renderBoxed([$this->title(Translator::t($modal->title))], $body, $footer, $viewport, $body_height, $modal_width, $border));
+
+    // Pad the backdrop so a short parent frame still gives the dialog room to
+    // sit over, rather than shrinking it.
+    $backdrop_lines = array_map(fn(string $line): string => Box::fit(Ansi::strip($line), $this->outerWidth), explode("\n", $backdrop));
+    $area_height = max(count($backdrop_lines), count($box));
+
+    while (count($backdrop_lines) < $area_height) {
+      $backdrop_lines[] = str_repeat(' ', $this->outerWidth);
+    }
+
+    [$top, $left] = Overlay::center($this->outerWidth, $area_height, $modal_width, count($box));
+
+    return implode("\n", Overlay::composite($backdrop_lines, $box, $modal_width, $top, $left, fn(string $segment): string => $this->dim($segment)));
   }
 
   /**

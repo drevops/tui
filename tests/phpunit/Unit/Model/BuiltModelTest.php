@@ -98,9 +98,9 @@ final class BuiltModelTest extends TestCase {
     $this->assertSame([], $form->fixups);
     // Form chrome defaults (the global TUI runtime lives on the Tui facade).
     $this->assertSame('', $form->banner);
-    $this->assertTrue($form->buttons);
-    $this->assertSame('Submit', $form->submitLabel);
-    $this->assertSame('Cancel', $form->cancelLabel);
+    $this->assertTrue($form->buttons->show);
+    $this->assertSame('Submit', $form->buttons->submitLabel);
+    $this->assertSame('Cancel', $form->buttons->cancelLabel);
   }
 
 }

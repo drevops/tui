@@ -33,12 +33,8 @@ final readonly class FormDefinition {
    *   the facade default).
    * @param string $banner
    *   The start banner (logo) shown before the interactive TUI (optional).
-   * @param bool $buttons
-   *   Whether the interactive TUI shows submit and cancel buttons.
-   * @param string $submitLabel
-   *   The label of the submit button.
-   * @param string $cancelLabel
-   *   The label of the cancel button.
+   * @param \DrevOps\Tui\Model\Buttons $buttons
+   *   The submit/cancel buttons the interactive TUI shows on the root panel.
    */
   public function __construct(
     public string $title,
@@ -47,9 +43,7 @@ final readonly class FormDefinition {
     public array $fixups = [],
     public string $envPrefix = '',
     public string $banner = '',
-    public bool $buttons = TRUE,
-    public string $submitLabel = 'Submit',
-    public string $cancelLabel = 'Cancel',
+    public Buttons $buttons = new Buttons(),
   ) {
   }
 

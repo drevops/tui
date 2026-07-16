@@ -51,6 +51,16 @@ class Navigator {
   }
 
   /**
+   * The immediate parent of the current panel, if any.
+   *
+   * @return \DrevOps\Tui\Model\Panel|null
+   *   The parent panel, or NULL when the current panel is the root.
+   */
+  public function parent(): ?Panel {
+    return $this->parents === [] ? NULL : $this->parents[count($this->parents) - 1];
+  }
+
+  /**
    * Pop back to the parent panel.
    *
    * @return bool

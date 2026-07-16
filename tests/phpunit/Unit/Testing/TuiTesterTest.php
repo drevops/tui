@@ -117,6 +117,49 @@ final class TuiTesterTest extends TestCase {
     yield 'is interrupted' => [static fn(TuiTester $tester): mixed => $tester->isInterrupted()];
   }
 
+  public function testModalSubmitFlowsThroughTheInputPipe(): void {
+    $tester = new TuiTester($this->modalForm());
+
+    // Open the modal from the hub (Down to the modal item, Enter), edit its
+    // field (Enter, type, Enter), Apply it (Down, Enter), then submit the form
+    // (Down to Submit, Enter).
+    $answers = $tester->run(
+      Key::named(KeyName::Down),
+      Key::named(KeyName::Enter),
+      Key::named(KeyName::Enter),
+      'Zed',
+      Key::named(KeyName::Enter),
+      Key::named(KeyName::Down),
+      Key::named(KeyName::Enter),
+      Key::named(KeyName::Down),
+      Key::named(KeyName::Enter),
+    );
+
+    $this->assertSame('Zed', $answers->value('nick'));
+    $this->assertFalse($tester->isCancelled());
+  }
+
+  public function testModalDiscardRestoresThroughTheInputPipe(): void {
+    $tester = new TuiTester($this->modalForm());
+
+    // Same as the submit flow but Discard the dialog (Down to Discard, Enter)
+    // instead of Apply, so the edit is rolled back before the form submits.
+    $answers = $tester->run(
+      Key::named(KeyName::Down),
+      Key::named(KeyName::Enter),
+      Key::named(KeyName::Enter),
+      'Zed',
+      Key::named(KeyName::Enter),
+      Key::named(KeyName::Down),
+      Key::named(KeyName::Down),
+      Key::named(KeyName::Enter),
+      Key::named(KeyName::Down),
+      Key::named(KeyName::Enter),
+    );
+
+    $this->assertSame('', $answers->value('nick'));
+  }
+
   /**
    * A single-field form used across the harness tests.
    */
@@ -124,6 +167,20 @@ final class TuiTesterTest extends TestCase {
     return Form::create('Demo')
       ->panel('main', 'Main', function (PanelBuilder $p): void {
         $p->text('name', 'Name');
+      });
+  }
+
+  /**
+   * A form whose second top-level panel is a modal dialog.
+   */
+  protected function modalForm(): Form {
+    return Form::create('Demo')
+      ->panel('main', 'Main', function (PanelBuilder $p): void {
+        $p->text('name', 'Name');
+      })
+      ->panel('edit', 'Quick edit', function (PanelBuilder $m): void {
+        $m->modal('Apply', 'Discard');
+        $m->text('nick', 'Nickname');
       });
   }
 
