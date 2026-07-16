@@ -85,8 +85,7 @@ final class Tui {
   protected ?bool $unicode = NULL;
 
   /**
-   * Expand the interactive TUI to the whole terminal; NULL leaves the option
-   * to the theme options.
+   * Expand the TUI to the whole terminal; NULL defers to the theme options.
    */
   protected ?bool $fullscreen = NULL;
 
@@ -358,11 +357,7 @@ final class Tui {
     // when set, otherwise they are auto-detected from the terminal.
     $options = $this->resolveThemeOptions($terminal);
 
-    // A fullscreen frame lays out to the terminal's width (the theme caps it
-    // with "max_width"); the width is fixed for the session, like the theme.
-    $width = ($options['fullscreen'] ?? FALSE) === TRUE ? $terminal->width() : DefaultTheme::DEFAULT_WIDTH;
-
-    $controller = $this->controller($options, $theme, $banner, $version, $directory, $width);
+    $controller = $this->controller($options, $theme, $banner, $version, $directory, self::frameWidth($options, $terminal->width()));
 
     $answers = $controller->run($terminal);
 
@@ -422,6 +417,25 @@ final class Tui {
       $banner_text,
       $version,
     );
+  }
+
+  /**
+   * The frame width the theme lays out to for the resolved options.
+   *
+   * A fullscreen frame lays out to the terminal's width (the theme caps it
+   * with "max_width"); the width is fixed for the session, like the theme.
+   * Anything else keeps the default width.
+   *
+   * @param array<string,mixed> $options
+   *   The resolved theme display options.
+   * @param int $terminal_width
+   *   The terminal's width in columns.
+   *
+   * @return int
+   *   The frame width.
+   */
+  public static function frameWidth(array $options, int $terminal_width): int {
+    return ($options['fullscreen'] ?? FALSE) === TRUE ? $terminal_width : DefaultTheme::DEFAULT_WIDTH;
   }
 
   /**

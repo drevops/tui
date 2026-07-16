@@ -270,8 +270,6 @@ class DefaultTheme implements ThemeInterface {
   /**
    * An enum display option, or a default when unset or unrecognized.
    *
-   * @template T of \BackedEnum
-   *
    * @param string $name
    *   The option name (e.g. "spacing", "halign").
    * @param class-string<T> $enum
@@ -281,6 +279,8 @@ class DefaultTheme implements ThemeInterface {
    *
    * @return T
    *   The option case.
+   *
+   * @template T of \BackedEnum
    */
   protected function enumOption(string $name, string $enum, \BackedEnum $default): \BackedEnum {
     $value = $this->options[$name] ?? NULL;

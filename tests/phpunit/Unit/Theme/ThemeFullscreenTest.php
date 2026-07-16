@@ -62,7 +62,7 @@ final class ThemeFullscreenTest extends TestCase {
 
     $frame = $theme->renderFrame(['H'], ['ab'], ['F'], new Viewport(0, FALSE, FALSE), 4);
 
-    // header + footer + chrome + viewport height = the exact frame height.
+    // Header + footer + chrome + viewport height = the exact frame height.
     $this->assertCount(1 + 1 + $theme->chromeHeight(TRUE) + 4, explode("\n", $frame));
   }
 

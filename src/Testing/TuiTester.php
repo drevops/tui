@@ -9,7 +9,6 @@ use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Model\FormDefinition;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Render\Ansi;
-use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Theme\Mode;
 use DrevOps\Tui\Tui;
 
@@ -216,9 +215,9 @@ final class TuiTester {
 
     $terminal = new BufferedTerminal($keystrokes, $this->rows, $this->cols);
 
-    // Mirror Tui::interact(): a fullscreen frame lays out to the terminal's
-    // width - here the scripted terminal's columns.
-    $width = ($this->options['fullscreen'] ?? FALSE) === TRUE ? $this->cols : DefaultTheme::DEFAULT_WIDTH;
+    // The same width resolution interact() applies, against the scripted
+    // terminal's columns.
+    $width = Tui::frameWidth($this->options, $this->cols);
 
     $controller = $this->tui->controller($this->options, $this->theme, '', $this->version, $this->directory, $width);
 

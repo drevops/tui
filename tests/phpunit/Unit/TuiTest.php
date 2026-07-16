@@ -196,16 +196,19 @@ final class TuiTest extends TestCase {
     // The setter supplies the option.
     $tui = $this->tui()->fullscreen();
     $options = (new \ReflectionMethod($tui, 'resolveThemeOptions'))->invoke($tui, $terminal);
+    $this->assertIsArray($options);
     $this->assertTrue($options['fullscreen']);
 
     // An explicit theme option wins over the sugar.
     $tui = $this->tui()->theme('', ['fullscreen' => FALSE])->fullscreen();
     $options = (new \ReflectionMethod($tui, 'resolveThemeOptions'))->invoke($tui, $terminal);
+    $this->assertIsArray($options);
     $this->assertFalse($options['fullscreen']);
 
     // Without either, the option stays unset.
     $tui = $this->tui();
     $options = (new \ReflectionMethod($tui, 'resolveThemeOptions'))->invoke($tui, $terminal);
+    $this->assertIsArray($options);
     $this->assertArrayNotHasKey('fullscreen', $options);
   }
 

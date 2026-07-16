@@ -640,8 +640,10 @@ class PanelController {
     if (!$this->theme->isFullscreen()) {
       return FALSE;
     }
-
-    return $terminal->width() < $this->minWidth() || $terminal->height() < $this->theme->minHeight();
+    if ($terminal->width() < $this->minWidth()) {
+      return TRUE;
+    }
+    return $terminal->height() < $this->theme->minHeight();
   }
 
   /**

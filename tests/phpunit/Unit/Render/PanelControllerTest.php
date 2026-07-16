@@ -834,7 +834,7 @@ final class PanelControllerTest extends TestCase {
     $this->assertStringContainsString('[ Submit ]', $lines[11]);
   }
 
-  public function testRunFullscreenPositionsACappedFrame(): void {
+  public function testRunFullscreenPositionsTheCappedFrame(): void {
     $controller = $this->fullscreenController(['fullscreen' => TRUE, 'max_width' => 30, 'halign' => 'center', 'border' => Border::Line], 60);
     $terminal = new BufferedTerminal([], 12, 60);
 
