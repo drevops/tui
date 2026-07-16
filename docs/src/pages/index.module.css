@@ -170,7 +170,7 @@
 .dots span:nth-child(3) { background: #27c93f; }
 .termTitle { justify-self: center; color: var(--muted); font-size: .82rem; letter-spacing: .02em; }
 .termMeta { justify-self: end; color: var(--faint); font-size: .72rem; letter-spacing: .06em; }
-.termScreen { line-height: 0; background: var(--panel); }
+.termScreen { line-height: 0; background: var(--panel); padding: 1em; }
 .termScreen img { width: 100%; height: auto; display: block; }
 
 /* features */

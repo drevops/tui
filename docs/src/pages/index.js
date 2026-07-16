@@ -275,7 +275,7 @@ export default function Home() {
                   <span className={styles.termMeta} aria-hidden="true">UTF-8</span>
                 </div>
                 <div className={styles.termScreen}>
-                  <img src={withBaseUrl('/scaffolder-dark-animated.svg')} alt="Animated terminal recording of a package scaffolder form built with TUI, filling in field by field." width="800" height="441" loading="eager" decoding="async" />
+                  <img src={withBaseUrl('/bordered-panels-dark-animated.svg')} alt="Animated terminal recording of a keyboard-driven form built with TUI, shown inside a rounded border." width="800" height="441" loading="eager" decoding="async" />
                 </div>
               </div>
             </div>
