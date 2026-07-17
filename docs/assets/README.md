@@ -10,18 +10,20 @@ Every file spells out its properties, so you can tell what it is from the name
 alone:
 
 ```text
-<subject>-<theme>-<motion>[-bordered][-ascii][-no-ansi].svg
+<subject>-<mode>-<motion>[-bordered][-ascii][-no-ansi].svg
 ```
 
 | Segment     | Values                 | Meaning                                            |
 |-------------|------------------------|----------------------------------------------------|
-| `subject`   | e.g. `widget-text`     | What is shown (a widget, a panel demo, a theme)    |
-| `theme`     | `dark` \| `light`      | Colour scheme                                      |
+| `subject`   | e.g. `widget-text`, `theme-midnight` | What is shown (a widget, a panel demo, a theme preview) |
+| `mode`      | `dark` \| `light`      | Colour scheme                                      |
 | `motion`    | `animated` \| `static` | An animation, or a single frame                    |
 | `-bordered` | present when set       | Inside the rounded border frame (theme previews)   |
 | `-ascii`    | present when set       | Textual glyphs instead of Unicode (default Unicode)|
 | `-no-ansi`  | present when set       | No colour (default colour)                         |
 
+A theme preview's subject carries the theme name (`theme-midnight`), so its
+`mode` segment still reads dark or light: `theme-midnight-dark-static.svg`.
 Unicode and colour are the unmarked defaults, so `widget-text-dark-animated.svg`
 is the dark, Unicode, colour animation, and
 `widget-text-dark-static-ascii-no-ansi.svg` is its ASCII, no-colour static twin.

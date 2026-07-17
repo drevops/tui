@@ -49,7 +49,7 @@ $form = Form::create('Produce order')
     // the dialog is the whole message, and either button dismisses it.
     $p->panel('empty', 'Empty the basket', function (PanelBuilder $m): void {
       $m->modal('Empty it', 'Keep it');
-      $m->description("This clears every item from your basket.\nThere is no undo.");
+      $m->description('This clears every item from your basket.' . chr(10) . 'There is no undo.');
     });
   });
 
