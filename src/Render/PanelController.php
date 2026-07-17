@@ -326,10 +326,12 @@ class PanelController {
           }
 
           // The too-small guard screen accepts only quit: any other key would
-          // mutate state invisibly behind the notice.
+          // mutate state invisibly behind the notice. Quit routes through the
+          // normal navigation handling so an open modal is dismissed (and its
+          // snapshot restored) rather than the whole form ending over it.
           if ($too_small) {
             if ($this->nav->matches($key, Action::Quit)) {
-              $this->done = TRUE;
+              $this->handleNavigation($key);
             }
 
             continue;
@@ -551,9 +553,11 @@ class PanelController {
 
     $base = $modal->itemCount();
     $selected = $this->cursor >= $base ? $this->cursor - $base : -1;
-    $height = $this->viewportHeight($rows, 1, count($this->hubFooter()));
 
-    return $this->theme->renderModal($modal, $this->answers(), $this->cursor, $editing, $view, $selected, $this->backdrop($rows), $height);
+    // The dialog floats over the whole backdrop frame, so the screen rows -
+    // not the body viewport - bound it; the theme deducts the dialog's own
+    // chrome from that budget itself.
+    return $this->theme->renderModal($modal, $this->answers(), $this->cursor, $editing, $view, $selected, $this->backdrop($rows), $rows);
   }
 
   /**
@@ -643,7 +647,7 @@ class PanelController {
     if ($terminal->width() < $this->minWidth()) {
       return TRUE;
     }
-    return $terminal->height() < $this->theme->minHeight();
+    return $terminal->height() < $this->minHeight();
   }
 
   /**
@@ -651,13 +655,34 @@ class PanelController {
    *
    * An explicit "min_width" option wins; otherwise the content is measured
    * once, at the initial answers, so the guard never flaps as values grow
-   * mid-session.
+   * mid-session. A "max_width" cap bounds the result: the cap is the
+   * consumer's word that clipping is acceptable, and a guard demanding more
+   * than the cap allows could never be satisfied by resizing.
    *
    * @return int
    *   The minimum width, in columns.
    */
   protected function minWidth(): int {
-    return $this->minWidth ??= $this->theme->minWidth() > 0 ? $this->theme->minWidth() : $this->theme->measureContentWidth($this->form, $this->answers());
+    if ($this->minWidth === NULL) {
+      $min = $this->theme->minWidth() > 0 ? $this->theme->minWidth() : $this->theme->measureContentWidth($this->form, $this->answers());
+      $max = $this->theme->maxWidth();
+      $this->minWidth = $max > 0 ? min($min, $max) : $min;
+    }
+
+    return $this->minWidth;
+  }
+
+  /**
+   * The effective fullscreen minimum height, bounded like the minimum width.
+   *
+   * @return int
+   *   The minimum height, in rows.
+   */
+  protected function minHeight(): int {
+    $max = $this->theme->maxHeight();
+    $min = $this->theme->minHeight();
+
+    return $max > 0 ? min($min, $max) : $min;
   }
 
   /**
@@ -677,7 +702,7 @@ class PanelController {
       $this->theme->error(Translator::t('Terminal too small.')),
       Translator::t('Need at least @width x @height - have @w x @h.', [
         '@width' => (string) $this->minWidth(),
-        '@height' => (string) $this->theme->minHeight(),
+        '@height' => (string) $this->minHeight(),
         '@w' => (string) $terminal->width(),
         '@h' => (string) $terminal->height(),
       ]),

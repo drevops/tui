@@ -156,12 +156,20 @@ final class TuiTester {
    * Set the reported terminal width.
    *
    * @param int $cols
-   *   The number of columns.
+   *   The number of columns, at least 1.
    *
    * @return $this
    *   The tester.
+   *
+   * @throws \InvalidArgumentException
+   *   When the width is below one column - the value feeds fullscreen layout
+   *   geometry, so a bogus width fails here rather than mid-render.
    */
   public function cols(int $cols): self {
+    if ($cols < 1) {
+      throw new \InvalidArgumentException('The terminal width must be at least 1 column.');
+    }
+
     $this->cols = $cols;
 
     return $this;

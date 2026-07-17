@@ -177,6 +177,18 @@ class DefaultTheme implements ThemeInterface {
         ]));
       }
     }
+
+    // An explicit minimum above an explicit maximum can never be satisfied:
+    // fail at declaration rather than dead-ending the session behind an
+    // unresolvable resize notice.
+    foreach ([['min_width', 'max_width'], ['min_height', 'max_height']] as [$min_key, $max_key]) {
+      if (array_key_exists($min_key, $this->options) && $this->intOption($max_key, 0) > 0 && $this->intOption($min_key, 0) > $this->intOption($max_key, 0)) {
+        throw new \InvalidArgumentException(Translator::t('"@min" must not exceed "@max".', [
+          '@min' => $min_key,
+          '@max' => $max_key,
+        ]));
+      }
+    }
   }
 
   /**
@@ -1037,9 +1049,9 @@ class DefaultTheme implements ThemeInterface {
    *
    * Walks every panel - nested ones included - at its unpadded row widths
    * (marker, label, value, badge, description and summary columns) plus the
-   * button bar, and adds the border chrome: the narrowest frame that shows the
-   * initial content unclipped. Editors adapt to the frame width, so they do
-   * not join the measurement.
+   * button bar when the form shows one, and adds the border chrome: the
+   * narrowest frame that shows the initial content unclipped. Editors adapt
+   * to the frame width, so they do not join the measurement.
    *
    * @param \DrevOps\Tui\Model\FormDefinition $form
    *   The form.
@@ -1050,10 +1062,10 @@ class DefaultTheme implements ThemeInterface {
    *   The natural outer width, in columns.
    */
   public function measureContentWidth(FormDefinition $form, Answers $answers): int {
-    $width = Ansi::width($this->renderButtonBar([
+    $width = $form->buttons->show ? Ansi::width($this->renderButtonBar([
       Translator::t($form->buttons->submitLabel),
       Translator::t($form->buttons->cancelLabel),
-    ], -1));
+    ], -1)) : 0;
 
     $stack = [new Panel('hub', $form->title, '', [], $form->panels)];
 
@@ -1530,28 +1542,34 @@ class DefaultTheme implements ThemeInterface {
    * @param \DrevOps\Tui\Input\ScopedKeyMap|null $keys
    *   The editor's scope bindings, so the hint glyphs reflect the active keys.
    * @param int $rows
-   *   The terminal rows a fullscreen editor stretches its box to; 0 keeps the
-   *   box as tall as its content.
+   *   The terminal rows a fullscreen editor stretches its frame to; 0 keeps
+   *   the screen as tall as its content.
    *
    * @return string
-   *   The editor screen - boxed when the theme has a border, else plain.
+   *   The editor screen - boxed when the theme has a border, stretched to the
+   *   given rows in fullscreen, else plain.
    */
   public function renderEditor(string $label, string $view, array $hints = [], ?ScopedKeyMap $keys = NULL, int $rows = 0): string {
     $hint = $keys instanceof ScopedKeyMap ? $this->renderHints($keys, ...$hints) : '';
     $footer = $hint === '' ? [] : [$hint];
+    $stretch = $this->isFullscreen() && $rows > 0;
 
-    if ($this->borderStyle() !== Border::None) {
+    if ($this->borderStyle() !== Border::None || $stretch) {
       $body = explode("\n", $view);
       $height = count($body);
 
-      // A fullscreen editor stretches its box like the hub frame does. A view
-      // taller than the budget keeps its full height - widgets page inside
-      // themselves, so slicing here would hide rows they expect to show.
-      if ($this->isFullscreen() && $rows > 0) {
-        $height = max($height, $rows - 1 - count($footer) - $this->chromeHeight($footer !== []));
+      // A borderless editor keeps its label-over-rule header inside the frame.
+      $header = $this->borderStyle() === Border::None ? explode("\n", $this->renderEditorHeader($label)) : [$this->title($label)];
+
+      // A fullscreen editor stretches its frame like the hub does - the hint
+      // footer pins to the bottom row. A view taller than the budget keeps
+      // its full height - widgets page inside themselves, so slicing here
+      // would hide rows they expect to show.
+      if ($stretch) {
+        $height = max($height, $rows - count($header) - count($footer) - $this->chromeHeight($footer !== []));
       }
 
-      return $this->renderFrame([$this->title($label)], $body, $footer, new Viewport(0, FALSE, FALSE), $height);
+      return $this->renderFrame($header, $body, $footer, new Viewport(0, FALSE, FALSE), $height);
     }
 
     $screen = $this->renderEditorHeader($label) . "\n" . $view;
@@ -1611,7 +1629,7 @@ class DefaultTheme implements ThemeInterface {
    * @param string $backdrop
    *   The rendered parent frame to dim and overlay the dialog on.
    * @param int $height
-   *   The screen's body height, bounding the dialog so its footer never clips.
+   *   The screen height, bounding the dialog so its footer never clips.
    *
    * @return string
    *   The composited screen.

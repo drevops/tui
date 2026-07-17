@@ -20,6 +20,8 @@ use DrevOps\Tui\Testing\KeyEncoder;
 use DrevOps\Tui\Theme\Border;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Theme\DosTheme;
+use DrevOps\Tui\Theme\HAlign;
+use DrevOps\Tui\Theme\VAlign;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -810,7 +812,7 @@ final class PanelControllerTest extends TestCase {
   }
 
   public function testRunFullscreenCentersTheBodyBlock(): void {
-    $controller = $this->fullscreenController(['fullscreen' => TRUE, 'halign' => 'center']);
+    $controller = $this->fullscreenController(['fullscreen' => TRUE, 'halign' => HAlign::Center]);
     $terminal = new BufferedTerminal([], 14, 40);
 
     $controller->run($terminal);
@@ -821,7 +823,7 @@ final class PanelControllerTest extends TestCase {
   }
 
   public function testRunFullscreenBottomAlignsTheBodyBlock(): void {
-    $controller = $this->fullscreenController(['fullscreen' => TRUE, 'valign' => 'bottom']);
+    $controller = $this->fullscreenController(['fullscreen' => TRUE, 'valign' => VAlign::Bottom]);
     $terminal = new BufferedTerminal([], 14, 40);
 
     $controller->run($terminal);
@@ -835,7 +837,7 @@ final class PanelControllerTest extends TestCase {
   }
 
   public function testRunFullscreenPositionsTheCappedFrame(): void {
-    $controller = $this->fullscreenController(['fullscreen' => TRUE, 'max_width' => 30, 'halign' => 'center', 'border' => Border::Line], 60);
+    $controller = $this->fullscreenController(['fullscreen' => TRUE, 'max_width' => 30, 'halign' => HAlign::Center, 'border' => Border::Line], 60);
     $terminal = new BufferedTerminal([], 12, 60);
 
     $controller->run($terminal);
@@ -911,6 +913,83 @@ final class PanelControllerTest extends TestCase {
     $output = Ansi::strip($terminal->output());
     $this->assertStringNotContainsString('Terminal too small.', $output);
     $this->assertStringContainsString('General', $output);
+  }
+
+  public function testRunFullscreenTooSmallQuitDismissesAnOpenModal(): void {
+    $builder = Form::create('Demo')
+      ->panel('main', 'Main', function (PanelBuilder $p): void {
+        $p->text('name', 'Name');
+      })
+      ->panel('edit', 'Quick edit', function (PanelBuilder $m): void {
+        $m->modal('Apply', 'Discard');
+        $m->text('nick', 'Nickname');
+      });
+    $controller = new PanelController($builder->build(), new DefaultTheme(40, ['color' => FALSE, 'unicode' => FALSE, 'fullscreen' => TRUE]), NULL, TRUE, TRUE, ['name' => 'Acme', 'nick' => 'ace'], []);
+
+    // Open the modal, then run on a terminal below the minimum height.
+    $controller->handle(Key::named(KeyName::Down));
+    $controller->handle(Key::named(KeyName::Enter));
+    $this->assertTrue($controller->currentPanel()->isModal());
+
+    $controller->run(new BufferedTerminal(['q'], 6, 40));
+
+    // Quit on the guard screen dismissed the dialog, not the whole form.
+    $this->assertFalse($controller->isDone());
+    $this->assertFalse($controller->currentPanel()->isModal());
+  }
+
+  public function testModalBodyUsesTheFullScreenBudget(): void {
+    $builder = Form::create('Demo')
+      ->panel('main', 'Main', function (PanelBuilder $p): void {
+        $p->text('name', 'Name');
+      })
+      ->panel('edit', 'Quick edit', function (PanelBuilder $m): void {
+        $m->modal('Apply', 'Discard');
+        $m->text('one', 'First');
+        $m->text('two', 'Second');
+        $m->text('three', 'Third');
+        $m->text('four', 'Fourth');
+      });
+    $controller = new PanelController($builder->build(), new DefaultTheme(50, ['color' => FALSE]), NULL, TRUE, TRUE, [], []);
+
+    $controller->handle(Key::named(KeyName::Down));
+    $controller->handle(Key::named(KeyName::Enter));
+
+    // The screen rows bound the dialog, so its four fields fit a 14-row
+    // screen; a body-viewport bound would deduct the frame chrome a second
+    // time and slice the last field away.
+    $this->assertStringContainsString('Fourth', Ansi::strip($controller->frame(14)));
+  }
+
+  public function testRunFullscreenMeasuredMinWidthIsCappedByMaxWidth(): void {
+    $builder = Form::create('Demo')
+      ->panel('general', 'General', function (PanelBuilder $p): void {
+        $p->text('window', 'Preferred delivery window of the season');
+      });
+    $controller = new PanelController($builder->build(), new DefaultTheme(40, ['color' => FALSE, 'unicode' => FALSE, 'fullscreen' => TRUE, 'max_width' => 30]), NULL, TRUE, TRUE, ['window' => 'Morning'], []);
+
+    // The content measures ~50 columns, but the 30-column cap is the
+    // consumer's word that clipping is acceptable: a 40-column terminal must
+    // render the capped frame, not dead-end on an unsatisfiable notice.
+    $terminal = new BufferedTerminal([], 24, 40);
+    $controller->run($terminal);
+
+    $output = Ansi::strip($terminal->output());
+    $this->assertStringNotContainsString('Terminal too small.', $output);
+    $this->assertStringContainsString('General', $output);
+  }
+
+  public function testRunFullscreenMinHeightIsCappedByMaxHeight(): void {
+    // max_height 8 lowers the default 10-row minimum: a 9-row terminal is
+    // enough for the 8-row frame, so no notice shows.
+    $controller = $this->fullscreenController(['fullscreen' => TRUE, 'max_height' => 8]);
+    $terminal = new BufferedTerminal([], 9, 40);
+
+    $controller->run($terminal);
+
+    $output = Ansi::strip($terminal->output());
+    $this->assertStringNotContainsString('Terminal too small.', $output);
+    $this->assertCount(9, explode("\n", $output));
   }
 
   /**

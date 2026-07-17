@@ -23,6 +23,7 @@ use DrevOps\Tui\Render\Terminal;
 use DrevOps\Tui\Testing\BufferedTerminal;
 use DrevOps\Tui\Tests\Traits\IsolatesEnvTrait;
 use DrevOps\Tui\Tests\Traits\ResetsTranslatorTrait;
+use DrevOps\Tui\Theme\Border;
 use DrevOps\Tui\Theme\Mode;
 use DrevOps\Tui\Translation\Translator;
 use DrevOps\Tui\Tui;
@@ -215,12 +216,18 @@ final class TuiTest extends TestCase {
   public function testInteractFullscreenFillsTheScriptedTerminal(): void {
     // No input: the loop renders one frame and stops on exhaustion. The frame
     // stretches to the scripted terminal's exact rows and lays out to its
-    // columns rather than the default width.
+    // columns rather than the default width - a border pads every line to the
+    // full width, so both dimensions are assertable.
     $terminal = new BufferedTerminal([], 16, 50);
 
-    $this->tui()->fullscreen()->color(FALSE)->interact(terminal: $terminal);
+    $this->tui()->fullscreen()->color(FALSE)->theme('', ['border' => Border::Line])->interact(terminal: $terminal);
 
-    $this->assertCount(16, explode("\n", Ansi::strip($terminal->output())));
+    $lines = explode("\n", Ansi::strip($terminal->output()));
+    $this->assertCount(16, $lines);
+
+    foreach ($lines as $line) {
+      $this->assertSame(50, mb_strlen($line, 'UTF-8'));
+    }
   }
 
   #[DataProvider('dataProviderResolveTheme')]

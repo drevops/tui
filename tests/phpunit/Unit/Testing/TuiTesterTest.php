@@ -9,6 +9,7 @@ use DrevOps\Tui\Builder\PanelBuilder;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Testing\TuiTester;
+use DrevOps\Tui\Theme\Border;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
@@ -121,10 +122,22 @@ final class TuiTesterTest extends TestCase {
     $tester = new TuiTester($this->form());
 
     // No input: one frame renders, stretched to the scripted terminal's rows
-    // and laid out to its columns.
-    $tester->options(['fullscreen' => TRUE, 'color' => FALSE])->rows(12)->cols(48)->run();
+    // and laid out to its columns - a border pads every line to the full
+    // width, so both dimensions are assertable.
+    $tester->options(['fullscreen' => TRUE, 'color' => FALSE, 'border' => Border::Line])->rows(12)->cols(48)->run();
 
-    $this->assertCount(12, explode("\n", $tester->display()));
+    $lines = explode("\n", $tester->display());
+    $this->assertCount(12, $lines);
+
+    foreach ($lines as $line) {
+      $this->assertSame(48, mb_strlen($line, 'UTF-8'));
+    }
+  }
+
+  public function testColsRejectsNonPositiveWidth(): void {
+    $this->expectException(\InvalidArgumentException::class);
+
+    (new TuiTester($this->form()))->cols(0);
   }
 
   public function testModalSubmitFlowsThroughTheInputPipe(): void {

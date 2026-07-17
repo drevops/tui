@@ -175,7 +175,7 @@ Four sizing options bound the stretch, each a non-negative integer:
 - `max_width` / `max_height` (default `0`, uncapped) stop the frame short of a very wide or tall terminal; the capped frame then floats at the `halign` / `valign` anchor, like a dialog.
 - `min_width` / `min_height` guard against a terminal too small for the layout: below either, the TUI shows a centered resize notice (only quit works there) until the terminal grows. `min_height` defaults to `10`; `min_width` defaults to `0`, which measures the form's own content - the widest label, value, badge and description row across every panel - so the guard adapts to the questionnaire without configuration.
 
-Fullscreen affects only the interactive TUI; headless collection ignores it. The terminal width is read once at start-up, so a window resized mid-session reflows on height but keeps its width until the next run.
+Fullscreen affects only the interactive TUI; headless collection ignores it. The frame's layout width is resolved once at start-up, while the live terminal size is still sampled every frame for the minimum-size guard and frame positioning - so a window resized mid-session reflows on height but keeps its layout width until the next run.
 
 Nesting, modal dialogs, both border looks and the fullscreen stretch are runnable in
 [`playground/03-panels/`](https://github.com/drevops/tui/tree/main/playground/03-panels),

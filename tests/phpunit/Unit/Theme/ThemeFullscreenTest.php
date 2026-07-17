@@ -107,6 +107,18 @@ final class ThemeFullscreenTest extends TestCase {
     $this->assertCount(5, explode("\n", $theme->renderEditor('Name', 'val', [], NULL, 15)));
   }
 
+  public function testFullscreenBorderlessEditorStretchesToTheGivenRows(): void {
+    $theme = new DefaultTheme(20, ['color' => FALSE, 'fullscreen' => TRUE]);
+
+    $lines = explode("\n", $theme->renderEditor('Name', 'val', [], NULL, 15));
+
+    // The borderless editor fills the rows too, keeping its label-over-rule
+    // header at the top of the stretched frame.
+    $this->assertCount(15, $lines);
+    $this->assertStringContainsString('Name', Ansi::strip($lines[0]));
+    $this->assertStringContainsString('val', Ansi::strip(implode("\n", $lines)));
+  }
+
   public function testMeasureContentWidthFindsTheWidestRow(): void {
     $form = Form::create('Produce stand')
       ->panel('stand', 'Stand', function (PanelBuilder $p): void {
@@ -154,6 +166,19 @@ final class ThemeFullscreenTest extends TestCase {
 
     // Every row is narrower than the button bar: it sets the floor.
     $this->assertSame(24, (new DefaultTheme(40, ['color' => FALSE, 'spacing' => Spacing::Compact]))->measureContentWidth($form, new Answers()));
+  }
+
+  public function testMeasureContentWidthSkipsHiddenButtons(): void {
+    $form = Form::create('T')
+      ->buttons(FALSE)
+      ->panel('p', 'P', function (PanelBuilder $p): void {
+        $p->text('a', 'A');
+      })
+      ->build();
+
+    // With the buttons hidden their bar never renders, so it never measures:
+    // the widest row is the one-letter field row itself.
+    $this->assertSame(5, (new DefaultTheme(40, ['color' => FALSE, 'spacing' => Spacing::Compact]))->measureContentWidth($form, new Answers()));
   }
 
 }

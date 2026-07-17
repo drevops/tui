@@ -291,6 +291,32 @@ final class ThemeOptionsTest extends TestCase {
     new DefaultTheme(40, ['min_wdith' => 10]);
   }
 
+  #[DataProvider('dataProviderContradictoryMinMaxThrows')]
+  public function testContradictoryMinMaxThrows(array $options, string $message): void {
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessage($message);
+
+    new DefaultTheme(40, $options);
+  }
+
+  public static function dataProviderContradictoryMinMaxThrows(): \Iterator {
+    yield 'width' => [['min_width' => 100, 'max_width' => 50], '"min_width" must not exceed "max_width"'];
+    yield 'height' => [['min_height' => 20, 'max_height' => 8], '"min_height" must not exceed "max_height"'];
+  }
+
+  #[DataProvider('dataProviderCompatibleMinMaxPasses')]
+  public function testCompatibleMinMaxPasses(array $options): void {
+    // Equal bounds, an uncapped maximum and an implicit default minimum are
+    // all satisfiable, so none of them throw at declaration.
+    $this->assertInstanceOf(DefaultTheme::class, new DefaultTheme(40, $options));
+  }
+
+  public static function dataProviderCompatibleMinMaxPasses(): \Iterator {
+    yield 'equal bounds' => [['min_width' => 50, 'max_width' => 50]];
+    yield 'uncapped maximum' => [['min_width' => 100, 'max_width' => 0]];
+    yield 'default minimum under a low cap' => [['max_height' => 8]];
+  }
+
   public function testSizeOptionAccessorsAndDefaults(): void {
     $defaults = new DefaultTheme(40);
     $this->assertSame(0, $defaults->minWidth());

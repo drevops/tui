@@ -12,6 +12,7 @@
 declare(strict_types=1);
 
 return [
+  '"@min" must not exceed "@max".' => '"@min" must not exceed "@max".',
   '(empty)' => '(empty)',
   '(required)' => '(required)',
   '- Pass --no-interaction to resolve every question from defaults, discovery and derivation without prompting.' => '- Pass --no-interaction to resolve every question from defaults, discovery and derivation without prompting.',
