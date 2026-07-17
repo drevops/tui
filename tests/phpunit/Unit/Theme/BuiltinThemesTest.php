@@ -126,4 +126,23 @@ final class BuiltinThemesTest extends TestCase {
     $this->assertNull(ThemeManager::create('dos', 76, ['color' => FALSE])->background());
   }
 
+  /**
+   * The dos theme paints secondary text in CGA light grey, not the dim grey.
+   */
+  #[DataProvider('dataProviderDosSecondaryTextIsLegibleOnBlue')]
+  public function testDosSecondaryTextIsLegibleOnBlue(Mode $mode): void {
+    $theme = ThemeManager::create('dos', 76, ['mode' => $mode]);
+
+    $this->assertSame(Ansi::style('X', '37'), $theme->breadcrumb('X'));
+    $this->assertSame(Ansi::style('X', '37'), $theme->footer('X'));
+    $this->assertSame(Ansi::style('X', '37'), $theme->description('X'));
+    $this->assertSame(Ansi::style('X', '1;37'), $theme->description('X', TRUE));
+    $this->assertSame(Ansi::style('X', '1;37'), $theme->heading('X'));
+  }
+
+  public static function dataProviderDosSecondaryTextIsLegibleOnBlue(): \Iterator {
+    yield 'dark' => [Mode::Dark];
+    yield 'light' => [Mode::Light];
+  }
+
 }

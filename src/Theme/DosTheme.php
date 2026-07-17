@@ -62,6 +62,40 @@ class DosTheme extends DefaultTheme {
    * {@inheritdoc}
    */
   #[\Override]
+  public function description(string $text, bool $selected = FALSE): string {
+    // The inherited dim grey is too dark to read on the blue wash; the CGA
+    // light grey (colour 7) is the period-correct body text and clears it.
+    return $this->paint($this->emphasize(Sgr::of(Sgr::White), $selected), $text);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  public function footer(string $text): string {
+    return $this->paint(Sgr::of(Sgr::White), $text);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  public function breadcrumb(string $text): string {
+    return $this->paint(Sgr::of(Sgr::White), $text);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
+  public function heading(string $text): string {
+    return $this->paint(Sgr::of(Sgr::Bold, Sgr::White), $text);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  #[\Override]
   public function border(string $text): string {
     return $this->paint(Sgr::of(Sgr::BrightWhite), $text);
   }
