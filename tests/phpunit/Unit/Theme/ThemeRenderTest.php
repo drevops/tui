@@ -140,17 +140,19 @@ final class ThemeRenderTest extends TestCase {
     $this->assertStringContainsString('Hint of citrus', $summary);
   }
 
-  public function testBodyNormalizesCarriageReturnsInMultiLineValue(): void {
+  #[DataProvider('dataProviderBodyNormalizesLineEndingsInMultiLineValue')]
+  public function testBodyNormalizesLineEndingsInMultiLineValue(string $value): void {
     $panel = new Panel('p', 'P', '', [new Field('notes', 'Notes', '', FieldType::Textarea, '')]);
-    $answers = new Answers(['notes' => "Crisp and sweet\r\nHint of citrus"], []);
+    $answers = new Answers(['notes' => $value], []);
 
     [$lines] = $this->theme()->renderBody($panel, $answers, 0);
 
     // A carriage return would send the terminal cursor back to the row start
-    // and overprint the row, so a CRLF value - an external editor's save -
-    // splits into rows exactly as a newline does.
+    // and overprint the row, so every line ending an external editor's save
+    // can carry in splits into rows the same way a newline does.
     foreach ($lines as $line) {
       $this->assertStringNotContainsString("\r", $line);
+      $this->assertStringNotContainsString("\n", $line);
     }
 
     $stripped = array_map(Ansi::strip(...), $lines);
@@ -158,15 +160,28 @@ final class ThemeRenderTest extends TestCase {
     $this->assertMatchesRegularExpression('/^ +Hint of citrus$/', $stripped[1]);
   }
 
-  public function testPanelSummaryNormalizesCarriageReturns(): void {
+  public static function dataProviderBodyNormalizesLineEndingsInMultiLineValue(): \Iterator {
+    yield 'newline' => ["Crisp and sweet\nHint of citrus"];
+    yield 'carriage return and newline' => ["Crisp and sweet\r\nHint of citrus"];
+    yield 'carriage return' => ["Crisp and sweet\rHint of citrus"];
+  }
+
+  #[DataProvider('dataProviderPanelSummaryNormalizesLineEndings')]
+  public function testPanelSummaryNormalizesLineEndings(string $value): void {
     $panel = new Panel('sub', 'Sub', '', [new Field('notes', 'Notes', '', FieldType::Textarea, '')]);
-    $answers = new Answers(['notes' => "Crisp and sweet\r\nHint of citrus"], []);
+    $answers = new Answers(['notes' => $value], []);
 
     $summary = $this->theme()->summarizePanel($panel, $answers);
 
     $this->assertStringNotContainsString("\r", $summary);
     $this->assertStringNotContainsString("\n", $summary);
     $this->assertStringContainsString('Crisp and sweet Hint of citrus', $summary);
+  }
+
+  public static function dataProviderPanelSummaryNormalizesLineEndings(): \Iterator {
+    yield 'newline' => ["Crisp and sweet\nHint of citrus"];
+    yield 'carriage return and newline' => ["Crisp and sweet\r\nHint of citrus"];
+    yield 'carriage return' => ["Crisp and sweet\rHint of citrus"];
   }
 
   public function testPanelLineShowsDrillIndicator(): void {
