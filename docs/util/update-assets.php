@@ -446,21 +446,62 @@ EXPECT;
  */
 function fullscreenInteraction(): string {
   return <<<'EXPECT'
-# Wait for the centered hub, then drill into Order.
-expect "Order" {
+# Wait for the centered grid hub, then walk it spatially.
+expect "Summary" {
     pause 2000
-    safe_send "\r"
+    arrow_down
 }
 
-# Walk the centered fields inside the stretched frame.
-pause 1500
-arrow_down
-arrow_down
-arrow_down
+# Across the second row and back, then drill into Produce.
+pause 800
+arrow_right
+pause 800
+arrow_left
+pause 600
+safe_send "\r"
 
-# Back to the hub, then submit via Place order.
+# Produce lays its own children out side by side; visit Vegetables.
+pause 1500
+arrow_right
+pause 800
 press_escape
-pause 1000
+
+# Down to the buttons, then submit via Place order.
+pause 800
+arrow_down
+arrow_down
+pause 600
+safe_send "\r"
+EXPECT;
+}
+
+/**
+ * The expect body driving the panel-layout grid TUI.
+ *
+ * @return string
+ *   The expect script body.
+ */
+function layoutInteraction(): string {
+  return <<<'EXPECT'
+# Wait for the grid hub: Summary on top, Produce and Delivery below.
+expect "Summary" {
+    pause 2000
+    arrow_down
+}
+
+# Walk the second row, then open Produce's own side-by-side layout.
+pause 800
+arrow_right
+pause 800
+arrow_left
+pause 600
+safe_send "\r"
+
+# Back out and submit via Place order.
+pause 1500
+press_escape
+pause 800
+arrow_down
 arrow_down
 pause 600
 safe_send "\r"
@@ -664,14 +705,24 @@ function getJobs(string $project_dir): array {
     'verify' => 'Basics',
   ];
 
-  // Fullscreen: the frame stretched to the whole terminal, the fields anchored
-  // to the centered halign/valign layout inside the border.
+  // Fullscreen: the frame stretched to the whole terminal, the panel grid
+  // anchored to the centered halign/valign layout inside the border.
   $jobs['fullscreen-panels'] = [
     'command' => 'env LINES=' . TERMINAL_ROWS . ' COLUMNS=' . TERMINAL_COLS . ' php ' . $project_dir . '/playground/03-panels/fullscreen.php',
     'interact' => fullscreenInteraction(),
     'rows' => TERMINAL_ROWS,
     'cols' => TERMINAL_COLS,
     'verify' => 'Order name',
+  ];
+
+  // Panel layouts: the layout(1, 2) grid hub with the nested layout(2) grid,
+  // walked spatially with the arrows.
+  $jobs['panel-layout'] = [
+    'command' => 'env LINES=' . TERMINAL_ROWS . ' COLUMNS=' . TERMINAL_COLS . ' php ' . $project_dir . '/playground/03-panels/layout.php',
+    'interact' => layoutInteraction(),
+    'rows' => TERMINAL_ROWS,
+    'cols' => TERMINAL_COLS,
+    'verify' => 'Vegetables',
   ];
 
   // A modal panel: a dialog centered over the dimmed parent, dismissed by its

@@ -15,7 +15,7 @@ Every interactive script also runs unattended: pipe stdin (or run it from CI) an
 |---|---|---|
 | [`01-quickstart/`](01-quickstart) | The documentation's quick-start form: the fluent builder, one panel, five fields, `run()` picking interactive or unattended. | `run.php` |
 | [`02-widgets/`](02-widgets) | Every widget as a one-field form, plus the whole gallery on one panel. | One script per widget, `all-widgets.php` |
-| [`03-panels/`](03-panels) | The full-screen panel browser: drill-in hubs, modal dialogs, the border frame, the fullscreen stretch. | `nested.php`, `modal.php`, `bordered.php`, `borderless.php`, `fullscreen.php` |
+| [`03-panels/`](03-panels) | The full-screen panel browser: drill-in hubs, modal dialogs, the border frame, side-by-side panel grids, the fullscreen stretch with its alignment flags. | `nested.php`, `modal.php`, `bordered.php`, `borderless.php`, `layout.php`, `fullscreen.php` |
 | [`04-inline-editing/`](04-inline-editing) | Editors opening in place on the panel row; `->standalone()` opting a field out to full-screen. | `run.php` |
 | [`05-headless/`](05-headless) | Unattended collection from a JSON payload and environment variables; the JSON schema, answer validation and generated agent help. | `collect.php`, `schema.php`, `agent-help.php` |
 | [`06-form-logic/`](06-form-logic) | Answers that react to other answers, settling to a fixpoint. | `derived-values.php`, `conditional-fields.php`, `fixup-rules.php` |

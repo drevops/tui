@@ -6,6 +6,7 @@ namespace DrevOps\Tui\Tests\Unit\Builder;
 
 use DrevOps\Tui\Builder\FieldBuilder;
 use DrevOps\Tui\Builder\Form;
+use DrevOps\Tui\Builder\LayoutGuard;
 use DrevOps\Tui\Builder\PanelBuilder;
 use DrevOps\Tui\Condition\Condition;
 use DrevOps\Tui\Model\FormException;
@@ -30,6 +31,7 @@ use PHPUnit\Framework\TestCase;
  * Tests the fluent form builder.
  */
 #[CoversClass(Form::class)]
+#[CoversClass(LayoutGuard::class)]
 #[CoversClass(PanelBuilder::class)]
 #[CoversClass(FieldBuilder::class)]
 #[Group('model')]
@@ -573,6 +575,79 @@ final class FormTest extends TestCase {
         $m->panel('nested', 'Nested', fn(PanelBuilder $n): FieldBuilder => $n->text('x'));
       })
       ->build();
+  }
+
+  public function testLayoutFlowsToTheDefinitionAndPanels(): void {
+    $form = Form::create('Demo')
+      ->layout(1, 2)
+      ->panel('a', 'A', function (PanelBuilder $p): void {
+        $p->layout(2);
+        $p->panel('a1', 'A1', fn(PanelBuilder $sp): FieldBuilder => $sp->text('one', 'One'));
+        $p->panel('a2', 'A2', fn(PanelBuilder $sp): FieldBuilder => $sp->text('two', 'Two'));
+      })
+      ->panel('b', 'B', fn(PanelBuilder $p): FieldBuilder => $p->text('three', 'Three'))
+      ->panel('c', 'C', fn(PanelBuilder $p): FieldBuilder => $p->text('four', 'Four'))
+      ->build();
+
+    $this->assertSame([1, 2], $form->layout);
+    $this->assertSame([2], $form->panels[0]->layout);
+    // A panel without a declaration keeps the default row list.
+    $this->assertSame([], $form->panels[1]->layout);
+  }
+
+  #[DataProvider('dataProviderLayoutMismatchThrows')]
+  public function testLayoutMismatchThrows(\Closure $declare, string $message): void {
+    $this->expectException(FormException::class);
+    $this->expectExceptionMessage($message);
+
+    $declare();
+  }
+
+  public static function dataProviderLayoutMismatchThrows(): \Iterator {
+    yield 'form slots below the panels' => [
+      static function (): void {
+        Form::create('Demo')
+          ->layout(1)
+          ->panel('a', 'A', fn(PanelBuilder $p): FieldBuilder => $p->text('one', 'One'))
+          ->panel('b', 'B', fn(PanelBuilder $p): FieldBuilder => $p->text('two', 'Two'))
+          ->build();
+      },
+      'The layout of "Demo" declares 1 slot(s) for 2 panel(s).',
+    ];
+
+    yield 'form slots above the panels' => [
+      static function (): void {
+        Form::create('Demo')
+          ->layout(2, 2)
+          ->panel('a', 'A', fn(PanelBuilder $p): FieldBuilder => $p->text('one', 'One'))
+          ->panel('b', 'B', fn(PanelBuilder $p): FieldBuilder => $p->text('two', 'Two'))
+          ->build();
+      },
+      'The layout of "Demo" declares 4 slot(s) for 2 panel(s).',
+    ];
+
+    yield 'panel slots mismatch its children' => [
+      static function (): void {
+        Form::create('Demo')
+          ->panel('a', 'A', function (PanelBuilder $p): void {
+            $p->layout(2);
+            $p->panel('a1', 'A1', fn(PanelBuilder $sp): FieldBuilder => $sp->text('one', 'One'));
+          })
+          ->build();
+      },
+      'The layout of "a" declares 2 slot(s) for 1 panel(s).',
+    ];
+
+    yield 'zero-width row' => [
+      static function (): void {
+        Form::create('Demo')
+          ->layout(0, 2)
+          ->panel('a', 'A', fn(PanelBuilder $p): FieldBuilder => $p->text('one', 'One'))
+          ->panel('b', 'B', fn(PanelBuilder $p): FieldBuilder => $p->text('two', 'Two'))
+          ->build();
+      },
+      'Every layout row of "Demo" must hold at least one panel.',
+    ];
   }
 
 }

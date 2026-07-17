@@ -850,6 +850,20 @@ class DefaultTheme implements ThemeInterface {
       $index++;
     }
 
+    if ($panel->layout !== []) {
+      if ($index > 0) {
+        $lines[] = '';
+      }
+
+      [$grid, $selected_line] = $this->renderPanelGrid($panel, $answers, $cursor - $index);
+
+      if ($selected_line >= 0) {
+        $cursor_line = count($lines) + $selected_line;
+      }
+
+      return [array_merge($lines, $grid), $cursor_line];
+    }
+
     foreach ($panel->panels as $subpanel) {
       if ($index > 0 && $gap > 0) {
         $lines[] = '';
@@ -874,6 +888,105 @@ class DefaultTheme implements ThemeInterface {
     }
 
     return [$lines, $cursor_line];
+  }
+
+  /**
+   * Build the grid of side-by-side sub-panel columns a layout declares.
+   *
+   * Each layout row takes its share of sub-panels in declaration order and
+   * zips their preview blocks side by side at an equal column width; a blank
+   * line separates the rows. Selection is by whole column, so the selected
+   * block's first line is the row it starts on.
+   *
+   * @param \DrevOps\Tui\Model\Panel $panel
+   *   The panel whose layout and sub-panels are rendered.
+   * @param \DrevOps\Tui\Answers\Answers $answers
+   *   The current answers.
+   * @param int $selected
+   *   The selected sub-panel offset, or negative for none.
+   *
+   * @return array{list<string>,int}
+   *   The grid lines and the selected block's first line index (-1 when no
+   *   sub-panel is selected).
+   */
+  protected function renderPanelGrid(Panel $panel, Answers $answers, int $selected): array {
+    $lines = [];
+    $selected_line = -1;
+    $offset = 0;
+
+    foreach ($panel->layout as $row => $columns) {
+      if ($row > 0) {
+        $lines[] = '';
+      }
+
+      $column_width = max(1, intdiv($this->width - ($columns - 1) * 2, $columns));
+      $blocks = [];
+      $height = 0;
+
+      foreach (array_slice($panel->panels, $offset, $columns) as $subpanel) {
+        if ($offset === $selected) {
+          $selected_line = count($lines);
+        }
+
+        $block = $this->renderColumnBlock($subpanel, $answers, $offset === $selected);
+        $height = max($height, count($block));
+        $blocks[] = $block;
+        $offset++;
+      }
+
+      for ($line = 0; $line < $height; $line++) {
+        $cells = [];
+
+        foreach ($blocks as $block) {
+          $cells[] = Box::fit($block[$line] ?? '', $column_width);
+        }
+
+        $lines[] = rtrim(implode('  ', $cells));
+      }
+    }
+
+    return [$lines, $selected_line];
+  }
+
+  /**
+   * Render one sub-panel's preview block for a grid column.
+   *
+   * The block carries what the row list spreads over its rows - the title,
+   * the description and, instead of the one-line summary, one row per field
+   * value - plus a drill-in row per nested sub-panel, so a column reads as a
+   * window into the panel.
+   *
+   * @param \DrevOps\Tui\Model\Panel $panel
+   *   The sub-panel.
+   * @param \DrevOps\Tui\Answers\Answers $answers
+   *   The current answers.
+   * @param bool $selected
+   *   Whether the panel holds the cursor.
+   *
+   * @return list<string>
+   *   The block lines; the grid clips them to the column width.
+   */
+  protected function renderColumnBlock(Panel $panel, Answers $answers, bool $selected): array {
+    $lines = [$this->renderPanelLine($panel, $selected)];
+    $verbose = $this->spacing() !== Spacing::Compact;
+
+    if ($verbose && $panel->description !== '') {
+      $lines[] = $this->renderDescriptionLine(Translator::t($panel->description), $selected);
+    }
+
+    foreach ($panel->fields as $field) {
+      // A grid cell is one physical row, so a multi-line value previews as
+      // its first line - an embedded newline would desync the column zip.
+      $value_lines = explode("\n", $this->normalizeLines($this->renderFieldValue($field, $answers->value($field->id))));
+      $value = $value_lines[0] . (count($value_lines) > 1 ? '…' : '');
+      $lines[] = '  ' . $this->description(Translator::t($field->label), $selected) . '  ' . $this->value($value, $selected);
+    }
+
+    foreach ($panel->panels as $subpanel) {
+      $lines[] = '  ' . $this->description(Translator::t($subpanel->title) . ' ' . $this->arrow(), $selected);
+    }
+
+    return $lines;
   }
 
   /**
@@ -1067,7 +1180,7 @@ class DefaultTheme implements ThemeInterface {
       Translator::t($form->buttons->cancelLabel),
     ], -1)) : 0;
 
-    $stack = [new Panel('hub', $form->title, '', [], $form->panels)];
+    $stack = [new Panel('hub', $form->title, '', [], $form->panels, NULL, $form->layout)];
 
     while ($stack !== []) {
       $panel = array_shift($stack);
@@ -1098,7 +1211,9 @@ class DefaultTheme implements ThemeInterface {
     $verbose = $this->spacing() !== Spacing::Compact;
 
     foreach ($panel->fields as $field) {
-      $row = 4 + mb_strlen(Translator::t($field->label), 'UTF-8') + mb_strlen($this->renderFieldValue($field, $answers->value($field->id)), 'UTF-8');
+      // A multi-line value renders one physical row per line, all under the
+      // value column, so the widest single line is what the row needs.
+      $row = 4 + mb_strlen(Translator::t($field->label), 'UTF-8') + $this->measureValueWidth($field, $answers);
 
       $provenance = $answers->provenanceOf($field->id);
       if ($provenance !== Provenance::Default) {
@@ -1110,6 +1225,25 @@ class DefaultTheme implements ThemeInterface {
       if ($verbose && $field->description !== '') {
         $width = max($width, 4 + mb_strlen(Translator::t($field->description), 'UTF-8'));
       }
+    }
+
+    if ($panel->layout !== []) {
+      // Grid rows lay their columns out at one shared width, so a row needs
+      // its widest block times its column count, plus the gutters.
+      $offset = 0;
+
+      foreach ($panel->layout as $columns) {
+        $widest = 0;
+
+        foreach (array_slice($panel->panels, $offset, $columns) as $subpanel) {
+          $widest = max($widest, $this->measureColumnBlock($subpanel, $answers));
+        }
+
+        $width = max($width, $columns * $widest + 2 * ($columns - 1));
+        $offset += $columns;
+      }
+
+      return $width;
     }
 
     foreach ($panel->panels as $subpanel) {
@@ -1127,6 +1261,64 @@ class DefaultTheme implements ThemeInterface {
       if ($summary !== '') {
         $width = max($width, 4 + Ansi::width($summary));
       }
+    }
+
+    return $width;
+  }
+
+  /**
+   * Measure the natural width of a sub-panel's grid preview block.
+   *
+   * Mirrors renderColumnBlock()'s row anatomy at unpadded widths: the title
+   * and drill-in rows with their marker and arrow gutters, the description
+   * indent, and the label/value field rows.
+   *
+   * @param \DrevOps\Tui\Model\Panel $panel
+   *   The sub-panel.
+   * @param \DrevOps\Tui\Answers\Answers $answers
+   *   The current answers.
+   *
+   * @return int
+   *   The widest block row's visible width, in columns.
+   */
+  protected function measureColumnBlock(Panel $panel, Answers $answers): int {
+    $width = 4 + mb_strlen(Translator::t($panel->title), 'UTF-8');
+
+    if ($this->spacing() !== Spacing::Compact && $panel->description !== '') {
+      $width = max($width, 4 + mb_strlen(Translator::t($panel->description), 'UTF-8'));
+    }
+
+    foreach ($panel->fields as $field) {
+      $width = max($width, 4 + mb_strlen(Translator::t($field->label), 'UTF-8') + $this->measureValueWidth($field, $answers));
+    }
+
+    foreach ($panel->panels as $subpanel) {
+      $width = max($width, 4 + mb_strlen(Translator::t($subpanel->title), 'UTF-8'));
+    }
+
+    return $width;
+  }
+
+  /**
+   * Measure a field value's widest physical line.
+   *
+   * A multi-line value never renders as one long row - the row list stacks
+   * its lines under the value column and a grid cell previews only the first
+   * - so measuring the whole string would overstate the width it needs.
+   *
+   * @param \DrevOps\Tui\Model\Field $field
+   *   The field the value belongs to.
+   * @param \DrevOps\Tui\Answers\Answers $answers
+   *   The current answers.
+   *
+   * @return int
+   *   The widest line's visible width, in columns.
+   */
+  protected function measureValueWidth(Field $field, Answers $answers): int {
+    $width = 0;
+
+    foreach (explode("\n", $this->normalizeLines($this->renderFieldValue($field, $answers->value($field->id)))) as $line) {
+      $width = max($width, mb_strlen($line, 'UTF-8'));
     }
 
     return $width;

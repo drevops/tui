@@ -42,6 +42,13 @@ final class PanelBuilder {
   protected ?Modal $modal = NULL;
 
   /**
+   * The sub-panel grid rows, or empty for the row list.
+   *
+   * @var list<int>
+   */
+  protected array $layout = [];
+
+  /**
    * Construct a panel builder.
    *
    * @param string $id
@@ -309,12 +316,39 @@ final class PanelBuilder {
   }
 
   /**
+   * Arrange this panel's sub-panels as a grid of side-by-side columns.
+   *
+   * Each argument declares one visual row and names how many sub-panels sit
+   * side by side in it; the sub-panels fill the rows in declaration order.
+   * `layout(2)` puts two panels beside each other, `layout(2, 2)` makes four
+   * windows, `layout(1, 2)` one full-width panel above two columns. Every
+   * level of the panel tree declares its own layout, so a drilled-in panel
+   * arranges its children independently.
+   *
+   * @param int ...$rows
+   *   The sub-panel count of each visual row, top to bottom.
+   *
+   * @return $this
+   *   The builder.
+   */
+  public function layout(int ...$rows): self {
+    $this->layout = array_values($rows);
+
+    return $this;
+  }
+
+  /**
    * Build the immutable Panel.
    *
    * @return \DrevOps\Tui\Model\Panel
    *   The panel.
+   *
+   * @throws \DrevOps\Tui\Model\FormException
+   *   When the declared layout does not match the sub-panels.
    */
   public function build(): Panel {
+    LayoutGuard::assert($this->layout, count($this->panels), $this->id);
+
     return new Panel(
       $this->id,
       $this->title,
@@ -322,6 +356,7 @@ final class PanelBuilder {
       array_map(static fn(FieldBuilder $field): Field => $field->build(), $this->fields),
       array_map(static fn(PanelBuilder $panel): Panel => $panel->build(), $this->panels),
       $this->modal,
+      $this->layout,
     );
   }
 

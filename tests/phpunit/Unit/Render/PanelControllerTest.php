@@ -992,6 +992,119 @@ final class PanelControllerTest extends TestCase {
     $this->assertCount(9, explode("\n", $output));
   }
 
+  public function testGridArrowsMoveSpatially(): void {
+    $controller = $this->gridController();
+
+    // layout(1, 2): A alone on row one, B and C beside each other below.
+    // Right on a one-column row stays put.
+    $controller->handle(Key::named(KeyName::Right));
+    $this->assertSame(0, $controller->cursor());
+
+    // Down lands on the nearest column of the next row (B), Right walks to C.
+    $controller->handle(Key::named(KeyName::Down));
+    $this->assertSame(1, $controller->cursor());
+    $controller->handle(Key::named(KeyName::Right));
+    $this->assertSame(2, $controller->cursor());
+
+    // The row edge clamps; Up from C lands back on A (its nearest column).
+    $controller->handle(Key::named(KeyName::Right));
+    $this->assertSame(2, $controller->cursor());
+    $controller->handle(Key::named(KeyName::Up));
+    $this->assertSame(0, $controller->cursor());
+
+    // Down, Left: back to B; Left clamps at the row's first column.
+    $controller->handle(Key::named(KeyName::Down));
+    $controller->handle(Key::named(KeyName::Left));
+    $this->assertSame(1, $controller->cursor());
+    $controller->handle(Key::named(KeyName::Left));
+    $this->assertSame(1, $controller->cursor());
+  }
+
+  public function testGridDownFromTheLastRowReachesTheButtons(): void {
+    $controller = $this->gridController();
+
+    // A -> B -> buttons: Down from the last grid row jumps to Submit, and Up
+    // returns to the last panel.
+    $controller->handle(Key::named(KeyName::Down));
+    $controller->handle(Key::named(KeyName::Down));
+    $this->assertSame(3, $controller->cursor());
+
+    $controller->handle(Key::named(KeyName::Enter));
+    $this->assertTrue($controller->isDone());
+    $this->assertFalse($controller->isCancelled());
+  }
+
+  public function testGridUpFromTheFirstRowReachesTheFieldsAbove(): void {
+    $builder = Form::create('Demo')
+      ->panel('mixed', 'Mixed', function (PanelBuilder $p): void {
+        $p->layout(2);
+        $p->text('note', 'Note');
+        $p->panel('a', 'A', function (PanelBuilder $sp): void {
+          $sp->text('one', 'One');
+        });
+        $p->panel('b', 'B', function (PanelBuilder $sp): void {
+          $sp->text('two', 'Two');
+        });
+      });
+    $controller = new PanelController($builder->build(), new DefaultTheme(40, ['color' => FALSE, 'unicode' => FALSE]), NULL, TRUE, TRUE, [], []);
+
+    // Drill into the mixed panel: the field sits above the grid.
+    $controller->handle(Key::named(KeyName::Enter));
+    $this->assertSame('Mixed', $controller->currentPanel()->title);
+
+    // Down enters the grid, Up climbs back out onto the field.
+    $controller->handle(Key::named(KeyName::Down));
+    $this->assertSame(1, $controller->cursor());
+    $controller->handle(Key::named(KeyName::Up));
+    $this->assertSame(0, $controller->cursor());
+  }
+
+  public function testGridEnterDrillsIntoTheSelectedPanel(): void {
+    $controller = $this->gridController();
+
+    $controller->handle(Key::named(KeyName::Down));
+    $controller->handle(Key::named(KeyName::Right));
+    $controller->handle(Key::named(KeyName::Enter));
+
+    $this->assertSame('C', $controller->currentPanel()->title);
+  }
+
+  public function testGridFrameRendersPanelsSideBySide(): void {
+    $controller = $this->gridController();
+
+    $lines = explode("\n", Ansi::strip($controller->frame(20)));
+
+    // B and C share a line; A has its own row above them.
+    $side_by_side = array_values(array_filter($lines, static fn(string $line): bool => str_contains($line, 'B >') && str_contains($line, 'C >')));
+    $this->assertNotSame([], $side_by_side);
+    $this->assertStringContainsString('> A', Ansi::strip($controller->frame(20)));
+
+    // The spatial hint advertises all four arrows.
+    $this->assertStringContainsString('^/v/</> move', Ansi::strip($controller->frame(20)));
+  }
+
+  /**
+   * A controller over a layout(1, 2) grid of three panels.
+   *
+   * @return \DrevOps\Tui\Render\PanelController
+   *   The controller.
+   */
+  protected function gridController(): PanelController {
+    $builder = Form::create('Demo')
+      ->layout(1, 2)
+      ->panel('a', 'A', function (PanelBuilder $p): void {
+        $p->text('one', 'One');
+      })
+      ->panel('b', 'B', function (PanelBuilder $p): void {
+        $p->text('two', 'Two');
+      })
+      ->panel('c', 'C', function (PanelBuilder $p): void {
+        $p->text('three', 'Three');
+      });
+
+    return new PanelController($builder->build(), new DefaultTheme(40, ['color' => FALSE, 'unicode' => FALSE]), NULL, TRUE, TRUE, [], []);
+  }
+
   /**
    * A controller over a one-panel form with configurable layout options.
    *

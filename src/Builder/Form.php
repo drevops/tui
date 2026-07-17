@@ -64,6 +64,13 @@ final class Form {
   protected array $panels = [];
 
   /**
+   * The top-level panel grid rows, or empty for the row list.
+   *
+   * @var list<int>
+   */
+  protected array $layout = [];
+
+  /**
    * Construct a form builder.
    *
    * @param string $title
@@ -177,12 +184,34 @@ final class Form {
   }
 
   /**
+   * Arrange the top-level panels as a grid of side-by-side columns.
+   *
+   * Each argument declares one visual row and names how many panels sit side
+   * by side in it; the panels fill the rows in declaration order. Mirrors
+   * {@see \DrevOps\Tui\Builder\PanelBuilder::layout()}, which arranges a
+   * drilled-in panel's own children.
+   *
+   * @param int ...$rows
+   *   The panel count of each visual row, top to bottom.
+   *
+   * @return $this
+   *   The builder.
+   */
+  public function layout(int ...$rows): self {
+    $this->layout = array_values($rows);
+
+    return $this;
+  }
+
+  /**
    * Build the immutable form definition.
    *
    * @return \DrevOps\Tui\Model\FormDefinition
    *   The form definition.
    */
   public function build(): FormDefinition {
+    LayoutGuard::assert($this->layout, count($this->panels), $this->title);
+
     $panels = array_map(static fn(PanelBuilder $panel): Panel => $panel->build(), $this->panels);
 
     $form = new FormDefinition(
@@ -193,6 +222,7 @@ final class Form {
       $this->envPrefix,
       $this->banner,
       new Buttons($this->buttons, $this->submitLabel, $this->cancelLabel),
+      $this->layout,
     );
 
     $this->assertUniqueFieldIds($form);

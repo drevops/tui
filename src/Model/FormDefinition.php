@@ -35,6 +35,10 @@ final readonly class FormDefinition {
    *   The start banner (logo) shown before the interactive TUI (optional).
    * @param \DrevOps\Tui\Model\Buttons $buttons
    *   The submit/cancel buttons the interactive TUI shows on the root panel.
+   * @param list<int> $layout
+   *   The top-level panel grid: one entry per visual row naming how many
+   *   panels sit side by side in it, consumed in declaration order. Empty
+   *   renders the panels as today's row list.
    */
   public function __construct(
     public string $title,
@@ -44,6 +48,7 @@ final readonly class FormDefinition {
     public string $envPrefix = '',
     public string $banner = '',
     public Buttons $buttons = new Buttons(),
+    public array $layout = [],
   ) {
   }
 

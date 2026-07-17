@@ -27,6 +27,10 @@ final readonly class Panel {
    * @param \DrevOps\Tui\Model\Modal|null $modal
    *   The modal presentation config when this panel opens as a centered dialog
    *   over the parent, or NULL for an ordinary drill-in panel.
+   * @param list<int> $layout
+   *   The sub-panel grid: one entry per visual row naming how many sub-panels
+   *   sit side by side in it, consumed in declaration order. Empty renders the
+   *   sub-panels as today's row list.
    */
   public function __construct(
     public string $id,
@@ -35,6 +39,7 @@ final readonly class Panel {
     public array $fields = [],
     public array $panels = [],
     public ?Modal $modal = NULL,
+    public array $layout = [],
   ) {
   }
 

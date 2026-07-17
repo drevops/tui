@@ -202,7 +202,7 @@ class PanelController {
     $this->widgets = new WidgetFactory($this->keymap, $this->externalEditor->isAvailable());
     $this->nav = $this->keymap->navigation();
     $this->scroller = new Scroller();
-    $this->navigator = new Navigator(new Panel('hub', $form->title, '', [], $form->panels));
+    $this->navigator = new Navigator(new Panel('hub', $form->title, '', [], $form->panels, NULL, $form->layout));
   }
 
   /**
@@ -814,22 +814,9 @@ class PanelController {
     }
 
     $this->followCursor = TRUE;
-    $count = $this->navigator->current()->itemCount() + ($this->buttonsVisible() ? self::BUTTON_COUNT : 0);
 
-    if ($this->nav->matches($key, Action::MoveUp)) {
-      $this->cursor = max(0, $this->cursor - 1);
-    }
-    elseif ($this->nav->matches($key, Action::MoveDown)) {
-      $this->cursor = min(max(0, $count - 1), $this->cursor + 1);
-    }
-    elseif ($this->nav->matches($key, Action::MoveLeft) || $this->nav->matches($key, Action::MoveRight)) {
-      // The submit/cancel buttons are inline, so Left/Right moves between them.
-      $base = $this->navigator->current()->itemCount();
-
-      if ($this->buttonsVisible() && $this->cursor >= $base) {
-        $delta = $this->nav->matches($key, Action::MoveRight) ? 1 : -1;
-        $this->cursor = max($base, min($count - 1, $this->cursor + $delta));
-      }
+    if ($this->nav->matches($key, Action::MoveUp) || $this->nav->matches($key, Action::MoveDown) || $this->nav->matches($key, Action::MoveLeft) || $this->nav->matches($key, Action::MoveRight)) {
+      $this->moveCursor($key);
     }
     elseif ($this->nav->matches($key, Action::Back)) {
       if ($this->navigator->current()->isModal()) {
@@ -842,6 +829,108 @@ class PanelController {
     elseif ($this->nav->matches($key, Action::Activate)) {
       $this->activate();
     }
+  }
+
+  /**
+   * Move the selection cursor for a directional key.
+   *
+   * Fields and buttons keep the linear semantics: Up/Down step one item and
+   * Left/Right move within the button pair. Inside a panel grid the arrows
+   * become spatial - Left/Right walk a row's columns and Up/Down jump between
+   * rows (and out to the fields above or the buttons below), landing on the
+   * nearest column.
+   *
+   * @param \DrevOps\Tui\Input\Key $key
+   *   The directional key.
+   */
+  protected function moveCursor(Key $key): void {
+    $panel = $this->navigator->current();
+    $count = $panel->itemCount() + ($this->buttonsVisible() ? self::BUTTON_COUNT : 0);
+    $fields = count($panel->fields);
+    $up = $this->nav->matches($key, Action::MoveUp);
+    $down = $this->nav->matches($key, Action::MoveDown);
+
+    if ($panel->layout !== [] && $this->cursor >= $fields && $this->cursor < $panel->itemCount()) {
+      [$row, $column] = $this->gridPosition($panel->layout, $this->cursor - $fields);
+
+      if ($up) {
+        $this->cursor = $row > 0 ? $fields + $this->gridSlot($panel->layout, $row - 1, $column) : ($fields > 0 ? $fields - 1 : $this->cursor);
+      }
+      elseif ($down) {
+        $this->cursor = $row < count($panel->layout) - 1 ? $fields + $this->gridSlot($panel->layout, $row + 1, $column) : ($this->buttonsVisible() ? $panel->itemCount() : $this->cursor);
+      }
+      elseif ($this->nav->matches($key, Action::MoveLeft)) {
+        $this->cursor = $column > 0 ? $this->cursor - 1 : $this->cursor;
+      }
+      else {
+        $this->cursor = $column < $panel->layout[$row] - 1 ? $this->cursor + 1 : $this->cursor;
+      }
+
+      return;
+    }
+
+    if ($up) {
+      $this->cursor = max(0, $this->cursor - 1);
+    }
+    elseif ($down) {
+      $this->cursor = min(max(0, $count - 1), $this->cursor + 1);
+    }
+    elseif ($this->buttonsVisible() && $this->cursor >= $panel->itemCount()) {
+      // The submit/cancel buttons are inline, so Left/Right moves between them.
+      $delta = $this->nav->matches($key, Action::MoveRight) ? 1 : -1;
+      $this->cursor = max($panel->itemCount(), min($count - 1, $this->cursor + $delta));
+    }
+  }
+
+  /**
+   * The grid row and column a sub-panel offset sits at for a layout.
+   *
+   * @param list<int> $layout
+   *   The layout rows.
+   * @param int $offset
+   *   The sub-panel offset within the panel (0-based).
+   *
+   * @return array{int,int}
+   *   The [row, column] position.
+   */
+  protected function gridPosition(array $layout, int $offset): array {
+    $start = 0;
+
+    foreach ($layout as $row => $columns) {
+      if ($offset < $start + $columns) {
+        return [$row, $offset - $start];
+      }
+
+      $start += $columns;
+    }
+
+    // The builder guarantees the layout covers every sub-panel.
+    // @codeCoverageIgnoreStart
+    return [max(0, count($layout) - 1), 0];
+    // @codeCoverageIgnoreEnd
+  }
+
+  /**
+   * The sub-panel offset of a grid position, clamped to the row's columns.
+   *
+   * @param list<int> $layout
+   *   The layout rows.
+   * @param int $row
+   *   The target row.
+   * @param int $column
+   *   The desired column; a narrower target row lands on its last column.
+   *
+   * @return int
+   *   The sub-panel offset.
+   */
+  protected function gridSlot(array $layout, int $row, int $column): int {
+    $start = 0;
+
+    for ($index = 0; $index < $row; $index++) {
+      $start += $layout[$index];
+    }
+
+    return $start + min($column, $layout[$row] - 1);
   }
 
   /**
@@ -956,12 +1045,17 @@ class PanelController {
   /**
    * The hint fragments for the panel hub, in display order.
    *
+   * A panel grid navigates spatially, so its move hint carries the horizontal
+   * arrows too.
+   *
    * @return list<\DrevOps\Tui\Input\Hint>
    *   The hub hints.
    */
   protected function navigationHints(): array {
+    $move = $this->navigator->current()->layout !== [] ? new Hint('move', Action::MoveUp, Action::MoveDown, Action::MoveLeft, Action::MoveRight) : new Hint('move', Action::MoveUp, Action::MoveDown);
+
     return [
-      new Hint('move', Action::MoveUp, Action::MoveDown),
+      $move,
       new Hint('select', Action::Activate),
       new Hint('back', Action::Back),
       new Hint('quit', Action::Quit),
