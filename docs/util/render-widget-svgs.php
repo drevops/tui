@@ -36,6 +36,7 @@ use DrevOps\Tui\Theme\Mode;
 
 require dirname(__DIR__, 2) . '/vendor/autoload.php';
 require_once __DIR__ . '/svg-slowdown.php';
+require_once __DIR__ . '/svg-light-twin.php';
 
 // Seconds each captured frame is held: a longer beat on the opening frame, an
 // even cadence through the interaction, and a rest on the last frame before the
@@ -197,11 +198,12 @@ function renderWidget(string $name, array $spec, string $assets_dir, string $uti
     $cast_file = $tmp_dir . '/widget-' . $name . '-animated' . $suffix . '.cast';
     file_put_contents($cast_file, buildCast($frames, $spec['rows'] + 2));
 
-    // The unmarked mode is the unicode, colour hero README.md embeds;
-    // make-light-svgs.php derives its light twin.
+    // The unmarked mode is the unicode, colour hero README.md embeds; the
+    // light twin derives in the same pass.
     $svg_file = $assets_dir . '/widget-' . $name . '-dark-animated' . $suffix . '.svg';
     renderCast($cast_file, $svg_file, $util_dir);
     file_put_contents($svg_file, slowAnimation((string) file_get_contents($svg_file), ANIMATION_SLOWDOWN));
+    deriveLightTwin($svg_file);
   }
 
   printf("  widget-%s-dark-animated*.svg (4 display modes)\n", $name);
@@ -250,7 +252,9 @@ function renderStaticVariants(string $name, array $spec, string $assets_dir, str
     $cast_file = $tmp_dir . '/widget-' . $name . '-static' . $suffix . '.cast';
     file_put_contents($cast_file, $cast);
 
-    renderCast($cast_file, $assets_dir . '/widget-' . $name . '-dark-static' . $suffix . '.svg', $util_dir, 0);
+    $svg_file = $assets_dir . '/widget-' . $name . '-dark-static' . $suffix . '.svg';
+    renderCast($cast_file, $svg_file, $util_dir, 0);
+    deriveLightTwin($svg_file);
   }
 }
 
