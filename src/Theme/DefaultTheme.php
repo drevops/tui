@@ -675,7 +675,9 @@ class DefaultTheme implements ThemeInterface {
         continue;
       }
 
-      $lines[] = $this->renderFieldLine($field, $answers, $index === $cursor);
+      foreach ($this->renderFieldLine($field, $answers, $index === $cursor) as $line) {
+        $lines[] = $line;
+      }
 
       if ($verbose && $field->description !== '') {
         $lines[] = $this->renderDescriptionLine(Translator::t($field->description), $index === $cursor);
@@ -711,7 +713,13 @@ class DefaultTheme implements ThemeInterface {
   }
 
   /**
-   * Render a field row.
+   * Render a field row, one entry per physical line.
+   *
+   * A single-line value is one row: the label, then the value. A multi-line
+   * value (a textarea) spans one row per line - the first rides the label row,
+   * the rest align under the value column - so no row ever carries an embedded
+   * newline that would desync the box border and scroll maths. Each line is
+   * styled on its own, so no colour span crosses a row boundary.
    *
    * @param \DrevOps\Tui\Model\Field $field
    *   The field.
@@ -720,18 +728,27 @@ class DefaultTheme implements ThemeInterface {
    * @param bool $selected
    *   Whether the row is selected.
    *
-   * @return string
-   *   The row.
+   * @return list<string>
+   *   The field's rows: the label row carrying the value's first line, then any
+   *   further value lines indented to the value column.
    */
-  public function renderFieldLine(Field $field, Answers $answers, bool $selected): string {
-    $left = $this->marker($selected) . ' ' . $this->label(Translator::t($field->label), $selected) . '  ' . $this->value($this->renderFieldValue($field, $answers->value($field->id)), $selected);
+  public function renderFieldLine(Field $field, Answers $answers, bool $selected): array {
+    $prefix = $this->marker($selected) . ' ' . $this->label(Translator::t($field->label), $selected) . '  ';
+    $indent = str_repeat(' ', Ansi::width($prefix));
 
-    $provenance = $answers->provenanceOf($field->id);
-    if ($provenance === Provenance::Default) {
-      return $left;
+    $lines = [];
+
+    foreach (explode("\n", $this->renderFieldValue($field, $answers->value($field->id))) as $index => $value_line) {
+      $lines[] = ($index === 0 ? $prefix : $indent) . $this->value($value_line, $selected);
     }
 
-    return Ansi::alignRight($left, $this->badge(' ' . $provenance->label() . ' ', $selected), $this->width);
+    $provenance = $answers->provenanceOf($field->id);
+
+    if ($provenance !== Provenance::Default) {
+      $lines[0] = Ansi::alignRight($lines[0], $this->badge(' ' . $provenance->label() . ' ', $selected), $this->width);
+    }
+
+    return $lines;
   }
 
   /**
@@ -816,9 +833,13 @@ class DefaultTheme implements ThemeInterface {
       }
 
       $value = $answers->value($field->id);
-      $parts[] = is_array($value) && count($value) > 3 ? Translator::t('@count selected', [
+      $rendered = is_array($value) && count($value) > 3 ? Translator::t('@count selected', [
         '@count' => count($value),
       ]) : $this->renderFieldValue($field, $value);
+
+      // A summary is one line, so a multi-line value (a textarea) folds to a
+      // single row rather than breaking the row it sits on.
+      $parts[] = str_replace("\n", ' ', $rendered);
 
       if (count($parts) >= 4) {
         break;
