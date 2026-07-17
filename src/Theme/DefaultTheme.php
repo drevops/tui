@@ -941,7 +941,9 @@ class DefaultTheme implements ThemeInterface {
           $cells[] = Box::fit($block[$line] ?? '', $column_width);
         }
 
-        $lines[] = rtrim(implode('  ', $cells));
+        // The gutters can outgrow a tiny frame even at one-column cells, so
+        // the assembled row is clamped to the frame width as a whole.
+        $lines[] = rtrim(Box::fit(implode('  ', $cells), $this->width));
       }
     }
 

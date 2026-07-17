@@ -112,6 +112,23 @@ final class ThemeLayoutTest extends TestCase {
     $this->assertStringContainsString('B', $lines[0]);
   }
 
+  public function testLayoutClampsTheAssembledRowToTinyFrames(): void {
+    // Three one-column cells plus two gutters outgrow a five-column frame;
+    // the assembled row is clamped as a whole.
+    $theme = new DefaultTheme(5, ['color' => FALSE, 'unicode' => FALSE]);
+    $panel = new Panel('p', 'P', '', [], [
+      new Panel('a', 'A', ''),
+      new Panel('b', 'B', ''),
+      new Panel('c', 'C', ''),
+    ], NULL, [3]);
+
+    [$lines] = $theme->renderBody($panel, new Answers(), 0);
+
+    foreach ($lines as $line) {
+      $this->assertLessThanOrEqual(5, Ansi::width($line));
+    }
+  }
+
   public function testMeasureContentWidthCoversTheGrid(): void {
     $form = Form::create('T')
       ->layout(2)

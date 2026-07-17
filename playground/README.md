@@ -1,6 +1,6 @@
 # TUI playground
 
-Runnable examples of the `drevops/tui` engine, one directory per feature, numbered in learning order. Every script is self-contained: it requires the Composer autoloader directly, declares its whole form inline and handles its own output, so any single file can be copied out as a starting point. No script takes CLI options - each demonstrates exactly one thing, and variants are separate scripts.
+Runnable examples of the `drevops/tui` engine, one directory per feature, numbered in learning order. Every script is self-contained: it requires the Composer autoloader directly, declares its whole form inline and handles its own output, so any single file can be copied out as a starting point. Scripts take no CLI options - each demonstrates exactly one thing, and variants are separate scripts - with one exception: the fullscreen demo's alignment is a three-by-three matrix, so [`03-panels/fullscreen.php`](03-panels/fullscreen.php) picks it with `--halign`/`--valign` (plus `--max-width`) rather than spreading nine near-identical files.
 
 ```bash
 composer install
