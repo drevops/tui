@@ -196,7 +196,7 @@ class OceanTheme extends DefaultTheme {
     // carries an embedded newline.
     $lines = [];
 
-    foreach (explode("\n", $this->renderFieldValue($field, $answers->value($field->id))) as $index => $value_line) {
+    foreach (explode("\n", $this->normalizeLines($this->renderFieldValue($field, $answers->value($field->id)))) as $index => $value_line) {
       $lines[] = ($index === 0 ? $prefix : $indent) . $this->value($value_line);
     }
 
@@ -231,7 +231,7 @@ class OceanTheme extends DefaultTheme {
     foreach ($panel->fields as $field) {
       if ($answers->has($field->id)) {
         // A summary is one line, so a multi-line value folds to a single row.
-        $parts[] = str_replace("\n", ' ', $this->renderFieldValue($field, $answers->value($field->id)));
+        $parts[] = str_replace("\n", ' ', $this->normalizeLines($this->renderFieldValue($field, $answers->value($field->id))));
       }
     }
 

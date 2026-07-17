@@ -738,7 +738,7 @@ class DefaultTheme implements ThemeInterface {
 
     $lines = [];
 
-    foreach (explode("\n", $this->renderFieldValue($field, $answers->value($field->id))) as $index => $value_line) {
+    foreach (explode("\n", $this->normalizeLines($this->renderFieldValue($field, $answers->value($field->id)))) as $index => $value_line) {
       $lines[] = ($index === 0 ? $prefix : $indent) . $this->value($value_line, $selected);
     }
 
@@ -839,7 +839,7 @@ class DefaultTheme implements ThemeInterface {
 
       // A summary is one line, so a multi-line value (a textarea) folds to a
       // single row rather than breaking the row it sits on.
-      $parts[] = str_replace("\n", ' ', $rendered);
+      $parts[] = str_replace("\n", ' ', $this->normalizeLines($rendered));
 
       if (count($parts) >= 4) {
         break;
@@ -1372,6 +1372,25 @@ class DefaultTheme implements ThemeInterface {
     }
 
     return '  ' . implode('  ', $parts);
+  }
+
+  /**
+   * Normalize a value's line endings to newlines.
+   *
+   * A carriage return would send the terminal cursor back to the start of the
+   * row and overprint what is already there, and it counts toward the visible
+   * width that right-aligns a badge. Folding CRLF and CR endings - what an
+   * external editor's save can carry in - to the newline the row layout splits
+   * on keeps both correct.
+   *
+   * @param string $value
+   *   The value.
+   *
+   * @return string
+   *   The value with every line ending as a newline.
+   */
+  protected function normalizeLines(string $value): string {
+    return str_replace(["\r\n", "\r"], "\n", $value);
   }
 
   /**

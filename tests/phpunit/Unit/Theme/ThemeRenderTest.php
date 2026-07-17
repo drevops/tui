@@ -140,6 +140,35 @@ final class ThemeRenderTest extends TestCase {
     $this->assertStringContainsString('Hint of citrus', $summary);
   }
 
+  public function testBodyNormalizesCarriageReturnsInMultiLineValue(): void {
+    $panel = new Panel('p', 'P', '', [new Field('notes', 'Notes', '', FieldType::Textarea, '')]);
+    $answers = new Answers(['notes' => "Crisp and sweet\r\nHint of citrus"], []);
+
+    [$lines] = $this->theme()->renderBody($panel, $answers, 0);
+
+    // A carriage return would send the terminal cursor back to the row start
+    // and overprint the row, so a CRLF value - an external editor's save -
+    // splits into rows exactly as a newline does.
+    foreach ($lines as $line) {
+      $this->assertStringNotContainsString("\r", $line);
+    }
+
+    $stripped = array_map(Ansi::strip(...), $lines);
+    $this->assertStringContainsString('Notes  Crisp and sweet', $stripped[0]);
+    $this->assertMatchesRegularExpression('/^ +Hint of citrus$/', $stripped[1]);
+  }
+
+  public function testPanelSummaryNormalizesCarriageReturns(): void {
+    $panel = new Panel('sub', 'Sub', '', [new Field('notes', 'Notes', '', FieldType::Textarea, '')]);
+    $answers = new Answers(['notes' => "Crisp and sweet\r\nHint of citrus"], []);
+
+    $summary = $this->theme()->summarizePanel($panel, $answers);
+
+    $this->assertStringNotContainsString("\r", $summary);
+    $this->assertStringNotContainsString("\n", $summary);
+    $this->assertStringContainsString('Crisp and sweet Hint of citrus', $summary);
+  }
+
   public function testPanelLineShowsDrillIndicator(): void {
     $line = Ansi::strip($this->theme()->renderPanelLine(new Panel('adv', 'Advanced', ''), TRUE));
 
