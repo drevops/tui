@@ -21,13 +21,14 @@ application-specific questions and handlers live in the consumer, and **applying
 the collected answers is the consumer's job, not the TUI's**.
 
 <p align="center">
-  <ThemedImage sources={{light: useBaseUrl('/scaffolder-light-animated.svg'), dark: useBaseUrl('/scaffolder-dark-animated.svg')}} alt="Package scaffolder TUI" width="100%" />
+  <ThemedImage sources={{light: useBaseUrl('/produce-box-light-animated.svg'), dark: useBaseUrl('/produce-box-dark-animated.svg')}} alt="Produce box TUI" width="100%" />
 </p>
 
 ## Features
 
-- 🧭 [**Full-screen TUI**](/panels) - a scrollable, keyboard-driven form: fields group into sections that drill in to any depth, with a contextual key-hint footer and a `?` help overlay
-- 🧩 [**Widgets**](/widgets) - `confirm`, `date`, `filepicker`, `number`, `password`, `pause`, `reorder`, `search`, `select`, `suggest`, `text`, `textarea`, `toggle`
+- 🧭 [**Full-screen TUI**](/panels) - a scrollable, keyboard-driven form: fields group into sections that drill in to any depth (or open as modal dialogs), with a contextual key-hint footer and a `?` help overlay
+- ⚡ [**Inline editing**](/panels#inline-editing) - a field's editor opens in place on the panel row; opt a field out to full-screen with `->standalone()`
+- 🧩 [**Widgets**](/widgets) - `calendar`, `confirm`, `filepicker`, `number`, `password`, `pause`, `reorder`, `search`, `select`, `suggest`, `text`, `textarea`, `toggle`
 - 🏗️ [**Builder-driven**](/configuration) - the form is declared in PHP with a fluent builder; the common cases need no code
 - 🎛️ [**Interactive or unattended**](/headless-collection) - answer the form by keyboard, or supply the answers up front as a JSON payload and environment variables so it runs without prompting (and emit a JSON schema for agents and forms)
 - 🔗 [**Derived values**](/configuration#derived-values) - compute one field from others with [str2name](https://github.com/AlexSkrypnyk/str2name) transforms; chains settle to a fixpoint
@@ -38,6 +39,8 @@ the collected answers is the consumer's job, not the TUI's**.
 - 🎨 [**Themes**](/themes) - the whole visual representation (colours, glyphs, layout) is a theme class; ships with dark and light
 - ⌨️ [**Key bindings**](/key-bindings) - remap navigation, edit, accept and cancel keys per widget type; ships a vim-style preset, and a bad binding fails loudly at build time
 - ✨ [**Unicode and ASCII**](/display-modes) - glyphs follow the terminal locale and colour honours `NO_COLOR`; both can be forced on the form
+- 🧪 [**Test harness**](/testing) - drive the real TUI from scripted keystrokes and assert on the answers and rendered output, no TTY needed
+- 🌍 [**Translations**](/translations) - present chrome and questions in another language through a consumer catalog, falling back to English
 
 ## Quick start
 
@@ -97,6 +100,6 @@ headless otherwise. The facade also exposes `schema()`, `agentHelp()` and
 `validate()`, and - for finer control - the internals via `form()`, `engine()`
 and `registry()`.
 
-This is the runnable [`playground/0-quickstart/`](https://github.com/drevops/tui/tree/main/playground/0-quickstart)
+This is the runnable [`playground/01-quickstart/`](https://github.com/drevops/tui/tree/main/playground/01-quickstart)
 example. See [Installation](/installation) to get started and the
 [playground](/playground) for more complete examples.

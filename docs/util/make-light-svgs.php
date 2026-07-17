@@ -50,7 +50,7 @@ $subjects = [
   'widget-select-multiple-groups',
   'widget-password-reveal',
   'quickstart',
-  'scaffolder',
+  'produce-box',
   'widgets',
   'bordered-panels',
   'borderless-panels',

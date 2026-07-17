@@ -36,42 +36,100 @@ the classic 16-colour CGA set; every one renders across all widgets and degrades
 to plain text when colour is off. An unknown theme name fails loudly - a typo
 never silently falls back to the default.
 
-Each adapts to the terminal background - here the dark palette (left) and the
-light palette (right):
+Each theme below is shown in its four looks: the dark and light palette, each
+without a frame and inside the rounded [border](/panels#bordered-panels)
+(`['border' => 'rounded']`). Every adaptive theme has a runnable script in
+[`playground/09-themes/`](https://github.com/drevops/tui/tree/main/playground/09-themes).
 
-**midnight**
+### midnight
+
+<table align="center">
+  <tr>
+    <td></td>
+    <td align="center"><strong>Dark</strong></td>
+    <td align="center"><strong>Light</strong></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>Borderless</strong></td>
+    <td><img src="/theme-midnight-dark-static.svg" width="100%" alt="The midnight theme: dark, borderless" /></td>
+    <td><img src="/theme-midnight-light-static.svg" width="100%" alt="The midnight theme: light, borderless" /></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>Bordered</strong></td>
+    <td><img src="/theme-midnight-dark-static-bordered.svg" width="100%" alt="The midnight theme: dark, bordered" /></td>
+    <td><img src="/theme-midnight-light-static-bordered.svg" width="100%" alt="The midnight theme: light, bordered" /></td>
+  </tr>
+</table>
+
+### frost
+
+<table align="center">
+  <tr>
+    <td></td>
+    <td align="center"><strong>Dark</strong></td>
+    <td align="center"><strong>Light</strong></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>Borderless</strong></td>
+    <td><img src="/theme-frost-dark-static.svg" width="100%" alt="The frost theme: dark, borderless" /></td>
+    <td><img src="/theme-frost-light-static.svg" width="100%" alt="The frost theme: light, borderless" /></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>Bordered</strong></td>
+    <td><img src="/theme-frost-dark-static-bordered.svg" width="100%" alt="The frost theme: dark, bordered" /></td>
+    <td><img src="/theme-frost-light-static-bordered.svg" width="100%" alt="The frost theme: light, bordered" /></td>
+  </tr>
+</table>
+
+### ember
+
+<table align="center">
+  <tr>
+    <td></td>
+    <td align="center"><strong>Dark</strong></td>
+    <td align="center"><strong>Light</strong></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>Borderless</strong></td>
+    <td><img src="/theme-ember-dark-static.svg" width="100%" alt="The ember theme: dark, borderless" /></td>
+    <td><img src="/theme-ember-light-static.svg" width="100%" alt="The ember theme: light, borderless" /></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>Bordered</strong></td>
+    <td><img src="/theme-ember-dark-static-bordered.svg" width="100%" alt="The ember theme: dark, bordered" /></td>
+    <td><img src="/theme-ember-light-static-bordered.svg" width="100%" alt="The ember theme: light, bordered" /></td>
+  </tr>
+</table>
+
+### mono
+
+<table align="center">
+  <tr>
+    <td></td>
+    <td align="center"><strong>Dark</strong></td>
+    <td align="center"><strong>Light</strong></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>Borderless</strong></td>
+    <td><img src="/theme-mono-dark-static.svg" width="100%" alt="The mono theme: dark, borderless" /></td>
+    <td><img src="/theme-mono-light-static.svg" width="100%" alt="The mono theme: light, borderless" /></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>Bordered</strong></td>
+    <td><img src="/theme-mono-dark-static-bordered.svg" width="100%" alt="The mono theme: dark, bordered" /></td>
+    <td><img src="/theme-mono-light-static-bordered.svg" width="100%" alt="The mono theme: light, bordered" /></td>
+  </tr>
+</table>
+
+### dos
+
+The CGA blue screen, painted regardless of the terminal background. The theme
+draws its own double-line window, so it has no bordered/borderless split - the
+window is its frame:
 
 <p>
-  <img src="/theme-midnight.svg" width="48%" alt="The midnight theme in dark mode" />
-  <img src="/theme-midnight-light.svg" width="48%" alt="The midnight theme in light mode" />
-</p>
-
-**frost**
-
-<p>
-  <img src="/theme-frost.svg" width="48%" alt="The frost theme in dark mode" />
-  <img src="/theme-frost-light.svg" width="48%" alt="The frost theme in light mode" />
-</p>
-
-**ember**
-
-<p>
-  <img src="/theme-ember.svg" width="48%" alt="The ember theme in dark mode" />
-  <img src="/theme-ember-light.svg" width="48%" alt="The ember theme in light mode" />
-</p>
-
-**mono**
-
-<p>
-  <img src="/theme-mono.svg" width="48%" alt="The mono theme in dark mode" />
-  <img src="/theme-mono-light.svg" width="48%" alt="The mono theme in light mode" />
-</p>
-
-**dos** - the CGA blue screen, painted regardless of the terminal background
-
-<p>
-  <img src="/theme-dos.svg" width="48%" alt="The dos theme in a dark terminal" />
-  <img src="/theme-dos-light.svg" width="48%" alt="The dos theme in a light terminal" />
+  <img src="/theme-dos-dark-static.svg" width="48%" alt="The dos theme in a dark terminal" />
+  <img src="/theme-dos-light-static.svg" width="48%" alt="The dos theme in a light terminal" />
 </p>
 
 ## Dark and light
@@ -128,7 +186,7 @@ $tui = (new \DrevOps\Tui\Tui($form))->theme(AquaTheme::class);
 
 Or register a short alias with `ThemeManager::register('aqua', AquaTheme::class)`,
 then `->theme('aqua')`. The [playground's ocean
-theme](https://github.com/drevops/tui/tree/main/playground/2-custom-theme) goes
+theme](https://github.com/drevops/tui/tree/main/playground/09-themes) goes
 further, overriding many atoms and `render*()` methods for a distinct look with a
 start banner:
 
