@@ -21,7 +21,10 @@ permissions:
 
 jobs:
   test-php:
-    name: PHP ${{ matrix.php-versions }}, Deps ${{ matrix.deps }}, OS ${{ matrix.os }}
+    # The OS suffix is appended only for non-Linux runs so the Linux job names
+    # stay byte-identical to the required status-check contexts on the branch
+    # ruleset; Windows runs report as additional, non-required checks.
+    name: PHP ${{ matrix.php-versions }}, Deps ${{ matrix.deps }}${{ matrix.os != 'ubuntu-latest' && format(', OS {0}', matrix.os) || '' }}
     runs-on: ${{ matrix.os }}
 
     permissions:
