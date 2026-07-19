@@ -129,6 +129,39 @@ final class ThemeLayoutTest extends TestCase {
     }
   }
 
+  public function testLayoutPreviewsMultiLineValuesAsTheirFirstLine(): void {
+    $theme = new DefaultTheme(60, ['color' => FALSE, 'unicode' => FALSE]);
+    $panel = new Panel('p', 'P', '', [], [
+      new Panel('a', 'A', '', [new Field('notes', 'Notes', '', FieldType::Textarea, '')]),
+      new Panel('b', 'B', '', [new Field('two', 'Two', '', FieldType::Text, '')]),
+    ], NULL, [2]);
+
+    [$lines] = $theme->renderBody($panel, new Answers(['notes' => "Crisp and sweet\nHint of citrus", 'two' => 'x'], []), 0);
+
+    // A grid cell is one physical row: the multi-line value previews as its
+    // first line with an ellipsis, and no entry carries an embedded newline
+    // that would desync the column zip.
+    $body = implode('|', $lines);
+    $this->assertStringContainsString('Crisp and sweet…', $body);
+    $this->assertStringNotContainsString('Hint of citrus', $body);
+    $this->assertStringNotContainsString("\n", $body);
+    $this->assertCount(2, $lines);
+  }
+
+  public function testMeasureUsesTheWidestValueLine(): void {
+    $form = Form::create('T')
+      ->buttons(FALSE)
+      ->panel('p', 'P', function (PanelBuilder $p): void {
+        $p->textarea('notes', 'A')->default("Crisp and sweet\nlonger second line");
+      })
+      ->build();
+
+    // The two value lines stack under the value column, so the row needs the
+    // widest single line (18), never the whole string's length.
+    $answers = new Answers(['notes' => "Crisp and sweet\nlonger second line"], []);
+    $this->assertSame(23, (new DefaultTheme(40, ['color' => FALSE, 'spacing' => 'compact']))->measureContentWidth($form, $answers));
+  }
+
   public function testMeasureContentWidthCoversTheGrid(): void {
     $form = Form::create('T')
       ->layout(2)
