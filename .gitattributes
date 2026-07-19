@@ -1,3 +1,10 @@
+# Force LF line endings on every platform so checkouts are byte-identical and
+# tests do not break on Windows runners, which default to autocrlf.
+* text=auto eol=lf
+
+# Keep binary assets binary so they are never line-ending normalised.
+*.png binary
+
 # Ignore files for distribution archives.
 
 /.editorconfig   export-ignore
