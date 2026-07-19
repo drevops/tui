@@ -9,6 +9,7 @@ use DrevOps\Tui\Model\Field;
 use DrevOps\Tui\Model\Panel;
 use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\ScopedKeyMap;
+use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Render\Navigator;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Theme\Sgr;
@@ -186,8 +187,20 @@ class OceanTheme extends DefaultTheme {
    * {@inheritdoc}
    */
   #[\Override]
-  public function renderFieldLine(Field $field, Answers $answers, bool $selected): string {
-    return $this->marker($selected) . ' ' . $this->label($field->label) . ': ' . $this->value($this->renderFieldValue($field, $answers->value($field->id)));
+  public function renderFieldLine(Field $field, Answers $answers, bool $selected): array {
+    $prefix = $this->marker($selected) . ' ' . $this->label($field->label) . ': ';
+    $indent = str_repeat(' ', Ansi::width($prefix));
+
+    // A multi-line value (a textarea) lays out one row per line: the first
+    // rides the label row, the rest align under the value column, so no row
+    // carries an embedded newline.
+    $lines = [];
+
+    foreach (explode("\n", $this->normalizeLines($this->renderFieldValue($field, $answers->value($field->id)))) as $index => $value_line) {
+      $lines[] = ($index === 0 ? $prefix : $indent) . $this->value($value_line);
+    }
+
+    return $lines;
   }
 
   /**
@@ -217,7 +230,8 @@ class OceanTheme extends DefaultTheme {
 
     foreach ($panel->fields as $field) {
       if ($answers->has($field->id)) {
-        $parts[] = $this->renderFieldValue($field, $answers->value($field->id));
+        // A summary is one line, so a multi-line value folds to a single row.
+        $parts[] = str_replace("\n", ' ', $this->normalizeLines($this->renderFieldValue($field, $answers->value($field->id))));
       }
     }
 

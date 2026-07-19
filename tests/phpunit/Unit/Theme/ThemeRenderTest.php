@@ -36,40 +36,42 @@ use PHPUnit\Framework\TestCase;
 final class ThemeRenderTest extends TestCase {
 
   public function testFieldLineSelectedRightAlignsBadge(): void {
-    $line = $this->theme()->renderFieldLine(new Field('name', 'Name', '', FieldType::Text, ''), new Answers(['name' => 'Acme'], ['name' => Provenance::Edited]), TRUE);
+    $lines = $this->theme()->renderFieldLine(new Field('name', 'Name', '', FieldType::Text, ''), new Answers(['name' => 'Acme'], ['name' => Provenance::Edited]), TRUE);
 
-    $this->assertStringContainsString('❯ Name  Acme', Ansi::strip($line));
-    $this->assertStringContainsString('edited', Ansi::strip($line));
-    $this->assertSame(40, Ansi::width($line));
+    // A single-line value is one row.
+    $this->assertCount(1, $lines);
+    $this->assertStringContainsString('❯ Name  Acme', Ansi::strip($lines[0]));
+    $this->assertStringContainsString('edited', Ansi::strip($lines[0]));
+    $this->assertSame(40, Ansi::width($lines[0]));
   }
 
   public function testFieldLineDefaultHasNoBadge(): void {
-    $line = $this->theme()->renderFieldLine(new Field('name', 'Name', '', FieldType::Text, ''), new Answers(['name' => 'Acme'], ['name' => Provenance::Default]), FALSE);
+    $lines = $this->theme()->renderFieldLine(new Field('name', 'Name', '', FieldType::Text, ''), new Answers(['name' => 'Acme'], ['name' => Provenance::Default]), FALSE);
 
-    $this->assertStringNotContainsString('default', $line);
-    $this->assertStringContainsString('Name  Acme', Ansi::strip($line));
+    $this->assertStringNotContainsString('default', $lines[0]);
+    $this->assertStringContainsString('Name  Acme', Ansi::strip($lines[0]));
   }
 
   public function testFieldLineRendersValues(): void {
     $theme = $this->theme();
 
-    $bool = Ansi::strip($theme->renderFieldLine(new Field('b', 'B', '', FieldType::Confirm, FALSE), new Answers(['b' => TRUE], ['b' => Provenance::Default]), FALSE));
+    $bool = Ansi::strip($theme->renderFieldLine(new Field('b', 'B', '', FieldType::Confirm, FALSE), new Answers(['b' => TRUE], ['b' => Provenance::Default]), FALSE)[0]);
     $this->assertStringContainsString('B  yes', $bool);
 
-    $list = Ansi::strip($theme->renderFieldLine(new Field('m', 'M', '', FieldType::Select, [], multiple: TRUE), new Answers(['m' => ['a', 'b']], ['m' => Provenance::Default]), FALSE));
+    $list = Ansi::strip($theme->renderFieldLine(new Field('m', 'M', '', FieldType::Select, [], multiple: TRUE), new Answers(['m' => ['a', 'b']], ['m' => Provenance::Default]), FALSE)[0]);
     $this->assertStringContainsString('M  a, b', $list);
   }
 
   public function testFieldLineMasksPasswordValue(): void {
     $field = new Field('token', 'Token', '', FieldType::Password, '');
 
-    $line = Ansi::strip($this->theme()->renderFieldLine($field, new Answers(['token' => 's3cret-long'], ['token' => Provenance::Edited]), FALSE));
+    $line = Ansi::strip($this->theme()->renderFieldLine($field, new Answers(['token' => 's3cret-long'], ['token' => Provenance::Edited]), FALSE)[0]);
 
     $this->assertStringNotContainsString('s3cret-long', $line);
     // The mask has a fixed length so it does not leak the value's length.
     $this->assertStringContainsString('Token  ••••••••', $line);
 
-    $empty = Ansi::strip($this->theme()->renderFieldLine($field, new Answers(['token' => ''], ['token' => Provenance::Default]), FALSE));
+    $empty = Ansi::strip($this->theme()->renderFieldLine($field, new Answers(['token' => ''], ['token' => Provenance::Default]), FALSE)[0]);
     $this->assertStringNotContainsString('•', $empty);
   }
 
@@ -83,6 +85,103 @@ final class ThemeRenderTest extends TestCase {
     $this->assertSame('❯ CDN  line one', Ansi::strip($lines[0]));
     $this->assertMatchesRegularExpression('/^ +line two$/', Ansi::strip($lines[1]));
     $this->assertCount(2, $lines);
+  }
+
+  public function testBodyExpandsMultiLineValueAcrossRows(): void {
+    $panel = new Panel('p', 'P', '', [new Field('notes', 'Notes', '', FieldType::Textarea, '')]);
+    $answers = new Answers(['notes' => "Crisp and sweet\nHint of citrus"], ['notes' => Provenance::Edited]);
+
+    [$lines] = $this->theme()->renderBody($panel, $answers, 0);
+
+    // Each body entry is one physical row: an embedded newline would desync the
+    // box border, the badge alignment and the scroll maths.
+    foreach ($lines as $line) {
+      $this->assertStringNotContainsString("\n", $line);
+    }
+
+    $stripped = array_map(Ansi::strip(...), $lines);
+
+    // The first value line rides the label row; the rest align under the value
+    // column.
+    $this->assertStringContainsString('Notes  Crisp and sweet', $stripped[0]);
+    $this->assertMatchesRegularExpression('/^ +Hint of citrus$/', $stripped[1]);
+
+    // The provenance badge rides the label row only.
+    $this->assertStringContainsString('edited', $stripped[0]);
+    $this->assertStringNotContainsString('edited', $stripped[1]);
+  }
+
+  public function testBodyExpandsInlineEditorMultiLineView(): void {
+    $field = new Field('notes', 'Notes', '', FieldType::Textarea, '');
+    $panel = new Panel('p', 'P', '', [$field]);
+
+    // The editor hands back a multi-line caret view for the field being edited.
+    [$lines] = $this->theme()->renderBody($panel, new Answers(), 0, $field, "Crisp and sweet\nHint of citrus");
+
+    foreach ($lines as $line) {
+      $this->assertStringNotContainsString("\n", $line);
+    }
+
+    $stripped = array_map(Ansi::strip(...), $lines);
+    $this->assertStringContainsString('Notes  Crisp and sweet', $stripped[0]);
+    $this->assertMatchesRegularExpression('/^ +Hint of citrus$/', $stripped[1]);
+  }
+
+  public function testPanelSummaryCollapsesMultiLineValue(): void {
+    $panel = new Panel('sub', 'Sub', '', [new Field('notes', 'Notes', '', FieldType::Textarea, '')]);
+    $answers = new Answers(['notes' => "Crisp and sweet\nHint of citrus"], []);
+
+    $summary = $this->theme()->summarizePanel($panel, $answers);
+
+    // A summary is a single line: newlines collapse so a multi-line value does
+    // not break the row it sits on.
+    $this->assertStringNotContainsString("\n", $summary);
+    $this->assertStringContainsString('Crisp and sweet', $summary);
+    $this->assertStringContainsString('Hint of citrus', $summary);
+  }
+
+  #[DataProvider('dataProviderBodyNormalizesLineEndingsInMultiLineValue')]
+  public function testBodyNormalizesLineEndingsInMultiLineValue(string $value): void {
+    $panel = new Panel('p', 'P', '', [new Field('notes', 'Notes', '', FieldType::Textarea, '')]);
+    $answers = new Answers(['notes' => $value], []);
+
+    [$lines] = $this->theme()->renderBody($panel, $answers, 0);
+
+    // A carriage return would send the terminal cursor back to the row start
+    // and overprint the row, so every line ending an external editor's save
+    // can carry in splits into rows the same way a newline does.
+    foreach ($lines as $line) {
+      $this->assertStringNotContainsString("\r", $line);
+      $this->assertStringNotContainsString("\n", $line);
+    }
+
+    $stripped = array_map(Ansi::strip(...), $lines);
+    $this->assertStringContainsString('Notes  Crisp and sweet', $stripped[0]);
+    $this->assertMatchesRegularExpression('/^ +Hint of citrus$/', $stripped[1]);
+  }
+
+  public static function dataProviderBodyNormalizesLineEndingsInMultiLineValue(): \Iterator {
+    yield 'newline' => ["Crisp and sweet\nHint of citrus"];
+    yield 'carriage return and newline' => ["Crisp and sweet\r\nHint of citrus"];
+    yield 'carriage return' => ["Crisp and sweet\rHint of citrus"];
+  }
+
+  #[DataProvider('dataProviderPanelSummaryNormalizesLineEndings')]
+  public function testPanelSummaryNormalizesLineEndings(string $value): void {
+    $panel = new Panel('sub', 'Sub', '', [new Field('notes', 'Notes', '', FieldType::Textarea, '')]);
+    $answers = new Answers(['notes' => $value], []);
+
+    $summary = $this->theme()->summarizePanel($panel, $answers);
+
+    $this->assertStringNotContainsString("\r", $summary);
+    $this->assertStringNotContainsString("\n", $summary);
+    $this->assertStringContainsString('Crisp and sweet Hint of citrus', $summary);
+  }
+
+  public static function dataProviderPanelSummaryNormalizesLineEndings(): \Iterator {
+    yield 'newline' => ["Crisp and sweet\nHint of citrus"];
+    yield 'carriage return and newline' => ["Crisp and sweet\r\nHint of citrus"];
+    yield 'carriage return' => ["Crisp and sweet\rHint of citrus"];
   }
 
   public function testPanelLineShowsDrillIndicator(): void {
@@ -160,8 +259,8 @@ final class ThemeRenderTest extends TestCase {
     $answers = new Answers(['name' => 'Acme'], ['name' => Provenance::Default]);
 
     // The selected row is bold (SGR 1); a non-selected row is not.
-    $this->assertStringContainsString("\033[1", $theme->renderFieldLine($field, $answers, TRUE));
-    $this->assertStringNotContainsString("\033[1", $theme->renderFieldLine($field, $answers, FALSE));
+    $this->assertStringContainsString("\033[1", $theme->renderFieldLine($field, $answers, TRUE)[0]);
+    $this->assertStringNotContainsString("\033[1", $theme->renderFieldLine($field, $answers, FALSE)[0]);
 
     // The selected item's description and summary rows are bold too.
     $this->assertStringContainsString("\033[1", $theme->renderDescriptionLine('help', TRUE));
