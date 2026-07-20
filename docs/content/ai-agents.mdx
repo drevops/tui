@@ -5,50 +5,17 @@ sidebar_position: 10
 
 # AI agents
 
-A form built with this engine is self-describing: it can hand an AI agent (or any automation) the questions, the answer formats and the precedence rules, then accept those answers unattended - without the agent ever reading the form's source. The facade exposes three calls for this - `agentHelp()`, `schema()` and `validate()` - and a consumer wires the first into a `--agent` CLI flag so an agent can discover the form the moment it meets the tool.
+A form built with this engine is self-describing: it hands an AI agent (or any automation) the questions, their allowed values and the precedence rules, so answers arrive unattended without the agent ever reading the form's source. The facade exposes three calls for this - `agentHelp()`, `schema()` and `validate()` - which a consumer surfaces in its own tool so an agent can discover the form the moment it meets it.
 
-## The agent loop
+## The agent guide
 
-An agent drives the tool in three steps:
-
-1. **Discover** - run `--agent` for the driving guide and `--schema` for the machine-readable field values (a `select`'s allowed options, a number's bounds).
-2. **Read** - take the question ids, types, answer formats and allowed values from them.
-3. **Run** - re-run with `--no-interaction` and a `--prompts` payload; nothing prompts and the answers come back as JSON.
-
-```bash
-# 1-2. Learn how to drive the form and its allowed values.
-php installer.php --agent
-php installer.php --schema
-
-# 3. Supply every answer and run unattended.
-php installer.php --no-interaction --prompts '{"name":"Weekly Box","fruit":"cherry"}'
-```
-
-## `agentHelp()` and the `--agent` flag
-
-`agentHelp()` returns a plain-text guide to the whole form: how to answer it, the precedence order, and every question with its id, type, requiredness and bounds. A consumer prints it from a `--agent` flag - the one line that makes a tool agent-drivable:
+`agentHelp()` returns a plain-text guide to the whole form: how to answer it, the precedence order, and every question with its id, type, requiredness and bounds. There is no flag to wire up on the library side - the consumer retrieves the text and folds it into its own help, wherever that belongs (an "AI agents" section of `--help`, a dedicated flag the consumer adds, a generated README):
 
 ```php
 use DrevOps\Tui\Tui;
 
-$tui = new Tui($form);
-
-// Print the guide and exit before the form runs when an agent asks for it.
-if (in_array('--agent', $argv, TRUE)) {
-  echo $tui->agentHelp();
-  exit(0);
-}
-
-// The machine-readable schema exposes each field's allowed values.
-if (in_array('--schema', $argv, TRUE)) {
-  echo json_encode($tui->schema(), JSON_PRETTY_PRINT);
-  exit(0);
-}
-
-// Otherwise collect: the interactive TUI on a terminal, a headless resolve
-// under --no-interaction or without a terminal.
-$interactive = in_array('--no-interaction', $argv, TRUE) ? FALSE : NULL;
-$answers = $tui->run($prompts, interactive: $interactive);
+// The library hands back the text; the consumer decides where it goes.
+echo (new Tui($form))->agentHelp();
 ```
 
 The guide the produce-order form emits:
@@ -68,28 +35,11 @@ Questions:
   organic [confirm] - Organic only?
 ```
 
-A `select` shows only its label in this guide, not its allowed values - those come from the JSON schema below (the `--schema` flag), which an agent reads before choosing a constrained answer.
-
-The `TUI_` prefix on the environment line is the default; change it with `->envPrefix('MYAPP_')` on the form or `new Tui($form, env_prefix: 'MYAPP_')`, and the guide reflects the active prefix.
-
-## Precedence and environment variables
-
-Every field resolves from the first source that provides a value, in this order:
-
-1. `--prompts` - the JSON payload (a string or a path to a JSON file), keyed by question id. Highest precedence.
-2. **Environment** - a per-question variable named `<PREFIX><ID>` (the uppercased id), e.g. `TUI_NAME`. The prefix defaults to `TUI_`.
-3. **Discovered** - values detected from the target directory (see [Discovery](/discovery)).
-4. **Derived** - values computed from other fields.
-5. **Default** - the declared default.
-
-```bash
-# The environment supplies "name"; --prompts overrides "fruit".
-TUI_NAME='Weekly Box' php installer.php --no-interaction --prompts '{"fruit":"cherry"}'
-```
+The `--no-interaction` and `--prompts` the guide names are the [headless interface](/headless-collection) a consumer maps onto `collect()`, not flags the library ships. The `TUI_` prefix on the environment line is the default; change it with `->envPrefix('MYAPP_')` on the form or `new Tui($form, env_prefix: 'MYAPP_')`, and the guide reflects the active prefix. A `select` shows only its label here, not its allowed values - those come from the schema below.
 
 ## Machine-readable schema and validation
 
-`schema()` - printed by the `--schema` flag above - returns the questions as a JSON schema: id, type, options, bounds and requiredness per question. It is the machine-readable counterpart to the text guide and the source an agent reads for a `select`'s allowed option values:
+`schema()` returns the questions as a JSON schema - id, type, options, bounds and requiredness per question - the machine-readable counterpart to the text guide, and the source an agent reads for a `select`'s allowed option values. A consumer surfaces it the same way, as help output or behind a flag it chooses:
 
 ```json
 {
@@ -127,8 +77,18 @@ $errors = $tui->validate(['name' => 'Weekly Box', 'fruit' => 'grape', 'quantity'
 // ]
 ```
 
+## Precedence and environment variables
+
+Once an agent supplies answers through the consumer's [headless interface](/headless-collection), every field resolves from the first source that provides a value, in this order:
+
+1. `--prompts` - the JSON payload (a string or a path to a JSON file), keyed by question id. Highest precedence.
+2. **Environment** - a per-question variable named `<PREFIX><ID>` (the uppercased id), e.g. `TUI_NAME`. The prefix defaults to `TUI_`.
+3. **Discovered** - values detected from the target directory (see [Discovery](/discovery)).
+4. **Derived** - values computed from other fields.
+5. **Default** - the declared default.
+
 ## Runnable example
 
-The `--agent` recipe runs end to end in [`playground/05-headless/agent-cli.php`](https://github.com/drevops/tui/tree/main/playground/05-headless/agent-cli.php), and `agentHelp()`, `schema()` and `validate()` each have a script of their own beside it in [`playground/05-headless/`](https://github.com/drevops/tui/tree/main/playground/05-headless).
+[`playground/05-headless/agent-cli.php`](https://github.com/drevops/tui/tree/main/playground/05-headless/agent-cli.php) folds `agentHelp()` into a consumer tool's help, and `agentHelp()`, `schema()` and `validate()` each have a script of their own beside it in [`playground/05-headless/`](https://github.com/drevops/tui/tree/main/playground/05-headless).
 
 See also [Headless collection](/headless-collection) for driving the same form from CI and [Self-describing answers](/self-describing-answers) for what comes back.

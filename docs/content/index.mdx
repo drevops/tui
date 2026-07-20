@@ -24,7 +24,7 @@ The engine knows nothing about the application it serves: it stays generic, the 
 - 🧩 [**Widgets**](/widgets) - `calendar`, `confirm`, `filepicker`, `number`, `password`, `pause`, `reorder`, `search`, `select`, `suggest`, `text`, `textarea`, `toggle`
 - 🏗️ [**Builder-driven**](/configuration) - the form is declared in PHP with a fluent builder; the common cases need no code
 - 🎛️ [**Interactive or unattended**](/headless-collection) - answer the form by keyboard, or supply the answers up front as a JSON payload and environment variables so it runs without prompting
-- 🤖 [**AI agents**](/ai-agents) - the form describes itself: a `--agent` flag prints a plain-text driving guide and `schema()` a JSON schema, so an agent can answer it unattended
+- 🤖 [**AI agents**](/ai-agents) - the form describes itself: `agentHelp()` hands back a plain-text driving guide and `schema()` a JSON schema to fold into your tool's help, so an agent can answer it unattended
 - 🔗 [**Derived values**](/configuration#derived-values) - compute one field from others with [str2name](https://github.com/AlexSkrypnyk/str2name) transforms; chains settle to a fixpoint
 - 🔀 [**Conditional fields**](/configuration#conditional-fields) - show or hide fields with `when` rules; a fix-up pass reconciles dependent answers
 - 🔍 [**Discovery**](/discovery) - detect sensible defaults from the target directory (`.env` keys, JSON paths, path existence, directory scans)
