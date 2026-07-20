@@ -123,7 +123,7 @@ final class AgentHelpTest extends TestCase {
     $this->assertStringNotContainsString('"env"', $help);
   }
 
-  public function testPauseIsNotAQuestion(): void {
+  public function testPauseIsSkipped(): void {
     $form = Form::create('T')
       ->panel('p', 'p', function (PanelBuilder $p): void {
         $p->text('name', 'Name')->required();
