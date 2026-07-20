@@ -162,6 +162,26 @@ abstract class AbstractWidget implements WidgetInterface {
   }
 
   /**
+   * Accept the live value when the key triggers the accept action.
+   *
+   * @param \DrevOps\Tui\Input\Key $key
+   *   The key to test.
+   *
+   * @return bool
+   *   TRUE when the key triggered the accept - it is consumed whether or not
+   *   the value passed validation.
+   */
+  protected function handleAccept(Key $key): bool {
+    if ($this->keys()->matches($key, Action::Accept)) {
+      $this->accept($this->liveValue());
+
+      return TRUE;
+    }
+
+    return FALSE;
+  }
+
+  /**
    * Style an option label, highlighted when its row holds the cursor.
    *
    * @param \DrevOps\Tui\Theme\ThemeInterface $theme

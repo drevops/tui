@@ -6,7 +6,7 @@ namespace DrevOps\Tui\Theme;
 
 use DrevOps\Tui\Answers\Answers;
 use DrevOps\Tui\Answers\Provenance;
-use DrevOps\Tui\Answers\SummaryFormatter;
+use DrevOps\Tui\Answers\ValueFormatter;
 use DrevOps\Tui\Model\Field;
 use DrevOps\Tui\Model\FieldType;
 use DrevOps\Tui\Model\FormDefinition;
@@ -1505,10 +1505,7 @@ class DefaultTheme implements ThemeInterface {
    *   The aligned lines, exactly the target height when the block fits it.
    */
   protected function alignBlock(array $lines, int $inner_width, int $target_height): array {
-    $block_width = 0;
-    foreach ($lines as $line) {
-      $block_width = max($block_width, Ansi::width($line));
-    }
+    $block_width = Ansi::blockWidth($lines);
 
     [$top, $left] = Overlay::place($inner_width, $target_height, $block_width, count($lines), $this->halign(), $this->valign());
 
@@ -1955,31 +1952,10 @@ class DefaultTheme implements ThemeInterface {
    */
   protected function renderFieldValue(Field $field, mixed $value): string {
     if ($field->type === FieldType::Password) {
-      return is_string($value) && $value !== '' ? str_repeat($this->mask(), SummaryFormatter::MASK_LENGTH) : '';
+      return is_string($value) && $value !== '' ? ValueFormatter::mask($this->mask()) : '';
     }
 
-    return $this->renderValue($value);
-  }
-
-  /**
-   * Render a value readably.
-   *
-   * @param mixed $value
-   *   The value.
-   *
-   * @return string
-   *   The rendered value.
-   */
-  protected function renderValue(mixed $value): string {
-    if (is_bool($value)) {
-      return $value ? Translator::t('yes') : Translator::t('no');
-    }
-
-    if (is_array($value)) {
-      return implode(', ', array_map(static fn(mixed $item): string => is_scalar($item) ? (string) $item : '', $value));
-    }
-
-    return is_scalar($value) ? (string) $value : '';
+    return ValueFormatter::format($value);
   }
 
 }

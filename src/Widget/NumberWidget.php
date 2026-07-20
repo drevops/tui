@@ -80,9 +80,7 @@ class NumberWidget extends AbstractWidget implements TextEditCapableInterface, S
       return;
     }
 
-    if ($keys->matches($key, Action::Accept)) {
-      $this->accept($this->liveValue());
-
+    if ($this->handleAccept($key)) {
       return;
     }
 

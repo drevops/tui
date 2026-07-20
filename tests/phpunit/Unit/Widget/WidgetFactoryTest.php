@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Tests\Unit\Widget;
 
+use DrevOps\Tui\Handler\HandlerRegistry;
 use DrevOps\Tui\Model\DateBounds;
 use DrevOps\Tui\Model\Field;
 use DrevOps\Tui\Model\FieldType;
@@ -253,6 +254,61 @@ final class WidgetFactoryTest extends TestCase {
 
     $scalar = new Field('b', 'B', '', FieldType::Text, '', completion: fn (array $answers): string => 'oops');
     $this->assertStringNotContainsString("\033[90m", (new WidgetFactory())->create($scalar, 'ac')->view(new DefaultTheme()));
+  }
+
+  public function testDeclaredValidatorBlocksAcceptUntilItPasses(): void {
+    $field = new Field('name', 'Name', '', FieldType::Text, '', validate: static fn (mixed $value): ?string => is_string($value) && $value !== '' ? NULL : 'A name is required.');
+
+    $widget = (new WidgetFactory())->create($field, '');
+
+    $widget->handle(Key::named(KeyName::Enter));
+    $this->assertFalse($widget->isComplete());
+    $this->assertSame('A name is required.', $widget->error());
+
+    $widget->handle(Key::char('x'));
+    $widget->handle(Key::named(KeyName::Enter));
+    $this->assertTrue($widget->isComplete());
+    $this->assertNull($widget->error());
+  }
+
+  public function testDeclaredTransformAppliesOnAccept(): void {
+    $field = new Field('variety', 'Variety', '', FieldType::Text, '', transform: static fn (mixed $value): mixed => is_string($value) ? strtolower(trim($value)) : $value);
+
+    $widget = (new WidgetFactory())->create($field, ' Golden ');
+    $widget->handle(Key::named(KeyName::Enter));
+
+    $this->assertSame('golden', $widget->value());
+  }
+
+  public function testHandlerBehaviourReachesWidget(): void {
+    $handlers = new HandlerRegistry(['DrevOps\Tui\Tests\Fixtures\Handler']);
+    $field = new Field('machine_name', 'Machine name', '', FieldType::Text, '');
+
+    $widget = (new WidgetFactory(handlers: $handlers))->create($field, '');
+
+    // The registry's static validate() blocks the empty value...
+    $widget->handle(Key::named(KeyName::Enter));
+    $this->assertFalse($widget->isComplete());
+    $this->assertSame('A machine name is required.', $widget->error());
+
+    // ...and its static transform() lowercases the accepted one.
+    $widget->handle(Key::char('A'));
+    $widget->handle(Key::named(KeyName::Enter));
+    $this->assertTrue($widget->isComplete());
+    $this->assertSame('a', $widget->value());
+  }
+
+  public function testDeclaredClosuresWinOverHandlerBehaviour(): void {
+    $handlers = new HandlerRegistry(['DrevOps\Tui\Tests\Fixtures\Handler']);
+    $field = new Field('machine_name', 'Machine name', '', FieldType::Text, '', validate: static fn (mixed $value): ?string => NULL, transform: static fn (mixed $value): mixed => is_string($value) ? strtoupper($value) : $value);
+
+    $widget = (new WidgetFactory(handlers: $handlers))->create($field, 'a');
+    $widget->handle(Key::named(KeyName::Enter));
+
+    // The declared closures replace the handler's: the accept is not blocked
+    // and the value uppercases rather than lowercasing.
+    $this->assertTrue($widget->isComplete());
+    $this->assertSame('A', $widget->value());
   }
 
   /**

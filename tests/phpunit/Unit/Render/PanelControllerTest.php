@@ -8,6 +8,7 @@ use DrevOps\Tui\Answers\Answers;
 use DrevOps\Tui\Answers\Provenance;
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Builder\PanelBuilder;
+use DrevOps\Tui\Handler\HandlerRegistry;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Render\Ansi;
@@ -1128,6 +1129,50 @@ final class PanelControllerTest extends TestCase {
   /**
    * A controller over a two-panel form seeded with answers.
    */
+  public function testEditEnforcesDeclaredValidatorAndTransform(): void {
+    $form = Form::create('Demo')
+      ->panel('stall', 'Stall', function (PanelBuilder $p): void {
+        $p->text('name', 'Name')
+          ->validate(static fn (mixed $value): ?string => is_string($value) && $value !== '' ? NULL : 'A name is required.')
+          ->transform(static fn (mixed $value): mixed => is_string($value) ? strtolower($value) : $value);
+      })
+      ->build();
+
+    $controller = new PanelController($form, new DefaultTheme(40, ['color' => FALSE]), values: ['name' => '']);
+    $controller->handle(Key::named(KeyName::Enter));
+    $controller->handle(Key::named(KeyName::Enter));
+    $this->assertTrue($controller->isEditing());
+
+    // An invalid value is rejected: the editor stays open showing the error.
+    $controller->handle(Key::named(KeyName::Enter));
+    $this->assertTrue($controller->isEditing());
+    $this->assertStringContainsString('A name is required.', $controller->frame(24));
+
+    // A valid value is accepted and stored transformed.
+    $controller->handle(Key::char('B'));
+    $controller->handle(Key::named(KeyName::Enter));
+    $this->assertFalse($controller->isEditing());
+    $this->assertSame('b', $controller->answers()->value('name'));
+  }
+
+  public function testEditEnforcesHandlerBehaviour(): void {
+    $form = Form::create('Demo')
+      ->panel('stall', 'Stall', function (PanelBuilder $p): void {
+        $p->text('machine_name', 'Machine name');
+      })
+      ->build();
+
+    $controller = new PanelController($form, new DefaultTheme(40, ['color' => FALSE]), values: ['machine_name' => 'Seed'], handlers: new HandlerRegistry(['DrevOps\Tui\Tests\Fixtures\Handler']));
+    $controller->handle(Key::named(KeyName::Enter));
+    $controller->handle(Key::named(KeyName::Enter));
+    $controller->handle(Key::char('X'));
+    $controller->handle(Key::named(KeyName::Enter));
+
+    // The handler's static transform() lowercased the accepted value.
+    $this->assertFalse($controller->isEditing());
+    $this->assertSame('seedx', $controller->answers()->value('machine_name'));
+  }
+
   protected function controller(): PanelController {
     $builder = Form::create('Demo')
       ->panel('general', 'General', function (PanelBuilder $p): void {

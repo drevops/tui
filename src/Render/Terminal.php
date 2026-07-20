@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Render;
 
 use DrevOps\Tui\Theme\Mode;
-use Symfony\Component\Console\Terminal as ConsoleTerminal;
 
 /**
- * Thin terminal I/O: raw mode, alternate screen, mouse, render and restore.
+ * Thin terminal I/O: raw mode, alternate screen, mouse, size, render, restore.
  *
- * The raw-mode toggling and input reading touch the real TTY and are excluded
- * from coverage; the output writing is stream-injectable and testable.
+ * The raw-mode toggling, input reading and size probing touch the real TTY and
+ * are excluded from coverage; the output writing is stream-injectable and the
+ * size parsing seam-injectable, so both are testable.
  *
  * @package DrevOps\Tui\Render
  */
@@ -26,6 +26,16 @@ class Terminal {
    * The per-poll wait for a background-query reply, in microseconds.
    */
   protected const int QUERY_POLL_INTERVAL_US = 100000;
+
+  /**
+   * The width assumed when no probe reports one, in columns.
+   */
+  protected const int FALLBACK_WIDTH = 80;
+
+  /**
+   * The height assumed when no probe reports one, in rows.
+   */
+  protected const int FALLBACK_HEIGHT = 24;
 
   /**
    * The output stream.
@@ -45,6 +55,13 @@ class Terminal {
    * The background SGR each rendered frame is washed with, or NULL for none.
    */
   protected ?string $background = NULL;
+
+  /**
+   * The probed [columns, rows], detected once per instance; NULL until probed.
+   *
+   * @var array{int,int}|null
+   */
+  protected ?array $size = NULL;
 
   /**
    * Construct a terminal.
@@ -155,21 +172,140 @@ class Terminal {
   /**
    * The terminal height in rows.
    *
+   * A LINES environment override wins; otherwise the size is probed from the
+   * terminal once per instance, falling back to the classic 24 rows.
+   *
    * @return int
    *   The number of rows available for rendering.
    */
   public function height(): int {
-    return (new ConsoleTerminal())->getHeight();
+    return $this->envDimension('LINES') ?? $this->size()[1];
   }
 
   /**
    * The terminal width in columns.
    *
+   * A COLUMNS environment override wins; otherwise the size is probed from the
+   * terminal once per instance, falling back to the classic 80 columns.
+   *
    * @return int
    *   The number of columns available for rendering.
    */
   public function width(): int {
-    return (new ConsoleTerminal())->getWidth();
+    return $this->envDimension('COLUMNS') ?? $this->size()[0];
+  }
+
+  /**
+   * A positive integer dimension from the environment, or NULL when unset.
+   *
+   * @param string $name
+   *   The variable name (COLUMNS or LINES).
+   *
+   * @return int|null
+   *   The dimension, or NULL when the variable is unset or not a positive
+   *   integer.
+   */
+  protected function envDimension(string $name): ?int {
+    $value = getenv($name);
+
+    if (!is_string($value) || !ctype_digit(trim($value))) {
+      return NULL;
+    }
+
+    $dimension = (int) trim($value);
+
+    return $dimension > 0 ? $dimension : NULL;
+  }
+
+  /**
+   * The probed [columns, rows], detected once and cached for the instance.
+   *
+   * @return array{int,int}
+   *   The columns and rows, with the 80x24 fallback where probing failed.
+   */
+  protected function size(): array {
+    return $this->size ??= $this->detectSize() ?? [self::FALLBACK_WIDTH, self::FALLBACK_HEIGHT];
+  }
+
+  /**
+   * Probe the terminal size from the platform's console tooling.
+   *
+   * @return array{int,int}|null
+   *   The [columns, rows], or NULL when nothing reported a size (no TTY, or
+   *   the tooling is unavailable).
+   */
+  protected function detectSize(): ?array {
+    if ($this->isWindows()) {
+      return self::sizeFromModeCon($this->run('mode CON'));
+    }
+
+    return self::sizeFromStty($this->run('stty size 2>/dev/null'));
+  }
+
+  /**
+   * Whether the platform is Windows, where `stty` gives way to `mode CON`.
+   *
+   * @return bool
+   *   TRUE on Windows.
+   */
+  protected function isWindows(): bool {
+    return DIRECTORY_SEPARATOR === '\\';
+  }
+
+  /**
+   * Parse a `stty size` reply ("rows cols") into [columns, rows].
+   *
+   * @param string|null $output
+   *   The command output, or NULL when the command produced none.
+   *
+   * @return array{int,int}|null
+   *   The [columns, rows], or NULL when the output is not a size reply.
+   */
+  public static function sizeFromStty(?string $output): ?array {
+    if (!is_string($output) || preg_match('/^\s*(\d+)\s+(\d+)\s*$/', $output, $matches) !== 1) {
+      return NULL;
+    }
+
+    return [(int) $matches[2], (int) $matches[1]];
+  }
+
+  /**
+   * Parse a `mode CON` report into [columns, rows].
+   *
+   * The report labels are localized, so the parse anchors on the dashed rule
+   * and reads the first two numbers after it - lines first, then columns.
+   *
+   * @param string|null $output
+   *   The command output, or NULL when the command produced none.
+   *
+   * @return array{int,int}|null
+   *   The [columns, rows], or NULL when the output is not a console report.
+   */
+  public static function sizeFromModeCon(?string $output): ?array {
+    if (!is_string($output) || preg_match('/-+\r?\n\D*(\d+)\D*\r?\n\D*(\d+)/', $output, $matches) !== 1) {
+      return NULL;
+    }
+
+    return [(int) $matches[2], (int) $matches[1]];
+  }
+
+  /**
+   * Run a console command and capture its output.
+   *
+   * The one seam that spawns a process, so tests inject canned probe replies.
+   *
+   * @param string $command
+   *   The command line.
+   *
+   * @return string|null
+   *   The command's output, or NULL when it produced none.
+   */
+  protected function run(string $command): ?string {
+    // @codeCoverageIgnoreStart
+    $output = shell_exec($command);
+
+    return is_string($output) ? $output : NULL;
+    // @codeCoverageIgnoreEnd
   }
 
   /**

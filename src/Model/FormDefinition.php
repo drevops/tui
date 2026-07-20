@@ -18,6 +18,16 @@ namespace DrevOps\Tui\Model;
 final readonly class FormDefinition {
 
   /**
+   * The fields flattened across the panel tree, in declaration order.
+   *
+   * Derived once at construction - the panel tree is immutable, so the many
+   * callers of fields() share one walk instead of re-flattening per call.
+   *
+   * @var \DrevOps\Tui\Model\Field[]
+   */
+  protected array $flatFields;
+
+  /**
    * Construct the form definition.
    *
    * @param string $title
@@ -50,6 +60,7 @@ final readonly class FormDefinition {
     public Buttons $buttons = new Buttons(),
     public array $layout = [],
   ) {
+    $this->flatFields = self::collectFields($this->panels);
   }
 
   /**
@@ -75,28 +86,30 @@ final readonly class FormDefinition {
    *   The fields.
    */
   public function fields(): array {
-    $fields = [];
-    $this->collectFields($this->panels, $fields);
-
-    return $fields;
+    return $this->flatFields;
   }
 
   /**
-   * Recursively flatten fields from panels into an accumulator.
+   * Recursively flatten the fields of a panel tree, in declaration order.
    *
    * @param \DrevOps\Tui\Model\Panel[] $panels
    *   Panels to walk.
-   * @param \DrevOps\Tui\Model\Field[] $fields
-   *   Accumulator, populated in place.
+   *
+   * @return \DrevOps\Tui\Model\Field[]
+   *   The flattened fields.
    */
-  protected function collectFields(array $panels, array &$fields): void {
+  protected static function collectFields(array $panels): array {
+    $fields = [];
+
     foreach ($panels as $panel) {
       foreach ($panel->fields as $field) {
         $fields[] = $field;
       }
 
-      $this->collectFields($panel->panels, $fields);
+      $fields = array_merge($fields, self::collectFields($panel->panels));
     }
+
+    return $fields;
   }
 
 }

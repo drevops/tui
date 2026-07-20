@@ -6,6 +6,7 @@ namespace DrevOps\Tui\Render;
 
 use DrevOps\Tui\Answers\Answers;
 use DrevOps\Tui\Answers\Provenance;
+use DrevOps\Tui\Handler\HandlerRegistry;
 use DrevOps\Tui\Model\Field;
 use DrevOps\Tui\Model\FormDefinition;
 use DrevOps\Tui\Model\Panel;
@@ -184,6 +185,9 @@ class PanelController {
    * @param \DrevOps\Tui\Render\ExternalEditor|null $external_editor
    *   The external-editor service (defaults to a real one); injectable for
    *   tests and to gate the textarea handoff on editor availability.
+   * @param \DrevOps\Tui\Handler\HandlerRegistry|null $handlers
+   *   The registry resolving a field id to its reusable static
+   *   validate()/transform() behaviour; NULL leaves only the declared closures.
    */
   public function __construct(
     protected FormDefinition $form,
@@ -196,10 +200,11 @@ class PanelController {
     protected string $banner = '',
     protected string $version = '',
     ?ExternalEditor $external_editor = NULL,
+    ?HandlerRegistry $handlers = NULL,
   ) {
     $this->keymap = $keymap ?? KeyMapManager::create();
     $this->externalEditor = $external_editor ?? new ExternalEditor();
-    $this->widgets = new WidgetFactory($this->keymap, $this->externalEditor->isAvailable());
+    $this->widgets = new WidgetFactory($this->keymap, $this->externalEditor->isAvailable(), $handlers);
     $this->nav = $this->keymap->navigation();
     $this->scroller = new Scroller();
     $this->navigator = new Navigator(new Panel('hub', $form->title, '', [], $form->panels, NULL, $form->layout));
@@ -615,11 +620,7 @@ class PanelController {
     $lines = explode("\n", $frame);
     $area_width = $terminal->width();
     $area_height = $terminal->height();
-
-    $box_width = 0;
-    foreach ($lines as $line) {
-      $box_width = max($box_width, Ansi::width($line));
-    }
+    $box_width = Ansi::blockWidth($lines);
 
     if (count($lines) >= $area_height && $box_width >= $area_width) {
       return $frame;
@@ -628,7 +629,7 @@ class PanelController {
     [$top, $left] = Overlay::place($area_width, $area_height, $box_width, count($lines), $this->theme->halign(), $this->theme->valign());
     $backdrop = array_fill(0, $area_height, str_repeat(' ', $area_width));
 
-    return implode("\n", Overlay::composite($backdrop, $lines, $box_width, $top, $left, static fn(string $segment): string => $segment));
+    return implode("\n", Overlay::composite($backdrop, $lines, $box_width, $top, $left));
   }
 
   /**
@@ -709,15 +710,12 @@ class PanelController {
       $this->theme->renderHints($this->nav, new Hint('quit', Action::Quit)),
     ];
 
-    $width = 0;
-    foreach ($lines as $line) {
-      $width = max($width, Ansi::width($line));
-    }
+    $width = Ansi::blockWidth($lines);
 
     [$top, $left] = Overlay::center($terminal->width(), $terminal->height(), $width, count($lines));
     $backdrop = array_fill(0, max(count($lines), $terminal->height()), str_repeat(' ', max($width, $terminal->width())));
 
-    return implode("\n", Overlay::composite($backdrop, $lines, $width, $top, $left, static fn(string $segment): string => $segment));
+    return implode("\n", Overlay::composite($backdrop, $lines, $width, $top, $left));
   }
 
   /**

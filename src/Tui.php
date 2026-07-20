@@ -416,6 +416,7 @@ final class Tui {
       $answers->provenance,
       $banner_text,
       $version,
+      handlers: $this->registry,
     );
   }
 

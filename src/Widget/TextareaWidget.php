@@ -93,9 +93,7 @@ class TextareaWidget extends AbstractWidget implements TextEditCapableInterface,
 
     // Accept is checked here, after the newline branch, because this scope
     // binds it to Tab rather than Enter.
-    if ($keys->matches($key, Action::Accept)) {
-      $this->accept($this->liveValue());
-
+    if ($this->handleAccept($key)) {
       return;
     }
 

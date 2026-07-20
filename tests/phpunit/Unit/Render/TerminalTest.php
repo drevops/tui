@@ -6,6 +6,7 @@ namespace DrevOps\Tui\Tests\Unit\Render;
 
 use DrevOps\Tui\Render\Terminal;
 use DrevOps\Tui\Testing\BufferedTerminal;
+use DrevOps\Tui\Tests\Fixtures\Render\ProbeTerminal;
 use DrevOps\Tui\Tests\Traits\IsolatesEnvTrait;
 use DrevOps\Tui\Theme\Mode;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -63,6 +64,47 @@ final class TerminalTest extends TestCase {
 
   public function testWidth(): void {
     $this->assertGreaterThan(0, (new Terminal())->width());
+  }
+
+  public function testSizeFromEnvironmentOverrides(): void {
+    $this->putEnv('COLUMNS', '120');
+    $this->putEnv('LINES', '40');
+
+    $terminal = new ProbeTerminal();
+
+    $this->assertSame(120, $terminal->width());
+    $this->assertSame(40, $terminal->height());
+  }
+
+  public function testSizeIgnoresNonPositiveEnvironment(): void {
+    $this->putEnv('COLUMNS', '0');
+    $this->putEnv('LINES', 'abc');
+
+    $terminal = new ProbeTerminal("34 132\n");
+
+    $this->assertSame(132, $terminal->width());
+    $this->assertSame(34, $terminal->height());
+  }
+
+  #[DataProvider('dataProviderSizeFromProbe')]
+  public function testSizeFromProbe(?string $reply, bool $windows, int $width, int $height): void {
+    $this->putEnv('COLUMNS', NULL);
+    $this->putEnv('LINES', NULL);
+
+    $terminal = new ProbeTerminal($reply, $windows);
+
+    $this->assertSame($width, $terminal->width());
+    $this->assertSame($height, $terminal->height());
+  }
+
+  public static function dataProviderSizeFromProbe(): \Iterator {
+    yield 'stty reply' => ["34 132\n", FALSE, 132, 34];
+    yield 'stty garbage falls back' => ['not a size', FALSE, 80, 24];
+    yield 'no reply falls back' => [NULL, FALSE, 80, 24];
+    yield 'mode con report' => ["Status for device CON:\n----------------------\n    Lines:          50\n    Columns:        110\n    Keyboard rate:  31\n", TRUE, 110, 50];
+    yield 'mode con report with crlf' => ["Status for device CON:\r\n----------------------\r\n    Lines:          9001\r\n    Columns:        96\r\n", TRUE, 96, 9001];
+    yield 'mode con garbage falls back' => ['no dashes here', TRUE, 80, 24];
+    yield 'mode con no reply falls back' => [NULL, TRUE, 80, 24];
   }
 
   public function testClear(): void {

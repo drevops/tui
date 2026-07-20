@@ -52,9 +52,7 @@ class ConfirmWidget extends AbstractWidget implements StepCapableInterface {
       return;
     }
 
-    if ($keys->matches($key, Action::Accept)) {
-      $this->accept($this->current);
-
+    if ($this->handleAccept($key)) {
       return;
     }
 
@@ -100,7 +98,7 @@ class ConfirmWidget extends AbstractWidget implements StepCapableInterface {
     $yes_label = $this->highlightLabel($theme, Translator::t('Yes'), $this->current);
     $no_label = $this->highlightLabel($theme, Translator::t('No'), !$this->current);
 
-    return $theme->radio($this->current) . ' ' . $yes_label . '  ' . $theme->radio(!$this->current) . ' ' . $no_label;
+    return $this->withError($theme, $theme->radio($this->current) . ' ' . $yes_label . '  ' . $theme->radio(!$this->current) . ' ' . $no_label);
   }
 
   /**

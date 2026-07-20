@@ -57,9 +57,7 @@ class SuggestWidget extends AbstractWidget implements SearchCapableInterface, Te
       return;
     }
 
-    if ($keys->matches($key, Action::Accept)) {
-      $this->accept($this->liveValue());
-
+    if ($this->handleAccept($key)) {
       return;
     }
 
@@ -167,7 +165,9 @@ class SuggestWidget extends AbstractWidget implements SearchCapableInterface, Te
       $rows[] = $theme->marker($current) . ' ' . $this->renderMatchedLabel($theme, $value, $this->matchPositions($value), $current);
     }
 
-    return implode("\n", [$this->queryLine($theme), ...$this->wrapScrolled($theme, $rows, $viewport)]);
+    $lines = [$this->queryLine($theme), ...$this->wrapScrolled($theme, $rows, $viewport)];
+
+    return $this->withError($theme, implode("\n", $lines));
   }
 
   /**

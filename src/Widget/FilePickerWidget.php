@@ -248,7 +248,7 @@ class FilePickerWidget extends AbstractWidget implements FilterCapableInterface,
       $rows[] = $this->renderRow($theme, $name, $viewport->offset + $slot === $this->cursor);
     }
 
-    return implode("\n", array_merge($lines, $this->wrapScrolled($theme, $rows, $viewport)));
+    return $this->withError($theme, implode("\n", array_merge($lines, $this->wrapScrolled($theme, $rows, $viewport))));
   }
 
   /**

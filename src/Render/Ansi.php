@@ -58,6 +58,25 @@ final class Ansi {
   }
 
   /**
+   * The visible width of a block of lines: its widest line's width.
+   *
+   * @param list<string> $lines
+   *   The lines.
+   *
+   * @return int
+   *   The widest visible width, 0 for an empty block.
+   */
+  public static function blockWidth(array $lines): int {
+    $width = 0;
+
+    foreach ($lines as $line) {
+      $width = max($width, self::width($line));
+    }
+
+    return $width;
+  }
+
+  /**
    * Place a left and right part on one line, right-aligning by visible width.
    *
    * @param string $left

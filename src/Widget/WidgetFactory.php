@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Widget;
 
+use DrevOps\Tui\Handler\HandlerRegistry;
 use DrevOps\Tui\Model\Field;
 use DrevOps\Tui\Model\FieldType;
 use DrevOps\Tui\Model\Option;
@@ -13,6 +14,10 @@ use DrevOps\Tui\Translation\Translator;
 
 /**
  * Builds the widget for a field, seeded with the field's current value.
+ *
+ * Each widget is wired with the field's validator and transformer - the
+ * declared closure, else the handler registry's reusable static one - so an
+ * interactive edit enforces the same behaviour a headless collection does.
  *
  * @package DrevOps\Tui\Widget
  */
@@ -31,8 +36,11 @@ class WidgetFactory {
    * @param bool $externalEditorAvailable
    *   Whether an external editor is launchable here. A textarea field opts in
    *   per-field; the handoff shows only when one is also available.
+   * @param \DrevOps\Tui\Handler\HandlerRegistry|null $handlers
+   *   The registry resolving a field id to its reusable static
+   *   validate()/transform() behaviour; NULL leaves only the declared closures.
    */
-  public function __construct(?KeyMap $keymap = NULL, protected bool $externalEditorAvailable = FALSE) {
+  public function __construct(?KeyMap $keymap = NULL, protected bool $externalEditorAvailable = FALSE, protected ?HandlerRegistry $handlers = NULL) {
     $this->keymap = $keymap ?? KeyMapManager::create();
   }
 
@@ -50,20 +58,25 @@ class WidgetFactory {
    *   The widget.
    */
   public function create(Field $field, mixed $current, array $answers = []): WidgetInterface {
+    // The field declaration always wins over the registry's convention-resolved
+    // behaviour, mirroring the engine's headless resolution.
+    $validate = $field->validate ?? $this->handlers?->validator($field->id);
+    $transform = $field->transform ?? $this->handlers?->transformer($field->id);
+
     $widget = match ($field->type) {
-      FieldType::Confirm => new ConfirmWidget((bool) $current),
-      FieldType::Toggle => new ToggleWidget($this->labels($field), is_string($current) ? $current : ''),
-      FieldType::Select => new SelectWidget($this->options($field), $this->seed($field, $current), $field->multiple, page_size: $field->pageSize),
-      FieldType::Reorder => new ReorderWidget($this->options($field), Field::stringList($current), page_size: $field->pageSize),
-      FieldType::Suggest => new SuggestWidget($field->selectableValues(), is_string($current) ? $current : '', page_size: $field->pageSize),
-      FieldType::Search => new SearchWidget($this->options($field), $this->seed($field, $current), $field->multiple, page_size: $field->pageSize),
-      FieldType::FilePicker => new FilePickerWidget($field->pickerStart, $this->seed($field, $current), $field->pickerMode, $field->pickerExtensions, $field->pickerShowHidden, multiple: $field->multiple, page_size: $field->pageSize),
-      FieldType::Number => new NumberWidget(is_int($current) || is_float($current) ? (string) (int) $current : '', bounds: $field->bounds),
-      FieldType::Calendar => new CalendarWidget(is_string($current) ? $current : '', bounds: $field->dateBounds),
-      FieldType::Textarea => new TextareaWidget(is_string($current) ? $current : '', externalEdit: $field->externalEditor && $this->externalEditorAvailable),
-      FieldType::Password => new PasswordWidget(is_string($current) ? $current : '', revealable: $field->revealable, confirm: $field->confirm),
-      FieldType::Pause => new PauseWidget(),
-      FieldType::Text => new TextWidget(is_string($current) ? $current : '', completions: $this->completionsFor($field, $answers)),
+      FieldType::Confirm => new ConfirmWidget((bool) $current, $validate, $transform),
+      FieldType::Toggle => new ToggleWidget($this->labels($field), is_string($current) ? $current : '', $validate, $transform),
+      FieldType::Select => new SelectWidget($this->options($field), $this->seed($field, $current), $field->multiple, $validate, $transform, page_size: $field->pageSize),
+      FieldType::Reorder => new ReorderWidget($this->options($field), Field::stringList($current), $validate, $transform, page_size: $field->pageSize),
+      FieldType::Suggest => new SuggestWidget($field->selectableValues(), is_string($current) ? $current : '', $validate, $transform, page_size: $field->pageSize),
+      FieldType::Search => new SearchWidget($this->options($field), $this->seed($field, $current), $field->multiple, $validate, $transform, page_size: $field->pageSize),
+      FieldType::FilePicker => new FilePickerWidget($field->pickerStart, $this->seed($field, $current), $field->pickerMode, $field->pickerExtensions, $field->pickerShowHidden, multiple: $field->multiple, validate: $validate, transform: $transform, page_size: $field->pageSize),
+      FieldType::Number => new NumberWidget(is_int($current) || is_float($current) ? (string) (int) $current : '', $validate, $transform, bounds: $field->bounds),
+      FieldType::Calendar => new CalendarWidget(is_string($current) ? $current : '', $validate, $transform, bounds: $field->dateBounds),
+      FieldType::Textarea => new TextareaWidget(is_string($current) ? $current : '', $validate, $transform, externalEdit: $field->externalEditor && $this->externalEditorAvailable),
+      FieldType::Password => new PasswordWidget(is_string($current) ? $current : '', $validate, $transform, revealable: $field->revealable, confirm: $field->confirm),
+      FieldType::Pause => new PauseWidget($validate, $transform),
+      FieldType::Text => new TextWidget(is_string($current) ? $current : '', $validate, $transform, completions: $this->completionsFor($field, $answers)),
     };
 
     return $widget->setKeys($this->keymap->forField($field->type, $field->multiple));

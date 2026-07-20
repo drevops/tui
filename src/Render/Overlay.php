@@ -93,13 +93,15 @@ final class Overlay {
    *   The row offset of the box's first line.
    * @param int $left
    *   The column offset of the box's left edge.
-   * @param callable(string):string $style_backdrop
-   *   Styles an exposed plain-text backdrop segment (e.g. dims it).
+   * @param (callable(string): string)|null $style_backdrop
+   *   Styles an exposed plain-text backdrop segment (e.g. dims it); NULL
+   *   leaves the backdrop as-is.
    *
    * @return list<string>
    *   The composited lines.
    */
-  public static function composite(array $backdrop, array $box, int $box_width, int $top, int $left, callable $style_backdrop): array {
+  public static function composite(array $backdrop, array $box, int $box_width, int $top, int $left, ?callable $style_backdrop = NULL): array {
+    $style_backdrop ??= static fn(string $segment): string => $segment;
     $out = [];
 
     foreach ($backdrop as $row => $line) {
