@@ -39,7 +39,7 @@ The `--no-interaction` and `--prompts` the guide names are the [headless interfa
 
 ## Machine-readable schema and validation
 
-`schema()` returns the questions as a JSON schema - id, type, options, bounds and requiredness per question - the machine-readable counterpart to the text guide, and the source an agent reads for a `select`'s allowed option values. A consumer surfaces it the same way, as help output or behind a flag it chooses:
+`schema()` returns the questions as structured JSON - id, type, options, bounds and requiredness per question - the machine-readable counterpart to the text guide, and the source an agent reads for a `select`'s allowed option values. A consumer surfaces it the same way, as help output or behind a flag it chooses:
 
 ```json
 {
