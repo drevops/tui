@@ -58,28 +58,53 @@ class WidgetFactory {
    *   The widget.
    */
   public function create(Field $field, mixed $current, array $answers = []): WidgetInterface {
-    // The field declaration always wins over the registry's convention-resolved
-    // behaviour, mirroring the engine's headless resolution.
-    $validate = $field->validate ?? $this->handlers?->validator($field->id);
-    $transform = $field->transform ?? $this->handlers?->transformer($field->id);
-
     $widget = match ($field->type) {
-      FieldType::Confirm => new ConfirmWidget((bool) $current, $validate, $transform),
-      FieldType::Toggle => new ToggleWidget($this->labels($field), is_string($current) ? $current : '', $validate, $transform),
-      FieldType::Select => new SelectWidget($this->options($field), $this->seed($field, $current), $field->multiple, $validate, $transform, page_size: $field->pageSize),
-      FieldType::Reorder => new ReorderWidget($this->options($field), Field::stringList($current), $validate, $transform, page_size: $field->pageSize),
-      FieldType::Suggest => new SuggestWidget($field->selectableValues(), is_string($current) ? $current : '', $validate, $transform, page_size: $field->pageSize),
-      FieldType::Search => new SearchWidget($this->options($field), $this->seed($field, $current), $field->multiple, $validate, $transform, page_size: $field->pageSize),
-      FieldType::FilePicker => new FilePickerWidget($field->pickerStart, $this->seed($field, $current), $field->pickerMode, $field->pickerExtensions, $field->pickerShowHidden, multiple: $field->multiple, validate: $validate, transform: $transform, page_size: $field->pageSize),
-      FieldType::Number => new NumberWidget(is_int($current) || is_float($current) ? (string) (int) $current : '', $validate, $transform, bounds: $field->bounds),
-      FieldType::Calendar => new CalendarWidget(is_string($current) ? $current : '', $validate, $transform, bounds: $field->dateBounds),
-      FieldType::Textarea => new TextareaWidget(is_string($current) ? $current : '', $validate, $transform, externalEdit: $field->externalEditor && $this->externalEditorAvailable),
-      FieldType::Password => new PasswordWidget(is_string($current) ? $current : '', $validate, $transform, revealable: $field->revealable, confirm: $field->confirm),
-      FieldType::Pause => new PauseWidget($validate, $transform),
-      FieldType::Text => new TextWidget(is_string($current) ? $current : '', $validate, $transform, completions: $this->completionsFor($field, $answers)),
+      FieldType::Confirm => new ConfirmWidget((bool) $current),
+      FieldType::Toggle => new ToggleWidget($this->labels($field), $this->text($current)),
+      FieldType::Select => new SelectWidget($this->options($field), $this->seed($field, $current), $field->multiple, $field->pageSize),
+      FieldType::Reorder => new ReorderWidget($this->options($field), Field::stringList($current), $field->pageSize),
+      FieldType::Suggest => new SuggestWidget($field->selectableValues(), $this->text($current), $field->pageSize),
+      FieldType::Search => new SearchWidget($this->options($field), $this->seed($field, $current), $field->multiple, $field->pageSize),
+      FieldType::FilePicker => new FilePickerWidget($field->pickerStart, $this->seed($field, $current), $field->pickerMode, $field->pickerExtensions, $field->pickerShowHidden, $field->multiple, $field->pageSize),
+      FieldType::Number => new NumberWidget($this->number($current), $field->bounds),
+      FieldType::Calendar => new CalendarWidget($this->text($current), $field->dateBounds),
+      FieldType::Textarea => new TextareaWidget($this->text($current), $field->externalEditor && $this->externalEditorAvailable),
+      FieldType::Password => new PasswordWidget($this->text($current), $field->revealable, $field->confirm),
+      FieldType::Pause => new PauseWidget(),
+      FieldType::Text => new TextWidget($this->text($current), $this->completionsFor($field, $answers)),
     };
 
+    // The field declaration always wins over the registry's convention-resolved
+    // behaviour, mirroring the engine's headless resolution.
+    $widget->setHandlers($field->validate ?? $this->handlers?->validator($field->id), $field->transform ?? $this->handlers?->transformer($field->id));
+
     return $widget->setKeys($this->keymap->forField($field->type, $field->multiple));
+  }
+
+  /**
+   * Coerce a current value to the string a text-seeded widget starts from.
+   *
+   * @param mixed $current
+   *   The current value.
+   *
+   * @return string
+   *   The string value; empty when the value is not a string.
+   */
+  protected function text(mixed $current): string {
+    return is_string($current) ? $current : '';
+  }
+
+  /**
+   * Coerce a current value to the digit string the integer widget starts from.
+   *
+   * @param mixed $current
+   *   The current value.
+   *
+   * @return string
+   *   The value as integer digits; empty when the value is not numeric.
+   */
+  protected function number(mixed $current): string {
+    return is_int($current) || is_float($current) ? (string) (int) $current : '';
   }
 
   /**
@@ -95,7 +120,7 @@ class WidgetFactory {
    *   values for a multiple one.
    */
   protected function seed(Field $field, mixed $current): string|array {
-    return $field->multiple ? Field::stringList($current) : (is_string($current) ? $current : '');
+    return $field->multiple ? Field::stringList($current) : $this->text($current);
   }
 
   /**
@@ -126,14 +151,15 @@ class WidgetFactory {
    *   The field.
    *
    * @return array<string,string>
-   *   The labels keyed by value, for widgets that take a flat option map.
+   *   The localized labels keyed by value, for widgets that take a flat option
+   *   map.
    */
   protected function labels(Field $field): array {
     $out = [];
 
-    foreach ($field->options as $option) {
+    foreach ($this->options($field) as $option) {
       if ($option->selectable()) {
-        $out[$option->value] = Translator::t($option->label);
+        $out[$option->value] = $option->label;
       }
     }
 

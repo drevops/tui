@@ -68,7 +68,7 @@ final class TextareaWidgetTest extends TestCase {
   }
 
   public function testViewShowsError(): void {
-    $widget = new TextareaWidget('x', fn(mixed $value): string => 'Nope.');
+    $widget = (new TextareaWidget('x'))->setHandlers(validate: fn(mixed $value): string => 'Nope.');
 
     $widget->handle(Key::named(KeyName::Tab));
     $this->assertStringContainsString('Nope.', $widget->view(new DefaultTheme()));
@@ -133,7 +133,7 @@ final class TextareaWidgetTest extends TestCase {
   }
 
   public function testApplyExternalEditRunsValidator(): void {
-    $widget = new TextareaWidget('x', validate: fn(mixed $value): string => 'Nope.', externalEdit: TRUE);
+    $widget = (new TextareaWidget('x', externalEdit: TRUE))->setHandlers(validate: fn(mixed $value): string => 'Nope.');
 
     $widget->applyExternalEdit('bad');
 

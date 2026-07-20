@@ -51,16 +51,11 @@ class SearchWidget extends AbstractWidget implements
    *   The initially highlighted value (single) or selected values (multiple).
    * @param bool $multiple
    *   Whether several options are collected as a list.
-   * @param \Closure|null $validate
-   *   Optional validator (see AbstractWidget).
-   * @param \Closure|null $transform
-   *   Optional transformer (see AbstractWidget).
    * @param int|null $page_size
    *   The number of option rows shown at once before the list pages; NULL uses
    *   the default.
    */
-  public function __construct(array $options, string|array $default = '', bool $multiple = FALSE, ?\Closure $validate = NULL, ?\Closure $transform = NULL, ?int $page_size = NULL) {
-    parent::__construct($validate, $transform);
+  public function __construct(array $options, string|array $default = '', bool $multiple = FALSE, ?int $page_size = NULL) {
     $this->initChoice($options, $default, $multiple);
     $this->pageSize = $this->resolvePageSize($page_size);
   }

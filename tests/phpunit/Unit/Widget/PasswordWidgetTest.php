@@ -51,7 +51,7 @@ final class PasswordWidgetTest extends TestCase {
   }
 
   public function testValidationErrorShownUnderMask(): void {
-    $widget = new PasswordWidget('', fn(mixed $value): ?string => is_string($value) && $value !== '' ? NULL : 'Required.');
+    $widget = (new PasswordWidget(''))->setHandlers(validate: fn(mixed $value): ?string => is_string($value) && $value !== '' ? NULL : 'Required.');
 
     $widget->handle(Key::named(KeyName::Enter));
 
@@ -167,7 +167,7 @@ final class PasswordWidgetTest extends TestCase {
 
   public function testConfirmRevalidatesMatchedValue(): void {
     $theme = new DefaultTheme();
-    $widget = new PasswordWidget('', validate: fn(mixed $value): string => 'Too weak.', confirm: TRUE);
+    $widget = (new PasswordWidget('', confirm: TRUE))->setHandlers(validate: fn(mixed $value): string => 'Too weak.');
 
     $this->type($widget, 'x');
     $widget->handle(Key::named(KeyName::Enter));

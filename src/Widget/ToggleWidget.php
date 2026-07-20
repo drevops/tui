@@ -38,13 +38,8 @@ class ToggleWidget extends AbstractWidget implements StepCapableInterface {
    *   Options as value => label, in display order.
    * @param string $default
    *   The initially selected value.
-   * @param \Closure|null $validate
-   *   Optional validator (see AbstractWidget).
-   * @param \Closure|null $transform
-   *   Optional transformer (see AbstractWidget).
    */
-  public function __construct(protected array $labels, string $default = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL) {
-    parent::__construct($validate, $transform);
+  public function __construct(protected array $labels, string $default = '') {
     $this->values = array_keys($this->labels);
     $index = array_search($default, $this->values, TRUE);
     $this->cursor = $index === FALSE ? 0 : $index;

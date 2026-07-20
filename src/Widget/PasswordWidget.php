@@ -44,17 +44,12 @@ class PasswordWidget extends AbstractWidget implements TextEditCapableInterface,
    *
    * @param string $buffer
    *   The initial value (and live input buffer).
-   * @param \Closure|null $validate
-   *   Optional validator (see AbstractWidget).
-   * @param \Closure|null $transform
-   *   Optional transformer (see AbstractWidget).
    * @param bool $revealable
    *   Whether the reveal toggle is enabled.
    * @param bool $confirm
    *   Whether confirmation mode is enabled.
    */
-  public function __construct(string $buffer = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL, protected bool $revealable = FALSE, protected bool $confirm = FALSE) {
-    parent::__construct($validate, $transform);
+  public function __construct(string $buffer = '', protected bool $revealable = FALSE, protected bool $confirm = FALSE) {
     $this->initTextBuffer($buffer);
   }
 

@@ -53,19 +53,17 @@ abstract class AbstractWidget implements WidgetInterface {
   protected mixed $accepted = NULL;
 
   /**
-   * Construct a widget.
+   * The validator `fn(mixed $value): ?string`, NULL accepting every value.
    *
-   * @param \Closure|null $validate
-   *   Optional validator `fn(mixed $value): ?string` returning an error message
-   *   or NULL when the value is valid.
-   * @param \Closure|null $transform
-   *   Optional transformer `fn(mixed $value): mixed` applied on accept.
+   * Injected by the widget factory via {@see setHandlers()}, like the key
+   * bindings; a directly constructed widget starts with neither.
    */
-  public function __construct(
-    protected ?\Closure $validate = NULL,
-    protected ?\Closure $transform = NULL,
-  ) {
-  }
+  protected ?\Closure $validate = NULL;
+
+  /**
+   * The transformer `fn(mixed $value): mixed` applied on accept, if any.
+   */
+  protected ?\Closure $transform = NULL;
 
   /**
    * {@inheritdoc}
@@ -107,6 +105,16 @@ abstract class AbstractWidget implements WidgetInterface {
    */
   public function setKeys(ScopedKeyMap $keys): static {
     $this->scoped = $keys;
+
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setHandlers(?\Closure $validate = NULL, ?\Closure $transform = NULL): static {
+    $this->validate = $validate;
+    $this->transform = $transform;
 
     return $this;
   }

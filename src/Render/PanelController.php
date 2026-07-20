@@ -164,50 +164,54 @@ class PanelController {
   /**
    * Construct a controller.
    *
+   * The order groups the arguments by role - the form and its theme, the
+   * answer state, the collaborating services, then the display chrome - so a
+   * caller reaches the common ones positionally and names the rest.
+   *
    * @param \DrevOps\Tui\Model\FormDefinition $form
    *   The form definition (panels, fields, titles and submit/cancel chrome).
    * @param \DrevOps\Tui\Theme\DefaultTheme $theme
    *   The theme (the visual authority for rendering).
-   * @param \DrevOps\Tui\Input\KeyMap|null $keymap
-   *   The resolved key bindings; NULL uses the default preset.
-   * @param bool $footer
-   *   Whether the contextual key-hint footer is shown.
-   * @param bool $clearOnExit
-   *   Whether to clear the screen when the interactive loop exits.
    * @param array<string,mixed> $values
    *   The initial answer values (typically the engine's resolved answers).
    * @param array<string,\DrevOps\Tui\Answers\Provenance> $provenance
    *   The initial provenance.
+   * @param \DrevOps\Tui\Input\KeyMap|null $keymap
+   *   The resolved key bindings; NULL uses the default preset.
+   * @param \DrevOps\Tui\Handler\HandlerRegistry|null $handlers
+   *   The registry resolving a field id to its reusable static
+   *   validate()/transform() behaviour; NULL leaves only the declared closures.
+   * @param \DrevOps\Tui\Render\ExternalEditor|null $external_editor
+   *   The external-editor service (defaults to a real one); injectable for
+   *   tests and to gate the textarea handoff on editor availability.
+   * @param bool $footer
+   *   Whether the contextual key-hint footer is shown.
+   * @param bool $clearOnExit
+   *   Whether to clear the screen when the interactive loop exits.
    * @param string $banner
    *   An optional start banner (logo) shown before the interactive loop.
    * @param string $version
    *   An optional version string shown below the banner.
-   * @param \DrevOps\Tui\Render\ExternalEditor|null $external_editor
-   *   The external-editor service (defaults to a real one); injectable for
-   *   tests and to gate the textarea handoff on editor availability.
-   * @param \DrevOps\Tui\Handler\HandlerRegistry|null $handlers
-   *   The registry resolving a field id to its reusable static
-   *   validate()/transform() behaviour; NULL leaves only the declared closures.
    */
   public function __construct(
     protected FormDefinition $form,
     protected DefaultTheme $theme,
-    ?KeyMap $keymap = NULL,
-    protected bool $footer = TRUE,
-    protected bool $clearOnExit = TRUE,
     protected array $values = [],
     protected array $provenance = [],
+    ?KeyMap $keymap = NULL,
+    ?HandlerRegistry $handlers = NULL,
+    ?ExternalEditor $external_editor = NULL,
+    protected bool $footer = TRUE,
+    protected bool $clearOnExit = TRUE,
     protected string $banner = '',
     protected string $version = '',
-    ?ExternalEditor $external_editor = NULL,
-    ?HandlerRegistry $handlers = NULL,
   ) {
     $this->keymap = $keymap ?? KeyMapManager::create();
     $this->externalEditor = $external_editor ?? new ExternalEditor();
     $this->widgets = new WidgetFactory($this->keymap, $this->externalEditor->isAvailable(), $handlers);
     $this->nav = $this->keymap->navigation();
     $this->scroller = new Scroller();
-    $this->navigator = new Navigator(new Panel('hub', $form->title, '', [], $form->panels, NULL, $form->layout));
+    $this->navigator = new Navigator(new Panel('hub', $form->title, '', panels: $form->panels, layout: $form->layout));
   }
 
   /**

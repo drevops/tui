@@ -409,14 +409,14 @@ final class Tui {
     return new PanelController(
       $this->form,
       ThemeManager::create($this->resolveTheme($theme), $width, $options),
-      $this->keymap ?? KeyMapManager::create(),
-      $this->footer,
-      $this->clearOnExit,
       $answers->values,
       $answers->provenance,
-      $banner_text,
-      $version,
-      handlers: $this->registry,
+      $this->keymap ?? KeyMapManager::create(),
+      $this->registry,
+      footer: $this->footer,
+      clearOnExit: $this->clearOnExit,
+      banner: $banner_text,
+      version: $version,
     );
   }
 

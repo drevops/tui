@@ -77,7 +77,7 @@ final class SelectWidgetTest extends TestCase {
   }
 
   public function testValidatorErrorShownInView(): void {
-    $widget = new SelectWidget(['a' => 'A', 'b' => 'B'], 'a', FALSE, static fn (mixed $value): string => 'Not allowed.');
+    $widget = (new SelectWidget(['a' => 'A', 'b' => 'B'], 'a'))->setHandlers(validate: static fn (mixed $value): string => 'Not allowed.');
 
     $widget->handle(Key::named(KeyName::Enter));
 
