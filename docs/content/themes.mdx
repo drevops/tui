@@ -5,11 +5,7 @@ sidebar_position: 10
 
 # Themes
 
-A theme owns the entire visual representation - the palette (per-role ANSI style
-codes), the glyphs (marker, caret, scroll indicators, separators - each a
-Unicode/ASCII pair) and how every row is composed. `DefaultTheme` implements all
-of it with a neutral base; a concrete theme extends it and overrides only what it
-changes. The `ThemeManager` turns a theme name into an instance.
+A theme owns the entire visual representation - the palette (per-role ANSI style codes), the glyphs (marker, caret, scroll indicators, separators - each a Unicode/ASCII pair) and how every row is composed. `DefaultTheme` implements all of it with a neutral base; a concrete theme extends it and overrides only what it changes. The `ThemeManager` turns a theme name into an instance.
 
 ## Built-in themes
 
@@ -22,24 +18,18 @@ use DrevOps\Tui\Tui;
 $tui = (new Tui(Form::create('My form')))->theme('midnight');
 ```
 
-| Name | Palette |
-|------|---------|
-| `default` | Cyan accents on a neutral base - the out-of-the-box look. |
-| `midnight` | Violet accents, green values, pink highlights. |
-| `frost` | Arctic frost-blue accents, sage values, sand highlights. |
-| `ember` | Burnt-orange accents, olive values, gold highlights. |
-| `mono` | Hue-free - bold weight, grey levels and reverse video, for maximum compatibility. |
-| `dos` | Retro MS-DOS - the bright white/cyan/yellow CGA palette in a double-line window, painted on its own blue screen. |
+| Name       | Palette                                                                                                          |
+| ---------- | ---------------------------------------------------------------------------------------------------------------- |
+| `default`  | Cyan accents on a neutral base - the out-of-the-box look.                                                        |
+| `midnight` | Violet accents, green values, pink highlights.                                                                   |
+| `frost`    | Arctic frost-blue accents, sage values, sand highlights.                                                         |
+| `ember`    | Burnt-orange accents, olive values, gold highlights.                                                             |
+| `mono`     | Hue-free - bold weight, grey levels and reverse video, for maximum compatibility.                                |
+| `dos`      | Retro MS-DOS - the bright white/cyan/yellow CGA palette in a double-line window, painted on its own blue screen. |
 
-The colourful themes use 256-colour palettes, `mono` the greyscale ramp and `dos`
-the classic 16-colour CGA set; every one renders across all widgets and degrades
-to plain text when colour is off. An unknown theme name fails loudly - a typo
-never silently falls back to the default.
+The colourful themes use 256-colour palettes, `mono` the greyscale ramp and `dos` the classic 16-colour CGA set; every one renders across all widgets and degrades to plain text when colour is off. An unknown theme name fails loudly - a typo never silently falls back to the default.
 
-Each theme below is shown in its four looks: the dark and light palette, each
-without a frame and inside the rounded [border](/panels#bordered-panels)
-(`['border' => 'rounded']`). Every adaptive theme has a runnable script in
-[`playground/09-themes/`](https://github.com/drevops/tui/tree/main/playground/09-themes).
+Each adaptive theme below is shown in its four looks: the dark and light palette, each without a frame and inside the rounded [border](/panels#bordered-panels) (`['border' => 'rounded']`). Every adaptive theme has a runnable script in [`playground/09-themes/`](https://github.com/drevops/tui/tree/main/playground/09-themes).
 
 ### midnight
 
@@ -123,9 +113,7 @@ without a frame and inside the rounded [border](/panels#bordered-panels)
 
 ### dos
 
-The CGA blue screen, painted regardless of the terminal background. The theme
-draws its own double-line window, so it has no bordered/borderless split - the
-window is its frame:
+The CGA blue screen, painted regardless of the terminal background. The theme draws its own double-line window, so it has no bordered/borderless split - the window is its frame:
 
 <p>
   <img src="/theme-dos-dark-static.svg" width="48%" alt="The dos theme in a dark terminal" />
@@ -134,11 +122,7 @@ window is its frame:
 
 ## Dark and light
 
-Dark and light are not separate themes but a `mode` display option that every
-theme honours. When no theme is set (or the explicit `'auto'` sentinel), the
-interactive TUI picks the mode from the actual terminal background: it queries the
-background colour over OSC 11, falls back to the `COLORFGBG` environment variable,
-and settles on dark when neither answers.
+Dark and light are not separate themes but a `mode` display option that every theme honours. When no theme is set (or the explicit `'auto'` sentinel), the interactive TUI picks the mode from the actual terminal background: it queries the background colour over OSC 11, falls back to the `COLORFGBG` environment variable, and settles on dark when neither answers.
 
 ```php
 (new Tui($form))->theme('frost', ['mode' => 'light']);  // force light
@@ -147,11 +131,7 @@ and settles on dark when neither answers.
 
 ## Writing a theme
 
-A custom theme subclasses `DefaultTheme` and declares its palette by overriding
-the appearance atoms it wants to change - `title()`, `value()`, `marker()`,
-`border()` and so on. Each atom returns its text wrapped in an ANSI style code
-with `paint()`; every role it does not mention keeps the default, including the
-dark/light mode.
+A custom theme subclasses `DefaultTheme` and declares its palette by overriding the appearance atoms it wants to change - `title()`, `value()`, `marker()`, `border()` and so on. Each atom returns its text wrapped in an ANSI style code with `paint()`; every role it does not mention keeps the default, including the dark/light mode.
 
 ```php
 use DrevOps\Tui\Theme\DefaultTheme;
@@ -168,15 +148,9 @@ class AquaTheme extends DefaultTheme {
 }
 ```
 
-Colours come from the `Sgr` palette map - named cases like `Sgr::Cyan` or
-`Sgr::Sand` composed with `Sgr::of(...)`, so a palette reads as colours rather
-than raw ANSI numbers.
+Colours come from the `Sgr` palette map - named cases like `Sgr::Cyan` or `Sgr::Sand` composed with `Sgr::of(...)`, so a palette reads as colours rather than raw ANSI numbers.
 
-Override as many atoms as the palette needs - the built-in themes each redeclare
-the accent-coloured atoms (`title()`, `highlight()`, `marker()`, `radio()`,
-`caret()`) plus `value()`, `indicator()`, `highlightMatch()` and `border()`. To
-change how an element is laid out rather than coloured, override a `render*()`
-method instead.
+Override as many atoms as the palette needs - the built-in themes each redeclare the accent-coloured atoms (`title()`, `highlight()`, `marker()`, `radio()`, `caret()`) plus `value()`, `indicator()`, `highlightMatch()` and `border()`. To change how an element is laid out rather than coloured, override a `render*()` method instead.
 
 Lowest friction: the facade names the class directly, with no registration:
 
@@ -184,11 +158,7 @@ Lowest friction: the facade names the class directly, with no registration:
 $tui = (new \DrevOps\Tui\Tui($form))->theme(AquaTheme::class);
 ```
 
-Or register a short alias with `ThemeManager::register('aqua', AquaTheme::class)`,
-then `->theme('aqua')`. The [playground's ocean
-theme](https://github.com/drevops/tui/tree/main/playground/09-themes) goes
-further, overriding many atoms and `render*()` methods for a distinct look with a
-start banner:
+Or register a short alias with `ThemeManager::register('aqua', AquaTheme::class)`, then `->theme('aqua')`. The [playground's ocean theme](https://github.com/drevops/tui/tree/main/playground/09-themes) goes further, overriding many atoms and `render*()` methods for a distinct look with a start banner:
 
 <p align="center">
   <img src="/theme-ocean-dark-animated.svg" width="100%" alt="Custom ocean theme with a banner" />

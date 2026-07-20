@@ -12,9 +12,7 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
   <ThemedImage sources={{light: useBaseUrl('/widget-pause-light-animated.svg'), dark: useBaseUrl('/widget-pause-dark-animated.svg')}} alt="Pause widget" />
 </p>
 
-An acknowledgement gate: it shows its label and waits for the reader to continue.
-It collects a **`bool`** - always `TRUE` once acknowledged - and holds no other
-value.
+An acknowledgement gate: it shows its label and waits for the reader to continue. It collects a **`bool`** - always `TRUE` once acknowledged - and holds no other value.
 
 ```php
 $p->pause('ready', 'Review your basket'); // A gate; it takes no options.
@@ -24,20 +22,18 @@ Runnable script: [`playground/02-widgets/pause.php`](https://github.com/drevops/
 
 ## Options
 
-Pause has no options of its own - it only renders its label as a gate. The shared
-field options (`when()`, `weight()`, `description()`) still apply.
+Pause has no options of its own - it only renders its label as a gate. The shared field options (`when()`, `weight()`, `description()`) still apply.
 
 ## Keyboard
 
-| Key | Action |
-| --- | --- |
+| Key               | Action                   |
+| ----------------- | ------------------------ |
 | `Enter` / `Space` | Acknowledge and continue |
-| `Esc` | Cancel |
+| `Esc`             | Cancel                   |
 
 ## Headless behaviour
 
-An unattended run has nothing to wait for, so a pause auto-acknowledges (`TRUE`)
-and never blocks automation.
+An unattended run has nothing to wait for, so a pause auto-acknowledges (`TRUE`) and never blocks automation.
 
 ## Display modes
 

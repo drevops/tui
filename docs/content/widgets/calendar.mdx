@@ -12,8 +12,7 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
   <ThemedImage sources={{light: useBaseUrl('/widget-calendar-light-animated.svg'), dark: useBaseUrl('/widget-calendar-dark-animated.svg')}} alt="Calendar widget" />
 </p>
 
-A month-grid date picker. It collects a single **normalized ISO `YYYY-MM-DD`
-string** and, with no default, opens on today.
+A month-grid date picker. It collects a single **normalized ISO `YYYY-MM-DD` string** and, with no default, opens on today.
 
 ```php
 use DrevOps\Tui\Model\Weekday;
@@ -29,37 +28,31 @@ Runnable script: [`playground/02-widgets/calendar.php`](https://github.com/drevo
 
 ## Options
 
-| Name | Description | Required | Default |
-| --- | --- | --- | --- |
-| `default()` | Date the grid opens on, as `YYYY-MM-DD`. | No | Today |
-| `minDate()` | Earliest selectable date, inclusive, as `YYYY-MM-DD`. | No | Unbounded |
-| `maxDate()` | Latest selectable date, inclusive, as `YYYY-MM-DD`. | No | Unbounded |
-| `weekStart()` | Day the week grid starts on, a `Weekday` enum case. | No | `Weekday::Monday` |
+| Name          | Description                                           | Required | Default           |
+| ------------- | ----------------------------------------------------- | -------- | ----------------- |
+| `default()`   | Date the grid opens on, as `YYYY-MM-DD`.              | No       | Today             |
+| `minDate()`   | Earliest selectable date, inclusive, as `YYYY-MM-DD`. | No       | Unbounded         |
+| `maxDate()`   | Latest selectable date, inclusive, as `YYYY-MM-DD`.   | No       | Unbounded         |
+| `weekStart()` | Day the week grid starts on, a `Weekday` enum case.   | No       | `Weekday::Monday` |
 
-Navigation is clamped to the `minDate()`/`maxDate()` range: the cursor never
-leaves it, days outside it render dimmed, and an opening date outside the range
-snaps to the nearest bound. These are the widget's own options; the shared field
-options (`required()`, `when()`, `validate()`, ...) are covered in
-[Field behaviour](/field-behaviour).
+Navigation is clamped to the `minDate()`/`maxDate()` range: the cursor never leaves it, days outside it render dimmed, and an opening date outside the range snaps to the nearest bound. These are the widget's own options; the shared field options (`required()`, `when()`, `validate()`, ...) are covered in [Field behaviour](/field-behaviour).
 
 ## Keyboard
 
-| Key | Action |
-| --- | --- |
-| `←` / `→` | Move one day (vim: `h` / `l`) |
-| `↑` / `↓` | Move one week (vim: `k` / `j`) |
-| `PageUp` / `PageDown` | Previous / next month |
-| `Home` / `End` | First / last day of the visible month |
-| `Enter` | Accept the highlighted date |
-| `Esc` | Cancel |
+| Key                   | Action                                |
+| --------------------- | ------------------------------------- |
+| `←` / `→`             | Move one day (vim: `h` / `l`)         |
+| `↑` / `↓`             | Move one week (vim: `k` / `j`)        |
+| `PageUp` / `PageDown` | Previous / next month                 |
+| `Home` / `End`        | First / last day of the visible month |
+| `Enter`               | Accept the highlighted date           |
+| `Esc`                 | Cancel                                |
 
 Every move key can be remapped through the [key map](/key-bindings).
 
 ## Headless behaviour
 
-The bounds are enforced when the form runs [headlessly](/headless-collection)
-too - a value outside the range is rejected - and surface in the JSON schema as
-`min_date`, `max_date` and `week_start` on the prompt.
+The bounds are enforced when the form runs [headlessly](/headless-collection) too - a value outside the range is rejected - and surface in the JSON schema as `min_date`, `max_date` and `week_start` on the prompt.
 
 ## Display modes
 

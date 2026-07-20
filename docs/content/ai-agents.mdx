@@ -1,0 +1,116 @@
+---
+title: AI agents
+sidebar_position: 10
+---
+
+# AI agents
+
+A form built with this engine is self-describing: it hands an AI agent (or any automation) the questions, their allowed values and the precedence rules, so answers arrive unattended without the agent ever reading the form's source. The facade exposes three calls for this - `agentHelp()`, `schema()` and `validate()` - which a consumer surfaces in its own tool so an agent can discover the form the moment it meets it.
+
+## The answer schema
+
+`agentHelp()` returns a JSON Schema (draft 2020-12) of the answers - the object an agent supplies, keyed by question id. Each property carries its `type` and allowed values (a `select`'s `enum`, a number's `minimum`/`maximum`), its `title` and `description`, its `default`, and the `env` variable that sets it. It names no CLI flags: the flags an agent ultimately calls are the consumer's to define. A consumer retrieves the schema and folds it into its own help - an "AI agents" section of `--help`, a dedicated flag it adds, a generated README:
+
+```php
+use DrevOps\Tui\Tui;
+
+// The library hands back the schema; the consumer decides where it goes.
+echo (new Tui($form))->agentHelp();
+```
+
+The schema the produce-order form emits:
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "Order name",
+      "env": "TUI_NAME"
+    },
+    "fruit": {
+      "type": "string",
+      "enum": ["apple", "banana", "cherry"],
+      "title": "Fruit",
+      "default": "banana",
+      "env": "TUI_FRUIT"
+    },
+    "quantity": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 99,
+      "title": "Quantity",
+      "default": 6,
+      "env": "TUI_QUANTITY"
+    },
+    "organic": {
+      "type": "boolean",
+      "title": "Organic only?",
+      "default": false,
+      "env": "TUI_ORGANIC"
+    }
+  },
+  "required": ["name"],
+  "x-precedence": ["provided", "environment", "discovered", "derived", "default"]
+}
+```
+
+Each `env` is the variable that sets its answer - the uppercased id under the active prefix, which defaults to `TUI_` and changes with `->envPrefix('MYAPP_')` on the form or `new Tui($form, env_prefix: 'MYAPP_')`. The root `x-precedence` is the resolution order described below.
+
+## Full metadata and validation
+
+`schema()` is the fuller, raw description: the same questions with every declared attribute - options, bounds, and the internal `when`, `derive` and `discover` rules - under a `prompts` key, for tooling that wants the complete picture rather than the answer contract:
+
+```json
+{
+  "prompts": [
+    {
+      "id": "name",
+      "type": "text",
+      "label": "Order name",
+      "description": "",
+      "options": [],
+      "default": "",
+      "required": true,
+      "min": null,
+      "max": null,
+      "step": null,
+      "min_date": null,
+      "max_date": null,
+      "week_start": null,
+      "when": null,
+      "derive": null,
+      "discover": null,
+      "depends_on": []
+    }
+  ]
+}
+```
+
+`validate()` checks an answer set against those rules before collection, so an agent can confirm a payload without running the form. Each violation is one message; an empty list means the answers are valid:
+
+```php
+$errors = $tui->validate(['name' => 'Weekly Box', 'fruit' => 'grape', 'quantity' => 500]);
+// [
+//   'Question "fruit": value "grape" is not one of: apple, banana, cherry.',
+//   'Question "quantity" must be between 1 and 99.',
+// ]
+```
+
+## Precedence and environment variables
+
+The schema's `x-precedence` spells out how every field resolves - from the first source that provides a value:
+
+1. **Provided** - an explicit value the consumer passes in, however its interface accepts one. Highest precedence.
+2. **Environment** - the per-question variable named in `env` (e.g. `TUI_NAME`), the uppercased id under the active prefix.
+3. **Discovered** - a value detected from the target directory (see [Discovery](/discovery)).
+4. **Derived** - a value computed from other fields.
+5. **Default** - the declared default.
+
+## Runnable example
+
+[`playground/05-headless/agent-cli.php`](https://github.com/drevops/tui/tree/main/playground/05-headless/agent-cli.php) folds `agentHelp()` into a consumer tool's help, and `agentHelp()`, `schema()` and `validate()` each have a script of their own beside it in [`playground/05-headless/`](https://github.com/drevops/tui/tree/main/playground/05-headless).
+
+See also [Headless collection](/headless-collection) for driving the same form from CI and [Self-describing answers](/self-describing-answers) for what comes back.

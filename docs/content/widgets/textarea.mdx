@@ -24,29 +24,25 @@ Runnable script: [`playground/02-widgets/textarea.php`](https://github.com/drevo
 
 ## Options
 
-| Name | Description | Required | Default |
-| --- | --- | --- | --- |
-| `default()` | Initial value; may contain newlines. | No | `''` (empty) |
-| `externalEditor()` | Allow a handoff to the reader's `$EDITOR` / `$VISUAL`. | No | Off |
+| Name               | Description                                            | Required | Default      |
+| ------------------ | ------------------------------------------------------ | -------- | ------------ |
+| `default()`        | Initial value; may contain newlines.                   | No       | `''` (empty) |
+| `externalEditor()` | Allow a handoff to the reader's `$EDITOR` / `$VISUAL`. | No       | Off          |
 
-With `externalEditor()` on, `Ctrl-E` suspends the TUI, opens the editor seeded with
-the current value, and captures the saved buffer on return: saving commits it,
-while an aborted edit (a non-zero editor exit) keeps the inline value. When no
-editor is available the option is silently ignored and the field stays a plain
-inline textarea.
+With `externalEditor()` on, `Ctrl-E` suspends the TUI, opens the editor seeded with the current value, and captures the saved buffer on return: saving commits it, while an aborted edit (a non-zero editor exit) keeps the inline value. When no editor is available the option is silently ignored and the field stays a plain inline textarea.
 
 ## Keyboard
 
-| Key | Action |
-| --- | --- |
-| printable keys | Insert at the caret |
-| `Enter` | Insert a newline |
-| `Tab` | Accept (note: `Enter` adds a line, it does not accept) |
-| `↑` / `↓` | Move between lines, keeping the column |
-| `←` / `→` | Move the caret |
-| `Backspace` | Delete the character before the caret |
-| `Ctrl-E` | Open the external editor (when enabled) |
-| `Esc` | Cancel |
+| Key            | Action                                                 |
+| -------------- | ------------------------------------------------------ |
+| printable keys | Insert at the caret                                    |
+| `Enter`        | Insert a newline                                       |
+| `Tab`          | Accept (note: `Enter` adds a line, it does not accept) |
+| `↑` / `↓`      | Move between lines, keeping the column                 |
+| `←` / `→`      | Move the caret                                         |
+| `Backspace`    | Delete the character before the caret                  |
+| `Ctrl-E`       | Open the external editor (when enabled)                |
+| `Esc`          | Cancel                                                 |
 
 ## Display modes
 

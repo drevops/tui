@@ -32,26 +32,23 @@ Runnable script: [`playground/02-widgets/text.php`](https://github.com/drevops/t
 
 ## Options
 
-| Name | Description | Required | Default |
-| --- | --- | --- | --- |
-| `default()` | Initial value. | No | `''` (empty) |
-| `complete()` | Ghost-text completion source: a `list<string>`, or a `fn(array $answers): list<string>`. | No | None |
+| Name         | Description                                                                              | Required | Default      |
+| ------------ | ---------------------------------------------------------------------------------------- | -------- | ------------ |
+| `default()`  | Initial value.                                                                           | No       | `''` (empty) |
+| `complete()` | Ghost-text completion source: a `list<string>`, or a `fn(array $answers): list<string>`. | No       | None         |
 
-As you type, the first candidate your input is a case-insensitive prefix of
-appears dimmed after the caret; accept it with `Tab` or `→` at the end of the
-line. This is distinct from the [Suggest](/widgets/suggest) dropdown - ghost-text
-keeps your eye on the input line - and it is suppressed when colour is off.
+As you type, the first candidate your input is a case-insensitive prefix of appears dimmed after the caret; accept it with `Tab` or `→` at the end of the line. This is distinct from the [Suggest](/widgets/suggest) dropdown - ghost-text keeps your eye on the input line - and it is suppressed when colour is off.
 
 ## Keyboard
 
-| Key | Action |
-| --- | --- |
-| printable keys | Insert at the caret |
-| `←` / `→` | Move the caret |
-| `Backspace` | Delete the character before the caret |
-| `Tab` / `→` (at line end) | Accept the ghost-text suggestion |
-| `Enter` | Accept |
-| `Esc` | Cancel |
+| Key                       | Action                                |
+| ------------------------- | ------------------------------------- |
+| printable keys            | Insert at the caret                   |
+| `←` / `→`                 | Move the caret                        |
+| `Backspace`               | Delete the character before the caret |
+| `Tab` / `→` (at line end) | Accept the ghost-text suggestion      |
+| `Enter`                   | Accept                                |
+| `Esc`                     | Cancel                                |
 
 ## Display modes
 

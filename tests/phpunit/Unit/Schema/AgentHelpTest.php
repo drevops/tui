@@ -28,62 +28,113 @@ final class AgentHelpTest extends TestCase {
 
     $help = (new AgentHelp($form, 'APP_'))->generate();
 
-    $this->assertStringContainsString('--no-interaction', $help);
-    $this->assertStringContainsString('--prompts', $help);
-    $this->assertStringContainsString('APP_<ID>', $help);
-    $this->assertStringContainsString('Precedence: --prompts > environment > discovered > derived > default.', $help);
-    $this->assertStringContainsString('name [text] (required) - Site name', $help);
-    $this->assertStringContainsString('agree [confirm] - Agree', $help);
+    $this->assertNotNull(json_decode($help), 'output is valid JSON');
+    $this->assertStringContainsString('"$schema": "https://json-schema.org/draft/2020-12/schema"', $help);
+    $this->assertStringContainsString('"type": "object"', $help);
+    $this->assertStringContainsString('"title": "Site name"', $help);
+    $this->assertStringContainsString('"env": "APP_NAME"', $help);
+    $this->assertStringContainsString('"type": "boolean"', $help);
+    $this->assertStringContainsString('"env": "APP_AGREE"', $help);
+    $this->assertMatchesRegularExpression('/"required":\s*\[\s*"name"\s*\]/', $help);
+    $this->assertMatchesRegularExpression('/"x-precedence":\s*\[\s*"provided",\s*"environment",\s*"discovered",\s*"derived",\s*"default"\s*\]/', $help);
   }
 
-  public function testNumberRangeAnnotation(): void {
+  public function testSelectOptions(): void {
+    $form = Form::create('T')
+      ->panel('p', 'p', function (PanelBuilder $p): void {
+        $p->select('fruit', 'Fruit')->default('banana')->options([
+          'apple' => 'Apple',
+          'banana' => 'Banana',
+          'cherry' => 'Cherry',
+        ]);
+      })
+      ->build();
+
+    $help = (new AgentHelp($form))->generate();
+
+    $this->assertMatchesRegularExpression('/"enum":\s*\[\s*"apple",\s*"banana",\s*"cherry"\s*\]/', $help);
+    $this->assertStringContainsString('"default": "banana"', $help);
+  }
+
+  public function testMultipleSelectIsAnArrayOfOptions(): void {
+    $form = Form::create('T')
+      ->panel('p', 'p', function (PanelBuilder $p): void {
+        $p->select('veg', 'Vegetables')->multiple()->options([
+          'carrot' => 'Carrot',
+          'tomato' => 'Tomato',
+        ]);
+      })
+      ->build();
+
+    $help = (new AgentHelp($form))->generate();
+
+    $this->assertStringContainsString('"type": "array"', $help);
+    $this->assertMatchesRegularExpression('/"items":\s*\{\s*"enum":\s*\[\s*"carrot",\s*"tomato"\s*\]\s*\}/', $help);
+  }
+
+  public function testNumberBounds(): void {
     $form = Form::create('T')
       ->panel('p', 'p', function (PanelBuilder $p): void {
         $p->number('port', 'HTTP port')->min(1)->max(65535)->step(5);
-        $p->number('count', 'Count')->min(1);
-        $p->number('tick', 'Tick')->step(2);
-        $p->number('plain', 'Plain');
       })
       ->build();
 
     $help = (new AgentHelp($form))->generate();
 
-    $this->assertStringContainsString('port [number] - HTTP port (between 1 and 65535, step 5)', $help);
-    $this->assertStringContainsString('count [number] - Count (at least 1)', $help);
-    $this->assertStringContainsString('tick [number] - Tick (step 2)', $help);
-    $this->assertStringContainsString('plain [number] - Plain', $help);
+    $this->assertStringContainsString('"type": "integer"', $help);
+    $this->assertStringContainsString('"minimum": 1', $help);
+    $this->assertStringContainsString('"maximum": 65535', $help);
+    $this->assertStringContainsString('"multipleOf": 5', $help);
   }
 
-  public function testDateRangeAnnotation(): void {
+  public function testCalendarFormat(): void {
     $form = Form::create('T')
       ->panel('p', 'p', function (PanelBuilder $p): void {
-        $p->calendar('due', 'Due date')->minDate('2026-01-01')->maxDate('2026-12-31');
-        $p->calendar('any', 'Any date');
-        $p->calendar('start_only', 'Start only')->minDate('2026-06-01');
-        $p->calendar('end_only', 'End only')->maxDate('2026-06-30');
+        $p->calendar('due', 'Due date');
       })
       ->build();
 
     $help = (new AgentHelp($form))->generate();
 
-    $this->assertStringContainsString('due [calendar] - Due date (between 2026-01-01 and 2026-12-31)', $help);
-    // With no range declared, the format itself is the annotation.
-    $this->assertStringContainsString('any [calendar] - Any date (YYYY-MM-DD)', $help);
-    // A one-sided range annotates only that edge.
-    $this->assertStringContainsString('start_only [calendar] - Start only (on or after 2026-06-01)', $help);
-    $this->assertStringContainsString('end_only [calendar] - End only (on or before 2026-06-30)', $help);
+    $this->assertStringContainsString('"format": "date"', $help);
   }
 
-  public function testNoEnvPrefixOmitsEnvLine(): void {
+  public function testFieldDescription(): void {
     $form = Form::create('T')
       ->panel('p', 'p', function (PanelBuilder $p): void {
-        $p->text('x');
+        $p->text('name', 'Site name')->description('The public name');
       })
       ->build();
 
     $help = (new AgentHelp($form))->generate();
 
-    $this->assertStringNotContainsString('environment variables named', $help);
+    $this->assertStringContainsString('"description": "The public name"', $help);
+  }
+
+  public function testNoEnvPrefixOmitsEnv(): void {
+    $form = Form::create('T')
+      ->panel('p', 'p', function (PanelBuilder $p): void {
+        $p->text('x', 'X');
+      })
+      ->build();
+
+    $help = (new AgentHelp($form))->generate();
+
+    $this->assertStringNotContainsString('"env"', $help);
+  }
+
+  public function testPauseIsSkipped(): void {
+    $form = Form::create('T')
+      ->panel('p', 'p', function (PanelBuilder $p): void {
+        $p->text('name', 'Name')->required();
+        $p->pause('ready', 'Review');
+      })
+      ->build();
+
+    $help = (new AgentHelp($form, 'APP_'))->generate();
+
+    $this->assertStringContainsString('"name"', $help);
+    $this->assertStringNotContainsString('ready', $help);
   }
 
 }

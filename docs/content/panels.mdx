@@ -8,29 +8,11 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 
 # Panels and navigation
 
-The interactive TUI is a full-screen panel browser: the root hub lists the form's
-panels with live value summaries, and each panel lists its fields with their
-current values and provenance badges. Up/Down move the cursor, Enter edits a field
-in place (or drills into a sub-panel), Esc goes back, `q` quits, and the mouse wheel
-scrolls long panels without moving the cursor - all of these keys are configurable
-(see [Key bindings](/key-bindings)). **Submit** and **Cancel** buttons live on the
-root panel - `->buttons(FALSE)` hides them, `->buttons(TRUE, 'Save', 'Discard')`
-relabels them.
+The interactive TUI is a full-screen panel browser: the root hub lists the form's panels with live value summaries, and each panel lists its fields with their current values and provenance badges. Up/Down move the cursor, Enter edits a field in place (or drills into a sub-panel), Esc goes back, `q` quits, and the mouse wheel scrolls long panels without moving the cursor - all of these keys are configurable (see [Key bindings](/key-bindings)). **Submit** and **Cancel** buttons live on the root panel - `->buttons(FALSE)` hides them, `->buttons(TRUE, 'Save', 'Discard')` relabels them.
 
-A **contextual help footer** runs along the foot of every screen, listing exactly
-the keys valid right now and updating as focus moves between the hub and each
-editor. The hub shows move, select, back, quit and `?`; each widget contributes
-its own bindings on top of accept/cancel - a select adds move, a multiple select adds
-toggle and select-all/none, a bounded number adds the step keys, a textarea adds
-newline and the external-editor handoff, a revealable password adds the reveal
-toggle. Pressing `?` at the hub opens a fuller overlay that lists the hub and
-every widget type the form uses, so the form teaches its own less-common widgets.
-The footer follows the active theme and key map - it degrades to ASCII glyphs and
-always reflects remapped keys - and the facade's `->footer(FALSE)` turns it off.
+A **contextual help footer** runs along the foot of every screen, listing exactly the keys valid right now and updating as focus moves between the hub and each editor. The hub shows move, select, back, quit and `?`; each widget contributes its own bindings on top of accept/cancel - a select adds move, a multiple select adds toggle and select-all/none, a bounded number adds the step keys, a textarea adds newline and the external-editor handoff, a revealable password adds the reveal toggle. Pressing `?` at the hub opens a fuller overlay that lists the hub and every widget type the form uses, so the form teaches its own less-common widgets. The footer follows the active theme and key map - it degrades to ASCII glyphs and always reflects remapped keys - and the facade's `->footer(FALSE)` turns it off.
 
-A form-level `->banner()` shows a start screen (with an optional version) before
-the panels; the facade's `->clearOnExit(FALSE)` keeps the final frame on screen
-after the TUI exits.
+A form-level `->banner()` shows a start screen (with an optional version) before the panels; the facade's `->clearOnExit(FALSE)` keeps the final frame on screen after the TUI exits.
 
 ## Inline editing
 
@@ -52,10 +34,7 @@ $form = Form::create('Order')
 
 ## Nested panels
 
-Panels nest to any depth: a sub-panel renders as a drillable row with a one-line
-summary of its values, and the breadcrumb header tracks where you are. A
-`->fixup()` rule reconciles dependent answers on every settle pass - here, organic
-sourcing is forced off outside the premium grade, whatever was answered:
+Panels nest to any depth: a sub-panel renders as a drillable row with a one-line summary of its values, and the breadcrumb header tracks where you are. A `->fixup()` rule reconciles dependent answers on every settle pass - here, organic sourcing is forced off outside the premium grade, whatever was answered:
 
 ```php
 $form = Form::create('Basket settings')
@@ -81,14 +60,7 @@ $form = Form::create('Basket settings')
 
 ## Modal panels
 
-A sub-panel usually drills in, replacing the view. A panel marked `->modal()`
-instead opens as a **centered dialog over the dimmed parent** - the better fit for
-a focused aside or a decision that should not lose the reader's place. The dialog
-carries its own **configurable submit/cancel buttons** (mandatory chrome, so a
-modal always shows them), collects whatever fields it declares - or just shows a
-message - and blocks the rest of the form while open. **Save** keeps the edits
-made inside the dialog; **Discard**, Escape or `q` restores every answer exactly
-as it was when the dialog opened. A modal cannot itself hold sub-panels:
+A sub-panel usually drills in, replacing the view. A panel marked `->modal()` instead opens as a **centered dialog over the dimmed parent** - the better fit for a focused aside or a decision that should not lose the reader's place. The dialog carries its own **configurable submit/cancel buttons** (mandatory chrome, so a modal always shows them), collects whatever fields it declares - or just shows a message - and blocks the rest of the form while open. **Save** keeps the edits made inside the dialog; **Discard**, Escape or `q` restores every answer exactly as it was when the dialog opened. A modal cannot itself hold sub-panels:
 
 ```php
 $form = Form::create('Produce order')
@@ -119,10 +91,7 @@ $form = Form::create('Produce order')
 
 ## Bordered panels
 
-The whole panel browser can be wrapped in a border. The border is a theme option -
-`none` (the default), `line`, `rounded` or `double` - passed as a plain string
-alongside the spacing; the hub, breadcrumb header, fields and the key-hint footer
-all sit inside it, and every drill-in sub-panel keeps it:
+The whole panel browser can be wrapped in a border. The border is a theme option - `none` (the default), `line`, `rounded` or `double` - passed as a plain string alongside the spacing; the hub, breadcrumb header, fields and the key-hint footer all sit inside it, and every drill-in sub-panel keeps it:
 
 ```php
 $form = Form::create('New order')
@@ -201,7 +170,4 @@ Four sizing options bound the stretch, each a non-negative integer:
 
 Fullscreen affects only the interactive TUI; headless collection ignores it. The frame's layout width is resolved once at start-up, while the live terminal size is still sampled every frame for the minimum-size guard and frame positioning - so a window resized mid-session reflows on height but keeps its layout width until the next run.
 
-Nesting, modal dialogs, both border looks and the fullscreen stretch are runnable in
-[`playground/03-panels/`](https://github.com/drevops/tui/tree/main/playground/03-panels),
-and inline editing in
-[`playground/04-inline-editing/`](https://github.com/drevops/tui/tree/main/playground/04-inline-editing).
+Nesting, modal dialogs, both border looks and the fullscreen stretch are runnable in [`playground/03-panels/`](https://github.com/drevops/tui/tree/main/playground/03-panels), and inline editing in [`playground/04-inline-editing/`](https://github.com/drevops/tui/tree/main/playground/04-inline-editing).

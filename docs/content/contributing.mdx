@@ -5,10 +5,7 @@ sidebar_position: 17
 
 # Contributing
 
-Contributions are welcome. The project lives at
-[github.com/drevops/tui](https://github.com/drevops/tui) - open an
-[issue](https://github.com/drevops/tui/issues) to report a bug or propose a
-feature, or send a pull request.
+Contributions are welcome. The project lives at [github.com/drevops/tui](https://github.com/drevops/tui) - open an [issue](https://github.com/drevops/tui/issues) to report a bug or propose a feature, or send a pull request.
 
 ## Getting set up
 
@@ -35,8 +32,7 @@ composer lint-fix
 
 ## Tests
 
-Tests are written with PHPUnit 11 and split into `tests/phpunit/Unit/` (mocks, no
-I/O) and `tests/phpunit/Functional/` (real filesystem).
+Tests are written with PHPUnit 11 and split into `tests/phpunit/Unit/` (mocks, no I/O) and `tests/phpunit/Functional/` (real filesystem).
 
 ```bash
 # Run the full suite (fast, no coverage).
@@ -50,8 +46,7 @@ composer test-coverage
 ./vendor/bin/phpunit --filter testMethodName
 ```
 
-Prefer data providers, cover new behaviour with both unit and functional tests
-where it makes sense, and keep coverage high.
+Prefer data providers, cover new behaviour with both unit and functional tests where it makes sense, and keep coverage high.
 
 ## Coding conventions
 
@@ -62,9 +57,7 @@ where it makes sense, and keep coverage high.
 
 ## Documentation
 
-This site is built from the `.mdx` pages in
-[`docs/content/`](https://github.com/drevops/tui/tree/main/docs/content). To work
-on it locally:
+This site is built from the `.mdx` pages in [`docs/content/`](https://github.com/drevops/tui/tree/main/docs/content). To work on it locally:
 
 ```bash
 cd docs
@@ -72,10 +65,7 @@ npm install
 npm start
 ```
 
-The terminal-demo SVGs are regenerated with `php docs/util/update-assets.php`
-(requires `asciinema`, `expect`, `node` and `npm`). The architecture diagrams
-under `docs/architecture/` are PlantUML sources rendered to SVG - update them
-after any structural change with the `render-tui-diagrams` workflow.
+The terminal-demo SVGs are regenerated with `php docs/util/update-assets.php` (requires `asciinema`, `expect`, `node` and `npm`). The architecture diagrams under `docs/architecture/` are PlantUML sources rendered to SVG - update them after any structural change with the `render-tui-diagrams` workflow.
 
 ## Pull requests
 
@@ -83,5 +73,4 @@ after any structural change with the `render-tui-diagrams` workflow.
 - Keep changes focused and covered by tests.
 - Make sure `composer lint` and `composer test` pass locally before opening the PR.
 
-The CI matrix runs the linters and the test suite across PHP 8.3, 8.4 and 8.5
-(normal and lowest dependency sets).
+The CI matrix runs the linters and the test suite across PHP 8.3, 8.4 and 8.5 (normal and lowest dependency sets).

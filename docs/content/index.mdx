@@ -9,16 +9,9 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 
 # Terminal user interfaces for PHP
 
-A dependency-light PHP engine for building **terminal user interfaces**:
-interactive, keyboard-driven forms that collect answers and hand them to
-your code. Describe the questions in PHP with a fluent builder, add a handler
-class wherever a question needs real behaviour, and the engine renders a
-scrollable, themeable TUI - or collects the answers non-interactively from a JSON
-payload.
+A dependency-light PHP engine for building **terminal user interfaces**: interactive, keyboard-driven forms that collect answers and hand them to your code. Describe the questions in PHP with a fluent builder, add a handler class wherever a question needs real behaviour, and the engine renders a scrollable, themeable TUI - or collects the answers non-interactively from a JSON payload.
 
-The engine knows nothing about the application it serves: it stays generic, the
-application-specific questions and handlers live in the consumer, and **applying
-the collected answers is the consumer's job, not the TUI's**.
+The engine knows nothing about the application it serves: it stays generic, the application-specific questions and handlers live in the consumer, and **applying the collected answers is the consumer's job, not the TUI's**.
 
 <p align="center">
   <ThemedImage sources={{light: useBaseUrl('/produce-box-light-animated.svg'), dark: useBaseUrl('/produce-box-dark-animated.svg')}} alt="Produce box TUI" width="100%" />
@@ -30,7 +23,8 @@ the collected answers is the consumer's job, not the TUI's**.
 - ⚡ [**Inline editing**](/panels#inline-editing) - a field's editor opens in place on the panel row; opt a field out to full-screen with `->standalone()`
 - 🧩 [**Widgets**](/widgets) - `calendar`, `confirm`, `filepicker`, `number`, `password`, `pause`, `reorder`, `search`, `select`, `suggest`, `text`, `textarea`, `toggle`
 - 🏗️ [**Builder-driven**](/configuration) - the form is declared in PHP with a fluent builder; the common cases need no code
-- 🎛️ [**Interactive or unattended**](/headless-collection) - answer the form by keyboard, or supply the answers up front as a JSON payload and environment variables so it runs without prompting (and emit a JSON schema for agents and forms)
+- 🎛️ [**Interactive or unattended**](/headless-collection) - answer the form by keyboard, or supply the answers up front as a JSON payload and environment variables so it runs without prompting
+- 🤖 [**AI agents**](/ai-agents) - the form describes itself: `agentHelp()` returns a JSON Schema of the answers and `schema()` the full question metadata, to fold into your tool's help so an agent can answer it unattended
 - 🔗 [**Derived values**](/configuration#derived-values) - compute one field from others with [str2name](https://github.com/AlexSkrypnyk/str2name) transforms; chains settle to a fixpoint
 - 🔀 [**Conditional fields**](/configuration#conditional-fields) - show or hide fields with `when` rules; a fix-up pass reconciles dependent answers
 - 🔍 [**Discovery**](/discovery) - detect sensible defaults from the target directory (`.env` keys, JSON paths, path existence, directory scans)
@@ -44,9 +38,7 @@ the collected answers is the consumer's job, not the TUI's**.
 
 ## Quick start
 
-Declare a form with the fluent `Form` builder - a panel of fields, each one a
-[widget](/widgets) - then drive it through the `Tui` facade, the one class that
-wires the engine, resolver, schema tools and TUI for you:
+Declare a form with the fluent `Form` builder - a panel of fields, each one a [widget](/widgets) - then drive it through the `Tui` facade, the one class that wires the engine, resolver, schema tools and TUI for you:
 
 ```php
 use DrevOps\Tui\Builder\Form;
@@ -95,11 +87,6 @@ Run it on a terminal and the panel opens on the form's fields, ready to fill:
   <ThemedImage sources={{light: useBaseUrl('/quickstart-light-static.svg'), dark: useBaseUrl('/quickstart-dark-static.svg')}} alt="The quick-start form: a 'New order' panel with text, select, multi-select, number and confirm fields" />
 </p>
 
-`run()` picks the mode automatically - the interactive panel TUI on a terminal,
-headless otherwise. The facade also exposes `schema()`, `agentHelp()` and
-`validate()`, and - for finer control - the internals via `form()`, `engine()`
-and `registry()`.
+`run()` picks the mode automatically - the interactive panel TUI on a terminal, headless otherwise. The facade also exposes `schema()`, `agentHelp()` and `validate()`, and - for finer control - the internals via `form()`, `engine()` and `registry()`.
 
-This is the runnable [`playground/01-quickstart/`](https://github.com/drevops/tui/tree/main/playground/01-quickstart)
-example. See [Installation](/installation) to get started and the
-[playground](/playground) for more complete examples.
+This is the runnable [`playground/01-quickstart/`](https://github.com/drevops/tui/tree/main/playground/01-quickstart) example. See [Installation](/installation) to get started and the [playground](/playground) for more complete examples.
