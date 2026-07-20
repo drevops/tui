@@ -8,8 +8,7 @@ namespace DrevOps\Tui\Render;
  * Computes the visible window of a scrolling list.
  *
  * `follow()` keeps the cursor inside the viewport (a key press re-engages
- * cursor-follow); `viewport()` resolves a window for an offset alone; and
- * `scroll()` moves the window without moving the cursor (mouse wheel). All
+ * cursor-follow) and `viewport()` resolves a window for an offset alone. Both
  * clamp to the valid range, and a viewport reports ▲/▼.
  *
  * @package DrevOps\Tui\Render
@@ -71,25 +70,6 @@ class Scroller {
     $offset = $this->clamp($offset, $total, $height);
 
     return new Viewport($offset, $offset > 0, $offset + $height < $total);
-  }
-
-  /**
-   * Move the window by a delta without moving the cursor (mouse wheel).
-   *
-   * @param int $offset
-   *   The current first-visible-line index.
-   * @param int $delta
-   *   The scroll delta (negative up, positive down).
-   * @param int $total
-   *   The total number of lines.
-   * @param int $height
-   *   The viewport height.
-   *
-   * @return int
-   *   The new offset.
-   */
-  public function scroll(int $offset, int $delta, int $total, int $height): int {
-    return $this->clamp($offset + $delta, $total, $height);
   }
 
   /**

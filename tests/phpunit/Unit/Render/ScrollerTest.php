@@ -63,14 +63,6 @@ final class ScrollerTest extends TestCase {
     $this->assertFalse($scroller->viewport(0, 0, 4)->hasBelow);
   }
 
-  public function testScrollClamps(): void {
-    $scroller = new Scroller();
-
-    $this->assertSame(3, $scroller->scroll(2, 1, 10, 4));
-    $this->assertSame(6, $scroller->scroll(5, 5, 10, 4));
-    $this->assertSame(0, $scroller->scroll(0, -5, 10, 4));
-  }
-
   public function testSlice(): void {
     $this->assertSame(['c', 'd'], (new Scroller())->slice(['a', 'b', 'c', 'd', 'e'], 2, 2));
   }
