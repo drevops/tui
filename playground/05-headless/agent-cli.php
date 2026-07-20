@@ -4,11 +4,11 @@
  * @file
  * Folding the agent guide into a consumer tool's own help output.
  *
- * The library generates the instructions for driving a form unattended;
- * agentHelp() hands them back as plain text. A consumer tool prints its own
- * help and includes that text, so an AI agent (or any automation) reading the
- * help learns how to answer the form without reading the source. Where the
- * text goes is the consumer's call - here it sits under an "AI agents"
+ * The library describes how to answer a form unattended; agentHelp() hands
+ * that back as a JSON Schema of the answers. A consumer tool prints its own
+ * help and includes that schema, so an AI agent (or any automation) reading
+ * the help learns how to answer the form without reading the source. Where
+ * the schema goes is the consumer's call - here it sits under an "AI agents"
  * heading; a real tool might gate it behind a flag of its own.
  *
  * Usage:
@@ -36,8 +36,8 @@ $form = Form::create('Produce order')
   });
 
 // The consumer tool's own help. agentHelp() supplies the machine-usable
-// section verbatim, so the help a person reads is also the help an agent
-// needs - there is no separate contract to keep in sync.
+// answer schema, so an agent reading the tool's help can drive the form -
+// there is no separate contract to keep in sync.
 echo 'produce-order - collect a produce order' . PHP_EOL;
 echo PHP_EOL;
 echo 'Run it to fill the order interactively.' . PHP_EOL;

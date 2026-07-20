@@ -7,39 +7,61 @@ sidebar_position: 10
 
 A form built with this engine is self-describing: it hands an AI agent (or any automation) the questions, their allowed values and the precedence rules, so answers arrive unattended without the agent ever reading the form's source. The facade exposes three calls for this - `agentHelp()`, `schema()` and `validate()` - which a consumer surfaces in its own tool so an agent can discover the form the moment it meets it.
 
-## The agent guide
+## The answer schema
 
-`agentHelp()` returns a plain-text guide to the whole form: how to answer it, the precedence order, and every question with its id, type, requiredness and bounds. There is no flag to wire up on the library side - the consumer retrieves the text and folds it into its own help, wherever that belongs (an "AI agents" section of `--help`, a dedicated flag the consumer adds, a generated README):
+`agentHelp()` returns a JSON Schema (draft 2020-12) of the answers - the object an agent supplies, keyed by question id. Each property carries its `type` and allowed values (a `select`'s `enum`, a number's `minimum`/`maximum`), its `title` and `description`, its `default`, and the `env` variable that sets it. It names no CLI flags: the flags an agent ultimately calls are the consumer's to define. A consumer retrieves the schema and folds it into its own help - an "AI agents" section of `--help`, a dedicated flag it adds, a generated README:
 
 ```php
 use DrevOps\Tui\Tui;
 
-// The library hands back the text; the consumer decides where it goes.
+// The library hands back the schema; the consumer decides where it goes.
 echo (new Tui($form))->agentHelp();
 ```
 
-The guide the produce-order form emits:
+The schema the produce-order form emits:
 
-```text
-Drive the form non-interactively:
-
-- Pass --no-interaction to resolve every question from defaults, discovery and derivation without prompting.
-- Pass --prompts with a JSON object (or a path to a JSON file) of answers keyed by question id; these take the highest precedence.
-- Set per-question environment variables named TUI_<ID> (the uppercased question id); these win over discovery but lose to --prompts.
-- Precedence: --prompts > environment > discovered > derived > default.
-
-Questions:
-  name [text] (required) - Order name
-  fruit [select] - Fruit
-  quantity [number] - Quantity (between 1 and 99)
-  organic [confirm] - Organic only?
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "Order name",
+      "env": "TUI_NAME"
+    },
+    "fruit": {
+      "type": "string",
+      "enum": ["apple", "banana", "cherry"],
+      "title": "Fruit",
+      "default": "banana",
+      "env": "TUI_FRUIT"
+    },
+    "quantity": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 99,
+      "title": "Quantity",
+      "default": 6,
+      "env": "TUI_QUANTITY"
+    },
+    "organic": {
+      "type": "boolean",
+      "title": "Organic only?",
+      "default": false,
+      "env": "TUI_ORGANIC"
+    }
+  },
+  "required": ["name"],
+  "x-precedence": ["provided", "environment", "discovered", "derived", "default"]
+}
 ```
 
-The `--no-interaction` and `--prompts` the guide names are the [headless interface](/headless-collection) a consumer maps onto `collect()`, not flags the library ships. The `TUI_` prefix on the environment line is the default; change it with `->envPrefix('MYAPP_')` on the form or `new Tui($form, env_prefix: 'MYAPP_')`, and the guide reflects the active prefix. A `select` shows only its label here, not its allowed values - those come from the schema below.
+Each `env` is the variable that sets its answer - the uppercased id under the active prefix, which defaults to `TUI_` and changes with `->envPrefix('MYAPP_')` on the form or `new Tui($form, env_prefix: 'MYAPP_')`. The root `x-precedence` is the resolution order described below.
 
-## Machine-readable schema and validation
+## Full metadata and validation
 
-`schema()` returns the questions as structured JSON - id, type, options, bounds and requiredness per question - the machine-readable counterpart to the text guide, and the source an agent reads for a `select`'s allowed option values. A consumer surfaces it the same way, as help output or behind a flag it chooses:
+`schema()` is the fuller, raw description: the same questions with every declared attribute - options, bounds, and the internal `when`, `derive` and `discover` rules - under a `prompts` key, for tooling that wants the complete picture rather than the answer contract:
 
 ```json
 {
@@ -67,7 +89,7 @@ The `--no-interaction` and `--prompts` the guide names are the [headless interfa
 }
 ```
 
-`validate()` checks an answer set against those same rules before collection, so an agent can confirm a payload without running the form. Each violation is one message; an empty list means the answers are valid:
+`validate()` checks an answer set against those rules before collection, so an agent can confirm a payload without running the form. Each violation is one message; an empty list means the answers are valid:
 
 ```php
 $errors = $tui->validate(['name' => 'Weekly Box', 'fruit' => 'grape', 'quantity' => 500]);
@@ -79,12 +101,12 @@ $errors = $tui->validate(['name' => 'Weekly Box', 'fruit' => 'grape', 'quantity'
 
 ## Precedence and environment variables
 
-Once an agent supplies answers through the consumer's [headless interface](/headless-collection), every field resolves from the first source that provides a value, in this order:
+The schema's `x-precedence` spells out how every field resolves - from the first source that provides a value:
 
-1. `--prompts` - the JSON payload (a string or a path to a JSON file), keyed by question id. Highest precedence.
-2. **Environment** - a per-question variable named `<PREFIX><ID>` (the uppercased id), e.g. `TUI_NAME`. The prefix defaults to `TUI_`.
-3. **Discovered** - values detected from the target directory (see [Discovery](/discovery)).
-4. **Derived** - values computed from other fields.
+1. **Provided** - an explicit value the consumer passes in, however its interface accepts one. Highest precedence.
+2. **Environment** - the per-question variable named in `env` (e.g. `TUI_NAME`), the uppercased id under the active prefix.
+3. **Discovered** - a value detected from the target directory (see [Discovery](/discovery)).
+4. **Derived** - a value computed from other fields.
 5. **Default** - the declared default.
 
 ## Runnable example
