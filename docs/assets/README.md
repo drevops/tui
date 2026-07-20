@@ -33,6 +33,11 @@ from their borderless twins.
 
 ## What generates what
 
+`update-assets.php` is the single entry point: run without arguments it records every live-terminal job in parallel and spawns the two deterministic sibling generators alongside them, so one command regenerates the whole set.
+
+- **`update-assets.php`** - the full panel demos, the widget montage and the
+  option-group / password-reveal / discovery frames, recorded from a live
+  terminal (`--record <job>` re-runs one job).
 - **`render-widget-svgs.php`** - every per-widget asset, driven deterministically
   through the library's own keystroke harness with no terminal: the animated
   cards in all four display modes (`widget-*-dark-animated*.svg`, the unmarked one
@@ -42,12 +47,9 @@ from their borderless twins.
   keystroke harness: `theme-<name>-<dark|light>-static[-bordered].svg` for the
   adaptive themes, and the dark/light pair for `dos` (which draws its own window
   on its own surface, so it has no bordered twin).
-- **`make-light-svgs.php`** - the light twins, recoloured from the dark
-  originals: each widget's whole dark set (both motions, all four display modes)
-  mirrored into `widget-*-light-*.svg`, plus each panel hero's `-light-animated`.
-- **`update-assets.php`** - the full panel demos, the widget montage and the
-  option-group / password-reveal / discovery frames, recorded from a live
-  terminal.
 
-Every animated SVG is slowed to a shared playback factor so the motion stays
-readable.
+Every dark SVG derives its `-light-` twin the moment it is written (the shared
+`svg-light-twin.php` recolours the surface and foreground greys; the theme
+previews render their light palettes for real instead), so the pairs the
+documentation serves can never drift. Every animated SVG is slowed to a shared
+playback factor so the motion stays readable.

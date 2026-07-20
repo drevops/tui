@@ -9,6 +9,7 @@ use DrevOps\Tui\Answers\Provenance;
 use DrevOps\Tui\Answers\SummaryFormatter;
 use DrevOps\Tui\Model\Field;
 use DrevOps\Tui\Model\FieldType;
+use DrevOps\Tui\Model\FormDefinition;
 use DrevOps\Tui\Model\Modal;
 use DrevOps\Tui\Model\Panel;
 use DrevOps\Tui\Input\Action;
@@ -68,6 +69,22 @@ class DefaultTheme implements ThemeInterface {
   protected const int FIELD_MIN_WIDTH = 12;
 
   /**
+   * The default minimum terminal height for fullscreen mode, in rows.
+   *
+   * Vertical overflow scrolls gracefully, so only a small floor is needed:
+   * enough for the chrome and a few body lines.
+   */
+  protected const int MIN_HEIGHT = 10;
+
+  /**
+   * The rows reserved for the two scroll indicators (▲/▼).
+   *
+   * The scrolled body window carries its indicators outside the viewport
+   * height, so the frame budget reserves a row for each.
+   */
+  protected const int INDICATOR_LINES = 2;
+
+  /**
    * Whether colour (ANSI) is enabled, resolved from the "color" option.
    */
   protected bool $color;
@@ -104,6 +121,13 @@ class DefaultTheme implements ThemeInterface {
     $this->color = is_bool($this->options['color'] ?? NULL) ? $this->options['color'] : TRUE;
     $this->unicode = is_bool($this->options['unicode'] ?? NULL) ? $this->options['unicode'] : TRUE;
     $this->isDark = $this->mode() === Mode::Dark;
+
+    // In fullscreen the given width is the whole terminal's; a max-width cap
+    // keeps the frame readable on very wide terminals (0 leaves it uncapped).
+    if ($this->isFullscreen() && $this->maxWidth() > 0) {
+      $this->width = min($this->width, $this->maxWidth());
+    }
+
     $this->outerWidth = $this->width;
 
     // A border consumes two frame columns plus a one-column gutter each side.
@@ -121,12 +145,24 @@ class DefaultTheme implements ThemeInterface {
    */
   protected function validateOptions(): void {
     $schema = $this->optionSchema();
+    $integers = $this->integerOptions();
 
     foreach ($this->options as $key => $value) {
+      if (in_array($key, $integers, TRUE)) {
+        if (!is_int($value) || $value < 0) {
+          throw new \InvalidArgumentException(Translator::t('@value is not a valid "@key". Use a non-negative integer.', [
+            '@value' => $this->showValue($value),
+            '@key' => $key,
+          ]));
+        }
+
+        continue;
+      }
+
       if (!array_key_exists($key, $schema)) {
         throw new \InvalidArgumentException(Translator::t('Unknown theme option "@key". Known: @known.', [
           '@key' => $key,
-          '@known' => implode(', ', array_keys($schema)),
+          '@known' => implode(', ', [...array_keys($schema), ...$integers]),
         ]));
       }
 
@@ -138,6 +174,18 @@ class DefaultTheme implements ThemeInterface {
           '@value' => $this->showValue($candidate),
           '@key' => $key,
           '@allowed' => implode(', ', array_map($this->showValue(...), $schema[$key])),
+        ]));
+      }
+    }
+
+    // An explicit minimum above an explicit maximum can never be satisfied:
+    // fail at declaration rather than dead-ending the session behind an
+    // unresolvable resize notice.
+    foreach ([['min_width', 'max_width'], ['min_height', 'max_height']] as [$min_key, $max_key]) {
+      if (array_key_exists($min_key, $this->options) && $this->intOption($max_key, 0) > 0 && $this->intOption($min_key, 0) > $this->intOption($max_key, 0)) {
+        throw new \InvalidArgumentException(Translator::t('"@min" must not exceed "@max".', [
+          '@min' => $min_key,
+          '@max' => $max_key,
         ]));
       }
     }
@@ -160,7 +208,24 @@ class DefaultTheme implements ThemeInterface {
       'spacing' => array_column(Spacing::cases(), 'value'),
       'border' => array_column(Border::cases(), 'value'),
       'field' => array_column(FieldStyle::cases(), 'value'),
+      'fullscreen' => [TRUE, FALSE],
+      'halign' => array_column(HAlign::cases(), 'value'),
+      'valign' => array_column(VAlign::cases(), 'value'),
     ];
+  }
+
+  /**
+   * The option names that accept any non-negative integer.
+   *
+   * These complement optionSchema(), whose entries enumerate their allowed
+   * values - an integer option accepts a whole range instead. A concrete theme
+   * adds its own by merging over the base.
+   *
+   * @return list<string>
+   *   The option names.
+   */
+  protected function integerOptions(): array {
+    return ['min_width', 'min_height', 'max_width', 'max_height'];
   }
 
   /**
@@ -198,19 +263,55 @@ class DefaultTheme implements ThemeInterface {
   }
 
   /**
+   * An integer display option, or a default when unset or non-integer.
+   *
+   * @param string $name
+   *   The option name (e.g. "min_width").
+   * @param int $default
+   *   The value to use when the option is unset.
+   *
+   * @return int
+   *   The option value.
+   */
+  protected function intOption(string $name, int $default): int {
+    $value = $this->options[$name] ?? $default;
+
+    return is_int($value) ? $value : $default;
+  }
+
+  /**
+   * An enum display option, or a default when unset or unrecognized.
+   *
+   * @param string $name
+   *   The option name (e.g. "spacing", "halign").
+   * @param class-string<T> $enum
+   *   The backed enum the option's cases belong to.
+   * @param T $default
+   *   The case to use when the option is unset.
+   *
+   * @return T
+   *   The option case.
+   *
+   * @template T of \BackedEnum
+   */
+  protected function enumOption(string $name, string $enum, \BackedEnum $default): \BackedEnum {
+    $value = $this->options[$name] ?? NULL;
+
+    if ($value instanceof $enum) {
+      return $value;
+    }
+
+    return is_string($value) ? ($enum::tryFrom($value) ?? $default) : $default;
+  }
+
+  /**
    * The colour-mode option.
    *
    * @return \DrevOps\Tui\Theme\Mode
    *   The mode; dark when unset.
    */
   protected function mode(): Mode {
-    $value = $this->options['mode'] ?? NULL;
-
-    if ($value instanceof Mode) {
-      return $value;
-    }
-
-    return is_string($value) ? (Mode::tryFrom($value) ?? Mode::Dark) : Mode::Dark;
+    return $this->enumOption('mode', Mode::class, Mode::Dark);
   }
 
   /**
@@ -230,13 +331,7 @@ class DefaultTheme implements ThemeInterface {
    *   The spacing; normal when unset.
    */
   protected function spacing(): Spacing {
-    $value = $this->options['spacing'] ?? NULL;
-
-    if ($value instanceof Spacing) {
-      return $value;
-    }
-
-    return is_string($value) ? (Spacing::tryFrom($value) ?? Spacing::Normal) : Spacing::Normal;
+    return $this->enumOption('spacing', Spacing::class, Spacing::Normal);
   }
 
   /**
@@ -246,13 +341,7 @@ class DefaultTheme implements ThemeInterface {
    *   The border style; none when unset.
    */
   protected function borderStyle(): Border {
-    $value = $this->options['border'] ?? NULL;
-
-    if ($value instanceof Border) {
-      return $value;
-    }
-
-    return is_string($value) ? (Border::tryFrom($value) ?? Border::None) : Border::None;
+    return $this->enumOption('border', Border::class, Border::None);
   }
 
   /**
@@ -262,13 +351,88 @@ class DefaultTheme implements ThemeInterface {
    *   The field style; flat when unset.
    */
   protected function field(): FieldStyle {
-    $value = $this->options['field'] ?? NULL;
+    return $this->enumOption('field', FieldStyle::class, FieldStyle::Flat);
+  }
 
-    if ($value instanceof FieldStyle) {
-      return $value;
-    }
+  /**
+   * Whether the frame expands to the whole terminal screen.
+   *
+   * @return bool
+   *   TRUE when the "fullscreen" option is on.
+   */
+  public function isFullscreen(): bool {
+    return ($this->options['fullscreen'] ?? FALSE) === TRUE;
+  }
 
-    return is_string($value) ? (FieldStyle::tryFrom($value) ?? FieldStyle::Flat) : FieldStyle::Flat;
+  /**
+   * The horizontal alignment of content within the available width.
+   *
+   * @return \DrevOps\Tui\Theme\HAlign
+   *   The alignment; left when unset.
+   */
+  public function halign(): HAlign {
+    return $this->enumOption('halign', HAlign::class, HAlign::Left);
+  }
+
+  /**
+   * The vertical alignment of content within the available height.
+   *
+   * @return \DrevOps\Tui\Theme\VAlign
+   *   The alignment; top when unset.
+   */
+  public function valign(): VAlign {
+    return $this->enumOption('valign', VAlign::class, VAlign::Top);
+  }
+
+  /**
+   * The minimum terminal width fullscreen mode needs, in columns.
+   *
+   * @return int
+   *   The explicit "min_width" option, or 0 when the minimum should be
+   *   measured from the form's content instead.
+   */
+  public function minWidth(): int {
+    return $this->intOption('min_width', 0);
+  }
+
+  /**
+   * The minimum terminal height fullscreen mode needs, in rows.
+   *
+   * @return int
+   *   The minimum height.
+   */
+  public function minHeight(): int {
+    return $this->intOption('min_height', self::MIN_HEIGHT);
+  }
+
+  /**
+   * The widest frame fullscreen mode may stretch to, in columns.
+   *
+   * @return int
+   *   The cap, or 0 for uncapped.
+   */
+  public function maxWidth(): int {
+    return $this->intOption('max_width', 0);
+  }
+
+  /**
+   * The tallest frame fullscreen mode may stretch to, in rows.
+   *
+   * @return int
+   *   The cap, or 0 for uncapped.
+   */
+  public function maxHeight(): int {
+    return $this->intOption('max_height', 0);
+  }
+
+  /**
+   * The outer frame width, including the border when one is drawn.
+   *
+   * @return int
+   *   The width.
+   */
+  public function outerWidth(): int {
+    return $this->outerWidth;
   }
 
   /**
@@ -686,6 +850,20 @@ class DefaultTheme implements ThemeInterface {
       $index++;
     }
 
+    if ($panel->layout !== []) {
+      if ($index > 0) {
+        $lines[] = '';
+      }
+
+      [$grid, $selected_line] = $this->renderPanelGrid($panel, $answers, $cursor - $index);
+
+      if ($selected_line >= 0) {
+        $cursor_line = count($lines) + $selected_line;
+      }
+
+      return [array_merge($lines, $grid), $cursor_line];
+    }
+
     foreach ($panel->panels as $subpanel) {
       if ($index > 0 && $gap > 0) {
         $lines[] = '';
@@ -710,6 +888,107 @@ class DefaultTheme implements ThemeInterface {
     }
 
     return [$lines, $cursor_line];
+  }
+
+  /**
+   * Build the grid of side-by-side sub-panel columns a layout declares.
+   *
+   * Each layout row takes its share of sub-panels in declaration order and
+   * zips their preview blocks side by side at an equal column width; a blank
+   * line separates the rows. Selection is by whole column, so the selected
+   * block's first line is the row it starts on.
+   *
+   * @param \DrevOps\Tui\Model\Panel $panel
+   *   The panel whose layout and sub-panels are rendered.
+   * @param \DrevOps\Tui\Answers\Answers $answers
+   *   The current answers.
+   * @param int $selected
+   *   The selected sub-panel offset, or negative for none.
+   *
+   * @return array{list<string>,int}
+   *   The grid lines and the selected block's first line index (-1 when no
+   *   sub-panel is selected).
+   */
+  protected function renderPanelGrid(Panel $panel, Answers $answers, int $selected): array {
+    $lines = [];
+    $selected_line = -1;
+    $offset = 0;
+
+    foreach ($panel->layout as $row => $columns) {
+      if ($row > 0) {
+        $lines[] = '';
+      }
+
+      $column_width = max(1, intdiv($this->width - ($columns - 1) * 2, $columns));
+      $blocks = [];
+      $height = 0;
+
+      foreach (array_slice($panel->panels, $offset, $columns) as $subpanel) {
+        if ($offset === $selected) {
+          $selected_line = count($lines);
+        }
+
+        $block = $this->renderColumnBlock($subpanel, $answers, $offset === $selected);
+        $height = max($height, count($block));
+        $blocks[] = $block;
+        $offset++;
+      }
+
+      for ($line = 0; $line < $height; $line++) {
+        $cells = [];
+
+        foreach ($blocks as $block) {
+          $cells[] = Box::fit($block[$line] ?? '', $column_width);
+        }
+
+        // The gutters can outgrow a tiny frame even at one-column cells, so
+        // the assembled row is clamped to the frame width as a whole.
+        $lines[] = rtrim(Box::fit(implode('  ', $cells), $this->width));
+      }
+    }
+
+    return [$lines, $selected_line];
+  }
+
+  /**
+   * Render one sub-panel's preview block for a grid column.
+   *
+   * The block carries what the row list spreads over its rows - the title,
+   * the description and, instead of the one-line summary, one row per field
+   * value - plus a drill-in row per nested sub-panel, so a column reads as a
+   * window into the panel.
+   *
+   * @param \DrevOps\Tui\Model\Panel $panel
+   *   The sub-panel.
+   * @param \DrevOps\Tui\Answers\Answers $answers
+   *   The current answers.
+   * @param bool $selected
+   *   Whether the panel holds the cursor.
+   *
+   * @return list<string>
+   *   The block lines; the grid clips them to the column width.
+   */
+  protected function renderColumnBlock(Panel $panel, Answers $answers, bool $selected): array {
+    $lines = [$this->renderPanelLine($panel, $selected)];
+    $verbose = $this->spacing() !== Spacing::Compact;
+
+    if ($verbose && $panel->description !== '') {
+      $lines[] = $this->renderDescriptionLine(Translator::t($panel->description), $selected);
+    }
+
+    foreach ($panel->fields as $field) {
+      // A grid cell is one physical row, so a multi-line value previews as
+      // its first line - an embedded newline would desync the column zip.
+      $value_lines = explode("\n", $this->normalizeLines($this->renderFieldValue($field, $answers->value($field->id))));
+      $value = $value_lines[0] . (count($value_lines) > 1 ? '…' : '');
+      $lines[] = '  ' . $this->description(Translator::t($field->label), $selected) . '  ' . $this->value($value, $selected);
+    }
+
+    foreach ($panel->panels as $subpanel) {
+      $lines[] = '  ' . $this->description(Translator::t($subpanel->title) . ' ' . $this->arrow(), $selected);
+    }
+
+    return $lines;
   }
 
   /**
@@ -881,7 +1160,204 @@ class DefaultTheme implements ThemeInterface {
   }
 
   /**
+   * Measure the natural width of the widest content row across a form.
+   *
+   * Walks every panel - nested ones included - at its unpadded row widths
+   * (marker, label, value, badge, description and summary columns) plus the
+   * button bar when the form shows one, and adds the border chrome: the
+   * narrowest frame that shows the initial content unclipped. Editors adapt
+   * to the frame width, so they do not join the measurement.
+   *
+   * @param \DrevOps\Tui\Model\FormDefinition $form
+   *   The form.
+   * @param \DrevOps\Tui\Answers\Answers $answers
+   *   The initial answers.
+   *
+   * @return int
+   *   The natural outer width, in columns.
+   */
+  public function measureContentWidth(FormDefinition $form, Answers $answers): int {
+    $width = $form->buttons->show ? Ansi::width($this->renderButtonBar([
+      Translator::t($form->buttons->submitLabel),
+      Translator::t($form->buttons->cancelLabel),
+    ], -1)) : 0;
+
+    $stack = [new Panel('hub', $form->title, '', [], $form->panels, NULL, $form->layout)];
+
+    while ($stack !== []) {
+      $panel = array_shift($stack);
+      $width = max($width, $this->measureBody($panel, $answers));
+      $stack = array_merge($stack, $panel->panels);
+    }
+
+    return $width + ($this->borderStyle() === Border::None ? 0 : 4);
+  }
+
+  /**
+   * Measure the natural width of a panel body's widest row.
+   *
+   * Mirrors renderBody()'s row anatomy without its width-dependent padding:
+   * a field row is the marker, label and value columns plus the provenance
+   * badge; description, sub-panel and summary rows carry their own indents.
+   *
+   * @param \DrevOps\Tui\Model\Panel $panel
+   *   The panel.
+   * @param \DrevOps\Tui\Answers\Answers $answers
+   *   The current answers.
+   *
+   * @return int
+   *   The widest row's visible width, in columns.
+   */
+  protected function measureBody(Panel $panel, Answers $answers): int {
+    $width = 0;
+    $verbose = $this->spacing() !== Spacing::Compact;
+
+    foreach ($panel->fields as $field) {
+      // A multi-line value renders one physical row per line, all under the
+      // value column, so the widest single line is what the row needs.
+      $row = 4 + mb_strlen(Translator::t($field->label), 'UTF-8') + $this->measureValueWidth($field, $answers);
+
+      $provenance = $answers->provenanceOf($field->id);
+      if ($provenance !== Provenance::Default) {
+        $row += 3 + mb_strlen($provenance->label(), 'UTF-8');
+      }
+
+      $width = max($width, $row);
+
+      if ($verbose && $field->description !== '') {
+        $width = max($width, 4 + mb_strlen(Translator::t($field->description), 'UTF-8'));
+      }
+    }
+
+    if ($panel->layout !== []) {
+      // Grid rows lay their columns out at one shared width, so a row needs
+      // its widest block times its column count, plus the gutters.
+      $offset = 0;
+
+      foreach ($panel->layout as $columns) {
+        $widest = 0;
+
+        foreach (array_slice($panel->panels, $offset, $columns) as $subpanel) {
+          $widest = max($widest, $this->measureColumnBlock($subpanel, $answers));
+        }
+
+        $width = max($width, $columns * $widest + 2 * ($columns - 1));
+        $offset += $columns;
+      }
+
+      return $width;
+    }
+
+    foreach ($panel->panels as $subpanel) {
+      $width = max($width, 4 + mb_strlen(Translator::t($subpanel->title), 'UTF-8'));
+
+      if (!$verbose) {
+        continue;
+      }
+
+      if ($subpanel->description !== '') {
+        $width = max($width, 4 + mb_strlen(Translator::t($subpanel->description), 'UTF-8'));
+      }
+
+      $summary = $this->summarizePanel($subpanel, $answers);
+      if ($summary !== '') {
+        $width = max($width, 4 + Ansi::width($summary));
+      }
+    }
+
+    return $width;
+  }
+
+  /**
+   * Measure the natural width of a sub-panel's grid preview block.
+   *
+   * Mirrors renderColumnBlock()'s row anatomy at unpadded widths: the title
+   * and drill-in rows with their marker and arrow gutters, the description
+   * indent, and the label/value field rows.
+   *
+   * @param \DrevOps\Tui\Model\Panel $panel
+   *   The sub-panel.
+   * @param \DrevOps\Tui\Answers\Answers $answers
+   *   The current answers.
+   *
+   * @return int
+   *   The widest block row's visible width, in columns.
+   */
+  protected function measureColumnBlock(Panel $panel, Answers $answers): int {
+    $width = 4 + mb_strlen(Translator::t($panel->title), 'UTF-8');
+
+    if ($this->spacing() !== Spacing::Compact && $panel->description !== '') {
+      $width = max($width, 4 + mb_strlen(Translator::t($panel->description), 'UTF-8'));
+    }
+
+    foreach ($panel->fields as $field) {
+      $width = max($width, 4 + mb_strlen(Translator::t($field->label), 'UTF-8') + $this->measureValueWidth($field, $answers));
+    }
+
+    foreach ($panel->panels as $subpanel) {
+      $width = max($width, 4 + mb_strlen(Translator::t($subpanel->title), 'UTF-8'));
+    }
+
+    return $width;
+  }
+
+  /**
+   * Measure a field value's widest physical line.
+   *
+   * A multi-line value never renders as one long row - the row list stacks
+   * its lines under the value column and a grid cell previews only the first
+   * - so measuring the whole string would overstate the width it needs.
+   *
+   * @param \DrevOps\Tui\Model\Field $field
+   *   The field the value belongs to.
+   * @param \DrevOps\Tui\Answers\Answers $answers
+   *   The current answers.
+   *
+   * @return int
+   *   The widest line's visible width, in columns.
+   */
+  protected function measureValueWidth(Field $field, Answers $answers): int {
+    $width = 0;
+
+    foreach (explode("\n", $this->normalizeLines($this->renderFieldValue($field, $answers->value($field->id)))) as $line) {
+      $width = max($width, mb_strlen($line, 'UTF-8'));
+    }
+
+    return $width;
+  }
+
+  /**
+   * The chrome rows a frame adds around the scrolled body window.
+   *
+   * Everything renderFrame() emits that is neither a header/footer line nor a
+   * body-window line: border rules and spacing pads for a boxed frame, the
+   * footer gap for a borderless one - plus the reserved scroll-indicator rows.
+   * The single home of the frame-height budget, so a caller sizing the body
+   * viewport to the terminal never overflows it.
+   *
+   * @param bool $has_footer
+   *   Whether the frame draws footer lines (a boxed frame separates them with
+   *   an extra rule).
+   *
+   * @return int
+   *   The chrome row count.
+   */
+  public function chromeHeight(bool $has_footer): int {
+    if ($this->borderStyle() === Border::None) {
+      return ($this->spacing() === Spacing::Compact ? 0 : 1) + self::INDICATOR_LINES;
+    }
+
+    $pad = $this->spacing() === Spacing::Padded ? 2 : 0;
+
+    return 3 + ($has_footer ? 1 : 0) + $pad + self::INDICATOR_LINES;
+  }
+
+  /**
    * Compose a frame: pinned header, scrolled body with indicators, footer.
+   *
+   * In fullscreen the body window stretches to its full budget - the block
+   * aligns per the halign/valign options and the frame fills the terminal
+   * exactly; otherwise the frame stays as tall as its content.
    *
    * @param list<string> $header
    *   The pinned header lines.
@@ -898,7 +1374,7 @@ class DefaultTheme implements ThemeInterface {
    *   The composed frame.
    */
   public function renderFrame(array $header, array $body, array $footer, Viewport $viewport, int $height): string {
-    return $this->renderBoxed($header, $body, $footer, $viewport, $height, $this->outerWidth, $this->borderStyle());
+    return $this->renderBoxed($header, $body, $footer, $viewport, $height, $this->outerWidth, $this->borderStyle(), $this->isFullscreen());
   }
 
   /**
@@ -921,18 +1397,26 @@ class DefaultTheme implements ThemeInterface {
    *   The outer width, including the border columns.
    * @param \DrevOps\Tui\Theme\Border $border
    *   The border style to draw.
+   * @param bool $stretch
+   *   Whether the body window stretches to its full budget with the block
+   *   aligned inside it (the fullscreen frame), rather than hugging the
+   *   content (a modal dialog's box).
    *
    * @return string
    *   The composed frame.
    */
-  protected function renderBoxed(array $header, array $body, array $footer, Viewport $viewport, int $height, int $outer_width, Border $border): string {
+  protected function renderBoxed(array $header, array $body, array $footer, Viewport $viewport, int $height, int $outer_width, Border $border, bool $stretch = FALSE): string {
     if ($border === Border::None) {
-      return $this->renderBorderless($header, $body, $footer, $viewport, $height);
+      return $this->renderBorderless($header, $body, $footer, $viewport, $height, $stretch);
     }
 
     $chars = Box::chars($border, $this->unicode);
     $middle = $this->scrolledBody($body, $viewport, $height);
     $pad = $this->spacing() === Spacing::Padded;
+
+    if ($stretch) {
+      $middle = $this->alignBlock($middle, max(1, $outer_width - 4), $height + self::INDICATOR_LINES);
+    }
 
     $out = [$this->borderRule($chars['tl'], $chars['tr'], $chars['h'], $outer_width)];
 
@@ -980,18 +1464,66 @@ class DefaultTheme implements ThemeInterface {
    *   The viewport.
    * @param int $height
    *   The body viewport height.
+   * @param bool $stretch
+   *   Whether the body window stretches to its full budget with the block
+   *   aligned inside it.
    *
    * @return string
    *   The composed frame.
    */
-  protected function renderBorderless(array $header, array $body, array $footer, Viewport $viewport, int $height): string {
-    $lines = array_merge($header, $this->scrolledBody($body, $viewport, $height));
+  protected function renderBorderless(array $header, array $body, array $footer, Viewport $viewport, int $height, bool $stretch = FALSE): string {
+    $middle = $this->scrolledBody($body, $viewport, $height);
+
+    if ($stretch) {
+      $middle = $this->alignBlock($middle, $this->width, $height + self::INDICATOR_LINES);
+    }
+
+    $lines = array_merge($header, $middle);
 
     if ($this->spacing() !== Spacing::Compact) {
       $lines[] = '';
     }
 
     return implode("\n", array_merge($lines, $footer));
+  }
+
+  /**
+   * Align a block of lines within an area, padding it to the area's size.
+   *
+   * The lines move as one unit - their left edges stay mutually aligned - to
+   * the anchor the halign/valign options pick: blank rows pad the block to the
+   * target height and a uniform indent shifts it across the width.
+   *
+   * @param list<string> $lines
+   *   The block lines (may carry ANSI codes).
+   * @param int $inner_width
+   *   The width of the area the block aligns within.
+   * @param int $target_height
+   *   The height the block pads to.
+   *
+   * @return list<string>
+   *   The aligned lines, exactly the target height when the block fits it.
+   */
+  protected function alignBlock(array $lines, int $inner_width, int $target_height): array {
+    $block_width = 0;
+    foreach ($lines as $line) {
+      $block_width = max($block_width, Ansi::width($line));
+    }
+
+    [$top, $left] = Overlay::place($inner_width, $target_height, $block_width, count($lines), $this->halign(), $this->valign());
+
+    $indent = str_repeat(' ', $left);
+    $out = array_fill(0, $top, '');
+
+    foreach ($lines as $line) {
+      $out[] = $line === '' ? '' : $indent . $line;
+    }
+
+    while (count($out) < $target_height) {
+      $out[] = '';
+    }
+
+    return $out;
   }
 
   /**
@@ -1203,18 +1735,35 @@ class DefaultTheme implements ThemeInterface {
    *   footer can be turned off form-wide.
    * @param \DrevOps\Tui\Input\ScopedKeyMap|null $keys
    *   The editor's scope bindings, so the hint glyphs reflect the active keys.
+   * @param int $rows
+   *   The terminal rows a fullscreen editor stretches its frame to; 0 keeps
+   *   the screen as tall as its content.
    *
    * @return string
-   *   The editor screen - boxed when the theme has a border, else plain.
+   *   The editor screen - boxed when the theme has a border, stretched to the
+   *   given rows in fullscreen, else plain.
    */
-  public function renderEditor(string $label, string $view, array $hints = [], ?ScopedKeyMap $keys = NULL): string {
+  public function renderEditor(string $label, string $view, array $hints = [], ?ScopedKeyMap $keys = NULL, int $rows = 0): string {
     $hint = $keys instanceof ScopedKeyMap ? $this->renderHints($keys, ...$hints) : '';
     $footer = $hint === '' ? [] : [$hint];
+    $stretch = $this->isFullscreen() && $rows > 0;
 
-    if ($this->borderStyle() !== Border::None) {
+    if ($this->borderStyle() !== Border::None || $stretch) {
       $body = explode("\n", $view);
+      $height = count($body);
 
-      return $this->renderFrame([$this->title($label)], $body, $footer, new Viewport(0, FALSE, FALSE), count($body));
+      // A borderless editor keeps its label-over-rule header inside the frame.
+      $header = $this->borderStyle() === Border::None ? explode("\n", $this->renderEditorHeader($label)) : [$this->title($label)];
+
+      // A fullscreen editor stretches its frame like the hub does - the hint
+      // footer pins to the bottom row. A view taller than the budget keeps
+      // its full height - widgets page inside themselves, so slicing here
+      // would hide rows they expect to show.
+      if ($stretch) {
+        $height = max($height, $rows - count($header) - count($footer) - $this->chromeHeight($footer !== []));
+      }
+
+      return $this->renderFrame($header, $body, $footer, new Viewport(0, FALSE, FALSE), $height);
     }
 
     $screen = $this->renderEditorHeader($label) . "\n" . $view;
@@ -1274,7 +1823,7 @@ class DefaultTheme implements ThemeInterface {
    * @param string $backdrop
    *   The rendered parent frame to dim and overlay the dialog on.
    * @param int $height
-   *   The screen's body height, bounding the dialog so its footer never clips.
+   *   The screen height, bounding the dialog so its footer never clips.
    *
    * @return string
    *   The composited screen.

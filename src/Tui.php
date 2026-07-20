@@ -85,6 +85,11 @@ final class Tui {
   protected ?bool $unicode = NULL;
 
   /**
+   * Expand the TUI to the whole terminal; NULL defers to the theme options.
+   */
+  protected ?bool $fullscreen = NULL;
+
+  /**
    * Whether the interactive TUI shows the contextual key-hint footer.
    */
   protected bool $footer = TRUE;
@@ -187,6 +192,28 @@ final class Tui {
    */
   public function unicode(?bool $unicode): self {
     $this->unicode = $unicode;
+
+    return $this;
+  }
+
+  /**
+   * Expand the interactive TUI to the whole terminal screen.
+   *
+   * Sugar for the "fullscreen" theme option: the frame stretches to the
+   * terminal, bounded by the "max_width"/"max_height" options, and the content
+   * anchors to the "halign"/"valign" alignments. Below the "min_width" (by
+   * default measured from the content) or "min_height" options the TUI shows a
+   * resize notice instead of a broken layout. Headless collection is
+   * unaffected.
+   *
+   * @param bool $fullscreen
+   *   Whether to expand to the whole terminal.
+   *
+   * @return $this
+   *   The facade.
+   */
+  public function fullscreen(bool $fullscreen = TRUE): self {
+    $this->fullscreen = $fullscreen;
 
     return $this;
   }
@@ -328,7 +355,9 @@ final class Tui {
 
     // The theme's display options (colour, Unicode, mode) come from the facade
     // when set, otherwise they are auto-detected from the terminal.
-    $controller = $this->controller($this->resolveThemeOptions($terminal), $theme, $banner, $version, $directory);
+    $options = $this->resolveThemeOptions($terminal);
+
+    $controller = $this->controller($options, $theme, $banner, $version, $directory, self::frameWidth($options, $terminal->width()));
 
     $answers = $controller->run($terminal);
 
@@ -359,6 +388,9 @@ final class Tui {
    *   An optional version shown below the banner and stamped into the context.
    * @param string $directory
    *   The target directory (defaults to the current working directory).
+   * @param int $width
+   *   The frame width the theme lays out to (the terminal width when
+   *   fullscreen is on).
    *
    * @return \DrevOps\Tui\Render\PanelController
    *   The controller, ready to run against a terminal.
@@ -367,7 +399,7 @@ final class Tui {
    *   Public for the {@see \DrevOps\Tui\Testing\TuiTester} harness; consumers
    *   collect through run(), collect() or interact().
    */
-  public function controller(array $options, string $theme = '', string $banner = '', string $version = '', string $directory = ''): PanelController {
+  public function controller(array $options, string $theme = '', string $banner = '', string $version = '', string $directory = '', int $width = DefaultTheme::DEFAULT_WIDTH): PanelController {
     // Restore this facade's language before rendering (see collect()).
     Translator::setShared($this->translator);
     $answers = $this->engine->collect([], $this->context($directory, FALSE, $version));
@@ -376,7 +408,7 @@ final class Tui {
 
     return new PanelController(
       $this->form,
-      ThemeManager::create($this->resolveTheme($theme), DefaultTheme::DEFAULT_WIDTH, $options),
+      ThemeManager::create($this->resolveTheme($theme), $width, $options),
       $this->keymap ?? KeyMapManager::create(),
       $this->footer,
       $this->clearOnExit,
@@ -385,6 +417,25 @@ final class Tui {
       $banner_text,
       $version,
     );
+  }
+
+  /**
+   * The frame width the theme lays out to for the resolved options.
+   *
+   * A fullscreen frame lays out to the terminal's width (the theme caps it
+   * with "max_width"); the width is fixed for the session, like the theme.
+   * Anything else keeps the default width.
+   *
+   * @param array<string,mixed> $options
+   *   The resolved theme display options.
+   * @param int $terminal_width
+   *   The terminal's width in columns.
+   *
+   * @return int
+   *   The frame width.
+   */
+  public static function frameWidth(array $options, int $terminal_width): int {
+    return ($options['fullscreen'] ?? FALSE) === TRUE ? $terminal_width : DefaultTheme::DEFAULT_WIDTH;
   }
 
   /**
@@ -496,6 +547,10 @@ final class Tui {
 
     if (!isset($options['mode'])) {
       $options['mode'] = $options['color'] ? Terminal::detectMode($terminal->queryBackground()) : Mode::Dark;
+    }
+
+    if (!isset($options['fullscreen']) && $this->fullscreen !== NULL) {
+      $options['fullscreen'] = $this->fullscreen;
     }
 
     return $options;

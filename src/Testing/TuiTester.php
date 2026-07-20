@@ -59,6 +59,11 @@ final class TuiTester {
   protected int $rows = 24;
 
   /**
+   * The reported terminal width.
+   */
+  protected int $cols = 80;
+
+  /**
    * The version stamped into the run context.
    */
   protected string $version = '';
@@ -148,6 +153,29 @@ final class TuiTester {
   }
 
   /**
+   * Set the reported terminal width.
+   *
+   * @param int $cols
+   *   The number of columns, at least 1.
+   *
+   * @return $this
+   *   The tester.
+   *
+   * @throws \InvalidArgumentException
+   *   When the width is below one column - the value feeds fullscreen layout
+   *   geometry, so a bogus width fails here rather than mid-render.
+   */
+  public function cols(int $cols): self {
+    if ($cols < 1) {
+      throw new \InvalidArgumentException('The terminal width must be at least 1 column.');
+    }
+
+    $this->cols = $cols;
+
+    return $this;
+  }
+
+  /**
    * Set the version stamped into the run context.
    *
    * @param string $version
@@ -193,8 +221,13 @@ final class TuiTester {
       $keystrokes[] = $item instanceof Key ? KeyEncoder::encode($item) : $item;
     }
 
-    $terminal = new BufferedTerminal($keystrokes, $this->rows);
-    $controller = $this->tui->controller($this->options, $this->theme, '', $this->version, $this->directory);
+    $terminal = new BufferedTerminal($keystrokes, $this->rows, $this->cols);
+
+    // The same width resolution interact() applies, against the scripted
+    // terminal's columns.
+    $width = Tui::frameWidth($this->options, $this->cols);
+
+    $controller = $this->tui->controller($this->options, $this->theme, '', $this->version, $this->directory, $width);
 
     $this->answers = $controller->run($terminal);
     $this->output = $terminal->output();

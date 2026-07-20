@@ -33,6 +33,7 @@
         "fixup",
         "fixups",
         "greyscale",
+        "halign",
         "headlessly",
         "Infima",
         "jsdelivr",
@@ -58,6 +59,7 @@
         "themeable",
         "tmate",
         "uppercased",
+        "valign",
         "Webroot",
         "weekstart"
     ],

@@ -3,19 +3,23 @@
 
 /**
  * @file
- * Generate animated SVG assets from asciinema recordings.
+ * Generate every terminal SVG asset - the single entry point.
  *
  * Records terminal sessions for the playground panel demos (the panel TUI
  * runners) and the widget montage, then converts the recordings to animated
  * SVGs; it also renders the option-group, password-reveal and discovery static
  * frames. Every per-widget card - both its animations and its static
  * display-mode screenshots - is rendered deterministically by
- * render-widget-svgs.php instead, the built-in theme previews by
- * render-theme-svgs.php, and the light twins by make-light-svgs.php.
+ * render-widget-svgs.php, and the built-in theme previews by
+ * render-theme-svgs.php; a no-argument run spawns both alongside the
+ * recording workers, so one command regenerates the whole set. Each dark SVG
+ * derives its light twin the moment it lands (svg-light-twin.php), so the
+ * pairs can never drift apart.
  * Static frames are anchored to the moment the demo's gate text first appears in
  * the recording; every animated SVG is slowed to ANIMATION_SLOWDOWN, and every
  * generated SVG is verified to contain the expected content before the job
- * succeeds.
+ * succeeds. A recording that captures an expect failure aborts its job rather
+ * than shipping the error text inside the animation.
  *
  * Output filenames follow the explicit convention shared with those sibling
  * scripts: <subject>-<dark|light>-<animated|static>[-ascii][-no-ansi].svg.
@@ -53,8 +57,9 @@ define('END_PAUSE', 10);
 define('FRAME_SETTLE_MS', 500);
 
 // The playback-speed factor (ANIMATION_SLOWDOWN) and the slowAnimation() scaler
-// are shared with render-widget-svgs.php.
+// are shared with render-widget-svgs.php, as is the light-twin derivation.
 require_once __DIR__ . '/svg-slowdown.php';
+require_once __DIR__ . '/svg-light-twin.php';
 
 /**
  * The expect body walking the all-widgets montage field by field.
@@ -439,6 +444,76 @@ EXPECT;
 }
 
 /**
+ * The expect body driving the fullscreen panel TUI.
+ *
+ * @return string
+ *   The expect script body.
+ */
+function fullscreenInteraction(): string {
+  return <<<'EXPECT'
+# Wait for the centered grid hub, then walk it spatially.
+expect "Summary" {
+    pause 2000
+    arrow_down
+}
+
+# Across the second row and back, then drill into Produce.
+pause 800
+arrow_right
+pause 800
+arrow_left
+pause 600
+safe_send "\r"
+
+# Produce lays its own children out side by side; visit Vegetables.
+pause 1500
+arrow_right
+pause 800
+press_escape
+
+# Down to the buttons, then submit via Place order.
+pause 800
+arrow_down
+arrow_down
+pause 600
+safe_send "\r"
+EXPECT;
+}
+
+/**
+ * The expect body driving the panel-layout grid TUI.
+ *
+ * @return string
+ *   The expect script body.
+ */
+function layoutInteraction(): string {
+  return <<<'EXPECT'
+# Wait for the grid hub: Summary on top, Produce and Delivery below.
+expect "Summary" {
+    pause 2000
+    arrow_down
+}
+
+# Walk the second row, then open Produce's own side-by-side layout.
+pause 800
+arrow_right
+pause 800
+arrow_left
+pause 600
+safe_send "\r"
+
+# Back out and submit via Place order.
+pause 1500
+press_escape
+pause 800
+arrow_down
+arrow_down
+pause 600
+safe_send "\r"
+EXPECT;
+}
+
+/**
  * The expect body driving the modal-panels panel TUI.
  *
  * @return string
@@ -635,6 +710,26 @@ function getJobs(string $project_dir): array {
     'verify' => 'Basics',
   ];
 
+  // Fullscreen: the frame stretched to the whole terminal, the panel grid
+  // anchored to the centered halign/valign layout inside the border.
+  $jobs['fullscreen-panels'] = [
+    'command' => 'env LINES=' . TERMINAL_ROWS . ' COLUMNS=' . TERMINAL_COLS . ' php ' . $project_dir . '/playground/03-panels/fullscreen.php',
+    'interact' => fullscreenInteraction(),
+    'rows' => TERMINAL_ROWS,
+    'cols' => TERMINAL_COLS,
+    'verify' => 'Order name',
+  ];
+
+  // Panel layouts: the layout(1, 2) grid hub with the nested layout(2) grid,
+  // walked spatially with the arrows.
+  $jobs['panel-layout'] = [
+    'command' => 'env LINES=' . TERMINAL_ROWS . ' COLUMNS=' . TERMINAL_COLS . ' php ' . $project_dir . '/playground/03-panels/layout.php',
+    'interact' => layoutInteraction(),
+    'rows' => TERMINAL_ROWS,
+    'cols' => TERMINAL_COLS,
+    'verify' => 'Vegetables',
+  ];
+
   // A modal panel: a dialog centered over the dimmed parent, dismissed by its
   // own buttons - one dialog collecting fields, one a text-only warning.
   $jobs['modal-panels'] = [
@@ -645,13 +740,15 @@ function getJobs(string $project_dir): array {
     'verify' => 'Gift options',
   ];
 
-  // The custom ocean theme with a banner.
+  // The custom ocean theme with a banner. It demonstrates a custom palette,
+  // not the default light/dark pair, so it has no meaningful light twin.
   $jobs['theme-ocean'] = [
     'command' => 'env LINES=20 COLUMNS=' . TERMINAL_COLS . ' php ' . $project_dir . '/playground/09-themes/custom.php',
     'interact' => themeOceanInteraction(),
     'rows' => 20,
     'cols' => TERMINAL_COLS,
     'verify' => 'Seaside stall',
+    'twin' => FALSE,
   ];
 
   // The built-in theme previews (dark/light, bordered/borderless) are
@@ -749,21 +846,25 @@ function main(): void {
     mkdir($tmp_dir, 0755, TRUE);
   }
 
-  // Launch all workers in parallel.
+  // Launch all workers in parallel: one per recorded job, plus the two
+  // deterministic sibling generators, so this one command regenerates the
+  // whole asset set.
   $script_path = __FILE__;
   $processes = [];
   $pipes_list = [];
 
-  info('Launching ' . count($jobs) . ' workers in parallel...');
+  $workers = [];
+  foreach (array_keys($jobs) as $name) {
+    $workers[$name] = sprintf('php %s --record %s', escapeshellarg($script_path), escapeshellarg($name));
+  }
+
+  $workers['widget-svgs'] = sprintf('php %s', escapeshellarg($script_dir . '/render-widget-svgs.php'));
+  $workers['theme-svgs'] = sprintf('php %s', escapeshellarg($script_dir . '/render-theme-svgs.php'));
+
+  info('Launching ' . count($workers) . ' workers in parallel...');
   info('');
 
-  foreach (array_keys($jobs) as $name) {
-    $cmd = sprintf(
-      'php %s --record %s',
-      escapeshellarg($script_path),
-      escapeshellarg($name)
-    );
-
+  foreach ($workers as $name => $cmd) {
     $descriptors = [
       0 => ['pipe', 'r'],
       1 => ['pipe', 'w'],
@@ -827,7 +928,7 @@ function main(): void {
   }
 
   info('');
-  info('Done. ' . count($jobs) . ' SVG assets updated in ' . $assets_dir);
+  info('Done. ' . count($workers) . ' workers updated the SVG assets in ' . $assets_dir);
 }
 
 /**
@@ -866,6 +967,7 @@ function processOne(string $name): void {
   createExpectScript($expect_script, $job['command'], $job['interact']);
   recordSession($cast_file, $expect_script, $rows, $cols);
   postProcessCast($cast_file);
+  assertCleanCast($cast_file, $name);
 
   // A static frame is anchored to the moment its expected text first appears
   // in the recording; a fixed timestamp would race the process startup and
@@ -885,6 +987,39 @@ function processOne(string $name): void {
 
   convertToSvg($cast_file, $svg_file, $script_dir, is_int($at) ? $at : NULL, (bool) ($job['light'] ?? FALSE), (bool) ($job['dos'] ?? FALSE));
   verifySvg($svg_file, $name, is_string($needle) ? $needle : ($job['verify'] ?? NULL), is_string($needle));
+
+  // A dark render derives its light twin in the same pass, so the pairs the
+  // documentation serves can never drift. Jobs that render a light or
+  // custom-palette surface themselves opt out with 'twin' => FALSE.
+  if (($job['twin'] ?? TRUE) && str_contains(basename($svg_file), '-dark-')) {
+    deriveLightTwin($svg_file);
+  }
+}
+
+/**
+ * Fail a job whose recording captured an expect failure.
+ *
+ * A crashed interaction (an undefined helper, a Tcl error) prints its trace
+ * into the pty, where it would ship inside the animation and can still slip
+ * past the content check when the verify needle appeared before the crash.
+ *
+ * @param string $cast_file
+ *   Path to the cast file.
+ * @param string $name
+ *   The job name, for the error message.
+ */
+function assertCleanCast(string $cast_file, string $name): void {
+  $cast = file_get_contents($cast_file);
+
+  if ($cast === FALSE) {
+    throw new \RuntimeException('Failed to read cast: ' . $cast_file);
+  }
+
+  foreach (['invalid command name', 'while executing', 'usage: ', 'Traceback'] as $marker) {
+    if (str_contains($cast, $marker)) {
+      throw new \RuntimeException(sprintf('The recording for "%s" captured an interaction failure ("%s" found in the cast).', $name, $marker));
+    }
+  }
 }
 
 /**
@@ -1083,6 +1218,16 @@ proc arrow_down {} {
     safe_send "\033\[B"
 }
 
+proc arrow_right {} {
+    pause 300
+    safe_send "\033\[C"
+}
+
+proc arrow_left {} {
+    pause 300
+    safe_send "\033\[D"
+}
+
 proc toggle_space {} {
     pause 300
     safe_send " "
@@ -1244,7 +1389,7 @@ function convertToSvg(string $cast_file, string $svg_file, string $util_dir, ?in
  * The asset filename for a job under the explicit naming convention.
  *
  * The job key already carries the display-mode suffixes; this adds the theme
- * (always dark here - light twins are derived by make-light-svgs.php) and the
+ * (always dark here - each job derives its own light twin in-run) and the
  * motion, yielding <subject>-dark-<motion>[-ascii][-no-ansi].svg.
  *
  * @param string $job

@@ -12,6 +12,7 @@
 declare(strict_types=1);
 
 return [
+  '"@min" must not exceed "@max".' => '"@min" must not exceed "@max".',
   '(empty)' => '(empty)',
   '(required)' => '(required)',
   '- Pass --no-interaction to resolve every question from defaults, discovery and derivation without prompting.' => '- Pass --no-interaction to resolve every question from defaults, discovery and derivation without prompting.',
@@ -20,6 +21,7 @@ return [
   '- Set per-question environment variables named @prefix<ID> (the uppercased question id); these win over discovery but lose to --prompts.' => '- Set per-question environment variables named @prefix<ID> (the uppercased question id); these win over discovery but lose to --prompts.',
   '@count selected' => '@count selected',
   '@value is not a valid "@key". Allowed: @allowed.' => '@value is not a valid "@key". Allowed: @allowed.',
+  '@value is not a valid "@key". Use a non-negative integer.' => '@value is not a valid "@key". Use a non-negative integer.',
   'Calendar' => 'Calendar',
   'Confirm' => 'Confirm',
   'Drive the form non-interactively:' => 'Drive the form non-interactively:',
@@ -31,6 +33,7 @@ return [
   'Missing required question "@id".' => 'Missing required question "@id".',
   'Mo' => 'Mo',
   'Navigation' => 'Navigation',
+  'Need at least @width x @height - have @w x @h.' => 'Need at least @width x @height - have @w x @h.',
   'No' => 'No',
   'Number' => 'Number',
   'Page size must be a positive integer, @size given.' => 'Page size must be a positive integer, @size given.',
@@ -49,6 +52,7 @@ return [
   'Select' => 'Select',
   'Su' => 'Su',
   'Suggest' => 'Suggest',
+  'Terminal too small.' => 'Terminal too small.',
   'Text' => 'Text',
   'Textarea' => 'Textarea',
   'Th' => 'Th',

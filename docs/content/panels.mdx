@@ -145,7 +145,63 @@ $tui = (new Tui($form))->theme('default', ['border' => 'rounded', 'spacing' => '
   <ThemedImage sources={{light: useBaseUrl('/bordered-panels-light-animated.svg'), dark: useBaseUrl('/bordered-panels-dark-animated.svg')}} alt="Panel browser with a rounded border" width="100%" />
 </p>
 
-Nesting, modal dialogs and both border looks are runnable in
+## Panel layouts
+
+A panel's sub-panels list vertically by default; `->layout()` arranges them as a grid of side-by-side columns instead. Each argument declares one visual row and names how many panels sit beside each other in it, filled in declaration order: `layout(2)` puts two panels side by side, `layout(2, 2)` makes four windows, `layout(1, 2)` one full-width panel above two columns - and `layout(2, 1)` the other way around. Every level of the panel tree declares its own, so a drilled-in panel arranges its children independently. `Form::layout()` arranges the top-level panels; `PanelBuilder::layout()` arranges a panel's children:
+
+```php
+$form = Form::create('Market stall')
+  ->layout(1, 2)
+  ->buttons(TRUE, 'Place order', 'Cancel')
+  ->panel('summary', 'Summary', function (PanelBuilder $p): void {
+    $p->description('The order at a glance.');
+    $p->text('name', 'Order name')->default('Weekly Box')->required();
+  })
+  ->panel('produce', 'Produce', function (PanelBuilder $p): void {
+    // Drilling into Produce reveals its own side-by-side grid.
+    $p->layout(2);
+    $p->panel('fruit', 'Fruit', function (PanelBuilder $sp): void {
+      $sp->select('fruit', 'Fruit')->default('apple')->options(['apple' => 'Apple', 'banana' => 'Banana', 'cherry' => 'Cherry']);
+    });
+    $p->panel('veg', 'Vegetables', function (PanelBuilder $sp): void {
+      $sp->select('veg', 'Vegetables')->multiple()->default(['carrot'])->options(['carrot' => 'Carrot', 'tomato' => 'Tomato', 'spinach' => 'Spinach']);
+    });
+  })
+  ->panel('delivery', 'Delivery', function (PanelBuilder $p): void {
+    $p->confirm('gift', 'Gift wrap?')->default(FALSE);
+  });
+```
+
+<p align="center">
+  <ThemedImage sources={{light: useBaseUrl('/panel-layout-light-animated.svg'), dark: useBaseUrl('/panel-layout-dark-animated.svg')}} alt="Panels arranged as a grid: one full-width panel above two side-by-side columns" width="100%" />
+</p>
+
+Each column previews its panel - the title, the description and one row per field value, plus a drill-in row per nested panel - so the grid reads as windows into the form. The arrows move spatially (Left/Right along a row, Up/Down between rows, out to the fields above or the buttons below), Enter drills into the focused panel exactly as in the row list, and fields declared on the same panel keep their normal rows above the grid. The declaration is validated when the form is built: every row must hold at least one panel and the slots must exactly cover the sub-panels, so a mismatch throws at declaration time, never mid-session.
+
+## Fullscreen
+
+The facade's `->fullscreen()` expands the frame to the whole terminal: the border hugs the screen edges, the key-hint footer pins to the bottom row, and the body stretches between them. Where the fields sit inside the stretched frame is a pair of theme options - `halign` (`left`, `center` or `right`) and `valign` (`top`, `middle` or `bottom`) - passed as plain strings like the border, and the fields move as one block so their left edges stay aligned:
+
+```php
+// The market-stall grid from above, stretched to the terminal and centered.
+// Fullscreen is a facade switch; the alignment and size limits are theme options.
+$tui = (new Tui($form))
+  ->theme('default', ['border' => 'rounded', 'halign' => 'center', 'valign' => 'middle'])
+  ->fullscreen();
+```
+
+<p align="center">
+  <ThemedImage sources={{light: useBaseUrl('/fullscreen-panels-light-animated.svg'), dark: useBaseUrl('/fullscreen-panels-dark-animated.svg')}} alt="The panel browser stretched to the whole terminal with centered fields" width="100%" />
+</p>
+
+Four sizing options bound the stretch, each a non-negative integer:
+
+- `max_width` / `max_height` (default `0`, uncapped) stop the frame short of a very wide or tall terminal; the capped frame then floats at the `halign` / `valign` anchor, like a dialog.
+- `min_width` / `min_height` guard against a terminal too small for the layout: below either, the TUI shows a centered resize notice (only quit works there) until the terminal grows. `min_height` defaults to `10`; `min_width` defaults to `0`, which measures the form's own content - the widest label, value, badge and description row across every panel - so the guard adapts to the questionnaire without configuration.
+
+Fullscreen affects only the interactive TUI; headless collection ignores it. The frame's layout width is resolved once at start-up, while the live terminal size is still sampled every frame for the minimum-size guard and frame positioning - so a window resized mid-session reflows on height but keeps its layout width until the next run.
+
+Nesting, modal dialogs, both border looks and the fullscreen stretch are runnable in
 [`playground/03-panels/`](https://github.com/drevops/tui/tree/main/playground/03-panels),
 and inline editing in
 [`playground/04-inline-editing/`](https://github.com/drevops/tui/tree/main/playground/04-inline-editing).

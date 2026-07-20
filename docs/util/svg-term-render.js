@@ -160,7 +160,7 @@ const theme = {
 // A light surface for the themes' light palettes. The 256-colour accents are
 // fixed xterm RGB and already read on both backgrounds; only the surface and
 // the greyscale text (default and bold) need to flip to dark, mirroring
-// make-light-svgs.php so the light twins share one look.
+// svg-light-twin.php so the light twins share one look.
 if (light) {
   theme.background = [250, 250, 250]; // #fafafa
   theme.text = [56, 58, 66];          // #383a42

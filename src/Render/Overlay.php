@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Render;
 
+use DrevOps\Tui\Theme\HAlign;
+use DrevOps\Tui\Theme\VAlign;
+
 /**
  * Pure line-compositor: splice a box of lines over a backdrop, centered.
  *
@@ -35,8 +38,40 @@ final class Overlay {
    *   The [top, left] offsets, never negative.
    */
   public static function center(int $area_width, int $area_height, int $box_width, int $box_height): array {
-    $top = intdiv(max(0, $area_height - $box_height), 2);
-    $left = intdiv(max(0, $area_width - $box_width), 2);
+    return self::place($area_width, $area_height, $box_width, $box_height, HAlign::Center, VAlign::Middle);
+  }
+
+  /**
+   * The top-left offset that places a box within an area by alignment.
+   *
+   * @param int $area_width
+   *   The area's width in columns.
+   * @param int $area_height
+   *   The area's height in rows.
+   * @param int $box_width
+   *   The box's width in columns.
+   * @param int $box_height
+   *   The box's height in rows.
+   * @param \DrevOps\Tui\Theme\HAlign $halign
+   *   The horizontal alignment of the box within the area.
+   * @param \DrevOps\Tui\Theme\VAlign $valign
+   *   The vertical alignment of the box within the area.
+   *
+   * @return array{int,int}
+   *   The [top, left] offsets, never negative.
+   */
+  public static function place(int $area_width, int $area_height, int $box_width, int $box_height, HAlign $halign, VAlign $valign): array {
+    $top = match ($valign) {
+      VAlign::Top => 0,
+      VAlign::Middle => intdiv(max(0, $area_height - $box_height), 2),
+      VAlign::Bottom => max(0, $area_height - $box_height),
+    };
+
+    $left = match ($halign) {
+      HAlign::Left => 0,
+      HAlign::Center => intdiv(max(0, $area_width - $box_width), 2),
+      HAlign::Right => max(0, $area_width - $box_width),
+    };
 
     return [$top, $left];
   }

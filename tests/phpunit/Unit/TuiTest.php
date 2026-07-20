@@ -17,11 +17,13 @@ use DrevOps\Tui\Input\KeyMap;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\InterruptException;
+use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Render\PanelController;
 use DrevOps\Tui\Render\Terminal;
 use DrevOps\Tui\Testing\BufferedTerminal;
 use DrevOps\Tui\Tests\Traits\IsolatesEnvTrait;
 use DrevOps\Tui\Tests\Traits\ResetsTranslatorTrait;
+use DrevOps\Tui\Theme\Border;
 use DrevOps\Tui\Theme\Mode;
 use DrevOps\Tui\Translation\Translator;
 use DrevOps\Tui\Tui;
@@ -187,6 +189,45 @@ final class TuiTest extends TestCase {
     $this->expectException(InterruptException::class);
 
     $this->tui()->interact(terminal: new BufferedTerminal(["\x03"]));
+  }
+
+  public function testFullscreenSugarMergesIntoThemeOptions(): void {
+    $terminal = new BufferedTerminal();
+
+    // The setter supplies the option.
+    $tui = $this->tui()->fullscreen();
+    $options = (new \ReflectionMethod($tui, 'resolveThemeOptions'))->invoke($tui, $terminal);
+    $this->assertIsArray($options);
+    $this->assertTrue($options['fullscreen']);
+
+    // An explicit theme option wins over the sugar.
+    $tui = $this->tui()->theme('', ['fullscreen' => FALSE])->fullscreen();
+    $options = (new \ReflectionMethod($tui, 'resolveThemeOptions'))->invoke($tui, $terminal);
+    $this->assertIsArray($options);
+    $this->assertFalse($options['fullscreen']);
+
+    // Without either, the option stays unset.
+    $tui = $this->tui();
+    $options = (new \ReflectionMethod($tui, 'resolveThemeOptions'))->invoke($tui, $terminal);
+    $this->assertIsArray($options);
+    $this->assertArrayNotHasKey('fullscreen', $options);
+  }
+
+  public function testInteractFullscreenFillsTheScriptedTerminal(): void {
+    // No input: the loop renders one frame and stops on exhaustion. The frame
+    // stretches to the scripted terminal's exact rows and lays out to its
+    // columns rather than the default width - a border pads every line to the
+    // full width, so both dimensions are assertable.
+    $terminal = new BufferedTerminal([], 16, 50);
+
+    $this->tui()->fullscreen()->color(FALSE)->theme('', ['border' => Border::Line])->interact(terminal: $terminal);
+
+    $lines = explode("\n", Ansi::strip($terminal->output()));
+    $this->assertCount(16, $lines);
+
+    foreach ($lines as $line) {
+      $this->assertSame(50, mb_strlen($line, 'UTF-8'));
+    }
   }
 
   #[DataProvider('dataProviderResolveTheme')]
