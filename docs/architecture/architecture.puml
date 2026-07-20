@@ -80,6 +80,7 @@ package "Interactive TUI" #FFEBEE {
 [PanelController] --> [KeyMap]
 [PanelController] --> [WidgetFactory]
 [WidgetFactory] --> [KeyMap]
+[WidgetFactory] --> [HandlerRegistry]
 [WidgetFactory] --> WidgetInterface
 WidgetInterface --> [Theme]
 WidgetInterface --> [KeyMap]
