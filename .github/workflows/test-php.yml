@@ -21,7 +21,7 @@ permissions:
 
 jobs:
   test-php:
-    name: PHP ${{ matrix.php-versions }}, Deps ${{ matrix.deps }}${{ matrix.os != 'ubuntu-latest' && format(', OS {0}', matrix.os) || '' }}
+    name: PHP ${{ matrix.php-versions }}, Deps ${{ matrix.deps }}, OS ${{ matrix.os == 'windows-latest' && 'Windows' || 'Ubuntu' }}
     runs-on: ${{ matrix.os }}
 
     permissions:
