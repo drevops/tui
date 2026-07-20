@@ -21,15 +21,12 @@ permissions:
 
 jobs:
   test-php:
-    # The OS suffix is appended only for non-Linux runs so the Linux job names
-    # stay byte-identical to the required status-check contexts on the branch
-    # ruleset; Windows runs report as additional, non-required checks.
     name: PHP ${{ matrix.php-versions }}, Deps ${{ matrix.deps }}${{ matrix.os != 'ubuntu-latest' && format(', OS {0}', matrix.os) || '' }}
     runs-on: ${{ matrix.os }}
 
     permissions:
       contents: read
-      pull-requests: write # Post the coverage summary as a PR comment.
+      pull-requests: write
 
     strategy:
       fail-fast: false
@@ -57,7 +54,6 @@ jobs:
       - name: Cache Composer dependencies
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
-          # runner.temp resolves on every OS, unlike a hard-coded /tmp path.
           path: ${{ runner.temp }}/composer-cache
           key: ${{ runner.os }}-${{ matrix.deps }}-${{ hashFiles('**/composer.lock') }}
 
@@ -65,13 +61,10 @@ jobs:
         uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
         with:
           php-version: ${{ matrix.php-versions }}
-          # pcov is only needed where coverage is produced, i.e. on Linux.
           coverage: ${{ runner.os == 'Windows' && 'none' || 'pcov' }}
           ini-values: pcov.directory=.
 
       - name: Install dependencies
-        # Windows runners default to PowerShell; Git Bash runs the shared
-        # conditional identically to Linux.
         shell: bash
         env:
           COMPOSER_CACHE_DIR: ${{ runner.temp }}/composer-cache
@@ -99,7 +92,6 @@ jobs:
         continue-on-error: ${{ vars.CI_TEST_IGNORE_FAILURE == '1' }}
 
       - name: Run tests
-        # Windows verifies OS portability only, so it skips coverage collection.
         if: runner.os == 'Windows'
         shell: bash
         run: composer test
@@ -127,7 +119,6 @@ jobs:
             ```
             ${{ env.COVERAGE_CONTENT }}
             ```
-          # Post a new comment every time to keep the coverage history.
           hide_and_recreate: true
 
       - name: Upload coverage report as an artifact
