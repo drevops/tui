@@ -36,9 +36,7 @@ Runnable scripts: [`playground/02-widgets/select-groups.php`](https://github.com
 
 Headings, separators and disabled options are **visual only**: navigation skips them, so the cursor lands only on selectable options, and they can never be highlighted or selected. A disabled option shows its reason beside the label, dimmed. Every kind is theme-driven - override `heading()`, `divider()` or `disabled()` on a theme to restyle it.
 
-Non-selectable rows never leak into the answer: a disabled value is dropped from a multiple-choice default, absent from the collected value, and excluded from the JSON schema (`Tui::schema()` lists selectable options only). Supplying a disabled
-
-- or otherwise unknown - option value [headlessly](/headless-collection) (via `--prompts` JSON or an environment override) fails collection with a clear error naming the value.
+Non-selectable rows never leak into the answer: a disabled value is dropped from a multiple-choice default, absent from the collected value, and excluded from the JSON schema (`Tui::schema()` lists selectable options only). Supplying a disabled - or otherwise unknown - option value [headlessly](/headless-collection) (via `--prompts` JSON or an environment override) fails collection with a clear error naming the value.
 
 ## Examples
 
