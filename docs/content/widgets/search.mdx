@@ -12,10 +12,7 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
   <ThemedImage sources={{light: useBaseUrl('/widget-search-light-animated.svg'), dark: useBaseUrl('/widget-search-dark-animated.svg')}} alt="Search widget" />
 </p>
 
-Single choice with a filter line above the options. Typing fuzzy-matches and
-ranks the labels - exact and prefix matches lead, looser subsequence matches
-follow - and highlights the matched characters. It collects the **selected option
-value** (a `string`).
+Single choice with a filter line above the options. Typing fuzzy-matches and ranks the labels - exact and prefix matches lead, looser subsequence matches follow - and highlights the matched characters. It collects the **selected option value** (a `string`).
 
 ```php
 $p->search('vegetable', 'Vegetable')
@@ -33,24 +30,23 @@ Runnable scripts: [`playground/02-widgets/search.php`](https://github.com/drevop
 
 ## Options
 
-| Name | Description | Required | Default |
-| --- | --- | --- | --- |
-| `options()` | The choices, as a `value => label` map (or added one at a time with `option()`). | Yes | - |
-| `default()` | Which option starts highlighted, by value. | No | First option |
-| `pageSize()` | Matches shown before the list pages around the cursor. | No | `10` |
+| Name         | Description                                                                      | Required | Default      |
+| ------------ | -------------------------------------------------------------------------------- | -------- | ------------ |
+| `options()`  | The choices, as a `value => label` map (or added one at a time with `option()`). | Yes      | -            |
+| `default()`  | Which option starts highlighted, by value.                                       | No       | First option |
+| `pageSize()` | Matches shown before the list pages around the cursor.                           | No       | `10`         |
 
-For headings, separators and disabled options, see
-[Option groups](/widgets/option-groups).
+For headings, separators and disabled options, see [Option groups](/widgets/option-groups).
 
 ## Keyboard
 
-| Key | Action |
-| --- | --- |
+| Key            | Action                                    |
+| -------------- | ----------------------------------------- |
 | printable keys | Type to fuzzy-filter and rank the options |
-| `↑` / `↓` | Move over the matches |
-| `Backspace` | Delete a filter character |
-| `Enter` | Accept the highlighted option |
-| `Esc` | Cancel |
+| `↑` / `↓`      | Move over the matches                     |
+| `Backspace`    | Delete a filter character                 |
+| `Enter`        | Accept the highlighted option             |
+| `Esc`          | Cancel                                    |
 
 ## Display modes
 
@@ -76,10 +72,7 @@ In all four [display modes](/display-modes) - Unicode or ASCII, colour on or off
 
 ## Multiple selection
 
-Add `->multiple()` to collect a **`list<string>`** of checked values under the
-filter line. Typing fuzzy-matches and ranks with the matched characters
-highlighted, `Space` toggles, `→` / `←` select or deselect all visible, and
-`Enter` accepts the checked set.
+Add `->multiple()` to collect a **`list<string>`** of checked values under the filter line. Typing fuzzy-matches and ranks with the matched characters highlighted, `Space` toggles, `→` / `←` select or deselect all visible, and `Enter` accepts the checked set.
 
 ```php
 $p->search('basket', 'Basket')

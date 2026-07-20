@@ -8,23 +8,17 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 
 # Discovery
 
-In update mode, `->discover()` rules detect defaults from an existing project
-directory: a `.env` key (`new Dotenv('SEASON')`), a JSON dot-path (`new
-JsonValue('basket.json', 'name')`), a path check (`new
-PathExists('harvest.csv')`), a directory scan (`new Scan('baskets', type:
-ScanType::Dir)`), or a custom `fn(Context $c): mixed` closure:
+In update mode, `->discover()` rules detect defaults from an existing project directory: a `.env` key (`new Dotenv('SEASON')`), a JSON dot-path (`new JsonValue('basket.json', 'name')`), a path check (`new PathExists('harvest.csv')`), a directory scan (`new Scan('baskets', type: ScanType::Dir)`), or a custom `fn(Context $c): mixed` closure:
 
 ```php
 $p->text('name', 'Produce name')->discover(new JsonValue('basket.json', 'name'));
 $p->confirm('inseason', 'In season?')->discover(new PathExists('harvest.csv'));
 ```
 
-Discovered values are badged in the summary, and explicit input (prompts or
-environment) always wins over discovery:
+Discovered values are badged in the summary, and explicit input (prompts or environment) always wins over discovery:
 
 <p align="center">
   <ThemedImage sources={{light: useBaseUrl('/discovery-light-static.svg'), dark: useBaseUrl('/discovery-dark-static.svg')}} alt="Discovery summary with provenance badges" width="100%" />
 </p>
 
-Every rule type runs against a bundled sample project in
-[`playground/08-discovery/`](https://github.com/drevops/tui/tree/main/playground/08-discovery).
+Every rule type runs against a bundled sample project in [`playground/08-discovery/`](https://github.com/drevops/tui/tree/main/playground/08-discovery).

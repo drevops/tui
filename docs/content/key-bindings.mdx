@@ -5,28 +5,17 @@ sidebar_position: 11
 
 # Key bindings
 
-Navigation, edit, accept and cancel keys are configurable. A widget asks for a
-semantic **action** - `MoveUp`, `Accept`, `Toggle`, `NewLine` and so on - rather
-than a fixed key, and a **key map** binds each action to one or more keys. Key
-bindings are a global TUI runtime setting, so you set them on the `Tui` facade
-with `->keys(...)`, mirroring `->theme(...)`:
+Navigation, edit, accept and cancel keys are configurable. A widget asks for a semantic **action** - `MoveUp`, `Accept`, `Toggle`, `NewLine` and so on - rather than a fixed key, and a **key map** binds each action to one or more keys. Key bindings are a global TUI runtime setting, so you set them on the `Tui` facade with `->keys(...)`, mirroring `->theme(...)`:
 
 ```php
 $tui = (new Tui($form))->keys('vim');   // built-in vim navigation (h/j/k/l)
 ```
 
-Two presets ship: `default` (the bindings described in [Panels and
-navigation](/panels)) and `vim`, which adds `h`/`j`/`k`/`l` alongside the arrow
-keys - only where a letter is not typed input, so text and filter fields keep the
-arrows.
+Two presets ship: `default` (the bindings described in [Panels and navigation](/panels)) and `vim`, which adds `h`/`j`/`k`/`l` alongside the arrow keys - only where a letter is not typed input, so text and filter fields keep the arrows.
 
 ## Per-widget-type overrides
 
-Bindings are layered by **scope**: a base layer shared by every widget, a
-navigation layer for the panel browser, and one layer per widget type that
-overrides the base only where it differs (Enter inserts a newline in a textarea,
-Space toggles a checkbox option). Retune individual bindings by passing overrides
-on top of a preset - each names a scope, an action and its keys:
+Bindings are layered by **scope**: a base layer shared by every widget, a navigation layer for the panel browser, and one layer per widget type that overrides the base only where it differs (Enter inserts a newline in a textarea, Space toggles a checkbox option). Retune individual bindings by passing overrides on top of a preset - each names a scope, an action and its keys:
 
 ```php
 use DrevOps\Tui\Model\FieldType;
@@ -43,25 +32,16 @@ $tui = (new Tui($form))->keys('default', [
 ]);
 ```
 
-A binding's keys accept a `KeyName` for a named key or a single-character string
-for a printable one. The panel and editor hints are drawn from the live bindings,
-so they always reflect the active keys.
+A binding's keys accept a `KeyName` for a named key or a single-character string for a printable one. The panel and editor hints are drawn from the live bindings, so they always reflect the active keys.
 
 ## Presets and validation
 
-A preset is a class listing its bindings. Subclass `DefaultKeyMap` to ship your
-own, name it directly with `->keys('\App\MyKeyMap')`, or register a short alias
-with `KeyMapManager::register('mine', MyKeyMap::class)` and then `->keys('mine')`.
+A preset is a class listing its bindings. Subclass `DefaultKeyMap` to ship your own, name it directly with `->keys('\App\MyKeyMap')`, or register a short alias with `KeyMapManager::register('mine', MyKeyMap::class)` and then `->keys('mine')`.
 
-Bindings are validated the moment they are set, so a bad key map is caught at
-configuration time, not mid-session:
+Bindings are validated the moment they are set, so a bad key map is caught at configuration time, not mid-session:
 
 - a key bound to two different actions in the same scope is a conflict;
-- a printable character bound in the base scope, or in a scope whose widget
-  consumes typed input (text, search, checkbox), would be un-typeable and is
-  rejected;
-- an unknown preset name, or a character binding that is not exactly one
-  character, is rejected.
+- a printable character bound in the base scope, or in a scope whose widget consumes typed input (text, search, checkbox), would be un-typeable and is rejected;
+- an unknown preset name, or a character binding that is not exactly one character, is rejected.
 
-See [`playground/10-key-bindings`](https://github.com/drevops/tui/tree/main/playground/10-key-bindings)
-for the default map, the vim preset and a custom override side by side.
+See [`playground/10-key-bindings`](https://github.com/drevops/tui/tree/main/playground/10-key-bindings) for the default map, the vim preset and a custom override side by side.

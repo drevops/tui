@@ -12,8 +12,7 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
   <ThemedImage sources={{light: useBaseUrl('/widget-select-light-animated.svg'), dark: useBaseUrl('/widget-select-dark-animated.svg')}} alt="Select widget" />
 </p>
 
-Single choice from a list of options. It collects the **selected option value**
-(a `string`).
+Single choice from a list of options. It collects the **selected option value** (a `string`).
 
 ```php
 $p->select('fruit', 'Fruit')
@@ -30,22 +29,21 @@ Runnable scripts: [`playground/02-widgets/select.php`](https://github.com/drevop
 
 ## Options
 
-| Name | Description | Required | Default |
-| --- | --- | --- | --- |
-| `options()` | The choices, as a `value => label` map (or added one at a time with `option()`). | Yes | - |
-| `default()` | Which option starts highlighted, by value. | No | First option |
-| `pageSize()` | Options shown before the list pages around the cursor. | No | `10` |
+| Name         | Description                                                                      | Required | Default      |
+| ------------ | -------------------------------------------------------------------------------- | -------- | ------------ |
+| `options()`  | The choices, as a `value => label` map (or added one at a time with `option()`). | Yes      | -            |
+| `default()`  | Which option starts highlighted, by value.                                       | No       | First option |
+| `pageSize()` | Options shown before the list pages around the cursor.                           | No       | `10`         |
 
-For headings, separators and disabled options, see
-[Option groups](/widgets/option-groups).
+For headings, separators and disabled options, see [Option groups](/widgets/option-groups).
 
 ## Keyboard
 
-| Key | Action |
-| --- | --- |
+| Key       | Action                                                               |
+| --------- | -------------------------------------------------------------------- |
 | `↑` / `↓` | Move the highlight (skips headings, separators and disabled options) |
-| `Enter` | Accept the highlighted option |
-| `Esc` | Cancel |
+| `Enter`   | Accept the highlighted option                                        |
+| `Esc`     | Cancel                                                               |
 
 ## Display modes
 
@@ -71,10 +69,7 @@ In all four [display modes](/display-modes) - Unicode or ASCII, colour on or off
 
 ## Multiple selection
 
-Add `->multiple()` to collect a **`list<string>`** of checked values instead of
-one. `Space` toggles the highlighted option, typing narrows the list by
-substring, `→` / `←` select or deselect all visible, and `Enter` accepts the
-checked set.
+Add `->multiple()` to collect a **`list<string>`** of checked values instead of one. `Space` toggles the highlighted option, typing narrows the list by substring, `→` / `←` select or deselect all visible, and `Enter` accepts the checked set.
 
 ```php
 $p->select('basket', 'Basket')

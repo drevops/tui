@@ -12,9 +12,7 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
   <ThemedImage sources={{light: useBaseUrl('/widget-toggle-light-animated.svg'), dark: useBaseUrl('/widget-toggle-dark-animated.svg')}} alt="Toggle widget" />
 </p>
 
-An inline switch that cycles between a fixed set of labelled values. It collects
-the **selected option value** (a `string`), and is always in one of its states,
-so it always returns a value.
+An inline switch that cycles between a fixed set of labelled values. It collects the **selected option value** (a `string`), and is always in one of its states, so it always returns a value.
 
 ```php
 $p->toggle('ripeness', 'Ripeness')
@@ -29,19 +27,19 @@ Runnable script: [`playground/02-widgets/toggle.php`](https://github.com/drevops
 
 ## Options
 
-| Name | Description | Required | Default |
-| --- | --- | --- | --- |
-| `options()` | The values to switch between, as a `value => label` map. | Yes | - |
-| `default()` | Which value starts selected. | No | First option |
+| Name        | Description                                              | Required | Default      |
+| ----------- | -------------------------------------------------------- | -------- | ------------ |
+| `options()` | The values to switch between, as a `value => label` map. | Yes      | -            |
+| `default()` | Which value starts selected.                             | No       | First option |
 
 ## Keyboard
 
-| Key | Action |
-| --- | --- |
-| `←` / `→` / `Space` / `↑` / `↓` | Cycle to the adjacent value |
-| a letter | Jump to the first value whose label starts with it |
-| `Enter` | Accept the current value |
-| `Esc` | Cancel |
+| Key                             | Action                                             |
+| ------------------------------- | -------------------------------------------------- |
+| `←` / `→` / `Space` / `↑` / `↓` | Cycle to the adjacent value                        |
+| a letter                        | Jump to the first value whose label starts with it |
+| `Enter`                         | Accept the current value                           |
+| `Esc`                           | Cancel                                             |
 
 ## Display modes
 
