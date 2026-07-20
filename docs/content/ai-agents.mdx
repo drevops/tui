@@ -11,13 +11,14 @@ A form built with this engine is self-describing: it can hand an AI agent (or an
 
 An agent drives the tool in three steps:
 
-1. **Discover** - run the tool with `--agent` to print the driving guide.
-2. **Read** - take the question ids, types and answer formats from the guide.
+1. **Discover** - run `--agent` for the driving guide and `--schema` for the machine-readable field values (a `select`'s allowed options, a number's bounds).
+2. **Read** - take the question ids, types, answer formats and allowed values from them.
 3. **Run** - re-run with `--no-interaction` and a `--prompts` payload; nothing prompts and the answers come back as JSON.
 
 ```bash
-# 1-2. Learn how to drive the form.
+# 1-2. Learn how to drive the form and its allowed values.
 php installer.php --agent
+php installer.php --schema
 
 # 3. Supply every answer and run unattended.
 php installer.php --no-interaction --prompts '{"name":"Weekly Box","fruit":"cherry"}'
@@ -35,6 +36,12 @@ $tui = new Tui($form);
 // Print the guide and exit before the form runs when an agent asks for it.
 if (in_array('--agent', $argv, TRUE)) {
   echo $tui->agentHelp();
+  exit(0);
+}
+
+// The machine-readable schema exposes each field's allowed values.
+if (in_array('--schema', $argv, TRUE)) {
+  echo json_encode($tui->schema(), JSON_PRETTY_PRINT);
   exit(0);
 }
 
@@ -61,6 +68,8 @@ Questions:
   organic [confirm] - Organic only?
 ```
 
+A `select` shows only its label in this guide, not its allowed values - those come from the JSON schema below (the `--schema` flag), which an agent reads before choosing a constrained answer.
+
 The `TUI_` prefix on the environment line is the default; change it with `->envPrefix('MYAPP_')` on the form or `new Tui($form, env_prefix: 'MYAPP_')`, and the guide reflects the active prefix.
 
 ## Precedence and environment variables
@@ -80,7 +89,7 @@ TUI_NAME='Weekly Box' php installer.php --no-interaction --prompts '{"fruit":"ch
 
 ## Machine-readable schema and validation
 
-For tools that would rather consume structured data than the text guide, `schema()` returns the questions as a JSON schema - id, type, options, bounds and requiredness per question:
+`schema()` - printed by the `--schema` flag above - returns the questions as a JSON schema: id, type, options, bounds and requiredness per question. It is the machine-readable counterpart to the text guide and the source an agent reads for a `select`'s allowed option values:
 
 ```json
 {
