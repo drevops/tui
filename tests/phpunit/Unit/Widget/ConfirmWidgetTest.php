@@ -35,6 +35,15 @@ final class ConfirmWidgetTest extends TestCase {
     $this->assertStringContainsString('● Yes', Ansi::strip($widget->view(new DefaultTheme())));
   }
 
+  public function testValidatorErrorShownInView(): void {
+    $widget = new ConfirmWidget(FALSE, static fn (mixed $value): ?string => 'Not allowed.');
+
+    $widget->handle(Key::named(KeyName::Enter));
+
+    $this->assertFalse($widget->isComplete());
+    $this->assertStringContainsString('Not allowed.', Ansi::strip($widget->view(new DefaultTheme())));
+  }
+
   public function testCharYesNo(): void {
     $widget = new ConfirmWidget(FALSE);
 

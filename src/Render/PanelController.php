@@ -6,6 +6,7 @@ namespace DrevOps\Tui\Render;
 
 use DrevOps\Tui\Answers\Answers;
 use DrevOps\Tui\Answers\Provenance;
+use DrevOps\Tui\Handler\HandlerRegistry;
 use DrevOps\Tui\Model\Field;
 use DrevOps\Tui\Model\FormDefinition;
 use DrevOps\Tui\Model\Panel;
@@ -184,6 +185,9 @@ class PanelController {
    * @param \DrevOps\Tui\Render\ExternalEditor|null $external_editor
    *   The external-editor service (defaults to a real one); injectable for
    *   tests and to gate the textarea handoff on editor availability.
+   * @param \DrevOps\Tui\Handler\HandlerRegistry|null $handlers
+   *   The registry resolving a field id to its reusable static
+   *   validate()/transform() behaviour; NULL leaves only the declared closures.
    */
   public function __construct(
     protected FormDefinition $form,
@@ -196,10 +200,11 @@ class PanelController {
     protected string $banner = '',
     protected string $version = '',
     ?ExternalEditor $external_editor = NULL,
+    ?HandlerRegistry $handlers = NULL,
   ) {
     $this->keymap = $keymap ?? KeyMapManager::create();
     $this->externalEditor = $external_editor ?? new ExternalEditor();
-    $this->widgets = new WidgetFactory($this->keymap, $this->externalEditor->isAvailable());
+    $this->widgets = new WidgetFactory($this->keymap, $this->externalEditor->isAvailable(), $handlers);
     $this->nav = $this->keymap->navigation();
     $this->scroller = new Scroller();
     $this->navigator = new Navigator(new Panel('hub', $form->title, '', [], $form->panels, NULL, $form->layout));

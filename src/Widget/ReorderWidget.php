@@ -177,7 +177,7 @@ class ReorderWidget extends AbstractWidget implements OptionsCapableInterface, P
       $rows[] = $this->renderOptionRow($theme, $option, $viewport->offset + $slot === $this->cursor);
     }
 
-    return implode("\n", $this->wrapScrolled($theme, $rows, $viewport));
+    return $this->withError($theme, implode("\n", $this->wrapScrolled($theme, $rows, $viewport)));
   }
 
   /**

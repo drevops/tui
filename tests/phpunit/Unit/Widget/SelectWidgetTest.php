@@ -76,6 +76,15 @@ final class SelectWidgetTest extends TestCase {
     $this->assertSame('b', $widget->value());
   }
 
+  public function testValidatorErrorShownInView(): void {
+    $widget = new SelectWidget(['a' => 'A', 'b' => 'B'], 'a', FALSE, static fn (mixed $value): ?string => 'Not allowed.');
+
+    $widget->handle(Key::named(KeyName::Enter));
+
+    $this->assertFalse($widget->isComplete());
+    $this->assertStringContainsString('Not allowed.', Ansi::strip($widget->view(new DefaultTheme())));
+  }
+
   public function testCancel(): void {
     $widget = new SelectWidget(['a' => 'A', 'b' => 'B']);
 

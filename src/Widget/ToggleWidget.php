@@ -138,7 +138,7 @@ class ToggleWidget extends AbstractWidget implements StepCapableInterface {
       $parts[] = $this->renderRadioRow($theme, $this->labels[$value] ?? $value, $index === $this->cursor);
     }
 
-    return implode('  ', $parts);
+    return $this->withError($theme, implode('  ', $parts));
   }
 
   /**

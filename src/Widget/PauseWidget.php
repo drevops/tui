@@ -56,7 +56,7 @@ class PauseWidget extends AbstractWidget {
     $key = $this->keys()->primary(Action::Accept);
     $glyph = $key instanceof Key ? $theme->keyHint($key) : $theme->enter();
 
-    return Translator::t('Press @key to continue', ['@key' => $theme->highlight($glyph)]);
+    return $this->withError($theme, Translator::t('Press @key to continue', ['@key' => $theme->highlight($glyph)]));
   }
 
   /**

@@ -52,6 +52,22 @@ final class TuiTesterTest extends TestCase {
     $this->assertFalse($tester->isCancelled());
   }
 
+  public function testRunEnforcesHandlerBehaviourWhileEditing(): void {
+    $form = Form::create('Demo')
+      ->panel('stall', 'Stall', static function (PanelBuilder $p): void {
+        $p->text('machine_name', 'Machine name');
+      });
+
+    $tester = new TuiTester($form, ['DrevOps\Tui\Tests\Fixtures\Handler']);
+
+    // The handler's static validate() rejects the empty accept inline, then the
+    // typed value is accepted and lowercased by its static transform().
+    $answers = $tester->run("\r", "\r", "\r", 'ABC', "\r");
+
+    $this->assertStringContainsString('A machine name is required.', $tester->display());
+    $this->assertSame('abc', $answers->value('machine_name'));
+  }
+
   public function testCancelButtonIsReported(): void {
     $tester = new TuiTester($this->form());
 
