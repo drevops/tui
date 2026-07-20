@@ -57,9 +57,7 @@ class SuggestWidget extends AbstractWidget implements SearchCapableInterface, Te
       return;
     }
 
-    if ($keys->matches($key, Action::Accept)) {
-      $this->accept($this->liveValue());
-
+    if ($this->handleAccept($key)) {
       return;
     }
 

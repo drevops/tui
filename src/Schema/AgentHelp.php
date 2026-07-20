@@ -151,19 +151,7 @@ class AgentHelp {
    *   field is not constrained to a closed set.
    */
   protected function optionValues(Field $field): array {
-    if (!$field->type->constrainsToOptions()) {
-      return [];
-    }
-
-    $values = [];
-
-    foreach ($field->options as $option) {
-      if ($option->selectable()) {
-        $values[] = $option->value;
-      }
-    }
-
-    return $values;
+    return $field->type->constrainsToOptions() ? $field->selectableValues() : [];
   }
 
 }

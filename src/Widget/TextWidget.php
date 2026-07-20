@@ -60,9 +60,7 @@ class TextWidget extends AbstractWidget implements TextEditCapableInterface, Com
       return;
     }
 
-    if ($keys->matches($key, Action::Accept)) {
-      $this->accept($this->liveValue());
-
+    if ($this->handleAccept($key)) {
       return;
     }
 

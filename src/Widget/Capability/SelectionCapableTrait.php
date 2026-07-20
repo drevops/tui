@@ -176,9 +176,7 @@ trait SelectionCapableTrait {
       return TRUE;
     }
 
-    if ($keys->matches($key, Action::Accept)) {
-      $this->accept($this->liveValue());
-
+    if ($this->handleAccept($key)) {
       return TRUE;
     }
 
@@ -232,15 +230,7 @@ trait SelectionCapableTrait {
    *   The selectable option values.
    */
   public function selectableValues(): array {
-    $out = [];
-
-    foreach ($this->options as $option) {
-      if ($option->selectable()) {
-        $out[] = $option->value;
-      }
-    }
-
-    return $out;
+    return Option::selectableValues($this->options);
   }
 
   /**

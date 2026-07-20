@@ -84,4 +84,29 @@ final readonly class Option {
     return $out;
   }
 
+  /**
+   * The values of the selectable rows, in display order.
+   *
+   * The one filtering every collection surface shares, so the field model, the
+   * choice widgets and the schema generators agree on what is selectable.
+   *
+   * @param list<\DrevOps\Tui\Model\Option> $options
+   *   The option rows.
+   *
+   * @return list<string>
+   *   The selectable option values (excludes separators, headings and disabled
+   *   options).
+   */
+  public static function selectableValues(array $options): array {
+    $out = [];
+
+    foreach ($options as $option) {
+      if ($option->selectable()) {
+        $out[] = $option->value;
+      }
+    }
+
+    return $out;
+  }
+
 }

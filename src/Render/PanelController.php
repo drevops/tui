@@ -620,11 +620,7 @@ class PanelController {
     $lines = explode("\n", $frame);
     $area_width = $terminal->width();
     $area_height = $terminal->height();
-
-    $box_width = 0;
-    foreach ($lines as $line) {
-      $box_width = max($box_width, Ansi::width($line));
-    }
+    $box_width = Ansi::blockWidth($lines);
 
     if (count($lines) >= $area_height && $box_width >= $area_width) {
       return $frame;
@@ -633,7 +629,7 @@ class PanelController {
     [$top, $left] = Overlay::place($area_width, $area_height, $box_width, count($lines), $this->theme->halign(), $this->theme->valign());
     $backdrop = array_fill(0, $area_height, str_repeat(' ', $area_width));
 
-    return implode("\n", Overlay::composite($backdrop, $lines, $box_width, $top, $left, static fn(string $segment): string => $segment));
+    return implode("\n", Overlay::composite($backdrop, $lines, $box_width, $top, $left));
   }
 
   /**
@@ -714,15 +710,12 @@ class PanelController {
       $this->theme->renderHints($this->nav, new Hint('quit', Action::Quit)),
     ];
 
-    $width = 0;
-    foreach ($lines as $line) {
-      $width = max($width, Ansi::width($line));
-    }
+    $width = Ansi::blockWidth($lines);
 
     [$top, $left] = Overlay::center($terminal->width(), $terminal->height(), $width, count($lines));
     $backdrop = array_fill(0, max(count($lines), $terminal->height()), str_repeat(' ', max($width, $terminal->width())));
 
-    return implode("\n", Overlay::composite($backdrop, $lines, $width, $top, $left, static fn(string $segment): string => $segment));
+    return implode("\n", Overlay::composite($backdrop, $lines, $width, $top, $left));
   }
 
   /**

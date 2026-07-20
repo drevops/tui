@@ -52,9 +52,7 @@ class ConfirmWidget extends AbstractWidget implements StepCapableInterface {
       return;
     }
 
-    if ($keys->matches($key, Action::Accept)) {
-      $this->accept($this->current);
-
+    if ($this->handleAccept($key)) {
       return;
     }
 

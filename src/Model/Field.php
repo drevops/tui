@@ -220,15 +220,7 @@ final readonly class Field {
    *   options).
    */
   public function selectableValues(): array {
-    $out = [];
-
-    foreach ($this->options as $option) {
-      if ($option->selectable()) {
-        $out[] = $option->value;
-      }
-    }
-
-    return $out;
+    return Option::selectableValues($this->options);
   }
 
   /**
