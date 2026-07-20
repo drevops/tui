@@ -19,7 +19,7 @@ const sidebars = {
     {
       type: 'category',
       label: 'Guides',
-      items: ['field-behaviour', 'discovery', 'self-describing-answers', 'testing'],
+      items: ['field-behaviour', 'discovery', 'self-describing-answers', 'ai-agents', 'testing'],
     },
     {
       type: 'category',

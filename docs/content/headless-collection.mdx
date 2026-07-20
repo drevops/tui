@@ -5,30 +5,17 @@ sidebar_position: 8
 
 # Headless collection
 
-Without a TTY - or when prompts are supplied - the same form collects
-non-interactively: answers come from a JSON payload (a string or a path to a
-file), per-question environment overrides and the declared defaults, with derives,
-conditions and fix-ups settled exactly as in the TUI.
+Without a TTY - or when prompts are supplied - the same form collects non-interactively: answers come from a JSON payload (a string or a path to a file), per-question environment overrides and the declared defaults, with derives, conditions and fix-ups settled exactly as in the TUI.
 
 ```php
 $answers = $tui->collect('{"name":"Ada"}');
 $answers = $tui->run($prompts, '1.0.0'); // TUI on a terminal, headless otherwise.
 ```
 
-Environment overrides are named `<PREFIX><FIELD_ID>` (the uppercased field id).
-`->envPrefix('MYAPP_')` declares that namespace on the form, a
-`new Tui($form, env_prefix: 'MYAPP_')` constructor argument overrides it, and
-without either the prefix is
-`TUI_`:
+Environment overrides are named `<PREFIX><FIELD_ID>` (the uppercased field id). `->envPrefix('MYAPP_')` declares that namespace on the form, a `new Tui($form, env_prefix: 'MYAPP_')` constructor argument overrides it, and without either the prefix is `TUI_`:
 
 ```bash
 MYAPP_TIMEZONE=UTC php my-installer.php
 ```
 
-For automation and AI agents, the form describes itself: `schema()` emits a JSON
-schema of the questions, `agentHelp()` a plain-text guide for driving the form
-non-interactively, and `validate($answers)` checks a payload against the schema
-before collection.
-
-Each of these has a runnable script in
-[`playground/05-headless/`](https://github.com/drevops/tui/tree/main/playground/05-headless).
+For automation and AI agents, the form describes itself - `schema()`, `agentHelp()` and `validate()` let a tool discover and drive it without prompting. See [AI agents](/ai-agents) for the full surface and the `--agent` CLI recipe, with the runnable scripts in [`playground/05-headless/`](https://github.com/drevops/tui/tree/main/playground/05-headless).

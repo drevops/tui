@@ -1,6 +1,6 @@
 # TUI playground
 
-Runnable examples of the `drevops/tui` engine, one directory per feature, numbered in learning order. Every script is self-contained: it requires the Composer autoloader directly, declares its whole form inline and handles its own output, so any single file can be copied out as a starting point. Scripts take no CLI options - each demonstrates exactly one thing, and variants are separate scripts - with one exception: the fullscreen demo's alignment is a three-by-three matrix, so [`03-panels/fullscreen.php`](03-panels/fullscreen.php) picks it with `--halign`/`--valign` (plus `--max-width`) rather than spreading nine near-identical files.
+Runnable examples of the `drevops/tui` engine, one directory per feature, numbered in learning order. Every script is self-contained: it requires the Composer autoloader directly, declares its whole form inline and handles its own output, so any single file can be copied out as a starting point. Most take no CLI options - each demonstrates exactly one thing, and variants are separate scripts - with two exceptions: [`03-panels/fullscreen.php`](03-panels/fullscreen.php) picks its alignment with `--halign`/`--valign` (plus `--max-width`) rather than spreading nine near-identical files, and [`05-headless/agent-cli.php`](05-headless/agent-cli.php) parses `--agent`, `--no-interaction` and `--prompts` to demonstrate the `--agent` CLI recipe.
 
 ```bash
 composer install
@@ -17,7 +17,7 @@ Every interactive script also runs unattended: pipe stdin (or run it from CI) an
 | [`02-widgets/`](02-widgets) | Every widget as a one-field form, plus the whole gallery on one panel. | One script per widget, `all-widgets.php` |
 | [`03-panels/`](03-panels) | The full-screen panel browser: drill-in hubs, modal dialogs, the border frame, side-by-side panel grids, the fullscreen stretch with its alignment flags. | `nested.php`, `modal.php`, `bordered.php`, `borderless.php`, `layout.php`, `fullscreen.php` |
 | [`04-inline-editing/`](04-inline-editing) | Editors opening in place on the panel row; `->standalone()` opting a field out to full-screen. | `run.php` |
-| [`05-headless/`](05-headless) | Unattended collection from a JSON payload and environment variables; the JSON schema, answer validation and generated agent help. | `collect.php`, `schema.php`, `agent-help.php` |
+| [`05-headless/`](05-headless) | Unattended collection from a JSON payload and environment variables; the JSON schema, answer validation, generated agent help and the `--agent` CLI recipe. | `collect.php`, `schema.php`, `agent-help.php`, `agent-cli.php` |
 | [`06-form-logic/`](06-form-logic) | Answers that react to other answers, settling to a fixpoint. | `derived-values.php`, `conditional-fields.php`, `fixup-rules.php` |
 | [`07-field-behaviour/`](07-field-behaviour) | Dynamic defaults, validation and transforms - as field closures and as reusable handler classes. | `closures.php`, `handlers.php` |
 | [`08-discovery/`](08-discovery) | Update-mode discovery against the bundled `sample/` project: dotenv, JSON dot-path, path-exists and directory-scan rules, plus a custom env prefix. | `run.php` |

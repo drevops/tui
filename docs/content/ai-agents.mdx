@@ -1,0 +1,125 @@
+---
+title: AI agents
+sidebar_position: 10
+---
+
+# AI agents
+
+A form built with this engine is self-describing: it can hand an AI agent (or any automation) the questions, the answer formats and the precedence rules, then accept those answers unattended - without the agent ever reading the form's source. The facade exposes three calls for this - `agentHelp()`, `schema()` and `validate()` - and a consumer wires the first into a `--agent` CLI flag so an agent can discover the form the moment it meets the tool.
+
+## The agent loop
+
+An agent drives the tool in three steps:
+
+1. **Discover** - run the tool with `--agent` to print the driving guide.
+2. **Read** - take the question ids, types and answer formats from the guide.
+3. **Run** - re-run with `--no-interaction` and a `--prompts` payload; nothing prompts and the answers come back as JSON.
+
+```bash
+# 1-2. Learn how to drive the form.
+php installer.php --agent
+
+# 3. Supply every answer and run unattended.
+php installer.php --no-interaction --prompts '{"name":"Weekly Box","fruit":"cherry"}'
+```
+
+## `agentHelp()` and the `--agent` flag
+
+`agentHelp()` returns a plain-text guide to the whole form: how to answer it, the precedence order, and every question with its id, type, requiredness and bounds. A consumer prints it from a `--agent` flag - the one line that makes a tool agent-drivable:
+
+```php
+use DrevOps\Tui\Tui;
+
+$tui = new Tui($form);
+
+// Print the guide and exit before the form runs when an agent asks for it.
+if (in_array('--agent', $argv, TRUE)) {
+  echo $tui->agentHelp();
+  exit(0);
+}
+
+// Otherwise collect: the interactive TUI on a terminal, a headless resolve
+// under --no-interaction or without a terminal.
+$interactive = in_array('--no-interaction', $argv, TRUE) ? FALSE : NULL;
+$answers = $tui->run($prompts, interactive: $interactive);
+```
+
+The guide the produce-order form emits:
+
+```text
+Drive the form non-interactively:
+
+- Pass --no-interaction to resolve every question from defaults, discovery and derivation without prompting.
+- Pass --prompts with a JSON object (or a path to a JSON file) of answers keyed by question id; these take the highest precedence.
+- Set per-question environment variables named TUI_<ID> (the uppercased question id); these win over discovery but lose to --prompts.
+- Precedence: --prompts > environment > discovered > derived > default.
+
+Questions:
+  name [text] (required) - Order name
+  fruit [select] - Fruit
+  quantity [number] - Quantity (between 1 and 99)
+  organic [confirm] - Organic only?
+```
+
+The `TUI_` prefix on the environment line is the default; change it with `->envPrefix('MYAPP_')` on the form or `new Tui($form, env_prefix: 'MYAPP_')`, and the guide reflects the active prefix.
+
+## Precedence and environment variables
+
+Every field resolves from the first source that provides a value, in this order:
+
+1. `--prompts` - the JSON payload (a string or a path to a JSON file), keyed by question id. Highest precedence.
+2. **Environment** - a per-question variable named `<PREFIX><ID>` (the uppercased id), e.g. `TUI_NAME`. The prefix defaults to `TUI_`.
+3. **Discovered** - values detected from the target directory (see [Discovery](/discovery)).
+4. **Derived** - values computed from other fields.
+5. **Default** - the declared default.
+
+```bash
+# The environment supplies "name"; --prompts overrides "fruit".
+TUI_NAME='Weekly Box' php installer.php --no-interaction --prompts '{"fruit":"cherry"}'
+```
+
+## Machine-readable schema and validation
+
+For tools that would rather consume structured data than the text guide, `schema()` returns the questions as a JSON schema - id, type, options, bounds and requiredness per question:
+
+```json
+{
+  "prompts": [
+    {
+      "id": "name",
+      "type": "text",
+      "label": "Order name",
+      "description": "",
+      "options": [],
+      "default": "",
+      "required": true,
+      "min": null,
+      "max": null,
+      "step": null,
+      "min_date": null,
+      "max_date": null,
+      "week_start": null,
+      "when": null,
+      "derive": null,
+      "discover": null,
+      "depends_on": []
+    }
+  ]
+}
+```
+
+`validate()` checks an answer set against those same rules before collection, so an agent can confirm a payload without running the form. Each violation is one message; an empty list means the answers are valid:
+
+```php
+$errors = $tui->validate(['name' => 'Weekly Box', 'fruit' => 'grape', 'quantity' => 500]);
+// [
+//   'Question "fruit": value "grape" is not one of: apple, banana, cherry.',
+//   'Question "quantity" must be between 1 and 99.',
+// ]
+```
+
+## Runnable example
+
+The `--agent` recipe runs end to end in [`playground/05-headless/agent-cli.php`](https://github.com/drevops/tui/tree/main/playground/05-headless/agent-cli.php), and `agentHelp()`, `schema()` and `validate()` each have a script of their own beside it in [`playground/05-headless/`](https://github.com/drevops/tui/tree/main/playground/05-headless).
+
+See also [Headless collection](/headless-collection) for driving the same form from CI and [Self-describing answers](/self-describing-answers) for what comes back.
