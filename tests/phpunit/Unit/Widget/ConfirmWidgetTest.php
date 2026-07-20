@@ -36,7 +36,7 @@ final class ConfirmWidgetTest extends TestCase {
   }
 
   public function testValidatorErrorShownInView(): void {
-    $widget = new ConfirmWidget(FALSE, static fn (mixed $value): ?string => 'Not allowed.');
+    $widget = new ConfirmWidget(FALSE, static fn (mixed $value): string => 'Not allowed.');
 
     $widget->handle(Key::named(KeyName::Enter));
 
