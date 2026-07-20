@@ -63,10 +63,16 @@ if (in_array('--agent', $args, TRUE)) {
 $interactive = in_array('--no-interaction', $args, TRUE) ? FALSE : NULL;
 
 // --prompts takes the next argument: the answers as a JSON object or a path
-// to a JSON file. Absent, answers still come from environment and defaults.
+// to a JSON file. The flag with no value is a usage error; absent entirely,
+// answers still come from the environment and defaults.
 $prompts = '';
 $flag = array_search('--prompts', $args, TRUE);
-if ($flag !== FALSE && isset($args[$flag + 1])) {
+if ($flag !== FALSE) {
+  if (!isset($args[$flag + 1])) {
+    fwrite(STDERR, 'Missing value for --prompts.' . PHP_EOL);
+    exit(2);
+  }
+
   $prompts = $args[$flag + 1];
 }
 
