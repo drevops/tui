@@ -10,7 +10,7 @@
  * checks an answer set against the same rules and returns the violations.
  *
  * Usage:
- *   php playground/05-headless-schema.php
+ *   php playground/08-headless-schema.php
  */
 
 declare(strict_types=1);

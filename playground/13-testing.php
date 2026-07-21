@@ -11,7 +11,7 @@
  * outside PHPUnit; in a test, the same calls sit behind assertSame().
  *
  * Usage:
- *   php playground/12-testing.php
+ *   php playground/13-testing.php
  */
 
 declare(strict_types=1);

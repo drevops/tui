@@ -11,7 +11,7 @@
  * every answer change, interactively and headlessly alike.
  *
  * Usage:
- *   php playground/06-form-logic-conditional-fields.php
+ *   php playground/05-form-logic-conditional-fields.php
  */
 
 declare(strict_types=1);

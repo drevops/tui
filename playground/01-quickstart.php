@@ -60,7 +60,7 @@ $form = Form::create('Quick start')
 
 try {
   // run() picks the mode: interactive when standard input is a terminal,
-  // non-interactive otherwise. See playground/05-headless-* for the
+  // non-interactive otherwise. See playground/08-headless-* for the
   // non-interactive surface on its own.
   $answers = (new Tui($form))->run();
 }

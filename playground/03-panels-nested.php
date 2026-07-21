@@ -32,7 +32,7 @@ $form = Form::create('Produce order')
     // A panel description renders under the panel title.
     $p->description('Who this order is for.');
     $p->text('name', 'Order name')->default('Weekly')->required();
-    // Derived from another answer; see playground/06-form-logic-*.
+    // Derived from another answer; see playground/05-form-logic-*.
     $p->text('slug', 'Slug')->description('Derived from the order name.')->derive(new Derive('{{name}}', 'machine'));
   })
   ->panel('shipping', 'Delivery', function (PanelBuilder $p): void {
@@ -49,7 +49,7 @@ $form = Form::create('Produce order')
         'nuts' => 'Nuts',
         'seeds' => 'Seeds',
       ]);
-      // Conditional visibility; see playground/06-form-logic-*.
+      // Conditional visibility; see playground/05-form-logic-*.
       $sp->text('herb_note', 'Herb note')->default('mixed')->when(new Condition('addons', contains: 'herbs'));
 
       // Sub-panels nest to any depth.

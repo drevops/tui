@@ -12,7 +12,7 @@
  * heading; a real tool might gate it behind a flag of its own.
  *
  * Usage:
- *   php playground/05-headless-agent-cli.php
+ *   php playground/08-headless-agent-cli.php
  */
 
 declare(strict_types=1);

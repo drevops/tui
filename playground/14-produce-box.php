@@ -34,7 +34,7 @@ $form = Form::create('Produce box')
   ->panel('general', 'Basics', function (PanelBuilder $p): void {
     $p->description('Naming and identity.');
 
-    // Declared behaviour (playground/07-field-behaviour-*): a dynamic default
+    // Declared behaviour (playground/06-field-behaviour-*): a dynamic default
     // computed from the run context, validation, and a transform - all
     // closures on the field.
     $p->text('name', 'Box name')->description('A human-readable name, e.g. "Summer Box".')->required()
@@ -42,7 +42,7 @@ $form = Form::create('Produce box')
       ->validate(fn (mixed $v): ?string => is_string($v) && trim($v) !== '' ? NULL : 'The box name is required.')
       ->transform(fn (mixed $v): mixed => is_string($v) ? trim($v) : $v);
 
-    // A derived-value chain (playground/06-form-logic-*): the slug follows the
+    // A derived-value chain (playground/05-form-logic-*): the slug follows the
     // name, and the code follows the grower and the slug.
     $p->text('slug', 'Slug')->description('Derived from the box name.')->derive(new Derive('{{name}}', 'machine'));
     $p->text('grower', 'Grower')->default('sunny');
@@ -64,7 +64,7 @@ $form = Form::create('Produce box')
       'salad' => 'Salad',
     ]);
 
-    // Conditional fields (playground/06-form-logic-*): shown only while herbs
+    // Conditional fields (playground/05-form-logic-*): shown only while herbs
     // are among the contents; the weekly gate composes two conditions.
     $p->text('herb_bundle', 'Herb bundle')->default('mixed')->when(new Condition('contents', contains: 'herbs'));
     $p->confirm('weekly', 'Weekly delivery?')->default(TRUE)->when(Condition::all(new Condition('contents', contains: 'herbs'), new Condition('size', eq: 'large')));
@@ -82,7 +82,7 @@ $form = Form::create('Produce box')
 try {
   // The bordered browser (playground/03-panels-*); the version renders in the
   // context and run() picks interactive or unattended
-  // (playground/05-headless-*).
+  // (playground/08-headless-*).
   $answers = (new Tui($form))
     ->theme('default', ['border' => 'rounded'])
     ->run('', '1.0.0');
@@ -96,6 +96,6 @@ catch (EngineException $exception) {
   exit(1);
 }
 
-// Self-describing answers (playground/05-headless-*): grouped by panel, badged
+// Self-describing answers (playground/08-headless-*): grouped by panel, badged
 // with provenance.
 echo $answers->toSummary() . PHP_EOL;

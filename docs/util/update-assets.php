@@ -756,7 +756,7 @@ function getJobs(string $project_dir): array {
   // keystroke harness, so no theme recordings run here.
   // Update-mode discovery: headless, shows the provenance-badged summary.
   $jobs['discovery'] = [
-    'command' => 'php ' . $project_dir . '/playground/08-discovery.php',
+    'command' => 'php ' . $project_dir . '/playground/07-discovery.php',
     'interact' => '# Headless run: wait for the summary output.',
     'rows' => 8,
     'cols' => TERMINAL_COLS,

@@ -16,7 +16,7 @@
  * one/few/many forms - see uk.php for the rule that chooses between them.
  *
  * Usage:
- *   php playground/13-translations.php
+ *   php playground/12-translations.php
  */
 
 declare(strict_types=1);

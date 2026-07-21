@@ -12,10 +12,10 @@
  * form-declared BOX_ prefix instead of the default TUI_.
  *
  * Usage:
- *   php playground/08-discovery.php
+ *   php playground/07-discovery.php
  *
  *   # A per-field env override outranks a discovered value:
- *   BOX_SEASON=winter php playground/08-discovery.php
+ *   BOX_SEASON=winter php playground/07-discovery.php
  */
 
 declare(strict_types=1);

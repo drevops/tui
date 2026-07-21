@@ -11,7 +11,7 @@
  * (or an agent) can answer the form without reading its source.
  *
  * Usage:
- *   php playground/05-headless-agent-help.php
+ *   php playground/08-headless-agent-help.php
  */
 
 declare(strict_types=1);

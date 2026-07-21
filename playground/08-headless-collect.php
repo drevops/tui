@@ -10,7 +10,7 @@
  * prompts, so the same form drives CI and automation unchanged.
  *
  * Usage:
- *   php playground/05-headless-collect.php
+ *   php playground/08-headless-collect.php
  */
 
 declare(strict_types=1);

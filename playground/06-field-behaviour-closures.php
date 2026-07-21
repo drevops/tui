@@ -11,7 +11,7 @@
  * ->transform() rewrites the accepted value before it is stored.
  *
  * Usage:
- *   php playground/07-field-behaviour-closures.php
+ *   php playground/06-field-behaviour-closures.php
  */
 
 declare(strict_types=1);

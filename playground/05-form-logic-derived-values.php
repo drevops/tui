@@ -12,7 +12,7 @@
  * wins over its rule.
  *
  * Usage:
- *   php playground/06-form-logic-derived-values.php
+ *   php playground/05-form-logic-derived-values.php
  */
 
 declare(strict_types=1);

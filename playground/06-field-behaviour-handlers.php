@@ -11,10 +11,10 @@
  * its own. The form stays declarative; the behaviour lives with the consumer.
  *
  * Usage:
- *   php playground/07-field-behaviour-handlers.php
+ *   php playground/06-field-behaviour-handlers.php
  *
  *   # Unattended inputs run the same handler:
- *   TUI_ORDER_CODE=PLUM99 php playground/07-field-behaviour-handlers.php
+ *   TUI_ORDER_CODE=PLUM99 php playground/06-field-behaviour-handlers.php
  */
 
 declare(strict_types=1);

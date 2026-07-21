@@ -11,7 +11,7 @@
  * result is consistent before the form ever returns.
  *
  * Usage:
- *   php playground/06-form-logic-fixup-rules.php
+ *   php playground/05-form-logic-fixup-rules.php
  */
 
 declare(strict_types=1);
