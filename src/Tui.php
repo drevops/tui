@@ -507,7 +507,7 @@ final class Tui {
    *
    * The argument wins over the facade's theme; an empty result or the explicit
    * "auto" sentinel selects the default theme. The dark/light mode is a display
-   * option resolved separately, no longer a theme choice.
+   * option resolved separately.
    *
    * @param string $theme
    *   The theme argument (empty to fall back to the facade's theme).

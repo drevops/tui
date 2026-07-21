@@ -102,7 +102,7 @@ The facade's surface:
 | `interact()` | The interactive panel TUI, explicitly |
 | `schema()` / `validate($answers)` / `agentHelp()` | Describe the form as a JSON schema, validate a payload against it, emit agent-facing instructions |
 | `theme($name, $options)` / `keys($preset, $overrides)` | Select the theme and key bindings |
-| `color($bool)` / `unicode($bool)` / `footer($bool)` / `clearOnExit($bool)` / `translator($t)` | Display and runtime switches |
+| `color($bool)` / `unicode($bool)` / `fullscreen($bool)` / `footer($bool)` / `clearOnExit($bool)` / `translator($t)` | Display and runtime switches |
 | `form()` / `engine()` / `registry()` | The internals, for finer control |
 
 Read the [full guide at phptui.dev](https://phptui.dev), and browse [`playground/`](playground) for complete, runnable examples - the numbered scripts for each feature in the table above.
