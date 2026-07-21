@@ -329,7 +329,11 @@ final class Translator {
   }
 
   /**
-   * Read a catalog file, keeping only its string => string pairs.
+   * Read a catalog file into the string map, plural forms, and plural rule.
+   *
+   * Returns the string => string pairs; the plural-form lists and a plural-rule
+   * closure are read as side effects into $this->plurals and $this->pluralRule,
+   * so the caller merges only the returned string map.
    *
    * @param string $file
    *   The catalog file path.
@@ -362,7 +366,7 @@ final class Translator {
       }
 
       if (is_array($value) && $this->isFormList($value)) {
-        $this->plurals[$key] = array_values(array_filter($value, is_string(...)));
+        $this->plurals[$key] = $value;
       }
     }
 
@@ -377,6 +381,8 @@ final class Translator {
    *
    * @return bool
    *   TRUE when the keys are a zero-based list and every element is a string.
+   *
+   * @phpstan-assert-if-true list<string> $value
    */
   protected function isFormList(array $value): bool {
     if ($value === [] || !array_is_list($value)) {
