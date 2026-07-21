@@ -2,7 +2,7 @@
 
 Runnable examples of the `drevops/tui` engine, one file per example, grouped by a numbered `NN-topic-` prefix in learning order. Every script is self-contained: it requires the Composer autoloader directly, declares its whole form inline and handles its own output, so any single file can be copied out as a starting point. Most take no CLI options - each demonstrates exactly one thing, and variants are separate scripts - with one exception: [`03-panels-fullscreen.php`](03-panels-fullscreen.php) picks its alignment with `--halign`/`--valign` (plus `--max-width`) rather than spreading nine near-identical files.
 
-Reusable helper classes the scripts load sit in [`themes/`](themes) and [`handlers/`](handlers); the fixtures the examples read from are in [`produce-archive/`](produce-archive), [`existing-box/`](existing-box) and [`catalog/`](catalog).
+Reusable helper classes the scripts load sit in [`themes/`](themes) and [`handlers/`](handlers); the fixtures the examples read from are in [`produce-archive/`](produce-archive), [`existing-project/`](existing-project) and [`translations/`](translations).
 
 ```bash
 composer install
@@ -22,12 +22,12 @@ Every interactive script also runs unattended: pipe stdin (or run it from CI) an
 | `05-headless-*` | Unattended collection from a JSON payload and environment variables; the JSON schema, answer validation, generated agent help and folding it into a consumer's help. | [`05-headless-collect.php`](05-headless-collect.php), [`05-headless-schema.php`](05-headless-schema.php), [`05-headless-agent-help.php`](05-headless-agent-help.php), [`05-headless-agent-cli.php`](05-headless-agent-cli.php) |
 | `06-form-logic-*` | Answers that react to other answers, settling to a fixpoint. | [`06-form-logic-derived-values.php`](06-form-logic-derived-values.php), [`06-form-logic-conditional-fields.php`](06-form-logic-conditional-fields.php), [`06-form-logic-fixup-rules.php`](06-form-logic-fixup-rules.php) |
 | `07-field-behaviour-*` | Dynamic defaults, validation and transforms - as field closures and as reusable handler classes. | [`07-field-behaviour-closures.php`](07-field-behaviour-closures.php), [`07-field-behaviour-handlers.php`](07-field-behaviour-handlers.php) (loads [`handlers/OrderCode.php`](handlers/OrderCode.php)) |
-| `08-discovery` | Update-mode discovery against the bundled `existing-box/` project: dotenv, JSON dot-path, path-exists and directory-scan rules, plus a custom env prefix. | [`08-discovery.php`](08-discovery.php) |
+| `08-discovery` | Update-mode discovery against the bundled `existing-project/` directory: dotenv, JSON dot-path, path-exists and directory-scan rules, plus a custom env prefix. | [`08-discovery.php`](08-discovery.php) |
 | `09-themes-*` | The six built-in themes, a custom theme class, theme options and the field input styles. | one script per built-in theme (`09-themes-<name>.php`), plus [`09-themes-custom.php`](09-themes-custom.php), [`09-themes-options.php`](09-themes-options.php), [`09-themes-field-boxed.php`](09-themes-field-boxed.php), [`09-themes-field-underline.php`](09-themes-field-underline.php) (load [`themes/OceanTheme.php`](themes/OceanTheme.php), [`themes/AccentTheme.php`](themes/AccentTheme.php)) |
 | `10-key-bindings-*` | The `vim` preset and per-binding overrides on top of a preset. | [`10-key-bindings-vim.php`](10-key-bindings-vim.php), [`10-key-bindings-custom.php`](10-key-bindings-custom.php) |
 | `11-display-modes-*` | Dark/light detection and forcing, ASCII glyphs, colour off, and a static Unicode-vs-ASCII gallery. | [`11-display-modes-mode-auto.php`](11-display-modes-mode-auto.php), [`11-display-modes-mode-forced.php`](11-display-modes-mode-forced.php), [`11-display-modes-ascii.php`](11-display-modes-ascii.php), [`11-display-modes-no-color.php`](11-display-modes-no-color.php), [`11-display-modes-glyph-gallery.php`](11-display-modes-glyph-gallery.php) |
 | `12-testing` | The scripted-keystroke harness: drive the real TUI without a terminal, read back answers and rendered frames. | [`12-testing.php`](12-testing.php) |
-| `13-translations` | Chrome and questions localized through a consumer catalog, English fallback. | [`13-translations.php`](13-translations.php), `catalog/es.php`, `catalog/uk.php` |
+| `13-translations` | Chrome and questions localized through a consumer catalog, English fallback. | [`13-translations.php`](13-translations.php), `translations/es.php`, `translations/uk.php` |
 | `14-produce-box` | The capstone: panels, widgets, derivation, conditions and behaviour composed into one real form. | [`14-produce-box.php`](14-produce-box.php) |
 
 ## Running the examples

@@ -52,11 +52,11 @@ $form = Form::create('Produce order')
   });
 
 // Ukrainian: the library's shipped catalog (translations/uk.php) provides the
-// chrome and its three plural forms; the local catalog/ adds this form's own
+// chrome and its three plural forms; the local translations/ adds this form's own
 // labels on top. Directories are searched in order, so a later one wins - a
 // consumer would point at vendor/drevops/tui/translations for the shipped set.
 // Translator('auto', [...]) would follow the terminal locale instead.
-$translator = new Translator('uk', [dirname(__DIR__) . '/translations', __DIR__ . '/catalog']);
+$translator = new Translator('uk', [dirname(__DIR__) . '/translations', __DIR__ . '/translations']);
 
 try {
   $answers = (new Tui($form))->translator($translator)->run();

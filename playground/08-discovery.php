@@ -6,7 +6,7 @@
  *
  * In update mode the engine evaluates each field's ->discover() rule against
  * the target directory before falling back to the declared default - here the
- * bundled existing-box/ directory. Four rule types are shown: a .env key, a
+ * bundled existing-project/ directory. Four rule types are shown: a .env key, a
  * JSON dot-path, a path-exists check and a directory scan; ->discover() also
  * takes a closure for anything custom. Per-field environment variables use the
  * form-declared BOX_ prefix instead of the default TUI_.
@@ -36,7 +36,7 @@ $form = Form::create('Discovery demo', 'an existing box')
   // Per-field env overrides read BOX_<ID> instead of the default TUI_<ID>.
   ->envPrefix('BOX_')
   ->panel('box', 'Box', function (PanelBuilder $p): void {
-    // A dot-path into a JSON file: existing-box/box.json carries a "name"
+    // A dot-path into a JSON file: existing-project/box.json carries a "name"
     // key. A nested value reads the same way, e.g. 'delivery.day'.
     $p->text('name', 'Box name')->discover(new JsonValue('box.json', 'name'));
 
@@ -57,7 +57,7 @@ $form = Form::create('Discovery demo', 'an existing box')
 try {
   // collect() with update TRUE (the third argument) enables discovery; the
   // second argument points the run at the directory to inspect.
-  $answers = (new Tui($form))->collect('', __DIR__ . '/existing-box', TRUE);
+  $answers = (new Tui($form))->collect('', __DIR__ . '/existing-project', TRUE);
 }
 catch (EngineException $exception) {
   fwrite(STDERR, $exception->getMessage() . PHP_EOL);
