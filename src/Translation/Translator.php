@@ -169,11 +169,13 @@ final class Translator {
   /**
    * Resolve a count to its localized plural form.
    *
-   * The active catalog may list the forms for the plural source and supply a
-   * rule mapping the count to one of them; absent either, the two English
-   * source forms and the one-versus-other rule stand in. An index the forms do
-   * not cover - a language whose rule outruns an untranslated two-form message -
-   * falls back to the plural source, so a rendering is always defined.
+   * A translation lists the forms for the plural source, and the catalog's own
+   * rule - or the default one-versus-other when it supplies none - selects
+   * among them. Without a translation the two English source forms and the
+   * default rule stand in, so a language's rule never applies to the English
+   * wording, whose singular reads for a count of exactly one. An index the
+   * chosen forms do not cover falls back to the plural source, so a rendering
+   * is always defined.
    *
    * @param int $count
    *   The item count the form is chosen for.
@@ -193,8 +195,14 @@ final class Translator {
 
     $args['@count'] = $count;
 
-    $forms = $this->plurals[$plural] ?? [$singular, $plural];
-    $rule = $this->pluralRule ?? self::defaultPluralRule();
+    if (isset($this->plurals[$plural])) {
+      $forms = $this->plurals[$plural];
+      $rule = $this->pluralRule ?? self::defaultPluralRule();
+    }
+    else {
+      $forms = [$singular, $plural];
+      $rule = self::defaultPluralRule();
+    }
 
     return self::interpolate($forms[(int) $rule($count)] ?? $plural, $args);
   }

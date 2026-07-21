@@ -29,5 +29,11 @@ return [
     '@count елементи вибрано',
     '@count елементів вибрано',
   ],
+  // Deliberately two forms though the rule can return 'many' (index 2), to
+  // exercise the fallback when a translation supplies fewer forms than needed.
+  '@count boxes' => [
+    '@count коробка',
+    '@count коробки',
+  ],
   'Submit' => 'Надіслати',
 ];
