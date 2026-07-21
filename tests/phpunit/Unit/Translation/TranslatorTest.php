@@ -155,7 +155,7 @@ final class TranslatorTest extends TestCase {
   public function testFormatPluralUsesDefaultRuleWithoutCatalogRule(): void {
     Translator::setShared(new Translator('es', [$this->fixtures('translations-plural')]));
 
-    // A catalog may list forms without a rule; the default one-vs-other applies.
+    // A catalog may list forms without a rule; the default rule applies.
     $this->assertSame('1 elemento seleccionado', Translator::formatPlural(1, '1 item selected', '@count items selected'));
     $this->assertSame('9 elementos seleccionados', Translator::formatPlural(9, '1 item selected', '@count items selected'));
   }
@@ -163,9 +163,9 @@ final class TranslatorTest extends TestCase {
   public function testFormatPluralFallsBackWhenFormMissing(): void {
     Translator::setShared(new Translator('uk', [$this->fixtures('translations-plural')]));
 
-    // An untranslated message keeps the English forms and the default rule, so a
-    // count Ukrainian would treat as 'one' but that is not literally one (21)
-    // still reads as the English plural rather than the singular "1 file".
+    // An untranslated message keeps the English forms and the default rule.
+    // A count Ukrainian would treat as 'one' but that is not literally one
+    // (21) still reads as the English plural, not the singular "1 file".
     $this->assertSame('1 file', Translator::formatPlural(1, '1 file', '@count files'));
     $this->assertSame('3 files', Translator::formatPlural(3, '1 file', '@count files'));
     $this->assertSame('5 files', Translator::formatPlural(5, '1 file', '@count files'));
@@ -176,7 +176,7 @@ final class TranslatorTest extends TestCase {
     Translator::setShared(new Translator('uk', [$this->fixtures('translations-plural')]));
 
     // The catalog translates this message with only two forms, yet its rule can
-    // return 'many' (index 2); the missing form falls back to the plural source.
+    // return 'many' (index 2); the missing form falls back to the plural.
     $this->assertSame('1 коробка', Translator::formatPlural(1, '1 box', '@count boxes'));
     $this->assertSame('3 коробки', Translator::formatPlural(3, '1 box', '@count boxes'));
     $this->assertSame('5 boxes', Translator::formatPlural(5, '1 box', '@count boxes'));

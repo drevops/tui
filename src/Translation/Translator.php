@@ -362,7 +362,7 @@ final class Translator {
       }
 
       if (is_array($value) && $this->isFormList($value)) {
-        $this->plurals[$key] = array_values(array_filter($value, 'is_string'));
+        $this->plurals[$key] = array_values(array_filter($value, is_string(...)));
       }
     }
 

@@ -125,7 +125,7 @@ final class ChromeCatalogTest extends TestCase {
    */
   protected function isStaticCall(array $tokens, int $index, string $method): bool {
     return is_array($tokens[$index + 1] ?? NULL) && $tokens[$index + 1][0] === T_DOUBLE_COLON
-      && is_array($tokens[$index + 2] ?? NULL) && ($tokens[$index + 2][1] ?? NULL) === $method
+      && is_array($tokens[$index + 2] ?? NULL) && $tokens[$index + 2][1] === $method
       && ($tokens[$index + 3] ?? NULL) === '(';
   }
 
