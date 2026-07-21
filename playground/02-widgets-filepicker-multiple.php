@@ -24,7 +24,7 @@ require __DIR__ . '/../vendor/autoload.php';
 // One field on one panel: the smallest form that exercises the widget.
 $form = Form::create('File picker widget')
   ->panel('main', 'File picker', function (PanelBuilder $p): void {
-    $p->filePicker('price_lists', 'Price lists')->multiple()->startIn(__DIR__ . '/produce-archive');
+    $p->filePicker('price_lists', 'Price lists')->multiple()->startIn(__DIR__ . '/sample-project');
   });
 
 try {
