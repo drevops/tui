@@ -14,7 +14,8 @@ declare(strict_types=1);
 return [
   '"@min" must not exceed "@max".' => '"@min" must not exceed "@max".',
   '(empty)' => '(empty)',
-  '@count selected' => '@count selected',
+  '1 item selected' => '1 item selected',
+  '@count items selected' => '@count items selected',
   '@value is not a valid "@key". Allowed: @allowed.' => '@value is not a valid "@key". Allowed: @allowed.',
   '@value is not a valid "@key". Use a non-negative integer.' => '@value is not a valid "@key". Use a non-negative integer.',
   'Calendar' => 'Calendar',

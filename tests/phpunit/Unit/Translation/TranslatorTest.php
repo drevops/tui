@@ -120,4 +120,64 @@ final class TranslatorTest extends TestCase {
     $this->assertSame('Enviar', Translator::t('Submit'));
   }
 
+  #[DataProvider('dataProviderFormatPlural')]
+  public function testFormatPlural(int $count, string $expected): void {
+    $this->assertSame($expected, Translator::formatPlural($count, '1 item selected', '@count items selected'));
+  }
+
+  public static function dataProviderFormatPlural(): \Iterator {
+    // With no translator, English's one-versus-other rule chooses the source.
+    yield 'one is singular' => [1, '1 item selected'];
+    yield 'zero is plural' => [0, '0 items selected'];
+    yield 'two is plural' => [2, '2 items selected'];
+    yield 'many is plural' => [7, '7 items selected'];
+  }
+
+  #[DataProvider('dataProviderFormatPluralLocalizesForms')]
+  public function testFormatPluralLocalizesForms(int $count, string $expected): void {
+    Translator::setShared(new Translator('uk', [$this->fixtures('translations-plural')]));
+
+    $this->assertSame($expected, Translator::formatPlural($count, '1 item selected', '@count items selected'));
+  }
+
+  public static function dataProviderFormatPluralLocalizesForms(): \Iterator {
+    // Ukrainian's one/few/many, across its 11-14 and 21+ boundaries.
+    yield 'one: 1' => [1, '1 елемент вибрано'];
+    yield 'few: 4' => [4, '4 елементи вибрано'];
+    yield 'many: 5' => [5, '5 елементів вибрано'];
+    yield 'many: 11' => [11, '11 елементів вибрано'];
+    yield 'many: 14' => [14, '14 елементів вибрано'];
+    yield 'one: 21' => [21, '21 елемент вибрано'];
+    yield 'few: 22' => [22, '22 елементи вибрано'];
+    yield 'many: 25' => [25, '25 елементів вибрано'];
+  }
+
+  public function testFormatPluralUsesDefaultRuleWithoutCatalogRule(): void {
+    Translator::setShared(new Translator('es', [$this->fixtures('translations-plural')]));
+
+    // A catalog may list forms without a rule; the default one-vs-other applies.
+    $this->assertSame('1 elemento seleccionado', Translator::formatPlural(1, '1 item selected', '@count items selected'));
+    $this->assertSame('9 elementos seleccionados', Translator::formatPlural(9, '1 item selected', '@count items selected'));
+  }
+
+  public function testFormatPluralFallsBackWhenFormMissing(): void {
+    Translator::setShared(new Translator('uk', [$this->fixtures('translations-plural')]));
+
+    // An untranslated message keeps the English forms; an index beyond them
+    // (Ukrainian 'many' over two forms) falls back to the plural source.
+    $this->assertSame('1 file', Translator::formatPlural(1, '1 file', '@count files'));
+    $this->assertSame('3 files', Translator::formatPlural(3, '1 file', '@count files'));
+    $this->assertSame('5 files', Translator::formatPlural(5, '1 file', '@count files'));
+  }
+
+  public function testFormatPluralIgnoresMalformedCatalog(): void {
+    Translator::setShared(new Translator('de', [$this->fixtures('translations-plural')]));
+
+    // A non-closure rule and non-string form list are ignored: the default rule
+    // applies, invalid forms fall back to English, and plain strings resolve.
+    $this->assertSame('Senden', Translator::t('Submit'));
+    $this->assertSame('1 item selected', Translator::formatPlural(1, '1 item selected', '@count items selected'));
+    $this->assertSame('6 items selected', Translator::formatPlural(6, '1 item selected', '@count items selected'));
+  }
+
 }

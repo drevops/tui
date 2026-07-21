@@ -57,9 +57,60 @@ return [
 
 Your form keeps its English source strings; the catalog maps them to the target language, so one form definition serves every language.
 
-Some strings carry `@name` placeholders (for example `Enter a number @constraint.` or `@count selected`). Keep each placeholder verbatim in the translation - the library substitutes the value at render time.
+Some strings carry `@name` placeholders (for example `Enter a number @constraint.` or `@count items selected`). Keep each placeholder verbatim in the translation - the library substitutes the value at render time.
 
 Directories are searched in order and a later one wins, so you can layer a catalog that overrides individual strings on top of another.
+
+## Plural messages
+
+A message whose wording depends on a count - "1 item selected" versus "5 items selected" - is rendered with `Translator::formatPlural($count, $singular, $plural)`, mirroring Drupal's `formatPlural()`. The count picks the form and `@count` is bound to it:
+
+```php
+use DrevOps\Tui\Translation\Translator;
+
+Translator::formatPlural($count, '1 item selected', '@count items selected');
+```
+
+A translation supplies its forms as a **list** keyed by the plural source, and the active language's plural rule chooses one by the count. English needs only the two source forms, so a two-form language provides a list of two and no rule:
+
+```php
+// es.php
+'@count items selected' => [
+  '1 elemento seleccionado',
+  '@count elementos seleccionados',
+];
+```
+
+A language with more forms supplies its own rule under the reserved `Translator::PLURAL_RULE` key - a `fn(int $count): int` returning the zero-based index of the form to use. Ukrainian has three forms (one/few/many):
+
+```php
+// uk.php
+use DrevOps\Tui\Translation\Translator;
+
+return [
+  Translator::PLURAL_RULE => static function (int $count): int {
+    $mod10 = $count % 10;
+    $mod100 = $count % 100;
+
+    if ($mod10 === 1 && $mod100 !== 11) {
+      return 0; // one:  1, 21, 31 ...
+    }
+
+    if ($mod10 >= 2 && $mod10 <= 4 && ($mod100 < 12 || $mod100 > 14)) {
+      return 1; // few:  2-4, 22-24 ...
+    }
+
+    return 2;   // many: 0, 5-20, 25-30 ...
+  },
+  '@count items selected' => [
+    '@count елемент вибрано',
+    '@count елементи вибрано',
+    '@count елементів вибрано',
+  ],
+];
+```
+
+Without a rule the default applies (the first form when the count is one, the second otherwise), and an index a translation does not cover falls back to the English plural, so a rendering is always defined.
 
 ## The chrome catalog template
 
@@ -73,4 +124,4 @@ cp vendor/drevops/tui/translations/tui.php translations/es.php
 
 Catalogs are ordinary files loaded with `require`, so they bundle into a consumer-built PHAR with no extra configuration - reference them by a path relative to your application (for example `__DIR__ . '/translations'`), which resolves inside the archive.
 
-A Spanish catalog localizing chrome and questions alike is runnable in [`playground/13-translations/`](https://github.com/drevops/tui/tree/main/playground/13-translations).
+Ukrainian and Spanish catalogs localizing chrome and questions alike - and demonstrating three-form and two-form plurals - are runnable in [`playground/13-translations/`](https://github.com/drevops/tui/tree/main/playground/13-translations).

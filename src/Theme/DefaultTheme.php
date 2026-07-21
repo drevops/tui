@@ -1112,9 +1112,9 @@ class DefaultTheme implements ThemeInterface {
       }
 
       $value = $answers->value($field->id);
-      $rendered = is_array($value) && count($value) > 3 ? Translator::t('@count selected', [
-        '@count' => count($value),
-      ]) : $this->renderFieldValue($field, $value);
+      $rendered = is_array($value) && count($value) > 3
+        ? Translator::formatPlural(count($value), '1 item selected', '@count items selected')
+        : $this->renderFieldValue($field, $value);
 
       // A summary is one line, so a multi-line value (a textarea) folds to a
       // single row rather than breaking the row it sits on.
