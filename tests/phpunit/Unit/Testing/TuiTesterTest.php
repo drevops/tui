@@ -63,7 +63,7 @@ final class TuiTesterTest extends TestCase {
 
     // The handler's static validate() rejects the empty accept inline, then the
     // typed value is accepted and lowercased by its static transform().
-    $answers = $tester->run("\r", "\r", "\r", 'ABC', "\r");
+    $answers = $tester->run(Key::named(KeyName::Enter), Key::named(KeyName::Enter), Key::named(KeyName::Enter), 'ABC', Key::named(KeyName::Enter));
 
     $this->assertStringContainsString('A machine name is required.', $tester->display());
     $this->assertSame('abc', $answers->value('machine_name'));
@@ -82,7 +82,7 @@ final class TuiTesterTest extends TestCase {
     $tester = new TuiTester($this->form());
 
     // Ctrl-C mid-form aborts the loop: interrupted, not a cancel-button finish.
-    $tester->run("\x03");
+    $tester->run(Key::named(KeyName::Interrupt));
 
     $this->assertTrue($tester->isInterrupted());
     $this->assertFalse($tester->isCancelled());

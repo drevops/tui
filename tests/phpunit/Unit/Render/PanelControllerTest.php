@@ -443,7 +443,7 @@ final class PanelControllerTest extends TestCase {
   public function testRunInterruptStopsBeforeHandlingMoreKeys(): void {
     $controller = $this->controller();
     // Ctrl-C arrives first; the Down queued after it must never be handled.
-    $terminal = new BufferedTerminal(["\x03", KeyEncoder::encode(Key::named(KeyName::Down))]);
+    $terminal = new BufferedTerminal([KeyEncoder::encode(Key::named(KeyName::Interrupt)), KeyEncoder::encode(Key::named(KeyName::Down))]);
 
     $controller->run($terminal);
 
@@ -468,7 +468,7 @@ final class PanelControllerTest extends TestCase {
     // An interrupt renders the frame once (one clear) and then forces a second
     // clear at teardown despite clearOnExit being off.
     $interrupted = new PanelController($config, $theme, ['name' => 'Acme'], clearOnExit: FALSE);
-    $terminal = new BufferedTerminal(["\x03"]);
+    $terminal = new BufferedTerminal([KeyEncoder::encode(Key::named(KeyName::Interrupt))]);
     $interrupted->run($terminal);
     $this->assertTrue($interrupted->isInterrupted());
     $this->assertSame(2, substr_count($terminal->output(), TerminalControl::clear()));
@@ -490,7 +490,7 @@ final class PanelControllerTest extends TestCase {
       ->build();
     $controller = new PanelController($config, new DefaultTheme(40, ['color' => FALSE]), ['name' => 'Acme'], banner: 'WELCOME', version: '2.0');
     // Ctrl-C at the "press any key" banner aborts instead of entering the form.
-    $terminal = new BufferedTerminal(["\x03"]);
+    $terminal = new BufferedTerminal([KeyEncoder::encode(Key::named(KeyName::Interrupt))]);
 
     $controller->run($terminal);
 
@@ -870,7 +870,7 @@ final class PanelControllerTest extends TestCase {
 
   public function testRunFullscreenTooSmallGuardStillInterrupts(): void {
     $controller = $this->fullscreenController(['fullscreen' => TRUE]);
-    $terminal = new BufferedTerminal(["\x03"], 6, 40);
+    $terminal = new BufferedTerminal([KeyEncoder::encode(Key::named(KeyName::Interrupt))], 6, 40);
 
     $controller->run($terminal);
 
