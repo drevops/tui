@@ -109,15 +109,15 @@ class AgentHelp {
       $property['format'] = 'date';
     }
 
+    // The step is a keyboard increment, not a value constraint - the library
+    // accepts any in-range integer - so it never becomes a `multipleOf` that
+    // would reject values the collection allows.
     if ($field->bounds instanceof NumberBounds) {
       if ($field->bounds->min !== NULL) {
         $property['minimum'] = $field->bounds->min;
       }
       if ($field->bounds->max !== NULL) {
         $property['maximum'] = $field->bounds->max;
-      }
-      if ($field->bounds->step !== NULL) {
-        $property['multipleOf'] = $field->bounds->step;
       }
     }
 

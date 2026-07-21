@@ -84,7 +84,9 @@ final class AgentHelpTest extends TestCase {
     $this->assertStringContainsString('"type": "integer"', $help);
     $this->assertStringContainsString('"minimum": 1', $help);
     $this->assertStringContainsString('"maximum": 65535', $help);
-    $this->assertStringContainsString('"multipleOf": 5', $help);
+    // The step is a keyboard increment, not a value constraint: the schema
+    // must accept every in-range integer the collection accepts.
+    $this->assertStringNotContainsString('multipleOf', $help);
   }
 
   public function testCalendarFormat(): void {

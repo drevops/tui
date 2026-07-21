@@ -6,6 +6,7 @@ namespace DrevOps\Tui\Tests\Unit\Testing;
 
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Builder\PanelBuilder;
+use DrevOps\Tui\Condition\Condition;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Testing\TuiTester;
@@ -62,7 +63,7 @@ final class TuiTesterTest extends TestCase {
 
     // The handler's static validate() rejects the empty accept inline, then the
     // typed value is accepted and lowercased by its static transform().
-    $answers = $tester->run("\r", "\r", "\r", 'ABC', "\r");
+    $answers = $tester->run(Key::named(KeyName::Enter), Key::named(KeyName::Enter), Key::named(KeyName::Enter), 'ABC', Key::named(KeyName::Enter));
 
     $this->assertStringContainsString('A machine name is required.', $tester->display());
     $this->assertSame('abc', $answers->value('machine_name'));
@@ -81,7 +82,7 @@ final class TuiTesterTest extends TestCase {
     $tester = new TuiTester($this->form());
 
     // Ctrl-C mid-form aborts the loop: interrupted, not a cancel-button finish.
-    $tester->run("\x03");
+    $tester->run(Key::named(KeyName::Interrupt));
 
     $this->assertTrue($tester->isInterrupted());
     $this->assertFalse($tester->isCancelled());
@@ -91,6 +92,29 @@ final class TuiTesterTest extends TestCase {
     $answers = (new TuiTester($this->form()))->run();
 
     $this->assertSame('', $answers->value('name'));
+  }
+
+  public function testConditionalFieldSurfacesWithDefault(): void {
+    $form = Form::create('Demo')
+      ->panel('packing', 'Packing', function (PanelBuilder $p): void {
+        $p->confirm('extra', 'Extra')->default(FALSE);
+        $p->text('notes', 'Notes')->default('mixed')->when(new Condition('extra'));
+      });
+
+    // Drill in, flip the gate on, back out, submit: the surfaced field carries
+    // its declared default even though it was inactive when the session began.
+    $answers = (new TuiTester($form))->run(
+      Key::named(KeyName::Enter),
+      Key::named(KeyName::Enter),
+      'y',
+      Key::named(KeyName::Enter),
+      Key::named(KeyName::Escape),
+      Key::named(KeyName::Down),
+      Key::named(KeyName::Enter),
+    );
+
+    $this->assertTrue($answers->value('extra'));
+    $this->assertSame('mixed', $answers->value('notes'));
   }
 
   public function testFluentSettersConfigureTheRun(): void {

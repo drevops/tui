@@ -1,8 +1,9 @@
 @startuml
 ' drevops/tui - data flow for the interactive panel TUI.
 ' Traced from src/Render/PanelController.php (run -> frame/handle), src/Theme/
-' (frame, and renderModal composited via src/Render/Overlay) and src/Input/
-' (KeyMap resolves a key press to a semantic action).
+' (frame, and renderModal composited via src/Render/Overlay), src/Input/
+' (KeyMap resolves a key press to a semantic action) and src/Engine/Engine.php
+' (settle re-runs derives, conditions and fix-ups after an accepted edit).
 ' Regenerate every SVG with:  plantuml -tsvg docs/architecture/*.puml
 !theme plain
 skinparam backgroundColor white
@@ -18,6 +19,7 @@ participant "Navigator\n+ Scroller" as Nav
 participant "KeyParser" as KP
 participant "KeyMap\n(scoped)" as KM
 participant "Widget\n(via factory)" as W
+participant "Engine" as Eng
 
 PC -> Term: setup() raw mode, alt screen
 activate PC
@@ -54,6 +56,10 @@ loop until done
     W -> KM: matches(key, action)?
     KM --> W: bound action (accept, move, toggle...)
     W --> PC: value, complete or cancel
+    opt edit accepted
+      PC -> Eng: settle(values, pinned)
+      Eng --> PC: settled values + active map\n(derives recompute, conditions\nshow/hide fields, fix-ups apply)
+    end
   else navigating
     PC -> KM: matches(key, action)?
     KM --> PC: bound action (move, activate, back, quit)

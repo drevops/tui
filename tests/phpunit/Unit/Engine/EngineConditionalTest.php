@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Tests\Unit\Engine;
 
+use DrevOps\Tui\Answers\Provenance;
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Builder\PanelBuilder;
 use DrevOps\Tui\Condition\Condition;
@@ -105,6 +106,42 @@ final class EngineConditionalTest extends TestCase {
 
     $this->assertSame(['a' => 'x', 'b' => 'y', 'c' => 'z'], $engine->collect([], new Context())->values);
     $this->assertSame(['a' => 'off'], $engine->collect(['a' => 'off'], new Context())->values);
+  }
+
+  public function testResolveStateKeepsInactiveFields(): void {
+    $engine = $this->gatedEngine();
+
+    [$values, $provenance, $active] = $engine->resolveState([], new Context());
+
+    // The inactive field keeps its settled value and provenance; only the
+    // active map records that it is gated out.
+    $this->assertSame(['theme' => 'olivero', 'custom_theme' => 'mytheme'], $values);
+    $this->assertSame(['theme' => TRUE, 'custom_theme' => FALSE], $active);
+    $this->assertSame(Provenance::Default, $provenance['custom_theme']);
+  }
+
+  public function testSettleReappliesFormLogic(): void {
+    $engine = $this->gatedEngine();
+
+    [$active] = $engine->settle(['theme' => 'custom', 'custom_theme' => 'mytheme'], []);
+    $this->assertSame(['theme' => TRUE, 'custom_theme' => TRUE], $active);
+
+    [$active] = $engine->settle(['theme' => 'olivero', 'custom_theme' => 'mytheme'], []);
+    $this->assertFalse($active['custom_theme']);
+  }
+
+  /**
+   * Build an engine over a form whose second field is gated by the first.
+   */
+  protected function gatedEngine(): Engine {
+    return $this->engine(
+      Form::create('T')
+        ->panel('p', 'p', function (PanelBuilder $p): void {
+          $p->text('theme')->default('olivero');
+          $p->text('custom_theme')->default('mytheme')->when(new Condition('theme', eq: 'custom'));
+        })
+        ->build()
+    );
   }
 
   /**

@@ -56,10 +56,6 @@ final readonly class Field {
    * @param \Closure|null $transform
    *   A declared transformer `fn (mixed $value): mixed` normalizing an
    *   accepted value.
-   * @param int $weight
-   *   The processing weight: lower runs earlier. Fields of equal weight process
-   *   in reverse declaration order, so specific replacements run before generic
-   *   ones without any weights at all.
    * @param bool $revealable
    *   Password only: whether the editor offers a reveal/hide toggle.
    * @param bool $confirm
@@ -114,7 +110,6 @@ final readonly class Field {
     public DiscoverInterface|\Closure|null $discover = NULL,
     public ?\Closure $validate = NULL,
     public ?\Closure $transform = NULL,
-    public int $weight = 0,
     public bool $revealable = FALSE,
     public bool $confirm = FALSE,
     public bool $externalEditor = FALSE,

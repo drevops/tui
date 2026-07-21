@@ -5,4 +5,4 @@ sidebar_position: 9
 
 # Self-describing answers
 
-The returned `Answers` set needs no form configuration to present or process: each answer carries a snapshot of its question (label, kind, weight, panel trail) taken at collection time, plus its provenance - default, detected, edited, derived, or override (a user value pinning a derived one). `$answers->toSummary()` prints the provenance-badged, panel-grouped summary, `$answers->toJson()` the raw values, and `$answers->items` exposes the per-answer snapshots.
+The returned `Answers` set needs no form configuration to present or process: each answer carries a snapshot of its question (label, kind, panel trail) taken at collection time, plus its provenance - default, detected, edited, derived, or override (a user value pinning a derived one). `$answers->toSummary()` prints the provenance-badged, panel-grouped summary, `$answers->toJson()` the raw values, and `$answers->items` exposes the per-answer snapshots.

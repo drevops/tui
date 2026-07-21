@@ -90,11 +90,6 @@ final class FieldBuilder {
   protected array|\Closure $completion = [];
 
   /**
-   * The processing weight.
-   */
-  protected int $weight = 0;
-
-  /**
    * Whether a password editor offers a reveal/hide toggle.
    */
   protected bool $revealable = FALSE;
@@ -252,21 +247,6 @@ final class FieldBuilder {
     }
 
     $this->multiple = $multiple;
-
-    return $this;
-  }
-
-  /**
-   * Set the processing weight.
-   *
-   * @param int $weight
-   *   The weight; lower runs earlier.
-   *
-   * @return $this
-   *   The builder.
-   */
-  public function weight(int $weight): self {
-    $this->weight = $weight;
 
     return $this;
   }
@@ -730,7 +710,6 @@ final class FieldBuilder {
       $this->discover,
       $this->validate,
       $this->transform,
-      $this->weight,
       $this->revealable,
       $this->confirm,
       $this->externalEditor,
