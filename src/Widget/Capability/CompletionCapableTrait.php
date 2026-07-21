@@ -55,7 +55,7 @@ trait CompletionCapableTrait {
   public function ghostSuffix(): string {
     $match = $this->bestMatch();
 
-    return $match === NULL ? '' : Utf8::substr($match, Utf8::length($this->buffer), NULL);
+    return $match === NULL ? '' : Utf8::substr($match, Utf8::length($this->buffer));
   }
 
   /**

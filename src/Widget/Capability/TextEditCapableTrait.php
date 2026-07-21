@@ -102,7 +102,7 @@ trait TextEditCapableTrait {
    *   The text to insert.
    */
   public function insert(string $text): void {
-    $this->buffer = Utf8::substr($this->buffer, 0, $this->cursor) . $text . Utf8::substr($this->buffer, $this->cursor, NULL);
+    $this->buffer = Utf8::substr($this->buffer, 0, $this->cursor) . $text . Utf8::substr($this->buffer, $this->cursor);
     $this->cursor += Utf8::length($text);
   }
 
@@ -111,7 +111,7 @@ trait TextEditCapableTrait {
    */
   public function backspace(): void {
     if ($this->cursor > 0) {
-      $this->buffer = Utf8::substr($this->buffer, 0, $this->cursor - 1) . Utf8::substr($this->buffer, $this->cursor, NULL);
+      $this->buffer = Utf8::substr($this->buffer, 0, $this->cursor - 1) . Utf8::substr($this->buffer, $this->cursor);
       $this->cursor--;
     }
   }
@@ -132,7 +132,7 @@ trait TextEditCapableTrait {
   protected function caretSegments(): array {
     return [
       Utf8::substr($this->buffer, 0, $this->cursor),
-      Utf8::substr($this->buffer, $this->cursor, NULL),
+      Utf8::substr($this->buffer, $this->cursor),
     ];
   }
 

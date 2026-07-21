@@ -115,7 +115,7 @@ final class Overlay {
       }
 
       $prefix = Utf8::substr($line, 0, $left);
-      $suffix = Utf8::substr($line, $left + $box_width, NULL);
+      $suffix = Utf8::substr($line, $left + $box_width);
 
       $out[] = self::style($prefix, $style_backdrop) . $box[$box_index] . self::style($suffix, $style_backdrop);
     }

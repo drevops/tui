@@ -762,7 +762,7 @@ class DefaultTheme implements ThemeInterface {
     // The caret reverses the character it sits on (a space at the line end), so
     // the cursor highlights the letter rather than hiding it behind a block.
     $cursor_char = $after === '' ? ' ' : Utf8::substr($after, 0, 1);
-    $tail = $after === '' ? '' : Utf8::substr($after, 1, NULL);
+    $tail = $after === '' ? '' : Utf8::substr($after, 1);
 
     $target = max(self::FIELD_MIN_WIDTH, min($this->width, self::FIELD_WIDTH));
     $visible = Utf8::length($before) + 1 + Utf8::length($tail) + Utf8::length($ghost);
