@@ -25,6 +25,7 @@ use DrevOps\Tui\Render\Overlay;
 use DrevOps\Tui\Render\Scroller;
 use DrevOps\Tui\Render\Viewport;
 use DrevOps\Tui\Translation\Translator;
+use DrevOps\Tui\Utils\Utf8;
 
 /**
  * The default theme: the appearance atoms plus the assembly that arranges them.
@@ -760,11 +761,11 @@ class DefaultTheme implements ThemeInterface {
 
     // The caret reverses the character it sits on (a space at the line end), so
     // the cursor highlights the letter rather than hiding it behind a block.
-    $cursor_char = $after === '' ? ' ' : mb_substr($after, 0, 1, 'UTF-8');
-    $tail = $after === '' ? '' : mb_substr($after, 1, NULL, 'UTF-8');
+    $cursor_char = $after === '' ? ' ' : Utf8::substr($after, 0, 1);
+    $tail = $after === '' ? '' : Utf8::substr($after, 1, NULL);
 
     $target = max(self::FIELD_MIN_WIDTH, min($this->width, self::FIELD_WIDTH));
-    $visible = mb_strlen($before, 'UTF-8') + 1 + mb_strlen($tail, 'UTF-8') + mb_strlen($ghost, 'UTF-8');
+    $visible = Utf8::length($before) + 1 + Utf8::length($tail) + Utf8::length($ghost);
     $pad = str_repeat(' ', max(0, $target - $visible));
 
     // The caret (reverse) and ghost (dim) toggle off again (27, 22) instead of
@@ -1141,7 +1142,7 @@ class DefaultTheme implements ThemeInterface {
    */
   public function renderSummaryLine(string $summary, bool $selected): string {
     $max = max(1, $this->width - 4);
-    $clipped = mb_strlen($summary, 'UTF-8') > $max ? mb_substr($summary, 0, $max - 1, 'UTF-8') . '…' : $summary;
+    $clipped = Utf8::length($summary) > $max ? Utf8::substr($summary, 0, $max - 1) . '…' : $summary;
 
     return '    ' . $this->value($clipped, $selected);
   }
@@ -1215,17 +1216,17 @@ class DefaultTheme implements ThemeInterface {
     foreach ($panel->fields as $field) {
       // A multi-line value renders one physical row per line, all under the
       // value column, so the widest single line is what the row needs.
-      $row = 4 + mb_strlen(Translator::t($field->label), 'UTF-8') + $this->measureValueWidth($field, $answers);
+      $row = 4 + Utf8::length(Translator::t($field->label)) + $this->measureValueWidth($field, $answers);
 
       $provenance = $answers->provenanceOf($field->id);
       if ($provenance !== Provenance::Default) {
-        $row += 3 + mb_strlen($provenance->label(), 'UTF-8');
+        $row += 3 + Utf8::length($provenance->label());
       }
 
       $width = max($width, $row);
 
       if ($verbose && $field->description !== '') {
-        $width = max($width, 4 + mb_strlen(Translator::t($field->description), 'UTF-8'));
+        $width = max($width, 4 + Utf8::length(Translator::t($field->description)));
       }
     }
 
@@ -1249,14 +1250,14 @@ class DefaultTheme implements ThemeInterface {
     }
 
     foreach ($panel->panels as $subpanel) {
-      $width = max($width, 4 + mb_strlen(Translator::t($subpanel->title), 'UTF-8'));
+      $width = max($width, 4 + Utf8::length(Translator::t($subpanel->title)));
 
       if (!$verbose) {
         continue;
       }
 
       if ($subpanel->description !== '') {
-        $width = max($width, 4 + mb_strlen(Translator::t($subpanel->description), 'UTF-8'));
+        $width = max($width, 4 + Utf8::length(Translator::t($subpanel->description)));
       }
 
       $summary = $this->summarizePanel($subpanel, $answers);
@@ -1284,18 +1285,18 @@ class DefaultTheme implements ThemeInterface {
    *   The widest block row's visible width, in columns.
    */
   protected function measureColumnBlock(Panel $panel, Answers $answers): int {
-    $width = 4 + mb_strlen(Translator::t($panel->title), 'UTF-8');
+    $width = 4 + Utf8::length(Translator::t($panel->title));
 
     if ($this->spacing() !== Spacing::Compact && $panel->description !== '') {
-      $width = max($width, 4 + mb_strlen(Translator::t($panel->description), 'UTF-8'));
+      $width = max($width, 4 + Utf8::length(Translator::t($panel->description)));
     }
 
     foreach ($panel->fields as $field) {
-      $width = max($width, 4 + mb_strlen(Translator::t($field->label), 'UTF-8') + $this->measureValueWidth($field, $answers));
+      $width = max($width, 4 + Utf8::length(Translator::t($field->label)) + $this->measureValueWidth($field, $answers));
     }
 
     foreach ($panel->panels as $subpanel) {
-      $width = max($width, 4 + mb_strlen(Translator::t($subpanel->title), 'UTF-8'));
+      $width = max($width, 4 + Utf8::length(Translator::t($subpanel->title)));
     }
 
     return $width;
@@ -1320,7 +1321,7 @@ class DefaultTheme implements ThemeInterface {
     $width = 0;
 
     foreach (explode("\n", $this->normalizeLines($this->renderFieldValue($field, $answers->value($field->id)))) as $line) {
-      $width = max($width, mb_strlen($line, 'UTF-8'));
+      $width = max($width, Utf8::length($line));
     }
 
     return $width;
@@ -1715,7 +1716,7 @@ class DefaultTheme implements ThemeInterface {
    *   The two-line themed header.
    */
   public function renderEditorHeader(string $label): string {
-    $underline = str_repeat($this->unicode ? '─' : '-', max(1, mb_strlen($label, 'UTF-8')));
+    $underline = str_repeat($this->unicode ? '─' : '-', max(1, Utf8::length($label)));
 
     return $this->title($label) . "\n" . $this->rule($underline);
   }

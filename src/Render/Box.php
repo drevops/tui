@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Render;
 
 use DrevOps\Tui\Theme\Border;
+use DrevOps\Tui\Utils\Utf8;
 
 /**
  * Pure box-drawing geometry: character sets and line/rule fitting.
@@ -34,7 +35,7 @@ final class Box {
     $keys = ['tl', 'tr', 'bl', 'br', 'ml', 'mr', 'h', 'v'];
 
     if (!$unicode) {
-      return array_combine($keys, mb_str_split($style === Border::Double ? '++++++=|' : '++++++-|', 1, 'UTF-8'));
+      return array_combine($keys, Utf8::split($style === Border::Double ? '++++++=|' : '++++++-|'));
     }
 
     $set = match ($style) {
@@ -43,7 +44,7 @@ final class Box {
       Border::None, Border::Line => '┌┐└┘├┤─│',
     };
 
-    return array_combine($keys, mb_str_split($set, 1, 'UTF-8'));
+    return array_combine($keys, Utf8::split($set));
   }
 
   /**
@@ -82,7 +83,7 @@ final class Box {
     $width = Ansi::width($content);
 
     if ($width > $inner_width) {
-      $content = mb_substr(Ansi::strip($content), 0, $inner_width, 'UTF-8');
+      $content = Utf8::substr(Ansi::strip($content), 0, $inner_width);
       $width = Ansi::width($content);
     }
 

@@ -14,6 +14,7 @@ use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Theme\ThemeInterface;
 use DrevOps\Tui\Translation\Translator;
+use DrevOps\Tui\Utils\Utf8;
 use DrevOps\Tui\Widget\Capability\FilterCapableInterface;
 use DrevOps\Tui\Widget\Capability\PagingCapableInterface;
 use DrevOps\Tui\Widget\Capability\PagingCapableTrait;
@@ -334,7 +335,7 @@ class FilePickerWidget extends AbstractWidget implements FilterCapableInterface,
    */
   protected function onBackspace(): void {
     if ($this->filter !== '') {
-      $this->filter = mb_substr($this->filter, 0, -1, 'UTF-8');
+      $this->filter = Utf8::substr($this->filter, 0, -1);
       $this->resetFilterCursor();
 
       return;
@@ -600,7 +601,7 @@ class FilePickerWidget extends AbstractWidget implements FilterCapableInterface,
    *   The spacer.
    */
   protected function blankBox(ThemeInterface $theme): string {
-    return str_repeat(' ', mb_strlen(Ansi::strip($theme->check(FALSE)), 'UTF-8'));
+    return str_repeat(' ', Utf8::length(Ansi::strip($theme->check(FALSE))));
   }
 
   /**

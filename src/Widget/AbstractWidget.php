@@ -11,6 +11,7 @@ use DrevOps\Tui\Input\KeyMapManager;
 use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Input\ScopedKeyMap;
 use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Utils\Utf8;
 
 /**
  * Shared widget behaviour: accept/cancel, validation and transformation.
@@ -263,7 +264,7 @@ abstract class AbstractWidget implements WidgetInterface {
     $run = '';
     $run_matched = FALSE;
 
-    foreach (mb_str_split($label, 1, 'UTF-8') as $index => $char) {
+    foreach (Utf8::split($label) as $index => $char) {
       $is_matched = isset($matched[$index]);
 
       if ($run !== '' && $is_matched !== $run_matched) {

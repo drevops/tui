@@ -7,6 +7,7 @@ namespace DrevOps\Tui\Widget\Capability;
 use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Utils\Utf8;
 
 /**
  * Character-buffer editing: a movable cursor, insertion and deletion.
@@ -36,7 +37,7 @@ trait TextEditCapableTrait {
    */
   protected function initTextBuffer(string $buffer): void {
     $this->buffer = $buffer;
-    $this->cursor = mb_strlen($this->buffer, 'UTF-8');
+    $this->cursor = Utf8::length($this->buffer);
   }
 
   /**
@@ -74,7 +75,7 @@ trait TextEditCapableTrait {
     }
 
     if ($keys->matches($key, Action::MoveRight)) {
-      $this->cursor = min(mb_strlen($this->buffer, 'UTF-8'), $this->cursor + 1);
+      $this->cursor = min(Utf8::length($this->buffer), $this->cursor + 1);
 
       return TRUE;
     }
@@ -101,8 +102,8 @@ trait TextEditCapableTrait {
    *   The text to insert.
    */
   public function insert(string $text): void {
-    $this->buffer = mb_substr($this->buffer, 0, $this->cursor, 'UTF-8') . $text . mb_substr($this->buffer, $this->cursor, NULL, 'UTF-8');
-    $this->cursor += mb_strlen($text, 'UTF-8');
+    $this->buffer = Utf8::substr($this->buffer, 0, $this->cursor) . $text . Utf8::substr($this->buffer, $this->cursor, NULL);
+    $this->cursor += Utf8::length($text);
   }
 
   /**
@@ -110,7 +111,7 @@ trait TextEditCapableTrait {
    */
   public function backspace(): void {
     if ($this->cursor > 0) {
-      $this->buffer = mb_substr($this->buffer, 0, $this->cursor - 1, 'UTF-8') . mb_substr($this->buffer, $this->cursor, NULL, 'UTF-8');
+      $this->buffer = Utf8::substr($this->buffer, 0, $this->cursor - 1) . Utf8::substr($this->buffer, $this->cursor, NULL);
       $this->cursor--;
     }
   }
@@ -130,8 +131,8 @@ trait TextEditCapableTrait {
    */
   protected function caretSegments(): array {
     return [
-      mb_substr($this->buffer, 0, $this->cursor, 'UTF-8'),
-      mb_substr($this->buffer, $this->cursor, NULL, 'UTF-8'),
+      Utf8::substr($this->buffer, 0, $this->cursor),
+      Utf8::substr($this->buffer, $this->cursor, NULL),
     ];
   }
 
