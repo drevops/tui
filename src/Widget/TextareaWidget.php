@@ -33,15 +33,10 @@ class TextareaWidget extends AbstractWidget implements TextEditCapableInterface,
    *
    * @param string $buffer
    *   The initial value (and live input buffer).
-   * @param \Closure|null $validate
-   *   Optional validator (see AbstractWidget).
-   * @param \Closure|null $transform
-   *   Optional transformer (see AbstractWidget).
    * @param bool $externalEdit
    *   Whether the external-editor handoff is offered (an available $EDITOR).
    */
-  public function __construct(string $buffer = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL, protected bool $externalEdit = FALSE) {
-    parent::__construct($validate, $transform);
+  public function __construct(string $buffer = '', protected bool $externalEdit = FALSE) {
     $this->initTextBuffer($buffer);
   }
 

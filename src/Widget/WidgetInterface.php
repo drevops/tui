@@ -35,6 +35,21 @@ interface WidgetInterface {
   public function setKeys(ScopedKeyMap $keys): static;
 
   /**
+   * Give the widget its validator and transformer.
+   *
+   * @param \Closure|null $validate
+   *   The validator `fn(mixed $value): ?string` returning an error message, or
+   *   NULL when the value is valid; a NULL validator accepts every value.
+   * @param \Closure|null $transform
+   *   The transformer `fn(mixed $value): mixed` applied on accept, or NULL to
+   *   accept values as they are.
+   *
+   * @return static
+   *   The widget, for chaining.
+   */
+  public function setHandlers(?\Closure $validate = NULL, ?\Closure $transform = NULL): static;
+
+  /**
    * Whether a valid value has been accepted.
    */
   public function isComplete(): bool;

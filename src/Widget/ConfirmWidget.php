@@ -25,13 +25,8 @@ class ConfirmWidget extends AbstractWidget implements StepCapableInterface {
    *
    * @param bool $current
    *   The initial choice.
-   * @param \Closure|null $validate
-   *   Optional validator (see AbstractWidget).
-   * @param \Closure|null $transform
-   *   Optional transformer (see AbstractWidget).
    */
-  public function __construct(protected bool $current = FALSE, ?\Closure $validate = NULL, ?\Closure $transform = NULL) {
-    parent::__construct($validate, $transform);
+  public function __construct(protected bool $current = FALSE) {
   }
 
   /**

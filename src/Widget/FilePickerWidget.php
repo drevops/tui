@@ -90,10 +90,6 @@ class FilePickerWidget extends AbstractWidget implements FilterCapableInterface,
    *   Whether dot-entries are shown when the browser opens.
    * @param bool $multiple
    *   Whether several paths may be selected (Space toggles, Enter accepts).
-   * @param \Closure|null $validate
-   *   Optional validator (see AbstractWidget).
-   * @param \Closure|null $transform
-   *   Optional transformer (see AbstractWidget).
    * @param int|null $page_size
    *   The number of entry rows shown at once before the list pages; NULL uses
    *   the default.
@@ -105,12 +101,8 @@ class FilePickerWidget extends AbstractWidget implements FilterCapableInterface,
     array $extensions = [],
     protected bool $showHidden = FALSE,
     protected bool $multiple = FALSE,
-    ?\Closure $validate = NULL,
-    ?\Closure $transform = NULL,
     ?int $page_size = NULL,
   ) {
-    parent::__construct($validate, $transform);
-
     $this->root = $this->trimTrailingSlash($start !== '' ? $start : $this->currentDirectory());
     $this->cwd = $this->root;
     $this->pageSize = $this->resolvePageSize($page_size);

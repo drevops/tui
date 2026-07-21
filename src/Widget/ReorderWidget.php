@@ -56,16 +56,11 @@ class ReorderWidget extends AbstractWidget implements OptionsCapableInterface, P
    * @param list<string> $default
    *   The initial order; values it omits are appended in declared order and
    *   unknown values are ignored, so the arrangement is always a full ranking.
-   * @param \Closure|null $validate
-   *   Optional validator (see AbstractWidget).
-   * @param \Closure|null $transform
-   *   Optional transformer (see AbstractWidget).
    * @param int|null $page_size
    *   The number of rows shown at once before the list pages; NULL uses the
    *   default.
    */
-  public function __construct(array $options, array $default = [], ?\Closure $validate = NULL, ?\Closure $transform = NULL, ?int $page_size = NULL) {
-    parent::__construct($validate, $transform);
+  public function __construct(array $options, array $default = [], ?int $page_size = NULL) {
     $this->pageSize = $this->resolvePageSize($page_size);
 
     $by_value = [];

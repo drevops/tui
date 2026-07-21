@@ -29,16 +29,11 @@ class TextWidget extends AbstractWidget implements TextEditCapableInterface, Com
    *
    * @param string $buffer
    *   The initial value (and live input buffer).
-   * @param \Closure|null $validate
-   *   Optional validator (see AbstractWidget).
-   * @param \Closure|null $transform
-   *   Optional transformer (see AbstractWidget).
    * @param list<string> $completions
    *   Inline ghost-text candidates: the buffer is completed to the first
    *   candidate it is a prefix of. Empty leaves a plain text field.
    */
-  public function __construct(string $buffer = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL, protected array $completions = []) {
-    parent::__construct($validate, $transform);
+  public function __construct(string $buffer = '', protected array $completions = []) {
     $this->initTextBuffer($buffer);
   }
 

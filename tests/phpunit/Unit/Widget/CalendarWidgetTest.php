@@ -168,7 +168,7 @@ final class CalendarWidgetTest extends TestCase {
   }
 
   public function testValidatorErrorIsShown(): void {
-    $widget = new CalendarWidget('2026-07-15', validate: static fn(mixed $value): string => 'No dates allowed.');
+    $widget = (new CalendarWidget('2026-07-15'))->setHandlers(validate: static fn(mixed $value): string => 'No dates allowed.');
 
     $widget->handle(Key::named(KeyName::Enter));
 

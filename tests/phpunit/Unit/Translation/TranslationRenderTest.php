@@ -55,7 +55,7 @@ final class TranslationRenderTest extends TestCase {
   }
 
   public function testInteractiveChromeAndQuestionsTranslated(): void {
-    $controller = new PanelController($this->form(), new DefaultTheme(60, ['color' => FALSE]), NULL, TRUE, TRUE, [], []);
+    $controller = new PanelController($this->form(), new DefaultTheme(60, ['color' => FALSE]));
 
     $root = Ansi::strip($controller->frame(16));
     // The breadcrumb (form title) and the drill-in panel row (panel title).

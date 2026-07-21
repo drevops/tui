@@ -56,16 +56,11 @@ class CalendarWidget extends AbstractWidget implements StepCapableInterface {
    *
    * @param string $value
    *   The initial date as an ISO `Y-m-d` string; empty opens on today.
-   * @param \Closure|null $validate
-   *   Optional validator (see AbstractWidget).
-   * @param \Closure|null $transform
-   *   Optional transformer (see AbstractWidget).
    * @param \DrevOps\Tui\Model\DateBounds|null $bounds
    *   Optional min/max range and week-start day; NULL for an open range that
    *   starts the week on Monday.
    */
-  public function __construct(string $value = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL, ?DateBounds $bounds = NULL) {
-    parent::__construct($validate, $transform);
+  public function __construct(string $value = '', ?DateBounds $bounds = NULL) {
     $this->bounds = $bounds ?? new DateBounds();
     $seed = DateBounds::parse($value) ?? new \DateTimeImmutable('today');
     $this->cursor = $this->bounds->clamp($seed);

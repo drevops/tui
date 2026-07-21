@@ -39,7 +39,7 @@ final class TextWidgetTest extends TestCase {
   }
 
   public function testTransformApplied(): void {
-    $widget = new TextWidget('', NULL, fn(mixed $value): string => is_string($value) ? strtoupper($value) : '');
+    $widget = (new TextWidget(''))->setHandlers(transform: fn(mixed $value): string => is_string($value) ? strtoupper($value) : '');
 
     $value = WidgetRunner::run($widget, ArrayKeyStream::of('acme', Key::named(KeyName::Enter)));
 
@@ -48,7 +48,7 @@ final class TextWidgetTest extends TestCase {
 
   public function testValidationBlocksThenAccepts(): void {
     $validate = fn(mixed $value): ?string => is_string($value) && $value !== '' ? NULL : 'Required.';
-    $widget = new TextWidget('', $validate);
+    $widget = (new TextWidget(''))->setHandlers($validate);
 
     $widget->handle(Key::named(KeyName::Enter));
     $this->assertFalse($widget->isComplete());
@@ -129,7 +129,7 @@ final class TextWidgetTest extends TestCase {
 
   public function testGhostTextRendersDimmedSuffix(): void {
     // The first candidate is skipped (no prefix match); the second completes.
-    $widget = new TextWidget('', NULL, NULL, ['other', 'acme-site']);
+    $widget = new TextWidget('', ['other', 'acme-site']);
 
     $widget->handle(Key::char('a'));
     $widget->handle(Key::char('c'));
@@ -144,7 +144,7 @@ final class TextWidgetTest extends TestCase {
   }
 
   public function testTabAcceptsCompletion(): void {
-    $widget = new TextWidget('', NULL, NULL, ['acme-site']);
+    $widget = new TextWidget('', ['acme-site']);
 
     $value = WidgetRunner::run($widget, ArrayKeyStream::of(Key::char('a'), Key::named(KeyName::Tab), Key::named(KeyName::Enter)));
 
@@ -152,7 +152,7 @@ final class TextWidgetTest extends TestCase {
   }
 
   public function testRightAtEndAcceptsCompletion(): void {
-    $widget = new TextWidget('', NULL, NULL, ['acme-site']);
+    $widget = new TextWidget('', ['acme-site']);
 
     $value = WidgetRunner::run($widget, ArrayKeyStream::of(Key::char('a'), Key::named(KeyName::Right), Key::named(KeyName::Enter)));
 
@@ -160,7 +160,7 @@ final class TextWidgetTest extends TestCase {
   }
 
   public function testRightMidBufferMovesCaretWithoutCompleting(): void {
-    $widget = new TextWidget('ab', NULL, NULL, ['abcdef']);
+    $widget = new TextWidget('ab', ['abcdef']);
 
     // With the caret off the end there is no ghost, so Right advances the caret
     // rather than accepting a completion.
@@ -171,7 +171,7 @@ final class TextWidgetTest extends TestCase {
   }
 
   public function testCaseInsensitiveMatchCanonicalisesOnAccept(): void {
-    $widget = new TextWidget('', NULL, NULL, ['GitHub']);
+    $widget = new TextWidget('', ['GitHub']);
 
     $widget->handle(Key::char('g'));
     $widget->handle(Key::char('i'));
@@ -184,7 +184,7 @@ final class TextWidgetTest extends TestCase {
   public function testGhostTextIsUnicodeAware(): void {
     // strtolower() folds only ASCII, so a non-ASCII prefix must fold with
     // mbstring; the multibyte suffix must render whole, not split mid-byte.
-    $widget = new TextWidget('', NULL, NULL, ['Éclair']);
+    $widget = new TextWidget('', ['Éclair']);
 
     $widget->handle(Key::char('é'));
     $this->assertStringContainsString('clair', $widget->view(new DefaultTheme()));
@@ -194,7 +194,7 @@ final class TextWidgetTest extends TestCase {
   }
 
   public function testNoMatchLeavesPlainField(): void {
-    $widget = new TextWidget('', NULL, NULL, ['acme-site']);
+    $widget = new TextWidget('', ['acme-site']);
 
     $widget->handle(Key::char('z'));
 
@@ -207,7 +207,7 @@ final class TextWidgetTest extends TestCase {
   }
 
   public function testFullyTypedCandidateHasNoGhost(): void {
-    $widget = new TextWidget('', NULL, NULL, ['php']);
+    $widget = new TextWidget('', ['php']);
 
     $widget->handle(Key::char('p'));
     $widget->handle(Key::char('h'));
@@ -219,13 +219,13 @@ final class TextWidgetTest extends TestCase {
 
   public function testEmptyBufferShowsNoGhost(): void {
     // With nothing typed there is no prefix to complete, so no ghost renders.
-    $widget = new TextWidget('', NULL, NULL, ['acme-site']);
+    $widget = new TextWidget('', ['acme-site']);
 
     $this->assertStringNotContainsString("\033[90m", $widget->view(new DefaultTheme()));
   }
 
   public function testGhostSuppressedInNoAnsiMode(): void {
-    $widget = new TextWidget('', NULL, NULL, ['acme-site']);
+    $widget = new TextWidget('', ['acme-site']);
 
     $widget->handle(Key::char('a'));
     $widget->handle(Key::char('c'));

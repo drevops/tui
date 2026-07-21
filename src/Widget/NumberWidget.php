@@ -36,15 +36,10 @@ class NumberWidget extends AbstractWidget implements TextEditCapableInterface, S
    *
    * @param string $buffer
    *   The initial value (and live input buffer).
-   * @param \Closure|null $validate
-   *   Optional validator (see AbstractWidget).
-   * @param \Closure|null $transform
-   *   Optional transformer (see AbstractWidget).
    * @param \DrevOps\Tui\Model\NumberBounds|null $bounds
    *   Optional bounds and step; NULL for a plain integer entry.
    */
-  public function __construct(string $buffer = '', ?\Closure $validate = NULL, ?\Closure $transform = NULL, protected ?NumberBounds $bounds = NULL) {
-    parent::__construct($validate, $transform);
+  public function __construct(string $buffer = '', protected ?NumberBounds $bounds = NULL) {
     $this->initTextBuffer($buffer);
   }
 
