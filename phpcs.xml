@@ -23,12 +23,15 @@
     <file>src</file>
     <file>tests/phpunit</file>
     <file>playground</file>
+    <file>translations</file>
 
-    <!-- Allow long array lines in tests. -->
+    <!-- Allow long array lines in tests and in translation catalogs, whose
+         source => translation pairs are single, unbreakable data lines. -->
     <rule ref="Drupal.Arrays.Array.LongLineDeclaration">
         <exclude-pattern>*.Test\.php</exclude-pattern>
         <exclude-pattern>*.TestCase\.php</exclude-pattern>
         <exclude-pattern>*.test</exclude-pattern>
+        <exclude-pattern>translations/*</exclude-pattern>
     </rule>
 
     <!-- Allow missing function names in tests. -->

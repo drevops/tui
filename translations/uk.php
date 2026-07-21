@@ -42,8 +42,9 @@ return [
     '@count елементи вибрано',
     '@count елементів вибрано',
   ],
-  // The default button labels: the Buttons model defaults render through t(), so
-  // they localize here even though they are not in en.php's scanned key list.
+  // The default button labels: the Buttons model defaults render through t(),
+  // so they localize here even though they are not in en.php's scanned key
+  // list.
   'Submit' => 'Надіслати',
   'Cancel' => 'Скасувати',
   '"@min" must not exceed "@max".' => '"@min" не може перевищувати "@max".',
