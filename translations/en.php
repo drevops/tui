@@ -2,11 +2,12 @@
 
 /**
  * @file
- * Canonical English chrome strings the library emits.
+ * The English chrome catalog - every chrome string the library emits.
  *
- * Copy this file to a locale (e.g. "es.php") and translate the values; the
- * keys are the English source strings the library looks up. Placeholders
- * such as "@count" must be kept verbatim in a translation.
+ * Also the template for a new locale: copy this file to one named for the
+ * target language (e.g. "uk.php") and translate the values. The keys are the
+ * English source strings the library looks up; placeholders such as "@count"
+ * must be kept verbatim in a translation.
  */
 
 declare(strict_types=1);

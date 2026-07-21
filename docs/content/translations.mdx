@@ -115,14 +115,16 @@ Without a rule the default applies (the first form when the count is one, the se
 
 ## The chrome catalog template
 
-The package ships `translations/tui.php` - the canonical list of every chrome string the library emits, as an English `key => key` map. Copy it to a locale file and translate the values to get a complete chrome catalog to start from:
+The package ships `translations/en.php` - the canonical list of every chrome string the library emits, as an English `key => key` map. Copy it to a locale file and translate the values to get a complete chrome catalog to start from:
 
 ```bash
-cp vendor/drevops/tui/translations/tui.php translations/es.php
+cp vendor/drevops/tui/translations/en.php translations/de.php
 ```
+
+A ready-to-use Ukrainian catalog, `translations/uk.php`, ships alongside it - point a `Translator` at the package's `translations/` directory to use it directly.
 
 ## Packaging
 
 Catalogs are ordinary files loaded with `require`, so they bundle into a consumer-built PHAR with no extra configuration - reference them by a path relative to your application (for example `__DIR__ . '/translations'`), which resolves inside the archive.
 
-Ukrainian and Spanish catalogs localizing chrome and questions alike - and demonstrating three-form and two-form plurals - are runnable in [`playground/13-translations/`](https://github.com/drevops/tui/tree/main/playground/13-translations).
+A runnable demo in [`playground/13-translations/`](https://github.com/drevops/tui/tree/main/playground/13-translations) localizes chrome and questions into Ukrainian - using the shipped `uk.php` for chrome plus a small local catalog for the form's own labels - and shows the three-form plural in its multi-select summary.

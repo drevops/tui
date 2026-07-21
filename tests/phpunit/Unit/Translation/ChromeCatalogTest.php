@@ -9,7 +9,7 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Guards translations/tui.php against drift from the source.
+ * Guards translations/en.php against drift from the source.
  *
  * Every literal chrome string the library emits - a `Translator::t('...')`
  * call, both forms of a `Translator::formatPlural(..., '...', '...')` call, or
@@ -24,7 +24,7 @@ final class ChromeCatalogTest extends TestCase {
   public function testTemplateMatchesSourceLiterals(): void {
     $root = dirname(__DIR__, 4);
 
-    $catalog = require $root . '/translations/tui.php';
+    $catalog = require $root . '/translations/en.php';
     $this->assertIsArray($catalog);
     $template = array_keys($catalog);
     sort($template);
@@ -32,7 +32,7 @@ final class ChromeCatalogTest extends TestCase {
     $literals = $this->literals($root . '/src');
     sort($literals);
 
-    $this->assertSame($template, $literals, 'translations/tui.php is out of sync with the chrome literals in src/. Regenerate it.');
+    $this->assertSame($template, $literals, 'translations/en.php is out of sync with the chrome literals in src/. Regenerate it.');
 
     // The template is a self-describing English catalog: value equals key.
     foreach ($catalog as $key => $value) {

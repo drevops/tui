@@ -10,7 +10,7 @@
  * message maps its plural source to a list of forms; Spanish has two, so no
  * rule is needed and the default one-versus-other rule applies. An untranslated
  * string simply renders in English. The library's full chrome key list lives in
- * translations/tui.php at the repository root.
+ * translations/en.php at the repository root.
  */
 
 declare(strict_types=1);

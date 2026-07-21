@@ -192,4 +192,17 @@ final class TranslatorTest extends TestCase {
     $this->assertSame('6 items selected', Translator::formatPlural(6, '1 item selected', '@count items selected'));
   }
 
+  public function testShippedUkrainianCatalog(): void {
+    Translator::setShared(new Translator('uk', [dirname(__DIR__, 4) . '/translations']));
+
+    // Chrome and the default button labels resolve from the shipped catalog.
+    $this->assertSame('Пароль', Translator::t('Password'));
+    $this->assertSame('Надіслати', Translator::t('Submit'));
+
+    // The plural message renders its one/few/many forms by the shipped rule.
+    $this->assertSame('1 елемент вибрано', Translator::formatPlural(1, '1 item selected', '@count items selected'));
+    $this->assertSame('4 елементи вибрано', Translator::formatPlural(4, '1 item selected', '@count items selected'));
+    $this->assertSame('5 елементів вибрано', Translator::formatPlural(5, '1 item selected', '@count items selected'));
+  }
+
 }
