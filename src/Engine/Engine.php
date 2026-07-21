@@ -125,15 +125,7 @@ class Engine {
   public function settle(array $values, array $pinned): array {
     $fields = $this->form->fields();
 
-    $rules = [];
-
-    foreach ($fields as $field) {
-      if ($field->derive !== NULL) {
-        $rules[$field->id] = $field->derive;
-      }
-    }
-
-    return $this->stabilize($fields, $values, $rules, $pinned);
+    return $this->stabilize($fields, $values, $this->ruleMap($fields), $pinned);
   }
 
   /**
@@ -175,17 +167,36 @@ class Engine {
    *   The derive rules and the pinned map, each keyed by field id.
    */
   protected function deriveRules(array $fields, array $sources): array {
-    $rules = [];
+    $rules = $this->ruleMap($fields);
+
     $pinned = [];
+
+    foreach (array_keys($rules) as $id) {
+      $pinned[$id] = in_array($sources[$id], [Source::Input, Source::Detected], TRUE);
+    }
+
+    return [$rules, $pinned];
+  }
+
+  /**
+   * The derive rules of the derive-ruled fields, keyed by field id.
+   *
+   * @param \DrevOps\Tui\Model\Field[] $fields
+   *   The fields, in order.
+   *
+   * @return array<string,\DrevOps\Tui\Derive\Derive>
+   *   The derive rules keyed by field id.
+   */
+  protected function ruleMap(array $fields): array {
+    $rules = [];
 
     foreach ($fields as $field) {
       if ($field->derive !== NULL) {
         $rules[$field->id] = $field->derive;
-        $pinned[$field->id] = in_array($sources[$field->id], [Source::Input, Source::Detected], TRUE);
       }
     }
 
-    return [$rules, $pinned];
+    return $rules;
   }
 
   /**
