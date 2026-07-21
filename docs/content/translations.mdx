@@ -63,7 +63,7 @@ Directories are searched in order and a later one wins, so you can layer a catal
 
 ## Plural messages
 
-A message whose wording depends on a count - "1 item selected" versus "5 items selected" - is rendered with `Translator::formatPlural($count, $singular, $plural)`, mirroring Drupal's `formatPlural()`. The count picks the form and `@count` is bound to it:
+A message whose wording depends on a count - "1 item selected" versus "5 items selected" - is rendered with `Translator::formatPlural($count, $singular, $plural)`. The count picks the form and `@count` is bound to it:
 
 ```php
 use DrevOps\Tui\Translation\Translator;
