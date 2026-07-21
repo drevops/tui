@@ -8,6 +8,7 @@ use DrevOps\Tui\Model\FieldType;
 use DrevOps\Tui\Model\Option;
 use DrevOps\Tui\Model\OptionKind;
 use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Utils\Strings;
 use DrevOps\Tui\Widget\Capability\FilterCapableInterface;
 use DrevOps\Tui\Widget\Capability\FilterCapableTrait;
 use DrevOps\Tui\Widget\Capability\OptionsCapableInterface;
@@ -71,9 +72,9 @@ class SelectWidget extends AbstractWidget implements OptionsCapableInterface, Se
    *   The matching option rows.
    */
   protected function filterOptions(string $needle): array {
-    $lower = mb_strtolower($needle, 'UTF-8');
+    $lower = Strings::lower($needle);
 
-    return array_values(array_filter($this->options, static fn(Option $option): bool => $option->kind === OptionKind::Option && str_contains(mb_strtolower($option->label, 'UTF-8'), $lower)));
+    return array_values(array_filter($this->options, static fn(Option $option): bool => $option->kind === OptionKind::Option && str_contains(Strings::lower($option->label), $lower)));
   }
 
   /**

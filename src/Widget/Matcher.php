@@ -6,6 +6,7 @@ namespace DrevOps\Tui\Widget;
 
 use DrevOps\Tui\Model\Option;
 use DrevOps\Tui\Model\OptionKind;
+use DrevOps\Tui\Utils\Strings;
 
 /**
  * Ranks candidates against a query by fuzzy (subsequence) relevance.
@@ -48,9 +49,9 @@ final class Matcher {
 
     // Fold each code point on its own, so a matched index maps straight back to
     // the original string even when lowercasing changes a character's length.
-    $chars = mb_str_split($haystack, 1, 'UTF-8');
+    $chars = Strings::split($haystack);
     $folded = array_map($this->fold(...), $chars);
-    $needle_folded = array_map($this->fold(...), mb_str_split($needle, 1, 'UTF-8'));
+    $needle_folded = array_map($this->fold(...), Strings::split($needle));
 
     $best = $this->bestSubsequence($folded, $needle_folded, $chars);
     if ($best === NULL) {
@@ -79,7 +80,7 @@ final class Matcher {
    *   The folded character.
    */
   protected function fold(string $char): string {
-    return str_replace('ς', 'σ', mb_strtolower($char, 'UTF-8'));
+    return str_replace('ς', 'σ', Strings::lower($char));
   }
 
   /**

@@ -10,6 +10,7 @@ use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Utils\Strings;
 use DrevOps\Tui\Widget\Capability\ExternalEditCapableInterface;
 use DrevOps\Tui\Widget\Capability\TextEditCapableInterface;
 use DrevOps\Tui\Widget\Capability\TextEditCapableTrait;
@@ -107,7 +108,7 @@ class TextareaWidget extends AbstractWidget implements TextEditCapableInterface,
     $line = 0;
     $column = $this->cursor;
     foreach ($lines as $index => $text) {
-      $length = mb_strlen($text, 'UTF-8');
+      $length = Strings::length($text);
 
       if ($column <= $length) {
         $line = $index;
@@ -126,10 +127,10 @@ class TextareaWidget extends AbstractWidget implements TextEditCapableInterface,
 
     $offset = 0;
     for ($index = 0; $index < $target; $index++) {
-      $offset += mb_strlen($lines[$index], 'UTF-8') + 1;
+      $offset += Strings::length($lines[$index]) + 1;
     }
 
-    $this->cursor = $offset + min($column, mb_strlen($lines[$target], 'UTF-8'));
+    $this->cursor = $offset + min($column, Strings::length($lines[$target]));
   }
 
   /**
@@ -154,7 +155,7 @@ class TextareaWidget extends AbstractWidget implements TextEditCapableInterface,
     }
 
     $this->buffer = $content;
-    $this->cursor = mb_strlen($content, 'UTF-8');
+    $this->cursor = Strings::length($content);
     $this->accept($content);
   }
 

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Widget\Capability;
 
+use DrevOps\Tui\Utils\Strings;
+
 /**
  * Inline ghost-text completion over a character buffer.
  *
@@ -26,17 +28,17 @@ trait CompletionCapableTrait {
    *   The full candidate string, or NULL.
    */
   public function bestMatch(): ?string {
-    if ($this->buffer === '' || $this->cursor !== mb_strlen($this->buffer, 'UTF-8')) {
+    if ($this->buffer === '' || $this->cursor !== Strings::length($this->buffer)) {
       return NULL;
     }
 
     // Fold and measure by character, not byte, so non-ASCII candidates match
     // case-insensitively and the suffix never splits mid-character.
-    $needle = mb_strtolower($this->buffer, 'UTF-8');
-    $length = mb_strlen($this->buffer, 'UTF-8');
+    $needle = Strings::lower($this->buffer);
+    $length = Strings::length($this->buffer);
 
     foreach ($this->completions as $completion) {
-      if (mb_strlen($completion, 'UTF-8') > $length && str_starts_with(mb_strtolower($completion, 'UTF-8'), $needle)) {
+      if (Strings::length($completion) > $length && str_starts_with(Strings::lower($completion), $needle)) {
         return $completion;
       }
     }
@@ -53,7 +55,7 @@ trait CompletionCapableTrait {
   public function ghostSuffix(): string {
     $match = $this->bestMatch();
 
-    return $match === NULL ? '' : mb_substr($match, mb_strlen($this->buffer, 'UTF-8'), NULL, 'UTF-8');
+    return $match === NULL ? '' : Strings::substr($match, Strings::length($this->buffer));
   }
 
   /**
@@ -64,7 +66,7 @@ trait CompletionCapableTrait {
 
     if ($match !== NULL) {
       $this->buffer = $match;
-      $this->cursor = mb_strlen($match, 'UTF-8');
+      $this->cursor = Strings::length($match);
     }
   }
 

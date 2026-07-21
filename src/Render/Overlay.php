@@ -6,6 +6,7 @@ namespace DrevOps\Tui\Render;
 
 use DrevOps\Tui\Theme\HAlign;
 use DrevOps\Tui\Theme\VAlign;
+use DrevOps\Tui\Utils\Strings;
 
 /**
  * Pure line-compositor: splice a box of lines over a backdrop, centered.
@@ -113,8 +114,8 @@ final class Overlay {
         continue;
       }
 
-      $prefix = mb_substr($line, 0, $left, 'UTF-8');
-      $suffix = mb_substr($line, $left + $box_width, NULL, 'UTF-8');
+      $prefix = Strings::substr($line, 0, $left);
+      $suffix = Strings::substr($line, $left + $box_width);
 
       $out[] = self::style($prefix, $style_backdrop) . $box[$box_index] . self::style($suffix, $style_backdrop);
     }

@@ -18,8 +18,7 @@
     },
     "require": {
         "php": ">=8.3",
-        "ext-mbstring": "*",
-        "alexskrypnyk/str2name": "^1.5.0"
+        "alexskrypnyk/str2name": "^1.6.0"
     },
     "require-dev": {
         "alexskrypnyk/phpunit-helpers": "^0.16.0",
@@ -32,6 +31,9 @@
         "phpstan/phpstan": "^2.2.4",
         "phpunit/phpunit": "^11.5.55",
         "rector/rector": "^2.5.2"
+    },
+    "suggest": {
+        "ext-mbstring": "Provides full Unicode case folding and native multibyte string handling; PCRE-based fallbacks with ASCII-only case folding are used when it is absent."
     },
     "minimum-stability": "stable",
     "prefer-stable": true,

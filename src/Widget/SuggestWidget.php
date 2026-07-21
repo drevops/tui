@@ -8,6 +8,7 @@ use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Theme\ThemeInterface;
+use DrevOps\Tui\Utils\Strings;
 use DrevOps\Tui\Widget\Capability\PagingCapableInterface;
 use DrevOps\Tui\Widget\Capability\PagingCapableTrait;
 use DrevOps\Tui\Widget\Capability\SearchCapableInterface;
@@ -107,7 +108,7 @@ class SuggestWidget extends AbstractWidget implements SearchCapableInterface, Te
    * {@inheritdoc}
    */
   public function backspace(): void {
-    $this->buffer = mb_substr($this->buffer, 0, -1, 'UTF-8');
+    $this->buffer = Strings::substr($this->buffer, 0, -1);
     $this->resetFilterCursor();
   }
 

@@ -17,6 +17,7 @@
 declare(strict_types=1);
 
 use DrevOps\Tui\Theme\DefaultTheme;
+use DrevOps\Tui\Utils\Strings;
 use DrevOps\Tui\Widget\CalendarWidget;
 use DrevOps\Tui\Widget\ConfirmWidget;
 use DrevOps\Tui\Widget\NumberWidget;
@@ -96,13 +97,13 @@ $columns = static function (string $left, string $right, int $gap = 8): string {
   $right_lines = explode("\n", $right);
   $width = 0;
   foreach ($left_lines as $line) {
-    $width = max($width, mb_strlen($line));
+    $width = max($width, Strings::length($line));
   }
 
   $rows = [];
   for ($i = 0, $count = max(count($left_lines), count($right_lines)); $i < $count; $i++) {
     $line = $left_lines[$i] ?? '';
-    $pad = str_repeat(' ', max(0, $width - mb_strlen($line) + $gap));
+    $pad = str_repeat(' ', max(0, $width - Strings::length($line) + $gap));
     $rows[] = '    ' . $line . $pad . ($right_lines[$i] ?? '');
   }
 
