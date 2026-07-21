@@ -22,6 +22,7 @@ use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Render\PanelController;
 use DrevOps\Tui\Render\Terminal;
 use DrevOps\Tui\Testing\BufferedTerminal;
+use DrevOps\Tui\Testing\KeyEncoder;
 use DrevOps\Tui\Tests\Traits\IsolatesEnvTrait;
 use DrevOps\Tui\Tests\Traits\ResetsTranslatorTrait;
 use DrevOps\Tui\Theme\Border;
@@ -175,8 +176,8 @@ final class TuiTest extends TestCase {
 
   public function testInteractDrivesScriptedTerminal(): void {
     // The Demo hub lists the panel, then Submit and Cancel: Down reaches
-    // Submit, Enter activates it. "\033[B" is Down, "\r" is Enter.
-    $terminal = new BufferedTerminal(["\033[B", "\r"]);
+    // Submit, Enter activates it.
+    $terminal = new BufferedTerminal([KeyEncoder::encode(Key::named(KeyName::Down)), KeyEncoder::encode(Key::named(KeyName::Enter))]);
 
     $answers = $this->tui()->interact(terminal: $terminal);
 
@@ -185,11 +186,11 @@ final class TuiTest extends TestCase {
   }
 
   public function testInteractThrowsOnInterrupt(): void {
-    // Ctrl-C ("\x03") aborts mid-form: the facade raises rather than returning
-    // the partial answers, so a caller never mistakes an abort for a submit.
+    // Ctrl-C aborts mid-form: the facade raises rather than returning the
+    // partial answers, so a caller never mistakes an abort for a submit.
     $this->expectException(InterruptException::class);
 
-    $this->tui()->interact(terminal: new BufferedTerminal(["\x03"]));
+    $this->tui()->interact(terminal: new BufferedTerminal([KeyEncoder::encode(Key::named(KeyName::Interrupt))]));
   }
 
   public function testInteractThrowsOnCancel(): void {
@@ -199,7 +200,8 @@ final class TuiTest extends TestCase {
     $this->expectException(CancelException::class);
 
     // Down twice reaches Cancel past the panel and Submit; Enter activates it.
-    $this->tui()->interact(terminal: new BufferedTerminal(["\033[B", "\033[B", "\r"]));
+    $down = KeyEncoder::encode(Key::named(KeyName::Down));
+    $this->tui()->interact(terminal: new BufferedTerminal([$down, $down, KeyEncoder::encode(Key::named(KeyName::Enter))]));
   }
 
   public function testFullscreenSugarMergesIntoThemeOptions(): void {
