@@ -104,7 +104,9 @@ final class Utf8Test extends TestCase {
   public function testDetectsMbstring(): void {
     Utf8::useMbstring(NULL);
 
-    $this->assertSame(1, Utf8::length('🍎'));
+    // The fallback branch lowercases ASCII only, so the result reveals which
+    // branch the detection selected.
+    $this->assertSame(function_exists('mb_strlen') ? 'pêche' : 'pÊche', Utf8::lower('PÊCHE'));
   }
 
 }
