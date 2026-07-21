@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Tests\Unit\Utils;
 
-use DrevOps\Tui\Utils\Utf8;
+use DrevOps\Tui\Utils\Strings;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
@@ -13,22 +13,22 @@ use PHPUnit\Framework\TestCase;
 /**
  * Tests the UTF-8 helpers in the mbstring and fallback branches.
  */
-#[CoversClass(Utf8::class)]
+#[CoversClass(Strings::class)]
 #[Group('utils')]
-final class Utf8Test extends TestCase {
+final class StringsTest extends TestCase {
 
   protected function tearDown(): void {
-    Utf8::useMbstring(NULL);
+    Strings::useMbstring(NULL);
     parent::tearDown();
   }
 
   #[DataProvider('dataProviderLength')]
   public function testLength(string $text, int $expected): void {
-    Utf8::useMbstring(TRUE);
-    $this->assertSame($expected, Utf8::length($text));
+    Strings::useMbstring(TRUE);
+    $this->assertSame($expected, Strings::length($text));
 
-    Utf8::useMbstring(FALSE);
-    $this->assertSame($expected, Utf8::length($text));
+    Strings::useMbstring(FALSE);
+    $this->assertSame($expected, Strings::length($text));
   }
 
   public static function dataProviderLength(): \Iterator {
@@ -41,11 +41,11 @@ final class Utf8Test extends TestCase {
 
   #[DataProvider('dataProviderSubstr')]
   public function testSubstr(string $text, int $start, ?int $length, string $expected): void {
-    Utf8::useMbstring(TRUE);
-    $this->assertSame($expected, Utf8::substr($text, $start, $length));
+    Strings::useMbstring(TRUE);
+    $this->assertSame($expected, Strings::substr($text, $start, $length));
 
-    Utf8::useMbstring(FALSE);
-    $this->assertSame($expected, Utf8::substr($text, $start, $length));
+    Strings::useMbstring(FALSE);
+    $this->assertSame($expected, Strings::substr($text, $start, $length));
   }
 
   public static function dataProviderSubstr(): \Iterator {
@@ -63,11 +63,11 @@ final class Utf8Test extends TestCase {
 
   #[DataProvider('dataProviderLower')]
   public function testLower(string $text, string $expected_mbstring, string $expected_fallback): void {
-    Utf8::useMbstring(TRUE);
-    $this->assertSame($expected_mbstring, Utf8::lower($text));
+    Strings::useMbstring(TRUE);
+    $this->assertSame($expected_mbstring, Strings::lower($text));
 
-    Utf8::useMbstring(FALSE);
-    $this->assertSame($expected_fallback, Utf8::lower($text));
+    Strings::useMbstring(FALSE);
+    $this->assertSame($expected_fallback, Strings::lower($text));
   }
 
   public static function dataProviderLower(): \Iterator {
@@ -79,11 +79,11 @@ final class Utf8Test extends TestCase {
 
   #[DataProvider('dataProviderSplit')]
   public function testSplit(string $text, array $expected): void {
-    Utf8::useMbstring(TRUE);
-    $this->assertSame($expected, Utf8::split($text));
+    Strings::useMbstring(TRUE);
+    $this->assertSame($expected, Strings::split($text));
 
-    Utf8::useMbstring(FALSE);
-    $this->assertSame($expected, Utf8::split($text));
+    Strings::useMbstring(FALSE);
+    $this->assertSame($expected, Strings::split($text));
   }
 
   public static function dataProviderSplit(): \Iterator {
@@ -94,19 +94,19 @@ final class Utf8Test extends TestCase {
   }
 
   public function testMalformedInputFallsBackToBytes(): void {
-    Utf8::useMbstring(FALSE);
+    Strings::useMbstring(FALSE);
 
-    $this->assertSame(["\xC3", '('], Utf8::split("\xC3("));
-    $this->assertSame(2, Utf8::length("\xC3("));
-    $this->assertSame("\xC3", Utf8::substr("\xC3(", 0, 1));
+    $this->assertSame(["\xC3", '('], Strings::split("\xC3("));
+    $this->assertSame(2, Strings::length("\xC3("));
+    $this->assertSame("\xC3", Strings::substr("\xC3(", 0, 1));
   }
 
   public function testDetectsMbstring(): void {
-    Utf8::useMbstring(NULL);
+    Strings::useMbstring(NULL);
 
     // The fallback branch lowercases ASCII only, so the result reveals which
     // branch the detection selected.
-    $this->assertSame(function_exists('mb_strlen') ? 'pêche' : 'pÊche', Utf8::lower('PÊCHE'));
+    $this->assertSame(function_exists('mb_strlen') ? 'pêche' : 'pÊche', Strings::lower('PÊCHE'));
   }
 
 }

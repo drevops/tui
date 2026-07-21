@@ -15,7 +15,7 @@ use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Input\ScopedKeyMap;
 use DrevOps\Tui\Theme\ThemeInterface;
 use DrevOps\Tui\Translation\Translator;
-use DrevOps\Tui\Utils\Utf8;
+use DrevOps\Tui\Utils\Strings;
 use DrevOps\Tui\Widget\Capability\StepCapableInterface;
 
 /**
@@ -195,7 +195,7 @@ class CalendarWidget extends AbstractWidget implements StepCapableInterface {
    */
   protected function heading(ThemeInterface $theme): string {
     $title = Translator::t($this->cursor->format('F')) . ' ' . $this->cursor->format('Y');
-    $left = max(0, intdiv(self::GRID_WIDTH - Utf8::length($title), 2));
+    $left = max(0, intdiv(self::GRID_WIDTH - Strings::length($title), 2));
 
     return str_repeat(' ', $left) . $theme->title($title);
   }

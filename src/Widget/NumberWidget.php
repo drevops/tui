@@ -12,7 +12,7 @@ use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Theme\ThemeInterface;
 use DrevOps\Tui\Translation\Translator;
-use DrevOps\Tui\Utils\Utf8;
+use DrevOps\Tui\Utils\Strings;
 use DrevOps\Tui\Widget\Capability\StepCapableInterface;
 use DrevOps\Tui\Widget\Capability\TextEditCapableInterface;
 use DrevOps\Tui\Widget\Capability\TextEditCapableTrait;
@@ -135,7 +135,7 @@ class NumberWidget extends AbstractWidget implements TextEditCapableInterface, S
     }
 
     $this->buffer = (string) $this->bounds->step((int) $this->buffer, $delta);
-    $this->cursor = Utf8::length($this->buffer);
+    $this->cursor = Strings::length($this->buffer);
     $this->error = NULL;
   }
 

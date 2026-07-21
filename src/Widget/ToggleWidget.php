@@ -10,7 +10,7 @@ use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Theme\ThemeInterface;
-use DrevOps\Tui\Utils\Utf8;
+use DrevOps\Tui\Utils\Strings;
 use DrevOps\Tui\Widget\Capability\StepCapableInterface;
 
 /**
@@ -103,11 +103,11 @@ class ToggleWidget extends AbstractWidget implements StepCapableInterface {
    *   The typed character.
    */
   protected function applyChar(string $char): void {
-    $char = Utf8::lower($char);
+    $char = Strings::lower($char);
 
     foreach ($this->values as $index => $value) {
       $label = $this->labels[$value] ?? $value;
-      if ($label !== '' && Utf8::lower(Utf8::substr($label, 0, 1)) === $char) {
+      if ($label !== '' && Strings::lower(Strings::substr($label, 0, 1)) === $char) {
         $this->cursor = $index;
 
         return;

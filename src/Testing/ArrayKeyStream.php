@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Testing;
 
 use DrevOps\Tui\Input\Key;
-use DrevOps\Tui\Utils\Utf8;
+use DrevOps\Tui\Utils\Strings;
 
 /**
  * An in-memory key stream, used for scripted (headless) input.
@@ -58,7 +58,7 @@ final class ArrayKeyStream implements KeyStreamInterface {
         continue;
       }
 
-      foreach (Utf8::split($item) as $char) {
+      foreach (Strings::split($item) as $char) {
         $keys[] = Key::char($char);
       }
     }

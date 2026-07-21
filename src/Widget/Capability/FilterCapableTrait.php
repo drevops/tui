@@ -6,7 +6,7 @@ namespace DrevOps\Tui\Widget\Capability;
 
 use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Key;
-use DrevOps\Tui\Utils\Utf8;
+use DrevOps\Tui\Utils\Strings;
 
 /**
  * Type-to-filter behaviour over a choice widget's option rows.
@@ -56,7 +56,7 @@ trait FilterCapableTrait {
    */
   protected function handleFilterKey(Key $key): bool {
     if ($this->keys()->matches($key, Action::DeleteBack)) {
-      $this->filter = Utf8::substr($this->filter, 0, -1);
+      $this->filter = Strings::substr($this->filter, 0, -1);
       $this->resetFilterCursor();
 
       return TRUE;

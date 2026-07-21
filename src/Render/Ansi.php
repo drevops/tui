@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Render;
 
-use DrevOps\Tui\Utils\Utf8;
+use DrevOps\Tui\Utils\Strings;
 
 /**
  * ANSI helpers: styling, escape stripping and visible-width alignment.
@@ -56,7 +56,7 @@ final class Ansi {
    *   The visible width.
    */
   public static function width(string $text): int {
-    return Utf8::length(self::strip($text));
+    return Strings::length(self::strip($text));
   }
 
   /**

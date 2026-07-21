@@ -14,7 +14,7 @@ namespace DrevOps\Tui\Utils;
  *
  * @package DrevOps\Tui\Utils
  */
-final class Utf8 {
+final class Strings {
 
   /**
    * Whether mbstring backs the helpers; NULL re-detects on next use.

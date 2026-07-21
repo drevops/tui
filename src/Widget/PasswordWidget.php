@@ -11,7 +11,7 @@ use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\Scope;
 use DrevOps\Tui\Theme\ThemeInterface;
 use DrevOps\Tui\Translation\Translator;
-use DrevOps\Tui\Utils\Utf8;
+use DrevOps\Tui\Utils\Strings;
 use DrevOps\Tui\Widget\Capability\RevealCapableInterface;
 use DrevOps\Tui\Widget\Capability\TextEditCapableInterface;
 use DrevOps\Tui\Widget\Capability\TextEditCapableTrait;
@@ -183,7 +183,7 @@ class PasswordWidget extends AbstractWidget implements TextEditCapableInterface,
   protected function renderLine(ThemeInterface $theme): string {
     return match ($this->display) {
       PasswordDisplay::Hidden => $theme->renderInput('', ''),
-      PasswordDisplay::Masked => $theme->renderInput(str_repeat($theme->mask(), $this->cursor), str_repeat($theme->mask(), Utf8::length($this->buffer) - $this->cursor)),
+      PasswordDisplay::Masked => $theme->renderInput(str_repeat($theme->mask(), $this->cursor), str_repeat($theme->mask(), Strings::length($this->buffer) - $this->cursor)),
       PasswordDisplay::Plaintext => $this->renderInputLine($theme),
     };
   }

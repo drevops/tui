@@ -7,7 +7,7 @@ namespace DrevOps\Tui\Widget\Capability;
 use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Theme\ThemeInterface;
-use DrevOps\Tui\Utils\Utf8;
+use DrevOps\Tui\Utils\Strings;
 
 /**
  * Character-buffer editing: a movable cursor, insertion and deletion.
@@ -37,7 +37,7 @@ trait TextEditCapableTrait {
    */
   protected function initTextBuffer(string $buffer): void {
     $this->buffer = $buffer;
-    $this->cursor = Utf8::length($this->buffer);
+    $this->cursor = Strings::length($this->buffer);
   }
 
   /**
@@ -75,7 +75,7 @@ trait TextEditCapableTrait {
     }
 
     if ($keys->matches($key, Action::MoveRight)) {
-      $this->cursor = min(Utf8::length($this->buffer), $this->cursor + 1);
+      $this->cursor = min(Strings::length($this->buffer), $this->cursor + 1);
 
       return TRUE;
     }
@@ -102,8 +102,8 @@ trait TextEditCapableTrait {
    *   The text to insert.
    */
   public function insert(string $text): void {
-    $this->buffer = Utf8::substr($this->buffer, 0, $this->cursor) . $text . Utf8::substr($this->buffer, $this->cursor);
-    $this->cursor += Utf8::length($text);
+    $this->buffer = Strings::substr($this->buffer, 0, $this->cursor) . $text . Strings::substr($this->buffer, $this->cursor);
+    $this->cursor += Strings::length($text);
   }
 
   /**
@@ -111,7 +111,7 @@ trait TextEditCapableTrait {
    */
   public function backspace(): void {
     if ($this->cursor > 0) {
-      $this->buffer = Utf8::substr($this->buffer, 0, $this->cursor - 1) . Utf8::substr($this->buffer, $this->cursor);
+      $this->buffer = Strings::substr($this->buffer, 0, $this->cursor - 1) . Strings::substr($this->buffer, $this->cursor);
       $this->cursor--;
     }
   }
@@ -131,8 +131,8 @@ trait TextEditCapableTrait {
    */
   protected function caretSegments(): array {
     return [
-      Utf8::substr($this->buffer, 0, $this->cursor),
-      Utf8::substr($this->buffer, $this->cursor),
+      Strings::substr($this->buffer, 0, $this->cursor),
+      Strings::substr($this->buffer, $this->cursor),
     ];
   }
 
