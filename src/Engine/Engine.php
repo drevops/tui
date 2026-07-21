@@ -76,6 +76,67 @@ class Engine {
   }
 
   /**
+   * Resolve and settle every field's value, provenance and activation.
+   *
+   * The full-map twin of collect(): the same resolution and settling over the
+   * whole form, but keeping every field - an inactive field retains its settled
+   * value and provenance, so a later activation change can surface it without
+   * re-resolving - and skipping the input guard, which belongs to the
+   * collection boundary.
+   *
+   * @param array<string,mixed> $inputs
+   *   Pre-supplied values keyed by field id.
+   * @param \DrevOps\Tui\Handler\Context $context
+   *   The run context.
+   *
+   * @return array{array<string,mixed>,array<string,\DrevOps\Tui\Answers\Provenance>,array<string,bool>}
+   *   The settled values, the provenance and the active map, keyed by field id;
+   *   the values and provenance cover every field, active or not.
+   */
+  public function resolveState(array $inputs, Context $context): array {
+    $fields = $this->form->fields();
+
+    [$values, $sources] = $this->resolveAll($fields, $inputs, $context);
+    $values = $this->transformInputs($fields, $values, $sources);
+    [$rules, $pinned] = $this->deriveRules($fields, $sources);
+    [$active, $values] = $this->stabilize($fields, $values, $rules, $pinned);
+
+    $all = array_fill_keys(array_keys($sources), TRUE);
+
+    return [$values, $this->provenanceFor($fields, $sources, $all), $active];
+  }
+
+  /**
+   * Settle derived values, activation and fix-ups over an edited value set.
+   *
+   * The stabilization that runs at resolution time, re-runnable over values
+   * that changed afterwards: derive rules recompute except where the pinned
+   * map holds a field's value, conditions re-evaluate and fix-ups re-apply,
+   * all to a fixpoint.
+   *
+   * @param array<string,mixed> $values
+   *   The current values keyed by field id.
+   * @param array<string,bool> $pinned
+   *   Derive-ruled field ids that must not be recomputed.
+   *
+   * @return array{array<string,bool>,array<string,mixed>}
+   *   The active map and the settled values.
+   */
+  public function settle(array $values, array $pinned): array {
+    $fields = $this->form->fields();
+
+    $rules = [];
+
+    foreach ($fields as $field) {
+      if ($field->derive !== NULL) {
+        $rules[$field->id] = $field->derive;
+      }
+    }
+
+    return $this->stabilize($fields, $values, $rules, $pinned);
+  }
+
+  /**
    * Resolve every field's initial value and its source, in field order.
    *
    * @param \DrevOps\Tui\Model\Field[] $fields

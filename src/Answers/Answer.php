@@ -9,9 +9,9 @@ use DrevOps\Tui\Model\FieldType;
 /**
  * A single collected answer with a snapshot of the question it answers.
  *
- * The snapshot (label, kind, weight, panel trail) is taken at collection
- * time, so consumers can present or process an answer set without holding
- * the form configuration.
+ * The snapshot (label, kind, panel trail) is taken at collection time, so
+ * consumers can present or process an answer set without holding the form
+ * configuration.
  *
  * @package DrevOps\Tui\Answers
  */
@@ -30,8 +30,6 @@ final readonly class Answer {
    *   The question's human-readable label.
    * @param \DrevOps\Tui\Model\FieldType $type
    *   The question kind.
-   * @param int $weight
-   *   The processing weight; lower runs earlier.
    * @param list<string> $panels
    *   The titles of the panels the question lives under, outermost first.
    */
@@ -41,7 +39,6 @@ final readonly class Answer {
     public Provenance $provenance,
     public string $label,
     public FieldType $type,
-    public int $weight,
     public array $panels,
   ) {
   }

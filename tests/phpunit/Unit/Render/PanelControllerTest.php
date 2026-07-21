@@ -8,7 +8,10 @@ use DrevOps\Tui\Answers\Answers;
 use DrevOps\Tui\Answers\Provenance;
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Builder\PanelBuilder;
+use DrevOps\Tui\Condition\Condition;
+use DrevOps\Tui\Derive\Derive;
 use DrevOps\Tui\Handler\HandlerRegistry;
+use DrevOps\Tui\Model\Fixup;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Render\Ansi;
@@ -1171,6 +1174,136 @@ final class PanelControllerTest extends TestCase {
     // The handler's static transform() lowercased the accepted value.
     $this->assertFalse($controller->isEditing());
     $this->assertSame('seedx', $controller->answers()->value('machine_name'));
+  }
+
+  public function testConditionalFieldFollowsAnswers(): void {
+    $form = Form::create('Demo')
+      ->panel('packing', 'Packing', function (PanelBuilder $p): void {
+        $p->confirm('extra', 'Extra');
+        $p->text('notes', 'Notes')->default('mixed')->when(new Condition('extra'));
+      })
+      ->build();
+
+    $controller = new PanelController($form, new DefaultTheme(40, ['color' => FALSE]), ['extra' => FALSE, 'notes' => 'mixed']);
+    $controller->handle(Key::named(KeyName::Enter));
+
+    // The condition fails, so the field neither renders nor answers.
+    $this->assertStringNotContainsString('Notes', Ansi::strip($controller->frame(12)));
+    $this->assertFalse($controller->answers()->has('notes'));
+
+    // Flip the gate on: the field appears carrying its settled value.
+    $controller->handle(Key::named(KeyName::Enter));
+    $controller->handle(Key::char('y'));
+    $controller->handle(Key::named(KeyName::Enter));
+
+    $this->assertStringContainsString('Notes', Ansi::strip($controller->frame(12)));
+    $this->assertSame('mixed', $controller->answers()->value('notes'));
+
+    // Flip it back: the field hides again and contributes no answer.
+    $controller->handle(Key::named(KeyName::Enter));
+    $controller->handle(Key::char('n'));
+    $controller->handle(Key::named(KeyName::Enter));
+
+    $this->assertStringNotContainsString('Notes', Ansi::strip($controller->frame(12)));
+    $this->assertFalse($controller->answers()->has('notes'));
+  }
+
+  public function testCursorClampsWhenFieldHides(): void {
+    $form = Form::create('Demo')
+      ->panel('p', 'P', function (PanelBuilder $p): void {
+        $p->text('gated', 'Gated')->default('g')->when(new Condition('extra'));
+        $p->confirm('extra', 'Extra');
+      })
+      ->build();
+
+    $controller = new PanelController($form, new DefaultTheme(40, ['color' => FALSE]), ['gated' => 'g', 'extra' => TRUE]);
+    $controller->handle(Key::named(KeyName::Enter));
+    $controller->handle(Key::named(KeyName::Down));
+    $this->assertSame(1, $controller->cursor());
+
+    // Hiding the first field shrinks the list; the cursor clamps onto it.
+    $controller->handle(Key::named(KeyName::Enter));
+    $controller->handle(Key::char('n'));
+    $controller->handle(Key::named(KeyName::Enter));
+
+    $this->assertSame(0, $controller->cursor());
+    $this->assertSame(['extra'], array_keys($controller->answers()->values));
+  }
+
+  public function testEditReSettlesDerivedChain(): void {
+    $controller = $this->derivedController();
+    $controller->handle(Key::named(KeyName::Enter));
+
+    // The construction settle computed the rule over the seeded source.
+    $this->assertSame('red_apple', $controller->answers()->value('slug'));
+
+    // Editing the source re-derives the target, keeping its derived badge.
+    $controller->handle(Key::named(KeyName::Enter));
+    $controller->handle(Key::char('x'));
+    $controller->handle(Key::named(KeyName::Enter));
+
+    $this->assertSame('Red Applex', $controller->answers()->value('name'));
+    $this->assertSame('red_applex', $controller->answers()->value('slug'));
+    $this->assertSame(Provenance::Derived, $controller->answers()->provenanceOf('slug'));
+  }
+
+  public function testEditDerivedFieldPinsOverride(): void {
+    $controller = $this->derivedController();
+    $controller->handle(Key::named(KeyName::Enter));
+
+    // Editing the derived field itself pins the rule as an override.
+    $controller->handle(Key::named(KeyName::Down));
+    $controller->handle(Key::named(KeyName::Enter));
+    $controller->handle(Key::char('z'));
+    $controller->handle(Key::named(KeyName::Enter));
+
+    $this->assertSame('red_applez', $controller->answers()->value('slug'));
+    $this->assertSame(Provenance::Override, $controller->answers()->provenanceOf('slug'));
+
+    // The pinned value survives edits to the source it derived from.
+    $controller->handle(Key::named(KeyName::Up));
+    $controller->handle(Key::named(KeyName::Enter));
+    $controller->handle(Key::char('x'));
+    $controller->handle(Key::named(KeyName::Enter));
+
+    $this->assertSame('Red Applex', $controller->answers()->value('name'));
+    $this->assertSame('red_applez', $controller->answers()->value('slug'));
+  }
+
+  public function testEditAppliesFixups(): void {
+    $form = Form::create('Demo')
+      ->fixup(new Fixup(set: 'note', to: 'boxed', when: new Condition('tag', eq: 'go')))
+      ->panel('p', 'P', function (PanelBuilder $p): void {
+        $p->text('tag', 'Tag');
+        $p->text('note', 'Note');
+      })
+      ->build();
+
+    $controller = new PanelController($form, new DefaultTheme(40, ['color' => FALSE]), ['tag' => '', 'note' => '']);
+    $controller->handle(Key::named(KeyName::Enter));
+
+    $controller->handle(Key::named(KeyName::Enter));
+    $controller->handle(Key::char('g'));
+    $controller->handle(Key::char('o'));
+    $controller->handle(Key::named(KeyName::Enter));
+
+    // The guard matches the accepted edit, so the fix-up set its target on
+    // the same settle.
+    $this->assertSame('boxed', $controller->answers()->value('note'));
+  }
+
+  /**
+   * Build a controller over a name field and a slug derived from it.
+   */
+  protected function derivedController(): PanelController {
+    $form = Form::create('Demo')
+      ->panel('naming', 'Naming', function (PanelBuilder $p): void {
+        $p->text('name', 'Name');
+        $p->text('slug', 'Slug')->derive(new Derive('{{name}}', 'machine'));
+      })
+      ->build();
+
+    return new PanelController($form, new DefaultTheme(40, ['color' => FALSE]), ['name' => 'Red Apple'], ['slug' => Provenance::Derived]);
   }
 
   protected function controller(): PanelController {

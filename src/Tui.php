@@ -291,6 +291,8 @@ final class Tui {
    *   When the engine cannot process the configuration or answers.
    * @throws \DrevOps\Tui\InterruptException
    *   When the user aborts the interactive session with the interrupt key.
+   * @throws \DrevOps\Tui\CancelException
+   *   When the user dismisses the interactive session via the cancel button.
    */
   public function run(string $prompts = '', string $version = '', string $directory = '', ?bool $interactive = NULL): Answers {
     $interactive ??= $prompts === '' && defined('STDIN') && stream_isatty(STDIN);
@@ -345,6 +347,8 @@ final class Tui {
    *   When the engine cannot process the configuration or answers.
    * @throws \DrevOps\Tui\InterruptException
    *   When the user aborts the interactive session with the interrupt key.
+   * @throws \DrevOps\Tui\CancelException
+   *   When the user dismisses the interactive session via the cancel button.
    */
   public function interact(string $theme = '', string $banner = '', string $version = '', string $directory = '', ?Terminal $terminal = NULL): Answers {
     if (!$terminal instanceof Terminal) {
@@ -367,16 +371,22 @@ final class Tui {
       throw new InterruptException('The interactive session was interrupted.');
     }
 
+    // The cancel button is the same abort expressed as a click: without this a
+    // cancelled session would return its answers exactly like a submitted one.
+    if ($controller->isCancelled()) {
+      throw new CancelException('The interactive session was cancelled.');
+    }
+
     return $answers;
   }
 
   /**
    * Build the interactive panel controller for the resolved display options.
    *
-   * Shared by interact() and the test harness: it settles the engine's answers,
-   * resolves the theme and banner, and wires the controller - so a caller that
-   * supplies its own terminal (a real one, or a scripted one for tests) can run
-   * the interactive loop against it.
+   * Shared by interact() and the test harness: it resolves and settles every
+   * field's state through the engine, resolves the theme and banner, and wires
+   * the controller - so a caller that supplies its own terminal (a real one,
+   * or a scripted one for tests) can run the interactive loop against it.
    *
    * @param array<string,mixed> $options
    *   The resolved theme display options (colour, Unicode, mode).
@@ -402,15 +412,19 @@ final class Tui {
   public function controller(array $options, string $theme = '', string $banner = '', string $version = '', string $directory = '', int $width = DefaultTheme::DEFAULT_WIDTH): PanelController {
     // Restore this facade's language before rendering (see collect()).
     Translator::setShared($this->translator);
-    $answers = $this->engine->collect([], $this->context($directory, FALSE, $version));
+
+    // The full state, not collect()'s active-only answers: an inactive field
+    // keeps its settled value, so a condition satisfied mid-session surfaces
+    // the field with its default rather than an empty value.
+    [$values, $provenance] = $this->engine->resolveState([], $this->context($directory, FALSE, $version));
 
     $banner_text = $banner !== '' ? $banner : $this->form->banner;
 
     return new PanelController(
       $this->form,
       ThemeManager::create($this->resolveTheme($theme), $width, $options),
-      $answers->values,
-      $answers->provenance,
+      $values,
+      $provenance,
       $this->keymap ?? KeyMapManager::create(),
       $this->registry,
       footer: $this->footer,

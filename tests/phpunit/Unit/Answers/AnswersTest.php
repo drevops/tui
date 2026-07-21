@@ -52,7 +52,7 @@ final class AnswersTest extends TestCase {
   public function testForFormSnapshotsQuestions(): void {
     $form = Form::create('T')
       ->panel('general', 'General', function (PanelBuilder $p): void {
-        $p->text('name', 'Site name')->weight(10);
+        $p->text('name', 'Site name');
         $p->text('inactive', 'Inactive');
         $p->panel('adv', 'Advanced', function (PanelBuilder $sp): void {
           $sp->confirm('debug', 'Debug');
@@ -71,7 +71,6 @@ final class AnswersTest extends TestCase {
     $this->assertSame(Provenance::Edited, $name->provenance);
     $this->assertSame('Site name', $name->label);
     $this->assertSame(FieldType::Text, $name->type);
-    $this->assertSame(10, $name->weight);
     $this->assertSame(['General'], $name->panels);
 
     $debug = $answers->item('debug');

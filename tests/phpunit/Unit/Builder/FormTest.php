@@ -47,7 +47,7 @@ final class FormTest extends TestCase {
       ->fixup($fixup)
       ->panel('general', 'General', function (PanelBuilder $p): void {
         $p->description('General settings.');
-        $p->text('name', 'Site name')->description('The name.')->required()->weight(10)->default('Acme');
+        $p->text('name', 'Site name')->description('The name.')->required()->default('Acme');
         $p->text('machine_name', 'Machine name')->derive(new Derive('{{ name }}'));
         $p->select('profile', 'Profile')->options(['standard' => 'Standard', 'minimal' => 'Minimal'])->default('standard');
         $p->select('services', 'Services')->multiple()->option('solr', 'Solr', 'Search')->option('redis', 'Redis');
@@ -79,7 +79,6 @@ final class FormTest extends TestCase {
     $this->assertSame(FieldType::Text, $name->type);
     $this->assertSame('Acme', $name->default);
     $this->assertTrue($name->required);
-    $this->assertSame(10, $name->weight);
 
     $machine = $form->field('machine_name');
     $this->assertInstanceOf(Field::class, $machine);

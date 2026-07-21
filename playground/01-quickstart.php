@@ -65,7 +65,8 @@ try {
   $answers = (new Tui($form))->run();
 }
 catch (InterruptException) {
-  // Ctrl-C aborts the session; the partial answers are never returned.
+  // Ctrl-C (or the Cancel button, whose CancelException subclasses this)
+  // aborts the session; the partial answers are never returned.
   exit(130);
 }
 catch (EngineException $exception) {

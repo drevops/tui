@@ -6,6 +6,7 @@ namespace DrevOps\Tui\Render;
 
 use DrevOps\Tui\Answers\Answers;
 use DrevOps\Tui\Answers\Provenance;
+use DrevOps\Tui\Engine\Engine;
 use DrevOps\Tui\Handler\HandlerRegistry;
 use DrevOps\Tui\Model\Field;
 use DrevOps\Tui\Model\FormDefinition;
@@ -32,7 +33,10 @@ use DrevOps\Tui\Widget\WidgetInterface;
  * editor, and advances on one key at a time - so the whole interaction is
  * testable headlessly. Mouse-wheel scrolls without moving the cursor; a key
  * press re-engages cursor-follow. Editing a field returns to the panel with
- * the new value shown and marked "edited".
+ * the new value shown and marked "edited" (or "override" when it pins a derive
+ * rule), and every accepted edit re-settles the form logic - derive rules
+ * recompute, `when` conditions show and hide fields, fix-ups re-apply - so the
+ * session honours the same behaviour a headless collection does.
  *
  * @package DrevOps\Tui\Render
  *
@@ -162,6 +166,18 @@ class PanelController {
   protected ?int $minWidth = NULL;
 
   /**
+   * The engine settling derives, activation and fix-ups after each edit.
+   */
+  protected Engine $engine;
+
+  /**
+   * The conditional-activation map keyed by field id.
+   *
+   * @var array<string,bool>
+   */
+  protected array $active = [];
+
+  /**
    * Construct a controller.
    *
    * The order groups the arguments by role - the form and its theme, the
@@ -212,6 +228,11 @@ class PanelController {
     $this->nav = $this->keymap->navigation();
     $this->scroller = new Scroller();
     $this->navigator = new Navigator(new Panel('hub', $form->title, '', panels: $form->panels, layout: $form->layout));
+    $this->engine = new Engine($form, $handlers ?? new HandlerRegistry());
+
+    // Settle once at construction so the activation map exists before the
+    // first frame and a seeded value set is coherent with the form logic.
+    $this->resettle();
   }
 
   /**
@@ -402,13 +423,34 @@ class PanelController {
   }
 
   /**
-   * The current answers.
+   * The current answers: the active fields' values and provenance.
+   *
+   * Inactive (condition-failing) fields keep their settled values internally -
+   * so a later activation change surfaces them intact - but contribute no
+   * answer, matching what a headless collection returns.
    *
    * @return \DrevOps\Tui\Answers\Answers
    *   The self-describing answers.
    */
   public function answers(): Answers {
-    return Answers::forForm($this->form, $this->values, $this->provenance);
+    $values = [];
+    $provenance = [];
+
+    foreach ($this->form->fields() as $field) {
+      if (!($this->active[$field->id] ?? TRUE)) {
+        continue;
+      }
+
+      if (array_key_exists($field->id, $this->values)) {
+        $values[$field->id] = $this->values[$field->id];
+      }
+
+      if (isset($this->provenance[$field->id])) {
+        $provenance[$field->id] = $this->provenance[$field->id];
+      }
+    }
+
+    return Answers::forForm($this->form, $values, $provenance);
   }
 
   /**
@@ -467,7 +509,7 @@ class PanelController {
    *   The hub frame.
    */
   protected function hubFrame(int $rows): string {
-    $panel = $this->navigator->current();
+    $panel = $this->viewPanel($this->navigator->current());
 
     // When an inline field is being edited, hand its field and rendered view to
     // the body so the theme expands the editor in place of the summary row.
@@ -551,7 +593,7 @@ class PanelController {
    *   The modal frame.
    */
   protected function modalFrame(int $rows): string {
-    $modal = $this->navigator->current();
+    $modal = $this->viewPanel($this->navigator->current());
 
     $editing = NULL;
     $view = '';
@@ -591,7 +633,7 @@ class PanelController {
       // @codeCoverageIgnoreEnd
     }
 
-    [$body] = $this->theme->renderBody($parent, $this->answers(), -1);
+    [$body] = $this->theme->renderBody($this->viewPanel($parent), $this->answers(), -1);
     $header = [$this->theme->renderBreadcrumbLine($this->navigator)];
     $footer = $this->hubFooter();
     $height = $this->viewportHeight($rows, count($header), count($footer));
@@ -768,12 +810,95 @@ class PanelController {
 
     if ($this->editor->isComplete()) {
       $this->values[$this->editing->id] = $this->editor->value();
-      $this->provenance[$this->editing->id] = Provenance::Edited;
+      // Editing a derive-ruled field pins its rule, exactly as a headless
+      // input to it would, so both paths badge the same situation the same.
+      $this->provenance[$this->editing->id] = $this->editing->derive !== NULL ? Provenance::Override : Provenance::Edited;
       $this->closeEditor();
+      $this->resettle();
     }
     elseif ($this->editor->isCancelled()) {
       $this->closeEditor();
     }
+  }
+
+  /**
+   * Re-settle the form logic over the current values and clamp the cursor.
+   *
+   * Runs the engine's settling - derive rules, conditional activation and
+   * fix-ups - so an interactive change propagates exactly as a headless input
+   * does, then keeps the cursor inside the possibly-changed item range.
+   */
+  protected function resettle(): void {
+    [$this->active, $this->values] = $this->engine->settle($this->values, $this->pinnedDerives());
+
+    $count = $this->itemCountFor($this->navigator->current()) + ($this->buttonsVisible() ? self::BUTTON_COUNT : 0);
+    $this->cursor = max(0, min(max(0, $count - 1), $this->cursor));
+  }
+
+  /**
+   * The derive-ruled fields whose values are pinned against recomputation.
+   *
+   * Mirrors the headless pinning rule: a derive target the user supplied
+   * (override) or discovery detected keeps its value, and every other derive
+   * target follows its rule.
+   *
+   * @return array<string,bool>
+   *   The pinned map keyed by field id.
+   */
+  protected function pinnedDerives(): array {
+    $pinned = [];
+
+    foreach ($this->form->fields() as $field) {
+      if ($field->derive !== NULL) {
+        $pinned[$field->id] = in_array($this->provenance[$field->id] ?? Provenance::Default, [Provenance::Override, Provenance::Detected], TRUE);
+      }
+    }
+
+    return $pinned;
+  }
+
+  /**
+   * A panel's fields whose conditions currently hold, in declaration order.
+   *
+   * @param \DrevOps\Tui\Model\Panel $panel
+   *   The panel.
+   *
+   * @return list<\DrevOps\Tui\Model\Field>
+   *   The active fields.
+   */
+  protected function visibleFields(Panel $panel): array {
+    return array_values(array_filter($panel->fields, fn(Field $field): bool => $this->active[$field->id] ?? TRUE));
+  }
+
+  /**
+   * The number of navigable items on a panel: active fields plus sub-panels.
+   *
+   * @param \DrevOps\Tui\Model\Panel $panel
+   *   The panel.
+   *
+   * @return int
+   *   The item count.
+   */
+  protected function itemCountFor(Panel $panel): int {
+    return count($this->visibleFields($panel)) + count($panel->panels);
+  }
+
+  /**
+   * A rendering copy of a panel holding only its active fields, recursively.
+   *
+   * Built fresh per frame so activation changes surface immediately.
+   * Navigation keeps the original panel objects - only what the theme draws is
+   * filtered - and the copy carries the original Field and sub-panel content,
+   * so the filtered tree stays in lock-step with the real one.
+   *
+   * @param \DrevOps\Tui\Model\Panel $panel
+   *   The panel.
+   *
+   * @return \DrevOps\Tui\Model\Panel
+   *   The filtered copy.
+   */
+  protected function viewPanel(Panel $panel): Panel {
+    return new Panel($panel->id, $panel->title, $panel->description, $this->visibleFields($panel), array_map($this->viewPanel(...), $panel->panels), $panel->modal, $panel->layout);
   }
 
   /**
@@ -847,19 +972,20 @@ class PanelController {
    */
   protected function moveCursor(Key $key): void {
     $panel = $this->navigator->current();
-    $count = $panel->itemCount() + ($this->buttonsVisible() ? self::BUTTON_COUNT : 0);
-    $fields = count($panel->fields);
+    $items = $this->itemCountFor($panel);
+    $count = $items + ($this->buttonsVisible() ? self::BUTTON_COUNT : 0);
+    $fields = count($this->visibleFields($panel));
     $up = $this->nav->matches($key, Action::MoveUp);
     $down = $this->nav->matches($key, Action::MoveDown);
 
-    if ($panel->layout !== [] && $this->cursor >= $fields && $this->cursor < $panel->itemCount()) {
+    if ($panel->layout !== [] && $this->cursor >= $fields && $this->cursor < $items) {
       [$row, $column] = $this->gridPosition($panel->layout, $this->cursor - $fields);
 
       if ($up) {
         $this->cursor = $row > 0 ? $fields + $this->gridSlot($panel->layout, $row - 1, $column) : ($fields > 0 ? $fields - 1 : $this->cursor);
       }
       elseif ($down) {
-        $this->cursor = $row < count($panel->layout) - 1 ? $fields + $this->gridSlot($panel->layout, $row + 1, $column) : ($this->buttonsVisible() ? $panel->itemCount() : $this->cursor);
+        $this->cursor = $row < count($panel->layout) - 1 ? $fields + $this->gridSlot($panel->layout, $row + 1, $column) : ($this->buttonsVisible() ? $items : $this->cursor);
       }
       elseif ($this->nav->matches($key, Action::MoveLeft)) {
         $this->cursor = $column > 0 ? $this->cursor - 1 : $this->cursor;
@@ -877,10 +1003,10 @@ class PanelController {
     elseif ($down) {
       $this->cursor = min(max(0, $count - 1), $this->cursor + 1);
     }
-    elseif ($this->buttonsVisible() && $this->cursor >= $panel->itemCount()) {
+    elseif ($this->buttonsVisible() && $this->cursor >= $items) {
       // The submit/cancel buttons are inline, so Left/Right moves between them.
       $delta = $this->nav->matches($key, Action::MoveRight) ? 1 : -1;
-      $this->cursor = max($panel->itemCount(), min($count - 1, $this->cursor + $delta));
+      $this->cursor = max($items, min($count - 1, $this->cursor + $delta));
     }
   }
 
@@ -940,10 +1066,11 @@ class PanelController {
    */
   protected function activate(): void {
     $panel = $this->navigator->current();
-    $field_count = count($panel->fields);
+    $fields = $this->visibleFields($panel);
+    $field_count = count($fields);
 
     if ($this->cursor < $field_count) {
-      $this->openEditor($panel->fields[$this->cursor]);
+      $this->openEditor($fields[$this->cursor]);
 
       return;
     }
@@ -1014,6 +1141,10 @@ class PanelController {
     $this->modalProvenance = [];
     $this->modalReturnCursor = 0;
     $this->modalReturnOffset = 0;
+
+    // A restored snapshot (or the dialog's kept edits) may change what is
+    // active outside the dialog, so the parent re-settles before it renders.
+    $this->resettle();
   }
 
   /**

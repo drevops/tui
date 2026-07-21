@@ -74,6 +74,7 @@ package "Interactive TUI" #FFEBEE {
 [SchemaValidator] --> [FormDefinition]
 
 [PanelController] --> [FormDefinition]
+[PanelController] --> [Engine]
 [ThemeManager] --> [Theme]
 [PanelController] --> [Theme]
 [KeyMapManager] --> [KeyMap]

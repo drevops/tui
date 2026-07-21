@@ -7,6 +7,10 @@ namespace DrevOps\Tui\Discovery;
 /**
  * Discovers a list of directory entries, optionally filtered by type.
  *
+ * A missing directory yields NULL - nothing to discover, so the field keeps
+ * its default - while an existing empty directory yields an empty list, a
+ * genuine discovery of "no entries".
+ *
  * @package DrevOps\Tui\Discovery
  */
 class Scan extends AbstractDiscover {
@@ -29,13 +33,13 @@ class Scan extends AbstractDiscover {
     $full = $this->join($directory, $this->dir);
 
     if (!is_dir($full)) {
-      return [];
+      return NULL;
     }
 
     $entries = scandir($full);
     // @codeCoverageIgnoreStart
     if ($entries === FALSE) {
-      return [];
+      return NULL;
     }
     // @codeCoverageIgnoreEnd
     $out = [];

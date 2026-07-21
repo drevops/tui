@@ -124,11 +124,12 @@ composer install
 ### Playground scripts
 
 - **Each playground script is self-contained.** A demo requires the Composer
-  autoloader directly (`require __DIR__ . '/../../vendor/autoload.php';`) and
+  autoloader directly (`require __DIR__ . '/../vendor/autoload.php';`) and
   handles its own concerns inline - argument parsing, its own `try`/`catch`
-  around collection (including the `InterruptException` a Ctrl-C abort raises,
-  caught to `exit(130)`), and its own output. There is no shared bootstrap or
-  helper include: a reader can copy a single script and run it standalone.
+  around collection (including the `InterruptException` a Ctrl-C abort raises -
+  which also covers the Cancel button's `CancelException` subclass - caught to
+  `exit(130)`), and its own output. There is no shared bootstrap or helper
+  include: a reader can copy a single script and run it standalone.
 
 ## Testing Patterns
 

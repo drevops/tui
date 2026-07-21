@@ -70,7 +70,8 @@ final class DiscoverSpecsTest extends TestCase {
 
   public function testScan(): void {
     $this->assertSame(['alpha', 'beta'], (new Scan('web/modules/custom', ScanType::Dir))->discover($this->dir));
-    $this->assertSame([], (new Scan('web/nope'))->discover($this->dir));
+    // A missing directory is "nothing to discover", not a detected empty list.
+    $this->assertNull((new Scan('web/nope'))->discover($this->dir));
     // type=dir skips the file; type=file skips the directory.
     $this->assertSame(['adir'], (new Scan('mixed', ScanType::Dir))->discover($this->dir));
     $this->assertSame(['afile.txt'], (new Scan('mixed', ScanType::File))->discover($this->dir));
@@ -78,13 +79,16 @@ final class DiscoverSpecsTest extends TestCase {
   }
 
   public function testCleanDirectoryDiscoversNothing(): void {
-    vfsStream::setup('empty');
+    vfsStream::setup('empty', structure: ['hollow' => []]);
     $dir = vfsStream::url('empty');
 
     $this->assertNull((new Dotenv('DRUPAL_PROFILE'))->discover($dir));
     $this->assertNull((new JsonValue('composer.json', 'name'))->discover($dir));
     $this->assertFalse((new PathExists('web'))->discover($dir));
-    $this->assertSame([], (new Scan('web'))->discover($dir));
+    $this->assertNull((new Scan('web'))->discover($dir));
+
+    // An existing directory with no entries is a real discovery: empty.
+    $this->assertSame([], (new Scan('hollow'))->discover($dir));
   }
 
   public function testToArray(): void {

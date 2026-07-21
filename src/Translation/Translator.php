@@ -20,8 +20,8 @@ namespace DrevOps\Tui\Translation;
  * no "es_ES.php" exists.
  *
  * A process-wide instance set with {@see Translator::setShared()} backs the
- * {@see \DrevOps\Tui\t()} function, so chrome can translate from anywhere
- * without threading a translator through every constructor.
+ * static {@see Translator::t()} entry point, so chrome can translate from
+ * anywhere without threading a translator through every constructor.
  *
  * @package DrevOps\Tui\Translation
  */

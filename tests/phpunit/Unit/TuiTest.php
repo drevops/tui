@@ -7,6 +7,7 @@ namespace DrevOps\Tui\Tests\Unit;
 use DrevOps\Tui\Answers\Answers;
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Builder\PanelBuilder;
+use DrevOps\Tui\CancelException;
 use DrevOps\Tui\Derive\Derive;
 use DrevOps\Tui\Engine\Engine;
 use DrevOps\Tui\Handler\HandlerRegistry;
@@ -189,6 +190,16 @@ final class TuiTest extends TestCase {
     $this->expectException(InterruptException::class);
 
     $this->tui()->interact(terminal: new BufferedTerminal(["\x03"]));
+  }
+
+  public function testInteractThrowsOnCancel(): void {
+    // The cancel button is the same abort expressed as a click: the facade
+    // raises (a subclass of InterruptException, so one catch covers both)
+    // rather than returning the answers exactly like a submitted form.
+    $this->expectException(CancelException::class);
+
+    // Down twice reaches Cancel past the panel and Submit; Enter activates it.
+    $this->tui()->interact(terminal: new BufferedTerminal(["\033[B", "\033[B", "\r"]));
   }
 
   public function testFullscreenSugarMergesIntoThemeOptions(): void {

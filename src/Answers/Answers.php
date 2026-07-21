@@ -16,8 +16,8 @@ use DrevOps\Tui\Model\Panel;
  * override.
  *
  * Answer sets produced by the engine and the panel TUI are self-describing:
- * each answer carries a snapshot of its question (label, kind, weight, panel
- * trail) in items(), so summaries and processing need no form configuration.
+ * each answer carries a snapshot of its question (label, kind, panel trail)
+ * in items(), so summaries and processing need no form configuration.
  *
  * @package DrevOps\Tui\Answers
  */
@@ -45,7 +45,7 @@ final readonly class Answers {
    * Build a self-describing answer set from a form definition.
    *
    * Walks the panel tree in form order and snapshots each active question
-   * (label, kind, weight, panel trail) into its answer.
+   * (label, kind, panel trail) into its answer.
    *
    * @param \DrevOps\Tui\Model\FormDefinition $form
    *   The form definition the answers were collected against.
@@ -91,7 +91,7 @@ final readonly class Answers {
         continue;
       }
 
-      $items[$field->id] = new Answer($field->id, $values[$field->id], $provenance[$field->id] ?? Provenance::Default, $field->label, $field->type, $field->weight, $trail);
+      $items[$field->id] = new Answer($field->id, $values[$field->id], $provenance[$field->id] ?? Provenance::Default, $field->label, $field->type, $trail);
     }
 
     foreach ($panel->panels as $subpanel) {
