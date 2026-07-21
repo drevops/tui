@@ -28,6 +28,16 @@ namespace DrevOps\Tui\Translation;
 final class Translator {
 
   /**
+   * The reserved catalog key a catalog supplies its plural rule under.
+   *
+   * A catalog may return, under this key, a `fn(int $count): int` closure
+   * mapping a count to the zero-based index of the plural form to use, letting
+   * a language define its own plural boundaries. Absent, a count of one takes
+   * the first form and any other count the second.
+   */
+  public const string PLURAL_RULE = '__plural_rule__';
+
+  /**
    * The process-wide translator backing the t() function.
    */
   protected static ?Translator $shared = NULL;
@@ -38,6 +48,18 @@ final class Translator {
    * @var array<string,string>|null
    */
   protected ?array $catalog = NULL;
+
+  /**
+   * The plural-form lists for the active language, keyed by plural source.
+   *
+   * @var array<string,list<string>>
+   */
+  protected array $plurals = [];
+
+  /**
+   * The active language's plural rule, when its catalog supplies one.
+   */
+  protected ?\Closure $pluralRule = NULL;
 
   /**
    * Construct a translator.
@@ -96,6 +118,38 @@ final class Translator {
   }
 
   /**
+   * Select and localize a singular or plural message by count.
+   *
+   * The count picks the grammatical form, and @count is bound to it so a
+   * message need only carry the placeholder. With a shared translator the
+   * active language's catalog supplies both the forms and the rule that maps
+   * the count to one of them; without one, a count of one yields the singular
+   * source and any other count the plural. Mirrors Drupal's formatPlural().
+   *
+   * @param int $count
+   *   The item count the grammatical form is chosen for.
+   * @param string $singular
+   *   The English singular source, a catalog key and the one-form fallback.
+   * @param string $plural
+   *   The English plural source: the key a translation's forms hang from, and
+   *   the fallback form for any count that is not one.
+   * @param array<string,string|int|float|\Stringable> $args
+   *   Replacements for the @name placeholders; @count is added automatically.
+   *
+   * @return string
+   *   The resolved, interpolated message for the count.
+   */
+  public static function formatPlural(int $count, string $singular, string $plural, array $args = []): string {
+    if (self::$shared instanceof self) {
+      return self::$shared->translatePlural($count, $singular, $plural, $args);
+    }
+
+    $args['@count'] = $count;
+
+    return self::interpolate($count === 1 ? $singular : $plural, $args);
+  }
+
+  /**
    * Translate a source string, substituting its placeholders.
    *
    * @param string $source
@@ -110,6 +164,57 @@ final class Translator {
     $catalog = $this->catalog();
 
     return self::interpolate($catalog[$source] ?? $source, $args);
+  }
+
+  /**
+   * Resolve a count to its localized plural form.
+   *
+   * A translation lists the forms for the plural source, and the catalog's own
+   * rule - or the default one-versus-other when it supplies none - selects
+   * among them. Without a translation the two English source forms and the
+   * default rule stand in, so a language's rule never applies to the English
+   * wording, whose singular reads for a count of exactly one. An index the
+   * chosen forms do not cover falls back to the plural source, so a rendering
+   * is always defined.
+   *
+   * @param int $count
+   *   The item count the form is chosen for.
+   * @param string $singular
+   *   The English singular source, the one-form fallback.
+   * @param string $plural
+   *   The English plural source: the key the catalog's forms hang from, and the
+   *   fallback form.
+   * @param array<string,string|int|float|\Stringable> $args
+   *   Replacements for the @name placeholders; @count is added automatically.
+   *
+   * @return string
+   *   The localized, interpolated form for the count.
+   */
+  public function translatePlural(int $count, string $singular, string $plural, array $args = []): string {
+    $this->catalog();
+
+    $args['@count'] = $count;
+
+    if (isset($this->plurals[$plural])) {
+      $forms = $this->plurals[$plural];
+      $rule = $this->pluralRule ?? self::defaultPluralRule();
+    }
+    else {
+      $forms = [$singular, $plural];
+      $rule = self::defaultPluralRule();
+    }
+
+    return self::interpolate($forms[(int) $rule($count)] ?? $plural, $args);
+  }
+
+  /**
+   * The fallback plural rule: the first form for one, the second otherwise.
+   *
+   * @return \Closure(int): int
+   *   The rule mapping a count to a zero-based form index.
+   */
+  protected static function defaultPluralRule(): \Closure {
+    return static fn(int $count): int => $count === 1 ? 0 : 1;
   }
 
   /**
@@ -224,7 +329,11 @@ final class Translator {
   }
 
   /**
-   * Read a catalog file, keeping only its string => string pairs.
+   * Read a catalog file into the string map, plural forms, and plural rule.
+   *
+   * Returns the string => string pairs; the plural-form lists and a plural-rule
+   * closure are read as side effects into $this->plurals and $this->pluralRule,
+   * so the caller merges only the returned string map.
    *
    * @param string $file
    *   The catalog file path.
@@ -238,12 +347,55 @@ final class Translator {
     $catalog = [];
 
     foreach (is_array($data) ? $data : [] as $key => $value) {
-      if (is_string($key) && is_string($value)) {
+      if ($key === self::PLURAL_RULE) {
+        if ($value instanceof \Closure) {
+          $this->pluralRule = $value;
+        }
+
+        continue;
+      }
+
+      if (!is_string($key)) {
+        continue;
+      }
+
+      if (is_string($value)) {
         $catalog[$key] = $value;
+
+        continue;
+      }
+
+      if (is_array($value) && $this->isFormList($value)) {
+        $this->plurals[$key] = $value;
       }
     }
 
     return $catalog;
+  }
+
+  /**
+   * Whether a value is a non-empty list of strings - a set of plural forms.
+   *
+   * @param array<mixed> $value
+   *   The value to test.
+   *
+   * @return bool
+   *   TRUE when the keys are a zero-based list and every element is a string.
+   *
+   * @phpstan-assert-if-true list<string> $value
+   */
+  protected function isFormList(array $value): bool {
+    if ($value === [] || !array_is_list($value)) {
+      return FALSE;
+    }
+
+    foreach ($value as $form) {
+      if (!is_string($form)) {
+        return FALSE;
+      }
+    }
+
+    return TRUE;
   }
 
   /**

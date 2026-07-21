@@ -241,9 +241,9 @@ final class ThemeRenderTest extends TestCase {
     ]);
     $answers = new Answers(['a' => 'Acme', 'b' => 'Beta', 'm' => ['w', 'x', 'y', 'z'], 'c' => 'Gamma', 'd' => 'Delta'], []);
 
-    // "gated" is skipped (no answer), the multiselect condenses to a count, and
-    // only the first four active values appear ("Delta" is dropped).
-    $this->assertSame('Acme · Beta · 4 selected · Gamma', $this->theme()->summarizePanel($panel, $answers));
+    // "gated" is skipped (no answer), the multiselect condenses to a pluralized
+    // count, and only the first four active values appear ("Delta" is dropped).
+    $this->assertSame('Acme · Beta · 4 items selected · Gamma', $this->theme()->summarizePanel($panel, $answers));
   }
 
   public function testSummaryLineClipsToWidth(): void {

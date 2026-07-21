@@ -10,6 +10,7 @@ parameters:
     - src
     - tests/phpunit
     - playground
+    - translations
 
   excludePaths:
     - vendor/*

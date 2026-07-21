@@ -2,11 +2,12 @@
 
 /**
  * @file
- * Canonical English chrome strings the library emits.
+ * The English chrome catalog - every chrome string the library emits.
  *
- * Copy this file to a locale (e.g. "es.php") and translate the values; the
- * keys are the English source strings the library looks up. Placeholders
- * such as "@count" must be kept verbatim in a translation.
+ * Also the template for a new locale: copy this file to one named for the
+ * target language (e.g. "uk.php") and translate the values. The keys are the
+ * English source strings the library looks up; placeholders such as "@count"
+ * must be kept verbatim in a translation.
  */
 
 declare(strict_types=1);
@@ -14,7 +15,8 @@ declare(strict_types=1);
 return [
   '"@min" must not exceed "@max".' => '"@min" must not exceed "@max".',
   '(empty)' => '(empty)',
-  '@count selected' => '@count selected',
+  '1 item selected' => '1 item selected',
+  '@count items selected' => '@count items selected',
   '@value is not a valid "@key". Allowed: @allowed.' => '@value is not a valid "@key". Allowed: @allowed.',
   '@value is not a valid "@key". Use a non-negative integer.' => '@value is not a valid "@key". Use a non-negative integer.',
   'Calendar' => 'Calendar',

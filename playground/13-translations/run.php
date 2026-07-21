@@ -4,13 +4,16 @@
  * @file
  * Translations: chrome and questions presented in another language.
  *
- * A Translator carries the active language and catalog directories; set on
- * the facade, it localizes everything user-facing - key hints, buttons,
- * badges, validation messages, and the form's own labels - with English as
- * the fallback for anything untranslated. The language can also be the
- * 'auto' sentinel to follow the environment locale (LC_ALL, LC_MESSAGES,
- * LANG), and 'es_ES' falls back to the 'es' catalog when no region catalog
- * exists.
+ * A Translator carries the active language and catalog directories; set on the
+ * facade, it localizes everything user-facing - key hints, buttons, badges,
+ * validation messages, and the form's own labels - with English as the fallback
+ * for anything untranslated. The language can also be the 'auto' sentinel to
+ * follow the environment locale (LC_ALL, LC_MESSAGES, LANG), and 'uk_UA' falls
+ * back to the 'uk' catalog when no region catalog exists.
+ *
+ * The Basket sub-panel's multi-select condenses to a pluralized count in its
+ * hub summary, so selecting a different number of fruits shows Ukrainian's
+ * one/few/many forms - see uk.php for the rule that chooses between them.
  *
  * Usage:
  *   php playground/13-translations/run.php
@@ -31,21 +34,29 @@ require __DIR__ . '/../../vendor/autoload.php';
 // so the answer ids and values stay language-neutral.
 $form = Form::create('Produce order')
   ->panel('order', 'New order', function (PanelBuilder $p): void {
-    $p->text('name', 'Order name')->default('Semanal');
-    $p->select('fruit', 'Fruit')->default('banana')->options([
-      'apple' => 'Apple',
-      'banana' => 'Banana',
-      'cherry' => 'Cherry',
-    ]);
-    $p->number('quantity', 'Quantity')->min(1)->max(99)->default(6);
-    $p->confirm('organic', 'Organic only?')->default(TRUE);
+    $p->description('Your weekly produce order.');
+    $p->text('name', 'Order name')->default('Weekly');
+
+    // A nested sub-panel renders as a drillable row with a value summary; the
+    // multi-select condenses there to a pluralized "@count items selected".
+    $p->panel('basket', 'Basket', function (PanelBuilder $sp): void {
+      $sp->description('Pick your fruits.');
+      $sp->select('fruits', 'Fruits')->multiple()->default(['apple', 'banana', 'cherry', 'pear'])->options([
+        'apple' => 'Apple',
+        'banana' => 'Banana',
+        'cherry' => 'Cherry',
+        'pear' => 'Pear',
+        'grape' => 'Grape',
+      ]);
+    });
   });
 
-// Spanish, from the catalog/ directory beside this script. Directories are
-// searched in order and a later one overrides an earlier one, so a consumer
-// catalog can override a bundled one. Translator('auto', [...]) would follow
-// the terminal locale instead.
-$translator = new Translator('es', [__DIR__ . '/catalog']);
+// Ukrainian: the library's shipped catalog (translations/uk.php) provides the
+// chrome and its three plural forms; the local catalog/ adds this form's own
+// labels on top. Directories are searched in order, so a later one wins - a
+// consumer would point at vendor/drevops/tui/translations for the shipped set.
+// Translator('auto', [...]) would follow the terminal locale instead.
+$translator = new Translator('uk', [dirname(__DIR__, 2) . '/translations', __DIR__ . '/catalog']);
 
 try {
   $answers = (new Tui($form))->translator($translator)->run();
