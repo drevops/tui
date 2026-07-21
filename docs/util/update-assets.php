@@ -64,7 +64,7 @@ require_once __DIR__ . '/svg-light-twin.php';
 /**
  * The expect body walking the all-widgets montage field by field.
  *
- * The montage form (playground/02-widgets/all-widgets.php) is one panel with
+ * The montage form (playground/02-widgets-all-widgets.php) is one panel with
  * every widget type. Fields edit inline and accepting keeps the cursor on
  * the field, so each step is: open with Enter, drive the widget with its own
  * keys, accept, then arrow down to the next field. The calendar is the one
@@ -655,7 +655,7 @@ function getJobs(string $project_dir): array {
   // label proves the whole sequence was recorded.
   foreach ($env_variants as $suffix => $env) {
     $jobs['widgets' . $suffix] = [
-      'command' => 'env LINES=16 COLUMNS=64 ' . $env . 'php ' . $project_dir . '/playground/02-widgets/all-widgets.php',
+      'command' => 'env LINES=16 COLUMNS=64 ' . $env . 'php ' . $project_dir . '/playground/02-widgets-all-widgets.php',
       'interact' => allWidgetsInteraction(),
       'rows' => 16,
       'cols' => 64,
@@ -666,7 +666,7 @@ function getJobs(string $project_dir): array {
   // The produce box: the capstone panel TUI demo, in all display modes.
   foreach ($env_variants as $suffix => $env) {
     $jobs['produce-box' . $suffix] = [
-      'command' => 'env LINES=' . TERMINAL_ROWS . ' COLUMNS=' . TERMINAL_COLS . ' ' . $env . 'php ' . $project_dir . '/playground/14-produce-box/run.php',
+      'command' => 'env LINES=' . TERMINAL_ROWS . ' COLUMNS=' . TERMINAL_COLS . ' ' . $env . 'php ' . $project_dir . '/playground/14-produce-box.php',
       'interact' => produceBoxInteraction(),
       'rows' => TERMINAL_ROWS,
       'cols' => TERMINAL_COLS,
@@ -676,7 +676,7 @@ function getJobs(string $project_dir): array {
 
   // The quick-start form: a static frame of the single panel's fields.
   $jobs['quickstart'] = [
-    'command' => 'env LINES=14 COLUMNS=72 php ' . $project_dir . '/playground/01-quickstart/run.php',
+    'command' => 'env LINES=14 COLUMNS=72 php ' . $project_dir . '/playground/01-quickstart.php',
     'interact' => quickstartInteraction(),
     'rows' => 14,
     'cols' => 72,
@@ -685,7 +685,7 @@ function getJobs(string $project_dir): array {
 
   // Nested panels with drill-in sub-panels and custom buttons.
   $jobs['nested-panels'] = [
-    'command' => 'env LINES=' . TERMINAL_ROWS . ' COLUMNS=' . TERMINAL_COLS . ' php ' . $project_dir . '/playground/03-panels/nested.php',
+    'command' => 'env LINES=' . TERMINAL_ROWS . ' COLUMNS=' . TERMINAL_COLS . ' php ' . $project_dir . '/playground/03-panels-nested.php',
     'interact' => nestedPanelsInteraction(),
     'rows' => TERMINAL_ROWS,
     'cols' => TERMINAL_COLS,
@@ -694,7 +694,7 @@ function getJobs(string $project_dir): array {
 
   // The panel browser wrapped in a rounded border frame.
   $jobs['bordered-panels'] = [
-    'command' => 'env LINES=' . TERMINAL_ROWS . ' COLUMNS=' . TERMINAL_COLS . ' php ' . $project_dir . '/playground/03-panels/bordered.php',
+    'command' => 'env LINES=' . TERMINAL_ROWS . ' COLUMNS=' . TERMINAL_COLS . ' php ' . $project_dir . '/playground/03-panels-bordered.php',
     'interact' => borderedPanelsInteraction(),
     'rows' => TERMINAL_ROWS,
     'cols' => TERMINAL_COLS,
@@ -703,7 +703,7 @@ function getJobs(string $project_dir): array {
 
   // The same form at the default borderless look, normal spacing.
   $jobs['borderless-panels'] = [
-    'command' => 'env LINES=' . TERMINAL_ROWS . ' COLUMNS=' . TERMINAL_COLS . ' php ' . $project_dir . '/playground/03-panels/borderless.php',
+    'command' => 'env LINES=' . TERMINAL_ROWS . ' COLUMNS=' . TERMINAL_COLS . ' php ' . $project_dir . '/playground/03-panels-borderless.php',
     'interact' => borderedPanelsInteraction(),
     'rows' => TERMINAL_ROWS,
     'cols' => TERMINAL_COLS,
@@ -713,7 +713,7 @@ function getJobs(string $project_dir): array {
   // Fullscreen: the frame stretched to the whole terminal, the panel grid
   // anchored to the centered halign/valign layout inside the border.
   $jobs['fullscreen-panels'] = [
-    'command' => 'env LINES=' . TERMINAL_ROWS . ' COLUMNS=' . TERMINAL_COLS . ' php ' . $project_dir . '/playground/03-panels/fullscreen.php',
+    'command' => 'env LINES=' . TERMINAL_ROWS . ' COLUMNS=' . TERMINAL_COLS . ' php ' . $project_dir . '/playground/03-panels-fullscreen.php',
     'interact' => fullscreenInteraction(),
     'rows' => TERMINAL_ROWS,
     'cols' => TERMINAL_COLS,
@@ -723,7 +723,7 @@ function getJobs(string $project_dir): array {
   // Panel layouts: the layout(1, 2) grid hub with the nested layout(2) grid,
   // walked spatially with the arrows.
   $jobs['panel-layout'] = [
-    'command' => 'env LINES=' . TERMINAL_ROWS . ' COLUMNS=' . TERMINAL_COLS . ' php ' . $project_dir . '/playground/03-panels/layout.php',
+    'command' => 'env LINES=' . TERMINAL_ROWS . ' COLUMNS=' . TERMINAL_COLS . ' php ' . $project_dir . '/playground/03-panels-layout.php',
     'interact' => layoutInteraction(),
     'rows' => TERMINAL_ROWS,
     'cols' => TERMINAL_COLS,
@@ -733,7 +733,7 @@ function getJobs(string $project_dir): array {
   // A modal panel: a dialog centered over the dimmed parent, dismissed by its
   // own buttons - one dialog collecting fields, one a text-only warning.
   $jobs['modal-panels'] = [
-    'command' => 'env LINES=' . TERMINAL_ROWS . ' COLUMNS=' . TERMINAL_COLS . ' php ' . $project_dir . '/playground/03-panels/modal.php',
+    'command' => 'env LINES=' . TERMINAL_ROWS . ' COLUMNS=' . TERMINAL_COLS . ' php ' . $project_dir . '/playground/03-panels-modal.php',
     'interact' => modalPanelsInteraction(),
     'rows' => TERMINAL_ROWS,
     'cols' => TERMINAL_COLS,
@@ -743,7 +743,7 @@ function getJobs(string $project_dir): array {
   // The custom ocean theme with a banner. It demonstrates a custom palette,
   // not the default light/dark pair, so it has no meaningful light twin.
   $jobs['theme-ocean'] = [
-    'command' => 'env LINES=20 COLUMNS=' . TERMINAL_COLS . ' php ' . $project_dir . '/playground/09-themes/custom.php',
+    'command' => 'env LINES=20 COLUMNS=' . TERMINAL_COLS . ' php ' . $project_dir . '/playground/09-themes-custom.php',
     'interact' => themeOceanInteraction(),
     'rows' => 20,
     'cols' => TERMINAL_COLS,
@@ -756,7 +756,7 @@ function getJobs(string $project_dir): array {
   // keystroke harness, so no theme recordings run here.
   // Update-mode discovery: headless, shows the provenance-badged summary.
   $jobs['discovery'] = [
-    'command' => 'php ' . $project_dir . '/playground/08-discovery/run.php',
+    'command' => 'php ' . $project_dir . '/playground/07-discovery.php',
     'interact' => '# Headless run: wait for the summary output.',
     'rows' => 8,
     'cols' => TERMINAL_COLS,
@@ -768,7 +768,7 @@ function getJobs(string $project_dir): array {
   // The masked value hides "melon7", so the plaintext only appears once
   // revealed - anchoring on it captures the revealed frame, not the initial one.
   $jobs['widget-password-reveal'] = [
-    'command' => 'php ' . $project_dir . '/playground/02-widgets/password-reveal.php',
+    'command' => 'php ' . $project_dir . '/playground/02-widgets-password-reveal.php',
     'interact' => <<<'EXPECT'
 # Drill into the field, reveal the value with Tab, hold the plaintext frame, then accept.
 expect "Password widget" {
@@ -807,7 +807,7 @@ EXPECT,
     foreach ($env_variants as $suffix => $env) {
       // spawn does not parse VAR=value prefixes, so route them through env.
       $jobs['widget-' . $demo . $suffix] = [
-        'command' => 'env ' . $env . 'php ' . $project_dir . '/playground/02-widgets/' . $demo . '.php',
+        'command' => 'env ' . $env . 'php ' . $project_dir . '/playground/02-widgets-' . $demo . '.php',
         'interact' => $interact,
         'rows' => $meta['rows'],
         'cols' => 44,

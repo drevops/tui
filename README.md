@@ -51,24 +51,24 @@ Every feature has a reference page and a runnable, self-contained example in [`p
 
 | Feature | Summary | Docs | Example |
 |---|---|---|---|
-| 🧭 Full-screen TUI | Scrollable panel browser: hubs drill into sub-panels to any depth, contextual key-hint footer, `?` help overlay | [panels](https://phptui.dev/panels) | [`03-panels`](playground/03-panels) |
-| 🪟 Modal panels | A panel marked `->modal()` opens as a centered dialog over its dimmed parent, with its own submit/cancel buttons | [panels](https://phptui.dev/panels#modal-panels) | [`03-panels`](playground/03-panels) |
-| 🧱 Panel layouts | `->layout(1, 2)` arranges panels as a grid of side-by-side preview columns - rows of any width, recursively per level, with spatial arrow navigation | [panels](https://phptui.dev/panels#panel-layouts) | [`03-panels`](playground/03-panels) |
-| 🖥️ Fullscreen mode | `->fullscreen()` stretches the frame to the whole terminal; `halign`/`valign` anchor the content and min/max size options guard small or very wide terminals | [panels](https://phptui.dev/panels#fullscreen) | [`03-panels`](playground/03-panels) |
-| ⚡ Inline editing | A field's editor opens in place on the panel row; `->standalone()` opts a field out to full-screen | [panels](https://phptui.dev/panels#inline-editing) | [`04-inline-editing`](playground/04-inline-editing) |
-| 🧩 Widgets | 13 field types: text, number, calendar, textarea, password, select, reorder, suggest, search, file picker, confirm, toggle, pause | [widgets](https://phptui.dev/widgets) | [`02-widgets`](playground/02-widgets) |
-| 🏗️ Builder-driven | The form is declared in PHP with a fluent builder; the common cases need no code | [configuration](https://phptui.dev/configuration) | [`01-quickstart`](playground/01-quickstart) |
-| 🎛️ Interactive or unattended | `run()` picks the mode: keyboard on a terminal, otherwise JSON payload + `TUI_<ID>` environment variables | [headless collection](https://phptui.dev/headless-collection) | [`05-headless`](playground/05-headless) |
-| 🔗 Derived values | Fields computed from other answers via `{{field}}` templates and str2name transforms, settling to a fixpoint | [configuration](https://phptui.dev/configuration#derived-values) | [`06-form-logic`](playground/06-form-logic) |
-| 🔀 Conditional fields | `->when()` conditions (eq/ne/in/contains, composable with all/any/not) drive visibility; form-level fix-ups reconcile answers | [configuration](https://phptui.dev/configuration#conditional-fields) | [`06-form-logic`](playground/06-form-logic) |
-| ⚙️ Declared behaviour | Dynamic defaults, validation and transforms as field closures, or as per-field handler classes resolved by naming convention | [field behaviour](https://phptui.dev/field-behaviour) | [`07-field-behaviour`](playground/07-field-behaviour) |
-| 🔍 Discovery | Update mode detects defaults from an existing directory: dotenv keys, JSON dot-paths, path checks, directory scans | [discovery](https://phptui.dev/discovery) | [`08-discovery`](playground/08-discovery) |
-| 📦 Self-describing answers | Answers carry provenance; `toSummary()` renders a badged, panel-grouped report and `toJson()` the machine result; `schema()`, `validate()` and `agentHelp()` describe the form itself | [self-describing answers](https://phptui.dev/self-describing-answers) | [`05-headless`](playground/05-headless) |
-| 🎨 Themes | Six built-ins selected by name; a custom theme is a `DefaultTheme` subclass overriding palette atoms and render methods | [themes](https://phptui.dev/themes) | [`09-themes`](playground/09-themes) |
-| ⌨️ Key bindings | Presets (`default`, `vim`, or a class) plus per-binding overrides scoped to navigation or a widget type; conflicts throw at setup | [key bindings](https://phptui.dev/key-bindings) | [`10-key-bindings`](playground/10-key-bindings) |
-| ✨ Display modes | Dark/light follows the terminal background, glyphs follow the locale, colour honours `NO_COLOR`; all three can be forced | [display modes](https://phptui.dev/display-modes) | [`11-display-modes`](playground/11-display-modes) |
-| 🧪 Test harness | `TuiTester` drives the real panel loop from scripted keystrokes, no TTY; assert on answers, output and rendered frames | [testing](https://phptui.dev/testing) | [`12-testing`](playground/12-testing) |
-| 🌍 Translations | A `Translator` with per-language catalog files localizes chrome and questions, falling back to English | [translations](https://phptui.dev/translations) | [`13-translations`](playground/13-translations) |
+| 🧭 Full-screen TUI | Scrollable panel browser: hubs drill into sub-panels to any depth, contextual key-hint footer, `?` help overlay | [panels](https://phptui.dev/panels) | [`03-panels-*`](playground) |
+| 🪟 Modal panels | A panel marked `->modal()` opens as a centered dialog over its dimmed parent, with its own submit/cancel buttons | [panels](https://phptui.dev/panels#modal-panels) | [`03-panels-*`](playground) |
+| 🧱 Panel layouts | `->layout(1, 2)` arranges panels as a grid of side-by-side preview columns - rows of any width, recursively per level, with spatial arrow navigation | [panels](https://phptui.dev/panels#panel-layouts) | [`03-panels-*`](playground) |
+| 🖥️ Fullscreen mode | `->fullscreen()` stretches the frame to the whole terminal; `halign`/`valign` anchor the content and min/max size options guard small or very wide terminals | [panels](https://phptui.dev/panels#fullscreen) | [`03-panels-*`](playground) |
+| ⚡ Inline editing | A field's editor opens in place on the panel row; `->standalone()` opts a field out to full-screen | [panels](https://phptui.dev/panels#inline-editing) | [`04-inline-editing`](playground/04-inline-editing.php) |
+| 🧩 Widgets | 13 field types: text, number, calendar, textarea, password, select, reorder, suggest, search, file picker, confirm, toggle, pause | [widgets](https://phptui.dev/widgets) | [`02-widgets-*`](playground) |
+| 🏗️ Builder-driven | The form is declared in PHP with a fluent builder; the common cases need no code | [configuration](https://phptui.dev/configuration) | [`01-quickstart`](playground/01-quickstart.php) |
+| 🎛️ Interactive or unattended | `run()` picks the mode: keyboard on a terminal, otherwise JSON payload + `TUI_<ID>` environment variables | [headless collection](https://phptui.dev/headless-collection) | [`08-headless-*`](playground) |
+| 🔗 Derived values | Fields computed from other answers via `{{field}}` templates and str2name transforms, settling to a fixpoint | [configuration](https://phptui.dev/configuration#derived-values) | [`05-form-logic-*`](playground) |
+| 🔀 Conditional fields | `->when()` conditions (eq/ne/in/contains, composable with all/any/not) drive visibility; form-level fix-ups reconcile answers | [configuration](https://phptui.dev/configuration#conditional-fields) | [`05-form-logic-*`](playground) |
+| ⚙️ Declared behaviour | Dynamic defaults, validation and transforms as field closures, or as per-field handler classes resolved by naming convention | [field behaviour](https://phptui.dev/field-behaviour) | [`06-field-behaviour-*`](playground) |
+| 🔍 Discovery | Update mode detects defaults from an existing directory: dotenv keys, JSON dot-paths, path checks, directory scans | [discovery](https://phptui.dev/discovery) | [`07-discovery`](playground/07-discovery.php) |
+| 📦 Self-describing answers | Answers carry provenance; `toSummary()` renders a badged, panel-grouped report and `toJson()` the machine result; `schema()`, `validate()` and `agentHelp()` describe the form itself | [self-describing answers](https://phptui.dev/self-describing-answers) | [`08-headless-*`](playground) |
+| 🎨 Themes | Six built-ins selected by name; a custom theme is a `DefaultTheme` subclass overriding palette atoms and render methods | [themes](https://phptui.dev/themes) | [`09-themes-*`](playground) |
+| ⌨️ Key bindings | Presets (`default`, `vim`, or a class) plus per-binding overrides scoped to navigation or a widget type; conflicts throw at setup | [key bindings](https://phptui.dev/key-bindings) | [`10-key-bindings-*`](playground) |
+| ✨ Display modes | Dark/light follows the terminal background, glyphs follow the locale, colour honours `NO_COLOR`; all three can be forced | [display modes](https://phptui.dev/display-modes) | [`11-display-modes-*`](playground) |
+| 🧪 Test harness | `TuiTester` drives the real panel loop from scripted keystrokes, no TTY; assert on answers, output and rendered frames | [testing](https://phptui.dev/testing) | [`13-testing`](playground/13-testing.php) |
+| 🌍 Translations | A `Translator` with per-language catalog files localizes chrome and questions, falling back to English | [translations](https://phptui.dev/translations) | [`12-translations`](playground/12-translations.php) |
 
 ## Installation
 
@@ -105,7 +105,7 @@ The facade's surface:
 | `color($bool)` / `unicode($bool)` / `footer($bool)` / `clearOnExit($bool)` / `translator($t)` | Display and runtime switches |
 | `form()` / `engine()` / `registry()` | The internals, for finer control |
 
-Read the [full guide at phptui.dev](https://phptui.dev), and browse [`playground/`](playground) for complete, runnable examples - one directory per feature in the table above.
+Read the [full guide at phptui.dev](https://phptui.dev), and browse [`playground/`](playground) for complete, runnable examples - the numbered scripts for each feature in the table above.
 
 ## Widgets
 
@@ -220,7 +220,7 @@ Each renders across every widget and degrades to plain text without ANSI. Here t
   <img src="docs/assets/theme-dos-light-static.svg" width="48%" alt="dos theme, light terminal">
 </p>
 
-Write your own by subclassing `DefaultTheme` and overriding just its palette - see the [theming guide](https://phptui.dev/themes) and the playground's [`OceanTheme`](playground/09-themes/OceanTheme.php).
+Write your own by subclassing `DefaultTheme` and overriding just its palette - see the [theming guide](https://phptui.dev/themes) and the playground's [`OceanTheme`](playground/themes/OceanTheme.php).
 
 ## Maintenance
 

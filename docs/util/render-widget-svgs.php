@@ -58,7 +58,7 @@ const DISPLAY_MODES = [
 /**
  * The per-widget forms and the keystrokes that drive them.
  *
- * Each single-field form mirrors its playground/02-widgets script - same ids,
+ * Each single-field form mirrors its playground/02-widgets-* script - same ids,
  * labels, defaults and options - so the rendered cards match the code a
  * reader runs. The keystrokes follow the panel model: Enter drills the hub
  * into the panel, a second Enter opens the field editor, then the
@@ -389,7 +389,7 @@ if (PHP_SAPI !== 'cli') {
 $util_dir = __DIR__;
 $assets_dir = dirname(__DIR__) . '/assets';
 $tmp_dir = dirname(__DIR__, 2) . '/.artifacts/tmp/widget-svgs';
-$tree = dirname(__DIR__, 2) . '/playground/02-widgets/filepicker-tree';
+$tree = dirname(__DIR__, 2) . '/playground/sample-project';
 
 if (!is_dir($tmp_dir)) {
   mkdir($tmp_dir, 0755, TRUE);

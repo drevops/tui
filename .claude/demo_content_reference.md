@@ -52,7 +52,7 @@ always match.
 
 ## Quick-start order form
 
-The quick start and its playground script (`playground/01-quickstart`) build a
+The quick start and its playground script (`playground/01-quickstart.php`) build a
 `New order` panel:
 
 - `text('name', 'Order name')->required()`
