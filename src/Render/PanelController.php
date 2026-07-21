@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Render;
 
+use DrevOps\Tui\Derive\Derive;
 use DrevOps\Tui\Answers\Answers;
 use DrevOps\Tui\Answers\Provenance;
 use DrevOps\Tui\Engine\Engine;
@@ -812,7 +813,7 @@ class PanelController {
       $this->values[$this->editing->id] = $this->editor->value();
       // Editing a derive-ruled field pins its rule, exactly as a headless
       // input to it would, so both paths badge the same situation the same.
-      $this->provenance[$this->editing->id] = $this->editing->derive !== NULL ? Provenance::Override : Provenance::Edited;
+      $this->provenance[$this->editing->id] = $this->editing->derive instanceof Derive ? Provenance::Override : Provenance::Edited;
       $this->closeEditor();
       $this->resettle();
     }
@@ -850,7 +851,8 @@ class PanelController {
 
     foreach ($this->form->fields() as $field) {
       if ($field->derive !== NULL) {
-        $pinned[$field->id] = in_array($this->provenance[$field->id] ?? Provenance::Default, [Provenance::Override, Provenance::Detected], TRUE);
+        $provenance = $this->provenance[$field->id] ?? Provenance::Default;
+        $pinned[$field->id] = $provenance === Provenance::Override || $provenance === Provenance::Detected;
       }
     }
 
