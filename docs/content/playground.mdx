@@ -28,7 +28,7 @@ Every script is self-contained - it requires the Composer autoloader directly an
 
 ```bash
 composer install
-php playground/01-quickstart/run.php
+php playground/01-quickstart.php
 ```
 
 The SVG demos throughout this documentation are generated from the playground scripts and forms: `php docs/util/update-assets.php` records the panel walkthroughs through a scripted terminal session (requires `asciinema`, `expect`, `node` and `npm`), while `php docs/util/render-widget-svgs.php` and `php docs/util/render-theme-svgs.php` render the widget cards and theme previews deterministically through the library's own [test harness](/testing) - no terminal involved.

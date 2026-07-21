@@ -1,0 +1,69 @@
+<?php
+
+/**
+ * @file
+ * Discovery: detect defaults from an existing project directory.
+ *
+ * In update mode the engine evaluates each field's ->discover() rule against
+ * the target directory before falling back to the declared default - here the
+ * bundled existing-box/ directory. Four rule types are shown: a .env key, a
+ * JSON dot-path, a path-exists check and a directory scan; ->discover() also
+ * takes a closure for anything custom. Per-field environment variables use the
+ * form-declared BOX_ prefix instead of the default TUI_.
+ *
+ * Usage:
+ *   php playground/08-discovery.php
+ *
+ *   # A per-field env override outranks a discovered value:
+ *   BOX_SEASON=winter php playground/08-discovery.php
+ */
+
+declare(strict_types=1);
+
+use DrevOps\Tui\Builder\Form;
+use DrevOps\Tui\Builder\PanelBuilder;
+use DrevOps\Tui\Discovery\Dotenv;
+use DrevOps\Tui\Discovery\JsonValue;
+use DrevOps\Tui\Discovery\PathExists;
+use DrevOps\Tui\Discovery\Scan;
+use DrevOps\Tui\Discovery\ScanType;
+use DrevOps\Tui\Engine\EngineException;
+use DrevOps\Tui\Tui;
+
+require __DIR__ . '/../vendor/autoload.php';
+
+$form = Form::create('Discovery demo', 'an existing box')
+  // Per-field env overrides read BOX_<ID> instead of the default TUI_<ID>.
+  ->envPrefix('BOX_')
+  ->panel('box', 'Box', function (PanelBuilder $p): void {
+    // A dot-path into a JSON file: existing-box/box.json carries a "name"
+    // key. A nested value reads the same way, e.g. 'delivery.day'.
+    $p->text('name', 'Box name')->discover(new JsonValue('box.json', 'name'));
+
+    // A key read from the directory's .env file.
+    $p->text('season', 'Season')->default('summer')->discover(new Dotenv('SEASON'));
+
+    // Whether a path exists, mapped onto a confirm.
+    $p->confirm('inseason', 'In season?')->discover(new PathExists('harvest.csv'));
+
+    // Directory entries as the answer; ScanType keeps dirs, files or both.
+    $p->select('baskets', 'Baskets')->multiple()->options([
+      'apples' => 'Apples',
+      'pears' => 'Pears',
+      'plums' => 'Plums',
+    ])->discover(new Scan('baskets', type: ScanType::Dir));
+  });
+
+try {
+  // collect() with update TRUE (the third argument) enables discovery; the
+  // second argument points the run at the directory to inspect.
+  $answers = (new Tui($form))->collect('', __DIR__ . '/existing-box', TRUE);
+}
+catch (EngineException $exception) {
+  fwrite(STDERR, $exception->getMessage() . PHP_EOL);
+  exit(1);
+}
+
+// Discovered values are badged "detected" in the summary; an env or prompt
+// input would be badged "edited" and win over discovery.
+echo $answers->toSummary() . PHP_EOL;

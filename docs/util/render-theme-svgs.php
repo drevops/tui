@@ -6,7 +6,7 @@
  * Render the built-in theme preview SVGs deterministically.
  *
  * Each built-in theme is captured on the drilled-in Preview panel of the form
- * the playground/09-themes scripts declare, through the library's own
+ * the playground/09-themes-* scripts declare, through the library's own
  * scripted-keystroke harness - no terminal, reproducible anywhere. The
  * adaptive themes render in four variants each - the dark and light palette,
  * borderless and inside the rounded border frame; the dos theme paints its
@@ -44,7 +44,7 @@ require dirname(__DIR__, 2) . '/vendor/autoload.php';
 const ADAPTIVE_THEMES = ['midnight', 'frost', 'ember', 'mono'];
 
 /**
- * The preview form every theme renders - the playground/09-themes form.
+ * The preview form every theme renders - the playground/09-themes-* form.
  *
  * @return \DrevOps\Tui\Builder\Form
  *   The form.
