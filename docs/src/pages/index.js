@@ -522,41 +522,101 @@ const ZOOM_MIN = 0.5;
 const ZOOM_MAX = 2;
 const ZOOM_STEP = 0.25;
 
+function PlayIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" aria-hidden="true"><path d="M7 4.5 19 12 7 19.5z" /></svg>
+  );
+}
+
+function PauseIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" aria-hidden="true"><rect x="6.5" y="5" width="4" height="14" rx="1" /><rect x="13.5" y="5" width="4" height="14" rx="1" /></svg>
+  );
+}
+
+function RestartIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="1 4 1 10 7 10" /><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" /></svg>
+  );
+}
+
+/* The recordings are SVGs animated by CSS keyframes (a filmstrip translate),
+ * so an <img> embed exposes no playback control at all. The player inlines
+ * the fetched markup instead: pausing sets animation-play-state on the
+ * injected tree, and restarting re-mounts it, which restarts the CSS
+ * animation from the first frame. */
 function SvgPlayer({svg, alt, name}) {
   const {withBaseUrl} = useBaseUrlUtils();
-  const imgRef = useRef(null);
-  const [naturalWidth, setNaturalWidth] = useState(null);
+  const src = withBaseUrl('/' + svg);
+  const animated = svg.includes('-animated');
+  const [markup, setMarkup] = useState(null);
+  const [failed, setFailed] = useState(false);
   const [zoom, setZoom] = useState(1);
+  const [playing, setPlaying] = useState(true);
+  const [runId, setRunId] = useState(0);
 
-  const onLoad = () => {
-    if (imgRef.current && imgRef.current.naturalWidth > 0) {
-      setNaturalWidth(imgRef.current.naturalWidth);
-    }
-  };
-
-  // A cached image can finish loading before React attaches onLoad, so the
-  // natural size is also read once on mount.
   useEffect(() => {
-    if (imgRef.current && imgRef.current.complete) {
-      onLoad();
-    }
-  }, []);
+    let cancelled = false;
+
+    fetch(src)
+      .then((res) => (res.ok ? res.text() : Promise.reject(new Error(String(res.status)))))
+      .then((text) => {
+        if (!cancelled) {
+          setMarkup(text);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setFailed(true);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [src]);
+
+  // The generated SVGs carry their pixel size on the root element; the stage
+  // is sized from it so zoom means real pixels, not fit-to-column scaling.
+  const sizeMatch = markup ? markup.match(/width="([\d.]+)" height="([\d.]+)"/) : null;
+  const natural = sizeMatch ? {w: parseFloat(sizeMatch[1]), h: parseFloat(sizeMatch[2])} : null;
 
   const step = (delta) => setZoom((z) => Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Math.round((z + delta) * 100) / 100)));
+
+  const restart = () => {
+    setRunId((id) => id + 1);
+    setPlaying(true);
+  };
 
   return (
     <div className={styles.player}>
       <div className={styles.playerBar}>
         <span className={styles.dots} aria-hidden="true"><span /><span /><span /></span>
         <span className={styles.playerName}>{name}</span>
-        <span className={styles.playerZoom}>
+        <span className={styles.playerControls}>
+          {animated ? (
+            <button type="button" className={styles.playerBtn} onClick={() => setPlaying((p) => !p)} aria-label={playing ? 'Pause the recording' : 'Play the recording'}>{playing ? <PauseIcon /> : <PlayIcon />}</button>
+          ) : null}
+          {animated ? (
+            <button type="button" className={styles.playerBtn} onClick={restart} aria-label="Restart the recording"><RestartIcon /></button>
+          ) : null}
           <button type="button" className={styles.playerBtn} onClick={() => step(-ZOOM_STEP)} disabled={zoom <= ZOOM_MIN} aria-label="Zoom the recording out">&minus;</button>
           <button type="button" className={clsx(styles.playerBtn, styles.playerPct)} onClick={() => setZoom(1)} aria-label="Reset the recording to its actual size">{Math.round(zoom * 100)}%</button>
           <button type="button" className={styles.playerBtn} onClick={() => step(ZOOM_STEP)} disabled={zoom >= ZOOM_MAX} aria-label="Zoom the recording in">+</button>
         </span>
       </div>
-      <div className={styles.playerScreen}>
-        <img ref={imgRef} onLoad={onLoad} src={withBaseUrl('/' + svg)} alt={alt} decoding="async" style={naturalWidth ? {width: naturalWidth * zoom + 'px', maxWidth: 'none'} : undefined} />
+      <div className={styles.playerBody}>
+        <div className={styles.playerScreen}>
+          {markup ? (
+            <div key={runId} className={clsx(styles.playerStage, !playing && styles.playerStagePaused)} role="img" aria-label={alt} style={natural ? {width: natural.w * zoom + 'px', height: natural.h * zoom + 'px'} : undefined} dangerouslySetInnerHTML={{__html: markup}} />
+          ) : null}
+          {failed ? <img src={src} alt={alt} decoding="async" /> : null}
+        </div>
+        {animated && !playing ? (
+          <button type="button" className={styles.playerOverlay} onClick={() => setPlaying(true)} aria-label="Play the recording">
+            <span className={styles.playerOverlayIcon} aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M7 4.5 19 12 7 19.5z" /></svg></span>
+          </button>
+        ) : null}
       </div>
     </div>
   );
