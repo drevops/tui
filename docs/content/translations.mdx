@@ -57,8 +57,10 @@ new Translator('uk', [
   ['uk' => ['Fruits' => 'Фрукти', 'Submit' => 'Готово']],
 ]);
 
-// A directory of catalogs, plus a targeted override on top:
-new Translator('uk', [
+// A directory of catalogs, plus a targeted override on top.
+// 'auto' follows the terminal locale; each source contributes
+// only when its locale matches the detected one:
+new Translator('auto', [
   __DIR__ . '/translations',
   ['uk' => ['Submit' => 'Готово']],
 ]);
