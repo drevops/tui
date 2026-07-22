@@ -312,6 +312,248 @@ EXPECT;
 }
 
 /**
+ * The expect body driving the inline-editing panel TUI.
+ *
+ * Each field opens in place on its row - the confirm's Yes/No, the number's
+ * input, the select's option list - and the standalone calendar contrasts by
+ * taking the whole screen.
+ *
+ * @return string
+ *   The expect script body.
+ */
+function inlineEditingInteraction(): string {
+  return <<<'EXPECT'
+# Wait for the hub, then drill into the options panel.
+expect "Order options" {
+    pause 2000
+    safe_send "\r"
+}
+
+# Confirm: the Yes/No editor opens in place on the row; flip it to Yes.
+pause 1500
+safe_send "\r"
+pause 1000
+type_text "y"
+wait_and_enter
+arrow_down
+
+# Number: the input opens in the row; replace the default.
+pause 800
+safe_send "\r"
+pause 1000
+press_backspace
+press_backspace
+type_text "12"
+wait_and_enter
+arrow_down
+
+# Select: the option list drops under the label, inside the panel.
+pause 800
+safe_send "\r"
+pause 1000
+arrow_down
+wait_and_enter
+arrow_down
+
+# Calendar: the one ->standalone() field - its month grid takes the whole
+# screen and returns to the panel on accept.
+pause 800
+safe_send "\r"
+pause 1500
+arrow_down
+wait_and_enter
+
+# Back to the hub and submit.
+press_escape
+pause 1000
+arrow_down
+pause 600
+safe_send "\r"
+EXPECT;
+}
+
+/**
+ * The expect body driving the derived-values panel TUI.
+ *
+ * @return string
+ *   The expect script body.
+ */
+function derivedValuesInteraction(): string {
+  return <<<'EXPECT'
+# Wait for the hub, then drill into the naming panel.
+expect "Naming" {
+    pause 2000
+    safe_send "\r"
+}
+
+# Hold the initial chain: Red Apple -> red_apple -> RED_APPLE.
+pause 2500
+
+# Rename the produce: trim "Apple", type "Plum".
+safe_send "\r"
+pause 1000
+press_backspace
+press_backspace
+press_backspace
+press_backspace
+press_backspace
+type_text "Plum"
+pause 800
+safe_send "\r"
+
+# The chain re-settles: slug, code and lot all follow the new name.
+pause 3000
+
+# Back to the hub and submit.
+press_escape
+pause 1000
+arrow_down
+pause 600
+safe_send "\r"
+EXPECT;
+}
+
+/**
+ * The expect body driving the conditional-fields panel TUI.
+ *
+ * @return string
+ *   The expect script body.
+ */
+function conditionalFieldsInteraction(): string {
+  return <<<'EXPECT'
+# Wait for the hub, then drill into the packing panel.
+expect "Packing" {
+    pause 2000
+    safe_send "\r"
+}
+
+# Contents: add herbs - the herb-bundle field appears below.
+pause 1500
+safe_send "\r"
+pause 1000
+arrow_down
+arrow_down
+toggle_space
+pause 600
+safe_send "\r"
+pause 2000
+
+# Box size: pick large - the weekly confirm appears, stackable goes.
+arrow_down
+pause 400
+safe_send "\r"
+pause 1000
+arrow_down
+pause 600
+safe_send "\r"
+pause 2500
+
+# Back to the hub and submit.
+press_escape
+pause 1000
+arrow_down
+pause 600
+safe_send "\r"
+EXPECT;
+}
+
+/**
+ * The expect body driving the vim key-bindings panel TUI.
+ *
+ * @return string
+ *   The expect script body.
+ */
+function keyBindingsVimInteraction(): string {
+  return <<<'EXPECT'
+# Wait for the hub, then drill into the order panel.
+expect "Order" {
+    pause 2000
+    safe_send "\r"
+}
+
+# Navigate with the vim keys: j down the fields, k back up.
+pause 1500
+safe_send "j"
+pause 600
+safe_send "j"
+pause 600
+safe_send "k"
+pause 600
+
+# The ? overlay lists whatever is bound; any key dismisses it.
+safe_send "?"
+pause 3000
+press_escape
+
+# Open the select under the cursor and pick the next option with j.
+pause 800
+safe_send "\r"
+pause 1000
+safe_send "j"
+pause 600
+safe_send "\r"
+
+# Back to the hub; j reaches the buttons, Enter submits.
+press_escape
+pause 1000
+safe_send "j"
+pause 600
+safe_send "\r"
+EXPECT;
+}
+
+/**
+ * The expect body driving the translations panel TUI.
+ *
+ * The gate is the form title, the one string the demo leaves untranslated,
+ * so the match stays ASCII while everything else on screen is Ukrainian.
+ * Unchecking three fruits moves the basket's condensed count from the
+ * few-form to the one-form, showing the plural rules at work.
+ *
+ * @return string
+ *   The expect script body.
+ */
+function translationsInteraction(): string {
+  return <<<'EXPECT'
+# Wait for the hub, then drill into the order panel.
+expect "Produce order" {
+    pause 2000
+    safe_send "\r"
+}
+
+# Down to the basket sub-panel and drill in.
+pause 1500
+arrow_down
+pause 400
+safe_send "\r"
+
+# Uncheck three fruits: the pluralized count will drop from four to one.
+pause 1500
+safe_send "\r"
+pause 1000
+toggle_space
+arrow_down
+toggle_space
+arrow_down
+toggle_space
+pause 600
+safe_send "\r"
+
+# Back on the order panel: the basket row condenses to the one-form count.
+pause 1000
+press_escape
+pause 2000
+
+# Back to the hub and submit.
+press_escape
+pause 1000
+arrow_down
+pause 600
+safe_send "\r"
+EXPECT;
+}
+
+/**
  * The expect body driving the nested-panels panel TUI.
  *
  * @return string
@@ -683,6 +925,56 @@ function getJobs(string $project_dir): array {
     'at_needle' => 'Vegetables',
   ];
 
+  // Inline editing: each editor opens in place on its panel row, with the
+  // standalone calendar as the full-screen contrast.
+  $jobs['inline-editing'] = [
+    'command' => 'env LINES=16 COLUMNS=64 php ' . $project_dir . '/playground/04-inline-editing.php',
+    'interact' => inlineEditingInteraction(),
+    'rows' => 16,
+    'cols' => 64,
+    'verify' => 'Harvest date',
+  ];
+
+  // Derived values: renaming the produce re-settles the slug/code/lot chain,
+  // so the re-derived slug proves the edit and the settle were captured.
+  $jobs['derived-values'] = [
+    'command' => 'env LINES=18 COLUMNS=72 php ' . $project_dir . '/playground/05-form-logic-derived-values.php',
+    'interact' => derivedValuesInteraction(),
+    'rows' => 18,
+    'cols' => 72,
+    'verify' => 'red_plum',
+  ];
+
+  // Conditional fields: picking herbs and the large box makes fields appear
+  // and disappear; the herb bundle only renders once herbs are selected.
+  $jobs['conditional-fields'] = [
+    'command' => 'env LINES=18 COLUMNS=72 php ' . $project_dir . '/playground/05-form-logic-conditional-fields.php',
+    'interact' => conditionalFieldsInteraction(),
+    'rows' => 18,
+    'cols' => 72,
+    'verify' => 'Herb bundle',
+  ];
+
+  // The vim key-bindings preset: j/k navigation and the ? help overlay. The
+  // taller screen leaves the overlay room to list the bound keys.
+  $jobs['key-bindings-vim'] = [
+    'command' => 'env LINES=20 COLUMNS=72 php ' . $project_dir . '/playground/10-key-bindings-vim.php',
+    'interact' => keyBindingsVimInteraction(),
+    'rows' => 20,
+    'cols' => 72,
+    'verify' => 'Fruit',
+  ];
+
+  // Translations: the Ukrainian catalog localizes the chrome and the labels;
+  // the translated Fruits label proves the localized render was captured.
+  $jobs['translations'] = [
+    'command' => 'env LINES=16 COLUMNS=64 php ' . $project_dir . '/playground/12-translations.php',
+    'interact' => translationsInteraction(),
+    'rows' => 16,
+    'cols' => 64,
+    'verify' => 'Фрукти',
+  ];
+
   // Nested panels with drill-in sub-panels and custom buttons.
   $jobs['nested-panels'] = [
     'command' => 'env LINES=' . TERMINAL_ROWS . ' COLUMNS=' . TERMINAL_COLS . ' php ' . $project_dir . '/playground/03-panels-nested.php',
@@ -761,6 +1053,28 @@ function getJobs(string $project_dir): array {
     'rows' => 8,
     'cols' => TERMINAL_COLS,
     'at_needle' => 'Box name',
+  ];
+
+  // Headless collection: no terminal, one output flush - the JSON result and
+  // the provenance-badged summary. Everything prints at once, so any needle
+  // anchors the same (complete) frame.
+  $jobs['headless-collect'] = [
+    'command' => 'php ' . $project_dir . '/playground/08-headless-collect.php',
+    'interact' => '# Headless run: wait for the JSON and summary output.',
+    'rows' => 9,
+    'cols' => 72,
+    'at_needle' => 'Weekly Box',
+  ];
+
+  // The test harness: TuiTester drives the panel loop without a TTY and the
+  // script prints the collected answers and the final rendered frame. The
+  // frame marker is the last text printed, so it anchors the full output.
+  $jobs['testing'] = [
+    'command' => 'php ' . $project_dir . '/playground/13-testing.php',
+    'interact' => '# Headless run: wait for the harness output.',
+    'rows' => 16,
+    'cols' => 72,
+    'at_needle' => 'final frame',
   ];
 
   // The password reveal toggle: a static frame of the revealed plaintext with

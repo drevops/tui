@@ -15,7 +15,7 @@ import styles from './index.module.css';
  * ──────────────────────────────────────────────────────────────────────── */
 const TITLE_PHRASES = [
   'Terminal user interfaces for PHP',
-  'Light and dark themes for terminal UIs',
+  'Dark and light terminal UIs, auto-detected',
   'Terminal UI widgets for every use case',
   'Build multi-lingual terminal UIs with ease',
   'Testable terminal UIs for your PHP projects',
@@ -29,16 +29,331 @@ const SUBHEAD =
   'scrollable, themeable TUI - or collects the answers headlessly from JSON ' +
   'and environment variables.';
 
+const REPO_BLOB = 'https://github.com/drevops/tui/blob/main/';
+
+/* ────────────────────────────────────────────────────────────────────────
+ *  PHP snippets. Plain strings highlighted by highlightPhp() below; every
+ *  snippet is an excerpt of the playground script its feature links to, so
+ *  the code, the recording and the full script always tell the same story.
+ * ──────────────────────────────────────────────────────────────────────── */
+const QUICKSTART_CODE = `use DrevOps\\Tui\\Builder\\Form;
+use DrevOps\\Tui\\Builder\\PanelBuilder;
+use DrevOps\\Tui\\Tui;
+
+$form = Form::create('Quick start')
+  ->panel('order', 'New order', function (PanelBuilder $p): void {
+    $p->text('name', 'Order name')->required();
+    $p->select('fruit', 'Fruit')->default('banana')->options([
+      'apple' => 'Apple',
+      'banana' => 'Banana',
+      'cherry' => 'Cherry',
+    ]);
+    $p->select('veg', 'Vegetables')->multiple()->default(['carrot'])->options([
+      'carrot' => 'Carrot',
+      'tomato' => 'Tomato',
+      'spinach' => 'Spinach',
+    ]);
+    $p->number('quantity', 'Quantity')->min(1)->max(99)->default(6);
+    $p->confirm('organic', 'Organic only?')->default(FALSE);
+  });
+
+// Interactive on a terminal, non-interactive otherwise.
+$answers = (new Tui($form))->run();`;
+
 const FEATURES = [
-  {idx: '01', name: 'Full-screen TUI', desc: <>A scrollable, keyboard-driven form; fields group into sections that drill in to any depth, with a contextual key-hint footer and a <code className={styles.tok}>?</code> help overlay.</>},
-  {idx: '02', name: 'Inline editing', desc: <>A field's editor opens in place on the panel row, with its own view and keys; opt a field out to a full screen with <code className={styles.tok}>{'->standalone()'}</code>.</>},
-  {idx: '03', name: 'Widget library', desc: <>Text, numbers, dates, single and multiple choice, fuzzy search, file browsing, reordering and gates.</>},
-  {idx: '04', name: 'Builder-driven', desc: <>The form is declared in PHP with a fluent builder; the common cases need no extra code.</>},
-  {idx: '05', name: 'Interactive or unattended', desc: <>Answer by keyboard, or supply the answers up front as a JSON payload and environment variables so it runs without prompting. Emits a JSON schema for agents.</>},
-  {idx: '06', name: 'Derived values', desc: <>Compute one field from others with <code className={styles.tok}>str2name</code> transforms; chains settle to a fixpoint.</>},
-  {idx: '07', name: 'Conditional fields', desc: <>Show or hide fields with <code className={styles.tok}>when</code> rules; a fix-up pass reconciles dependent answers.</>},
-  {idx: '08', name: 'Themes', desc: <>The whole visual representation - colours, glyphs, layout - is a theme class; ships dark and light.</>},
-  {idx: '09', name: 'Key bindings', desc: <>Remap navigation, edit, accept and cancel keys per widget type; ships a vim-style preset.</>},
+  {
+    idx: '01',
+    name: 'Full-screen TUI',
+    desc: <>A scrollable, keyboard-driven form; fields group into sections that drill in to any depth, with a contextual key-hint footer and a <code className={styles.tok}>?</code> help overlay.</>,
+    demo: {
+      svg: 'fullscreen-panels-dark-animated.svg',
+      alt: 'Animated recording of the fullscreen panel grid walked with the keyboard',
+      caption: 'The layout(1, 2) grid, stretched over the whole terminal',
+      script: 'playground/03-panels-fullscreen.php',
+      doc: '/panels',
+      code: `$form = Form::create('Market stall')
+  ->layout(1, 2)
+  ->buttons(TRUE, 'Place order', 'Cancel')
+  ->panel('summary', 'Summary', function (PanelBuilder $p): void {
+    $p->text('name', 'Order name')->default('Weekly Box')->required();
+  })
+  ->panel('produce', 'Produce', function (PanelBuilder $p): void { /* ... */ })
+  ->panel('delivery', 'Delivery', function (PanelBuilder $p): void { /* ... */ });
+
+// Stretch the frame over the whole terminal; anchor the content.
+$answers = (new Tui($form))
+  ->theme('default', ['border' => 'rounded', 'halign' => 'center', 'valign' => 'middle'])
+  ->fullscreen()
+  ->run();`,
+    },
+  },
+  {
+    idx: '02',
+    name: 'Inline editing',
+    desc: <>A field's editor opens in place on the panel row, with its own view and keys; opt a field out to a full screen with <code className={styles.tok}>{'->standalone()'}</code>.</>,
+    demo: {
+      svg: 'inline-editing-dark-animated.svg',
+      alt: 'Animated recording of fields edited in place on their panel rows',
+      caption: 'Editors open on the row; the calendar opts out to a full screen',
+      script: 'playground/04-inline-editing.php',
+      doc: '/panels',
+      code: `$form = Form::create('Produce order')
+  ->panel('options', 'Order options', function (PanelBuilder $p): void {
+    // Inline by default: the editor opens in place on the row.
+    $p->confirm('organic', 'Organic only?')->default(FALSE);
+    $p->number('quantity', 'Quantity')->min(1)->max(99)->default(6);
+    $p->select('ripeness', 'Ripeness')->default('ripe')->options([
+      'ripe' => 'Ripe',
+      'unripe' => 'Unripe',
+      'mixed' => 'Mixed',
+    ]);
+
+    // The month grid wants the whole screen: opt out of inline.
+    $p->calendar('harvest', 'Harvest date')->standalone()->default('2026-07-15');
+  });`,
+    },
+  },
+  {
+    idx: '03',
+    name: 'Widget library',
+    desc: <>Text, numbers, dates, single and multiple choice, fuzzy search, file browsing, reordering and gates.</>,
+    demo: {
+      svg: 'widgets-dark-animated.svg',
+      alt: 'Animated recording of every widget type walked through on one panel',
+      caption: 'Every widget on one panel, walked field by field',
+      script: 'playground/02-widgets-all-widgets.php',
+      doc: '/widgets',
+      code: `$form = Form::create('Widgets')
+  ->panel('widgets', 'Widgets', function (PanelBuilder $p): void {
+    $p->text('text', 'Text')->default('Pear');
+    $p->number('number', 'Number')->default(1200);
+    $p->calendar('calendar', 'Calendar')->default('2026-07-15')->standalone();
+    $p->textarea('textarea', 'Textarea');
+    $p->password('password', 'Password')->default('melon7');
+    $p->select('select', 'Select')->default('apple')->options([
+      'apple' => 'Apple',
+      'banana' => 'Banana',
+      'cherry' => 'Cherry',
+    ]);
+    $p->reorder('reorder', 'Reorder')->options([/* ... */]);
+    $p->suggest('suggest', 'Suggest')->options([/* ... */]);
+    $p->search('search', 'Search')->default('carrot')->options([/* ... */]);
+    $p->confirm('confirm', 'Confirm')->default(TRUE);
+    $p->toggle('toggle', 'Toggle')->default('ripe')->options([/* ... */]);
+    $p->pause('pause', 'Pause');
+  });`,
+    },
+  },
+  {
+    idx: '04',
+    name: 'Builder-driven',
+    desc: <>The form is declared in PHP with a fluent builder; the common cases need no extra code.</>,
+    demo: {
+      svg: 'quickstart-dark-static.svg',
+      alt: 'The quick-start order panel rendered in the terminal',
+      caption: 'The declared panel, rendered',
+      script: 'playground/01-quickstart.php',
+      doc: '/configuration',
+      code: QUICKSTART_CODE,
+    },
+  },
+  {
+    idx: '05',
+    name: 'Interactive or unattended',
+    desc: <>Answer by keyboard, or supply the answers up front as a JSON payload and environment variables so it runs without prompting. Emits a JSON schema for agents.</>,
+    demo: {
+      svg: 'headless-collect-dark-static.svg',
+      alt: 'Terminal output of a headless collection run: the JSON result and the provenance-badged summary',
+      caption: 'No terminal: answers resolve from JSON, the environment and defaults',
+      script: 'playground/08-headless-collect.php',
+      doc: '/headless-collection',
+      code: `// The same form, no terminal: collect() resolves every field from
+// the prompts JSON, TUI_<ID> environment variables, discovered and
+// derived values, then the declared defaults - in that order.
+putenv('TUI_ORGANIC=1');
+
+$answers = (new Tui($form))->collect('{"name": "Weekly Box", "fruit": "cherry"}');
+
+// {"name":"Weekly Box","fruit":"cherry","quantity":6,"organic":true}
+echo $answers->toJson();`,
+    },
+  },
+  {
+    idx: '06',
+    name: 'Derived values',
+    desc: <>Compute one field from others with <code className={styles.tok}>str2name</code> transforms; chains settle to a fixpoint.</>,
+    demo: {
+      svg: 'derived-values-dark-animated.svg',
+      alt: 'Animated recording of derived fields re-settling as the name is edited',
+      caption: 'Rename the produce; slug, code and lot follow',
+      script: 'playground/05-form-logic-derived-values.php',
+      doc: '/configuration#derived-values',
+      code: `$form = Form::create('Derived values')
+  ->panel('naming', 'Naming', function (PanelBuilder $p): void {
+    $p->text('name', 'Produce name')->default('Red Apple')->required();
+
+    // "Red Apple" -> "red_apple": the 'machine' transform of the name.
+    $p->text('slug', 'Slug')->derive(new Derive('{{name}}', 'machine'));
+
+    // A chain: the derived slug feeds this rule. "red_apple" -> "RED_APPLE".
+    $p->text('code', 'Code')->derive(new Derive('{{slug}}', 'constant'));
+
+    // A template mixing two answers, then lowercased.
+    $p->text('grower', 'Grower')->default('Sunny');
+    $p->text('lot', 'Lot')->derive(new Derive('{{grower}}/{{slug}}', 'lower'));
+  });`,
+    },
+  },
+  {
+    idx: '07',
+    name: 'Conditional fields',
+    desc: <>Show or hide fields with <code className={styles.tok}>when</code> rules; a fix-up pass reconciles dependent answers.</>,
+    demo: {
+      svg: 'conditional-fields-dark-animated.svg',
+      alt: 'Animated recording of fields appearing and disappearing as answers change',
+      caption: 'Pick herbs and a large box; fields appear and go',
+      script: 'playground/05-form-logic-conditional-fields.php',
+      doc: '/configuration#conditional-fields',
+      code: `$p->select('contents', 'Contents')->multiple()->default(['fruit'])->options([
+  'fruit' => 'Fruit',
+  'veg' => 'Vegetables',
+  'herbs' => 'Herbs',
+]);
+$p->select('size', 'Box size')->default('medium')->options([
+  'small' => 'Small',
+  'medium' => 'Medium',
+  'large' => 'Large',
+]);
+
+// Shown only while "herbs" is among the selected contents.
+$p->text('herb_bundle', 'Herb bundle')->when(new Condition('contents', contains: 'herbs'));
+
+// Composites: all(), any() and not() nest to any depth.
+$p->confirm('weekly', 'Weekly herb delivery?')->when(Condition::all(
+  new Condition('contents', contains: 'herbs'),
+  new Condition('size', eq: 'large'),
+));
+
+// An operator over a set: shown for the small or medium box.
+$p->confirm('stackable', 'Stack the boxes?')->when(new Condition('size', in: ['small', 'medium']));`,
+    },
+  },
+  {
+    idx: '08',
+    name: 'Themes',
+    desc: <>The whole visual representation - colours, glyphs, layout - is a theme class; five presets ship, from <code className={styles.tok}>dos</code> to <code className={styles.tok}>midnight</code>, or subclass your own.</>,
+    demo: {
+      svg: 'theme-ocean-dark-animated.svg',
+      alt: 'Animated recording of a form rendered by a custom ocean theme with a banner',
+      caption: 'A custom theme class, named on the facade',
+      script: 'playground/09-themes-custom.php',
+      doc: '/themes',
+      code: `// A theme class subclasses DefaultTheme and overrides appearance
+// atoms and render methods; name it on the facade, done.
+$answers = (new Tui($form))
+  ->theme(OceanTheme::class, ['border' => 'rounded'])
+  ->run('', '1.0.0');
+
+// Or pick a shipped preset by name: 'dos', 'ember', 'frost',
+// 'midnight' or 'mono'. Dark or light is not part of the theme -
+// it is the auto-detected 'mode' display option.
+$answers = (new Tui($form))->theme('midnight')->run();`,
+    },
+  },
+  {
+    idx: '09',
+    name: 'Key bindings',
+    desc: <>Remap navigation, edit, accept and cancel keys per widget type; ships a vim-style preset.</>,
+    demo: {
+      svg: 'key-bindings-vim-dark-animated.svg',
+      alt: 'Animated recording of a form navigated with the vim keys and its help overlay',
+      caption: 'The vim preset: j/k navigation and a truthful ? overlay',
+      script: 'playground/10-key-bindings-vim.php',
+      doc: '/key-bindings',
+      code: `// The built-in vim preset adds h/j/k/l alongside the arrows -
+// letters bind only where they are not typed input.
+$answers = (new Tui($form))->keys('vim')->run();
+
+// Or retune single bindings on top of any preset; a conflicting
+// binding throws at configure time, so a bad map cannot ship.
+$answers = (new Tui($form))
+  ->keys('default', [
+    new Binding(Scope::navigation(), Action::Quit, 'x'),
+    new Binding(Scope::field(FieldType::Select), Action::Accept, KeyName::Tab, KeyName::Enter),
+  ])
+  ->run();`,
+    },
+  },
+  {
+    idx: '10',
+    name: 'Translations',
+    desc: <>A <code className={styles.tok}>Translator</code> localizes everything user-facing - hints, buttons, badges and the form's own labels - plural rules included, English as the fallback.</>,
+    demo: {
+      svg: 'translations-dark-animated.svg',
+      alt: 'Animated recording of the form presented in Ukrainian, including pluralized counts',
+      caption: 'The shipped Ukrainian catalog, plural forms included',
+      script: 'playground/12-translations.php',
+      doc: '/translations',
+      code: `// The form is declared in English; the catalog translates it at
+// render time, so answer ids and values stay language-neutral.
+$translator = new Translator('uk', [
+  'vendor/drevops/tui/translations',
+  __DIR__ . '/translations',
+]);
+
+// 'auto' would follow the terminal locale instead.
+$answers = (new Tui($form))->translator($translator)->run();`,
+    },
+  },
+  {
+    idx: '11',
+    name: 'Display modes',
+    desc: <>A dark or light palette read from the terminal background, Unicode or ASCII glyphs, colour dropped under <code className={styles.tok}>NO_COLOR</code> - auto-detected, or pinned.</>,
+    demo: {
+      svg: 'widgets-dark-animated-ascii-no-ansi.svg',
+      alt: 'Animated recording of the widget montage degraded to ASCII glyphs without colour',
+      caption: 'The montage under LC_ALL=C and NO_COLOR',
+      script: 'playground/11-display-modes-ascii.php',
+      doc: '/display-modes',
+      code: `// Nothing to configure: colour support, Unicode glyphs and the
+// dark or light palette are read from the terminal and locale.
+$answers = (new Tui($form))->run();
+
+// Or pin any of them: ASCII glyphs, colour off (NO_COLOR works
+// too), and the palette mode as an explicit theme option.
+$answers = (new Tui($form))
+  ->unicode(FALSE)
+  ->color(FALSE)
+  ->theme('default', ['mode' => Mode::Light])
+  ->run();`,
+    },
+  },
+  {
+    idx: '12',
+    name: 'Testing',
+    desc: <><code className={styles.tok}>TuiTester</code> drives the real panel loop from scripted keystrokes - no TTY - returning the answers, the output and the final frame.</>,
+    demo: {
+      svg: 'testing-dark-static.svg',
+      alt: 'Terminal output of the test harness: asserted answers and the final rendered frame',
+      caption: 'Scripted keystrokes, asserted answers, the final frame',
+      script: 'playground/13-testing.php',
+      doc: '/testing',
+      code: `$tester = new TuiTester($form);
+$answers = $tester->run(
+  Key::named(KeyName::Enter),   // drill into the panel
+  Key::named(KeyName::Enter),   // open the name field
+  ' ', 'B', 'o', 'x',           // append to the default
+  Key::named(KeyName::Enter),   // accept the field
+  Key::named(KeyName::Escape),  // back out to the hub
+  Key::named(KeyName::Down),    // onto the Submit button
+  Key::named(KeyName::Enter),   // press it
+);
+
+// In PHPUnit these become assertions:
+// $this->assertSame('Weekly Box', $answers->value('name'));
+echo $answers->value('name');`,
+    },
+  },
 ];
 
 const WIDGETS = [
@@ -62,43 +377,58 @@ const MODES = [
   {k: 'UNATTENDED', t: 'Everywhere else', d: <>Supply the answers up front as a JSON payload and environment variables so it runs without prompting. Emits a JSON schema for agents.</>},
 ];
 
-/* Syntax-highlighted quick-start snippet, built as JSX tokens (no innerHTML).
- * Each token is {t: text} for plain text or {c: class-key, t: text} for a
- * highlighted span; lines are joined with newlines inside the <pre>. */
-const CODE_LINES = [
-  [{c: 'k', t: 'use'}, {t: ' '}, {c: 't', t: 'DrevOps\\Tui\\Builder\\Form'}, {c: 'p', t: ';'}],
-  [{c: 'k', t: 'use'}, {t: ' '}, {c: 't', t: 'DrevOps\\Tui\\Builder\\PanelBuilder'}, {c: 'p', t: ';'}],
-  [{c: 'k', t: 'use'}, {t: ' '}, {c: 't', t: 'DrevOps\\Tui\\Tui'}, {c: 'p', t: ';'}],
-  [],
-  [{c: 'v', t: '$form'}, {t: ' = '}, {c: 't', t: 'Form'}, {t: '::'}, {c: 'm', t: 'create'}, {t: '('}, {c: 's', t: "'New project'"}, {t: ')'}],
-  [{t: '  ->'}, {c: 'm', t: 'panel'}, {t: '('}, {c: 's', t: "'setup'"}, {t: ', '}, {c: 's', t: "'Setup'"}, {t: ', '}, {c: 'k', t: 'function'}, {t: ' ('}, {c: 't', t: 'PanelBuilder'}, {t: ' '}, {c: 'v', t: '$p'}, {t: '): '}, {c: 'k', t: 'void'}, {t: ' {'}],
-  [{t: '    '}, {c: 'v', t: '$p'}, {t: '->'}, {c: 'm', t: 'text'}, {t: '('}, {c: 's', t: "'name'"}, {t: ', '}, {c: 's', t: "'Project name'"}, {t: ')->'}, {c: 'm', t: 'required'}, {t: '()'}, {c: 'p', t: ';'}],
-  [{t: '    '}, {c: 'v', t: '$p'}, {t: '->'}, {c: 'm', t: 'select'}, {t: '('}, {c: 's', t: "'type'"}, {t: ', '}, {c: 's', t: "'Project type'"}, {t: ')->'}, {c: 'm', t: 'options'}, {t: '(['}],
-  [{t: '      '}, {c: 's', t: "'app'"}, {t: ' => '}, {c: 's', t: "'Application'"}, {t: ','}],
-  [{t: '      '}, {c: 's', t: "'library'"}, {t: ' => '}, {c: 's', t: "'Library'"}, {t: ','}],
-  [{t: '    ])'}, {c: 'p', t: ';'}],
-  [{t: '    '}, {c: 'v', t: '$p'}, {t: '->'}, {c: 'm', t: 'select'}, {t: '('}, {c: 's', t: "'services'"}, {t: ', '}, {c: 's', t: "'Services'"}, {t: ')->'}, {c: 'm', t: 'multiple'}, {t: '()->'}, {c: 'm', t: 'default'}, {t: '(['}, {c: 's', t: "'redis'"}, {t: '])->'}, {c: 'm', t: 'options'}, {t: '(['}],
-  [{t: '      '}, {c: 's', t: "'redis'"}, {t: ' => '}, {c: 's', t: "'Redis'"}, {t: ','}],
-  [{t: '      '}, {c: 's', t: "'solr'"}, {t: ' => '}, {c: 's', t: "'Solr'"}, {t: ','}],
-  [{t: '      '}, {c: 's', t: "'clamav'"}, {t: ' => '}, {c: 's', t: "'ClamAV'"}, {t: ','}],
-  [{t: '    ])'}, {c: 'p', t: ';'}],
-  [{t: '    '}, {c: 'v', t: '$p'}, {t: '->'}, {c: 'm', t: 'confirm'}, {t: '('}, {c: 's', t: "'ci'"}, {t: ', '}, {c: 's', t: "'Set up CI?'"}, {t: ')->'}, {c: 'm', t: 'default'}, {t: '('}, {c: 'k', t: 'TRUE'}, {t: ')'}, {c: 'p', t: ';'}],
-  [{t: '  })'}, {c: 'p', t: ';'}],
-  [],
-  [{c: 'v', t: '$tui'}, {t: ' = '}, {c: 'k', t: 'new'}, {t: ' '}, {c: 't', t: 'Tui'}, {t: '('}, {c: 'v', t: '$form'}, {t: ', ['}, {c: 's', t: "'App\\\\Handler'"}, {t: '])'}, {c: 'p', t: ';'}],
-  [],
-  [{c: 'c', t: '// Interactive on a terminal, non-interactive otherwise.'}],
-  [{c: 'v', t: '$answers'}, {t: ' = '}, {c: 'v', t: '$tui'}, {t: '->'}, {c: 'm', t: 'run'}, {t: '()'}, {c: 'p', t: ';'}],
-];
+/* ────────────────────────────────────────────────────────────────────────
+ *  A lightweight PHP highlighter for the snippets above. The token classes
+ *  map onto the .code span styles; the snippets are our own, so the grammar
+ *  only needs comments, strings, variables, member calls, qualified names
+ *  and a short keyword list.
+ * ──────────────────────────────────────────────────────────────────────── */
+const PHP_TOKEN = /(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|('(?:[^'\\]|\\.)*')|(\$[A-Za-z_]\w*)|((?:->|::)[A-Za-z_]\w*(?=\())|([A-Za-z_]\w*(?:\\[A-Za-z_]\w*)+)|([A-Za-z_]\w*)|(;)/g;
+const PHP_KEYWORDS = new Set(['use', 'function', 'fn', 'new', 'return', 'void', 'int', 'bool', 'string', 'array', 'match', 'static', 'class', 'declare', 'echo', 'TRUE', 'FALSE', 'NULL', '__DIR__']);
+const PHP_CLASSES = new Set(['Form', 'PanelBuilder', 'Tui', 'Derive', 'Condition', 'Translator', 'TuiTester', 'Key', 'KeyName', 'Binding', 'Scope', 'Action', 'FieldType', 'Mode', 'OceanTheme', 'DefaultTheme']);
 
-function QuickStartCode() {
+function highlightPhp(code) {
+  const tokens = [];
+  let last = 0;
+
+  for (const match of code.matchAll(PHP_TOKEN)) {
+    if (match.index > last) {
+      tokens.push({c: null, t: code.slice(last, match.index)});
+    }
+
+    const [text, comment, str, variable, member, qualified, word, punct] = match;
+
+    if (comment) {
+      tokens.push({c: 'c', t: text});
+    } else if (str) {
+      tokens.push({c: 's', t: text});
+    } else if (variable) {
+      tokens.push({c: 'v', t: text});
+    } else if (member) {
+      const sep = text.startsWith('->') ? '->' : '::';
+      tokens.push({c: null, t: sep});
+      tokens.push({c: 'm', t: text.slice(sep.length)});
+    } else if (qualified) {
+      tokens.push({c: 't', t: text});
+    } else if (word) {
+      tokens.push({c: PHP_KEYWORDS.has(text) ? 'k' : PHP_CLASSES.has(text) ? 't' : null, t: text});
+    } else if (punct) {
+      tokens.push({c: 'p', t: text});
+    }
+
+    last = match.index + text.length;
+  }
+
+  if (last < code.length) {
+    tokens.push({c: null, t: code.slice(last)});
+  }
+
+  return tokens;
+}
+
+function PhpCode({code}) {
   return (
-    <pre className={styles.code}><code>{CODE_LINES.map((line, li) => (
-      <React.Fragment key={li}>
-        {li > 0 ? '\n' : null}
-        {line.map((tok, ti) => (tok.c ? <span key={ti} className={styles[tok.c]}>{tok.t}</span> : <React.Fragment key={ti}>{tok.t}</React.Fragment>))}
-      </React.Fragment>
-    ))}</code></pre>
+    <pre className={styles.code}><code>{highlightPhp(code).map((tok, i) => (tok.c ? <span key={i} className={styles[tok.c]}>{tok.t}</span> : <React.Fragment key={i}>{tok.t}</React.Fragment>))}</code></pre>
   );
 }
 
@@ -188,10 +518,112 @@ function CopyButton({text}) {
   );
 }
 
+function FeatureModal({feature, onClose}) {
+  const {withBaseUrl} = useBaseUrlUtils();
+  const dialogRef = useRef(null);
+  const closeRef = useRef(null);
+
+  useEffect(() => {
+    const onKey = (event) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    const prevOverflow = document.body.style.overflow;
+    document.addEventListener('keydown', onKey);
+    document.body.style.overflow = 'hidden';
+
+    if (closeRef.current) {
+      closeRef.current.focus();
+    }
+
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [onClose]);
+
+  // A minimal focus trap: Tab cycles within the dialog while it is open.
+  const onTrapKeyDown = (event) => {
+    if (event.key !== 'Tab' || !dialogRef.current) {
+      return;
+    }
+
+    const focusables = dialogRef.current.querySelectorAll('a[href], button:not([disabled])');
+
+    if (!focusables.length) {
+      return;
+    }
+
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
+
+  const {demo} = feature;
+
+  return (
+    <div className={styles.overlay} role="presentation" onClick={(event) => { if (event.target === event.currentTarget) { onClose(); } }}>
+      <div className={styles.dialog} role="dialog" aria-modal="true" aria-labelledby="feature-dialog-title" ref={dialogRef} onKeyDown={onTrapKeyDown}>
+        <div className={styles.dialogBar}>
+          <span className={styles.dots} aria-hidden="true"><span /><span /><span /></span>
+          <span className={styles.dialogTitle} id="feature-dialog-title">{feature.idx} &middot; {feature.name}</span>
+          <button type="button" className={styles.dialogClose} onClick={onClose} aria-label="Close the feature demo" ref={closeRef}>&#10005;</button>
+        </div>
+        <div className={styles.dialogBody}>
+          <div className={styles.dialogCol}>
+            <span className={styles.dialogLabel}>{demo.script}</span>
+            <div className={styles.dialogCode}>
+              <PhpCode code={demo.code} />
+            </div>
+          </div>
+          <div className={styles.dialogCol}>
+            <span className={styles.dialogLabel}>{demo.caption}</span>
+            <div className={styles.dialogScreen}>
+              <img src={withBaseUrl('/' + demo.svg)} alt={demo.alt} loading="lazy" decoding="async" />
+            </div>
+          </div>
+        </div>
+        <div className={styles.dialogFoot}>
+          <p className={styles.dialogDesc}>{feature.desc}</p>
+          <div className={styles.dialogLinks}>
+            <a className={clsx(styles.btn, styles.btnGhost)} href={REPO_BLOB + demo.script}>Full script</a>
+            <a className={clsx(styles.btn, styles.btnPrimary)} href={withBaseUrl(demo.doc)}>Read the docs &rarr;</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const rootRef = useRef(null);
   const typed = useTypewriter(TITLE_PHRASES);
   const {withBaseUrl} = useBaseUrlUtils();
+  const [active, setActive] = useState(null);
+  const triggerRef = useRef(null);
+
+  const openFeature = (feature, event) => {
+    triggerRef.current = event.currentTarget;
+    setActive(feature);
+  };
+
+  const closeFeature = () => {
+    setActive(null);
+
+    if (triggerRef.current) {
+      triggerRef.current.focus();
+      triggerRef.current = null;
+    }
+  };
 
   useEffect(() => {
     const root = rootRef.current;
@@ -284,7 +716,7 @@ export default function Home() {
               <div className={styles.qsHead}>
                 <span className={clsx(styles.kicker, styles.revealUp)}>quick-start</span>
                 <h2 id="qs-title" className={clsx(styles.h2, styles.revealUp)} style={{'--i': 1}}>Declare a form in PHP</h2>
-                <p className={clsx(styles.lead, styles.revealUp)} style={{'--i': 2}}>Describe the questions with a fluent builder - text, choices, toggles and more - add a handler class where a question needs real behaviour, and call <code className={styles.tok}>run()</code>. Interactive on a terminal, non-interactive otherwise.</p>
+                <p className={clsx(styles.lead, styles.revealUp)} style={{'--i': 2}}>Describe the questions with a fluent builder - text, choices, toggles and more - and call <code className={styles.tok}>run()</code>. Interactive on a terminal, non-interactive otherwise.</p>
               </div>
 
               <div className={clsx(styles.codewin, styles.revealUp)} style={{'--i': 1}}>
@@ -293,7 +725,7 @@ export default function Home() {
                   <span className={styles.codewinFile}>form.php</span>
                 </div>
                 <div className={styles.codewinScroll}>
-                  <QuickStartCode />
+                  <PhpCode code={QUICKSTART_CODE} />
                 </div>
               </div>
 
@@ -315,15 +747,16 @@ export default function Home() {
               <div className={styles.featuresHead}>
                 <span className={clsx(styles.kicker, styles.revealUp)}>features</span>
                 <h2 id="features-title" className={clsx(styles.h2, styles.revealUp)} style={{'--i': 1}}>Built for keyboard-driven forms</h2>
-                <p className={clsx(styles.lead, styles.revealUp)} style={{'--i': 2}}>The engine stays generic. Your questions and handlers live in the consumer - it collects, you apply.</p>
+                <p className={clsx(styles.lead, styles.revealUp)} style={{'--i': 2}}>The engine stays generic. Your questions and handlers live in the consumer - it collects, you apply. Open any card for the code and a recording.</p>
               </div>
               <div className={styles.featGrid}>
                 {FEATURES.map((feature, i) => (
-                  <article key={feature.name} className={clsx(styles.feat, styles.revealUp)} style={{'--i': i}}>
+                  <button key={feature.name} type="button" className={clsx(styles.feat, styles.revealUp)} style={{'--i': i}} onClick={(event) => openFeature(feature, event)} aria-haspopup="dialog">
                     <span className={styles.featIdx}>{feature.idx}</span>
                     <strong className={styles.featName}>{feature.name}</strong>
-                    <p className={styles.featDesc}>{feature.desc}</p>
-                  </article>
+                    <span className={styles.featDesc}>{feature.desc}</span>
+                    <span className={styles.featHint} aria-hidden="true">&#9656; code + demo</span>
+                  </button>
                 ))}
               </div>
             </div>
@@ -353,6 +786,8 @@ export default function Home() {
             </div>
           </section>
         </div>
+
+        {active ? <FeatureModal feature={active} onClose={closeFeature} /> : null}
       </div>
     </Layout>
   );
