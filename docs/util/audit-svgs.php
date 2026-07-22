@@ -97,17 +97,17 @@ function auditFile(string $file, array $names): array {
   $content = file_get_contents($file);
 
   if ($content === FALSE || $content === '') {
-    return ["$name: unreadable or empty"];
+    return [$name . ': unreadable or empty'];
   }
 
   $issues = [];
 
   if (strlen($content) < 800) {
-    $issues[] = "$name: suspiciously small (" . strlen($content) . ' bytes)';
+    $issues[] = $name . ': suspiciously small (' . strlen($content) . ' bytes)';
   }
 
   if (!str_contains($content, '<text')) {
-    $issues[] = "$name: no text content";
+    $issues[] = $name . ': no text content';
 
     return $issues;
   }
@@ -116,36 +116,36 @@ function auditFile(string $file, array $names): array {
 
   foreach (SETUP_FINGERPRINTS as $fingerprint) {
     if (str_contains($text, $fingerprint)) {
-      $issues[] = "$name: setup leak \"$fingerprint\"";
+      $issues[] = sprintf('%s: setup leak "%s"', $name, $fingerprint);
     }
   }
 
   foreach (EXPECT_MARKERS as $marker) {
     if (str_contains($text, $marker)) {
-      $issues[] = "$name: expect failure marker \"$marker\"";
+      $issues[] = sprintf('%s: expect failure marker "%s"', $name, $marker);
     }
   }
 
   foreach (TECH_WORDS as $word) {
     if (str_contains($text, $word)) {
-      $issues[] = "$name: demo-content violation \"$word\"";
+      $issues[] = sprintf('%s: demo-content violation "%s"', $name, $word);
     }
   }
 
   foreach (wrapSignatures($content) as $signature) {
-    $issues[] = "$name: $signature";
+    $issues[] = sprintf('%s: %s', $name, $signature);
   }
 
   // A static render holds exactly one frame window; a second one sits
   // outside the viewBox and hides the real content behind an empty frame.
   if (str_contains($name, '-static') && substr_count($content, '<use xlink:href="#a"') > 1) {
-    $issues[] = "$name: static file holds multiple frame windows";
+    $issues[] = $name . ': static file holds multiple frame windows';
   }
 
   foreach (contentNeedles()[$name] ?? [] as $needle) {
     foreach (preg_split('/\s+/', $needle) ?: [] as $word) {
       if ($word !== '' && !str_contains($text, $word)) {
-        $issues[] = "$name: missing content needle word \"$word\"";
+        $issues[] = sprintf('%s: missing content needle word "%s"', $name, $word);
       }
     }
   }
@@ -156,11 +156,11 @@ function auditFile(string $file, array $names): array {
     $twin = str_replace('-dark-', '-light-', $name);
 
     if ($name !== 'theme-ocean-dark-animated.svg' && !in_array($twin, $names, TRUE)) {
-      $issues[] = "$name: missing light twin";
+      $issues[] = $name . ': missing light twin';
     }
   }
   elseif (str_contains($name, '-light-') && !in_array(str_replace('-light-', '-dark-', $name), $names, TRUE)) {
-    $issues[] = "$name: missing dark twin";
+    $issues[] = $name . ': missing dark twin';
   }
 
   return $issues;
@@ -195,26 +195,34 @@ function wrapSignatures(string $content): array {
     $chip_classes = $matches[1];
   }
 
-  foreach ($chip_classes as $class) {
-    if (!preg_match_all('/<rect[^>]*class="' . $class . '"[^>]*>/', $content, $rects)) {
+  foreach ($chip_classes as $chip_class) {
+    if (!preg_match_all('/<rect[^>]*class="' . $chip_class . '"[^>]*>/', $content, $rects)) {
       continue;
     }
 
     foreach ($rects[0] as $rect) {
-      if (preg_match('/\bwidth="([0-9.]+)"/', $rect, $width) && preg_match('/\bx="([0-9.]+)"/', $rect, $x)) {
-        if ((float) $x[1] <= 3.0 && (float) $width[1] < 8.0) {
-          $signatures[] = 'wrapped badge tail chip at x=' . $x[1] . ' width=' . $width[1];
+        if (!preg_match('/\bwidth="([0-9.]+)"/', $rect, $width)) {
+            continue;
         }
-      }
+        if (!preg_match('/\bx="([0-9.]+)"/', $rect, $x)) {
+            continue;
+        }
+        if ((float) $x[1] > 3.0) {
+            continue;
+        }
+        if ((float) $width[1] >= 8.0) {
+            continue;
+        }
+        $signatures[] = 'wrapped badge tail chip at x=' . $x[1] . ' width=' . $width[1];
     }
   }
 
   if (preg_match_all('/<text x="([0-9.]+)"[^>]*>([^<]*)<\/text>/', $content, $texts, PREG_SET_ORDER)) {
-    foreach ($texts as $node) {
-      $word = trim(html_entity_decode($node[2]));
+    foreach ($texts as $text) {
+      $word = trim(html_entity_decode($text[2]));
 
-      if ((float) $node[1] <= 3.0 && $word !== '' && isset($suffixes[$word])) {
-        $signatures[] = 'wrapped badge fragment "' . $word . '" at x=' . $node[1];
+      if ((float) $text[1] <= 3.0 && $word !== '' && isset($suffixes[$word])) {
+        $signatures[] = 'wrapped badge fragment "' . $word . '" at x=' . $text[1];
       }
     }
   }
