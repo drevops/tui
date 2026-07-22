@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace DrevOps\Tui\Tests\Unit\Theme;
 
 use DrevOps\Tui\Render\Ansi;
+use DrevOps\Tui\Theme\Border;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Theme\Mode;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -54,8 +55,8 @@ final class ThemeTest extends TestCase {
   }
 
   public function testDivider(): void {
-    $this->assertSame('──────────', (new DefaultTheme(10, ['color' => FALSE]))->divider());
-    $this->assertSame('----------', (new DefaultTheme(10, ['unicode' => FALSE, 'color' => FALSE]))->divider());
+    $this->assertSame('──────────', (new DefaultTheme(10, ['color' => FALSE, 'border' => Border::None]))->divider());
+    $this->assertSame('----------', (new DefaultTheme(10, ['unicode' => FALSE, 'color' => FALSE, 'border' => Border::None]))->divider());
     // The divider is dimmed when colour is on.
     $this->assertStringContainsString("\033[90m", (new DefaultTheme(10))->divider());
   }

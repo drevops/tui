@@ -31,17 +31,17 @@ final class ThemeFullscreenTest extends TestCase {
   }
 
   public static function dataProviderChromeHeight(): \Iterator {
-    yield 'borderless normal' => [[], TRUE, 3];
-    yield 'borderless normal no footer' => [[], FALSE, 3];
-    yield 'borderless compact' => [['spacing' => Spacing::Compact], TRUE, 2];
-    yield 'boxed no footer' => [['border' => Border::Line], FALSE, 5];
-    yield 'boxed with footer' => [['border' => Border::Line], TRUE, 6];
+    yield 'borderless normal' => [['border' => Border::None, 'spacing' => Spacing::Normal], TRUE, 3];
+    yield 'borderless normal no footer' => [['border' => Border::None, 'spacing' => Spacing::Normal], FALSE, 3];
+    yield 'borderless compact' => [['border' => Border::None, 'spacing' => Spacing::Compact], TRUE, 2];
+    yield 'boxed no footer' => [['border' => Border::Line, 'spacing' => Spacing::Normal], FALSE, 5];
+    yield 'boxed with footer' => [['border' => Border::Line, 'spacing' => Spacing::Normal], TRUE, 6];
     yield 'boxed padded with footer' => [['border' => Border::Line, 'spacing' => Spacing::Padded], TRUE, 8];
   }
 
   #[DataProvider('dataProviderFullscreenBorderlessAlignsTheBlock')]
   public function testFullscreenBorderlessAlignsTheBlock(string $halign, string $valign, array $expected): void {
-    $theme = new DefaultTheme(10, ['color' => FALSE, 'fullscreen' => TRUE, 'halign' => $halign, 'valign' => $valign]);
+    $theme = new DefaultTheme(10, ['color' => FALSE, 'fullscreen' => TRUE, 'halign' => $halign, 'valign' => $valign, 'border' => Border::None, 'spacing' => Spacing::Normal]);
 
     $frame = $theme->renderFrame(['H'], ['ab'], ['F'], new Viewport(0, FALSE, FALSE), 4);
 
@@ -67,7 +67,7 @@ final class ThemeFullscreenTest extends TestCase {
   }
 
   public function testNonFullscreenFrameHugsItsContent(): void {
-    $theme = new DefaultTheme(10, ['color' => FALSE]);
+    $theme = new DefaultTheme(10, ['color' => FALSE, 'border' => Border::None, 'spacing' => Spacing::Normal]);
 
     $frame = $theme->renderFrame(['H'], ['ab'], ['F'], new Viewport(0, FALSE, FALSE), 4);
 
@@ -101,14 +101,14 @@ final class ThemeFullscreenTest extends TestCase {
   }
 
   public function testEditorIgnoresRowsOutsideFullscreen(): void {
-    $theme = new DefaultTheme(20, ['color' => FALSE, 'border' => Border::Line]);
+    $theme = new DefaultTheme(20, ['color' => FALSE, 'border' => Border::Line, 'spacing' => Spacing::Normal]);
 
     // 3 rules + the title + a one-line body window: content-sized.
     $this->assertCount(5, explode("\n", $theme->renderEditor('Name', 'val', [], NULL, 15)));
   }
 
   public function testFullscreenBorderlessEditorStretchesToTheGivenRows(): void {
-    $theme = new DefaultTheme(20, ['color' => FALSE, 'fullscreen' => TRUE]);
+    $theme = new DefaultTheme(20, ['color' => FALSE, 'fullscreen' => TRUE, 'border' => Border::None]);
 
     $lines = explode("\n", $theme->renderEditor('Name', 'val', [], NULL, 15));
 
@@ -129,14 +129,14 @@ final class ThemeFullscreenTest extends TestCase {
     $answers = new Answers(['window' => 'Morning'], []);
 
     // The widest row is the field: marker gutter (4) + label (25) + value (7).
-    $this->assertSame(36, (new DefaultTheme(40, ['color' => FALSE]))->measureContentWidth($form, $answers));
+    $this->assertSame(36, (new DefaultTheme(40, ['color' => FALSE, 'border' => Border::None]))->measureContentWidth($form, $answers));
 
     // A border adds its two columns and gutters on each side.
     $this->assertSame(40, (new DefaultTheme(40, ['color' => FALSE, 'border' => Border::Line]))->measureContentWidth($form, $answers));
 
     // A provenance badge widens the row by its padded label.
     $edited = new Answers(['window' => 'Morning'], ['window' => Provenance::Edited]);
-    $this->assertSame(45, (new DefaultTheme(40, ['color' => FALSE]))->measureContentWidth($form, $edited));
+    $this->assertSame(45, (new DefaultTheme(40, ['color' => FALSE, 'border' => Border::None]))->measureContentWidth($form, $edited));
   }
 
   public function testMeasureContentWidthCoversDescriptionsSummariesAndButtons(): void {
@@ -150,11 +150,11 @@ final class ThemeFullscreenTest extends TestCase {
 
     // The field description row (4 + 35) beats the field row (4 + 1 + 30 + 2
     // spacing = 37) and the hub summary row (4 + 30).
-    $this->assertSame(39, (new DefaultTheme(40, ['color' => FALSE]))->measureContentWidth($form, $answers));
+    $this->assertSame(39, (new DefaultTheme(40, ['color' => FALSE, 'border' => Border::None]))->measureContentWidth($form, $answers));
 
     // Compact spacing drops descriptions and summaries: the field row itself
     // (4 + 1 + 30) loses to the button bar (24)... and wins at 35.
-    $this->assertSame(35, (new DefaultTheme(40, ['color' => FALSE, 'spacing' => Spacing::Compact]))->measureContentWidth($form, $answers));
+    $this->assertSame(35, (new DefaultTheme(40, ['color' => FALSE, 'border' => Border::None, 'spacing' => Spacing::Compact]))->measureContentWidth($form, $answers));
   }
 
   public function testMeasureContentWidthFloorsAtTheButtonBar(): void {
@@ -165,7 +165,7 @@ final class ThemeFullscreenTest extends TestCase {
       ->build();
 
     // Every row is narrower than the button bar: it sets the floor.
-    $this->assertSame(24, (new DefaultTheme(40, ['color' => FALSE, 'spacing' => Spacing::Compact]))->measureContentWidth($form, new Answers()));
+    $this->assertSame(24, (new DefaultTheme(40, ['color' => FALSE, 'border' => Border::None, 'spacing' => Spacing::Compact]))->measureContentWidth($form, new Answers()));
   }
 
   public function testMeasureContentWidthSkipsHiddenButtons(): void {
@@ -178,7 +178,7 @@ final class ThemeFullscreenTest extends TestCase {
 
     // With the buttons hidden their bar never renders, so it never measures:
     // the widest row is the one-letter field row itself.
-    $this->assertSame(5, (new DefaultTheme(40, ['color' => FALSE, 'spacing' => Spacing::Compact]))->measureContentWidth($form, new Answers()));
+    $this->assertSame(5, (new DefaultTheme(40, ['color' => FALSE, 'border' => Border::None, 'spacing' => Spacing::Compact]))->measureContentWidth($form, new Answers()));
   }
 
 }

@@ -29,7 +29,7 @@ $tui = (new Tui(Form::create('My form')))->theme('midnight');
 
 The colourful themes use 256-colour palettes, `mono` the greyscale ramp and `dos` the classic 16-colour CGA set; every one renders across all widgets and degrades to plain text when colour is off. An unknown theme name fails loudly - a typo never silently falls back to the default.
 
-Each adaptive theme below is shown in its four looks: the dark and light palette, each without a frame and inside the rounded [border](/panels#bordered-panels) (`['border' => 'rounded']`). Every adaptive theme has a runnable script in [`playground/09-themes-*`](https://github.com/drevops/tui/tree/main/playground).
+Each adaptive theme below is shown in four looks: the dark and light palettes, each rendered once inside the default rounded [border](/panels#bordered-panels) and once with the frame explicitly stripped (`['border' => 'none']`). Every adaptive theme has a runnable script in [`playground/09-themes-*`](https://github.com/drevops/tui/tree/main/playground).
 
 ### midnight
 

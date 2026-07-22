@@ -97,6 +97,16 @@
 .btnLink { background: transparent; color: var(--ink); padding-inline: .5rem; }
 .btnLink:hover { color: var(--teal-bright); }
 
+/* The generic .home a colour outranks the .btn* classes on anchor buttons,
+ * so each variant restates its text colour at higher specificity - without
+ * this, primary buttons render teal-on-teal and are unreadable. */
+.home a.btnPrimary { color: #08201e; }
+.home a.btnPrimary:hover { color: #08201e; }
+.home a.btnGhost { color: var(--ink); }
+.home a.btnGhost:hover { color: var(--teal-bright); }
+.home a.btnLink { color: var(--ink); }
+.home a.btnLink:hover { color: var(--teal-bright); }
+
 /* hero */
 .hero { padding-top: clamp(2.4rem, 5vw, 4rem); padding-bottom: clamp(3rem, 6vw, 5rem); position: relative; }
 .hero::before {
@@ -181,13 +191,109 @@
   border: 1px solid var(--line-soft); border-radius: 12px; padding: 1.4rem 1.4rem 1.5rem;
   transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease, background .2s ease;
   overflow: hidden;
+  /* the card is a button opening its demo dialog: shed the UA styling */
+  appearance: none; display: flex; flex-direction: column; align-items: flex-start; width: 100%;
+  font: inherit; text-align: left; color: var(--ink); cursor: pointer;
 }
 .feat::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: var(--teal); opacity: .35; transition: opacity .2s ease; }
 .feat:hover { transform: translateY(-3px); border-color: var(--line); background: linear-gradient(180deg, rgba(45, 50, 60, .8), rgba(36, 40, 47, .7)); box-shadow: 0 20px 44px -26px rgba(0, 0, 0, .85), 0 0 0 1px rgba(6, 182, 173, .12); }
 .feat:hover::before { opacity: 1; }
 .featIdx { font-weight: 700; color: var(--teal-bright); font-size: .82rem; letter-spacing: .06em; }
 .featName { display: block; font-weight: 700; font-size: 1.06rem; color: var(--ink-soft); margin: .5rem 0 .55rem; }
-.featDesc { color: var(--muted); font-size: .9rem; margin: 0; }
+.featDesc { display: block; color: var(--muted); font-size: .9rem; margin: 0; }
+.featHint { display: inline-flex; align-items: center; gap: .35rem; margin-top: auto; padding-top: .85rem; color: var(--faint); font-size: .78rem; font-weight: 700; letter-spacing: .04em; transition: color .2s ease; }
+.feat:hover .featHint { color: var(--teal-bright); }
+
+/* feature demo dialog */
+.overlay {
+  position: fixed; inset: 0; z-index: 400;
+  display: flex; align-items: center; justify-content: center;
+  padding: clamp(.6rem, 2vw, 1.4rem);
+  background: rgba(16, 18, 23, .74);
+  backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px);
+  animation: overlay-in .22s ease both;
+}
+/* Sized so the two columns hold 80-character code lines and an 80-column
+ * recording at its native 800px width side by side. */
+.dialog {
+  width: min(1660px, 100%); max-height: min(94vh, 100%); overflow: auto;
+  background: linear-gradient(180deg, #262b33, var(--bg-deep));
+  border: 1px solid var(--line); border-radius: var(--radius);
+  box-shadow: var(--shadow), 0 0 0 1px rgba(45, 212, 191, .08);
+  animation: dialog-in .26s cubic-bezier(.2, .75, .25, 1) both;
+}
+.dialogBar {
+  position: sticky; top: 0; z-index: 2;
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+  padding: .65rem 1rem; background: rgba(13, 17, 23, .92); border-bottom: 1px solid var(--line-soft);
+}
+.dialogBar .dots { justify-self: start; }
+.dialogTitle { justify-self: center; color: var(--ink-soft); font-size: .88rem; font-weight: 700; letter-spacing: .02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.dialogClose {
+  justify-self: end; display: inline-flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; font: inherit; font-size: .8rem; cursor: pointer;
+  color: var(--muted); background: rgba(72, 79, 93, .18); border: 1px solid var(--line); border-radius: 8px;
+  transition: color .16s ease, border-color .16s ease;
+}
+.dialogClose:hover { color: var(--teal-bright); border-color: var(--teal); }
+.dialogBody { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr); gap: 1.1rem; padding: 1rem 1.1rem; }
+.dialogCol { min-width: 0; display: flex; flex-direction: column; gap: .5rem; }
+.dialogLabel { color: var(--faint); font-size: .74rem; letter-spacing: .05em; }
+.dialogLabel::before { content: '// '; color: var(--teal-dim); }
+.dialogCode { background: var(--bg-deep); border: 1px solid var(--line-soft); border-radius: 10px; overflow: auto; max-height: 66vh; flex: 1 1 auto; }
+.home .dialogCode pre.code { font-size: .8rem; line-height: 1.7; padding: 1rem 1.1rem; }
+.dialogFoot { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between; padding: .35rem 1.1rem 1.1rem; }
+.dialogDesc { color: var(--muted); font-size: .88rem; margin: 0; flex: 1 1 320px; }
+.dialogLinks { display: flex; flex-wrap: wrap; gap: .6rem; flex: none; }
+@keyframes overlay-in { from { opacity: 0; } }
+@keyframes dialog-in { from { opacity: 0; transform: translateY(14px) scale(.985); } }
+
+/* the SVG player: terminal chrome around the recording, rendered at its
+ * native size inside a scrollable viewport, with zoom controls */
+.player { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; background: var(--bg-deep); border: 1px solid var(--line-soft); border-radius: 10px; overflow: hidden; }
+.playerBar { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: .8rem; padding: .5rem .8rem; background: rgba(13, 17, 23, .6); border-bottom: 1px solid var(--line-soft); }
+.playerBar .dots span { width: 10px; height: 10px; }
+.playerName { color: var(--muted); font-size: .74rem; letter-spacing: .02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; }
+.playerControls { display: inline-flex; align-items: center; gap: .3rem; }
+.playerBtn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 26px; height: 26px; padding: 0 .45rem; font: inherit; font-size: .74rem; font-weight: 700; cursor: pointer;
+  color: var(--muted); background: rgba(72, 79, 93, .18); border: 1px solid var(--line); border-radius: 7px;
+  transition: color .16s ease, border-color .16s ease;
+}
+.playerBtn:hover { color: var(--teal-bright); border-color: var(--teal); }
+.playerBtn:disabled { opacity: .4; cursor: default; }
+.playerBtn:disabled:hover { color: var(--muted); border-color: var(--line); }
+.playerPct { min-width: 52px; }
+.playerBody { position: relative; flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+.playerScreen { flex: 1 1 auto; overflow: auto; background: var(--panel); padding: 1rem; display: flex; align-items: flex-start; justify-content: safe center; max-height: 62vh; }
+.playerScreen img { display: block; height: auto; }
+.playerObject { display: block; flex: none; border: 0; }
+.playerOverlay {
+  position: absolute; inset: 0; z-index: 1;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(16, 18, 23, .32); border: 0; cursor: pointer; padding: 0;
+  transition: background .18s ease;
+}
+.playerOverlay:hover { background: rgba(16, 18, 23, .18); }
+.playerOverlayIcon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 64px; height: 64px; border-radius: 50%; color: var(--teal-bright);
+  background: rgba(13, 17, 23, .8); border: 1px solid var(--teal);
+  box-shadow: 0 0 0 7px rgba(6, 182, 173, .16), 0 18px 40px -18px rgba(0, 0, 0, .8);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.playerOverlayIcon svg { margin-left: 3px; }
+.playerOverlay:hover .playerOverlayIcon { transform: scale(1.06); box-shadow: 0 0 0 10px rgba(6, 182, 173, .22), 0 18px 40px -18px rgba(0, 0, 0, .8); }
+
+/* Below this width two columns cannot hold 80-character code lines and the
+ * 800px recording without horizontal scrolling, so the panes stack and each
+ * gets the full dialog width instead. */
+@media (max-width: 1440px) {
+  .dialogBody { grid-template-columns: 1fr; }
+  .dialogCode { max-height: 42vh; }
+  .playerScreen { max-height: 48vh; }
+}
 
 .tok {
   font-family: inherit; font-size: .86em; color: var(--teal-bright);
@@ -253,6 +359,7 @@
 @media (prefers-reduced-motion: reduce) {
   .loadReveal, .revealReady .revealUp { animation: none !important; transition: none !important; opacity: 1 !important; transform: none !important; }
   .cursor, .pulse { animation: none !important; }
+  .overlay, .dialog { animation: none !important; }
 }
 
 /* responsive */

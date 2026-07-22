@@ -11,6 +11,7 @@ use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
 use DrevOps\Tui\Testing\TuiTester;
 use DrevOps\Tui\Theme\Border;
+use DrevOps\Tui\Theme\Spacing;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
@@ -164,7 +165,7 @@ final class TuiTesterTest extends TestCase {
     // No input: one frame renders, stretched to the scripted terminal's rows
     // and laid out to its columns - a border pads every line to the full
     // width, so both dimensions are assertable.
-    $tester->options(['fullscreen' => TRUE, 'color' => FALSE, 'border' => Border::Line])->rows(12)->cols(48)->run();
+    $tester->options(['fullscreen' => TRUE, 'color' => FALSE, 'border' => Border::Line, 'spacing' => Spacing::Normal])->rows(12)->cols(48)->run();
 
     $lines = explode("\n", $tester->display());
     $this->assertCount(12, $lines);

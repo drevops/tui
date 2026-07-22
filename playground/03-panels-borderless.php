@@ -2,10 +2,10 @@
 
 /**
  * @file
- * Borderless panels: the same form as bordered.php, at the default look.
+ * Borderless panels: the same form as bordered.php, without the frame.
  *
- * With no theme options the browser renders without a frame at normal
- * spacing - the out-of-the-box appearance. Run this next to bordered.php to
+ * The default look is a padded rounded box; the explicit 'none' border and
+ * 'normal' spacing strip it back to bare rows. Run this next to bordered.php to
  * compare the two looks; the form, fields and keys are identical.
  *
  * Usage:
@@ -49,8 +49,9 @@ $form = Form::create('Fruit basket')
   });
 
 try {
-  // No theme options: border 'none' and spacing 'normal' are the defaults.
-  $answers = (new Tui($form))->clearOnExit(FALSE)->run();
+  // The default look is a padded rounded box; this demo opts out of both
+  // explicitly to show the bare, frameless rendering.
+  $answers = (new Tui($form))->theme('default', ['border' => 'none', 'spacing' => 'normal'])->clearOnExit(FALSE)->run();
 }
 catch (InterruptException) {
   // Leave quietly on Ctrl-C.

@@ -12,7 +12,9 @@ use DrevOps\Tui\Model\Field;
 use DrevOps\Tui\Model\FieldType;
 use DrevOps\Tui\Model\Panel;
 use DrevOps\Tui\Render\Ansi;
+use DrevOps\Tui\Theme\Border;
 use DrevOps\Tui\Theme\DefaultTheme;
+use DrevOps\Tui\Theme\Spacing;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -159,7 +161,7 @@ final class ThemeLayoutTest extends TestCase {
     // The two value lines stack under the value column, so the row needs the
     // widest single line (18), never the whole string's length.
     $answers = new Answers(['notes' => "Crisp and sweet\nlonger second line"], []);
-    $this->assertSame(23, (new DefaultTheme(40, ['color' => FALSE, 'spacing' => 'compact']))->measureContentWidth($form, $answers));
+    $this->assertSame(23, (new DefaultTheme(40, ['color' => FALSE, 'border' => Border::None, 'spacing' => Spacing::Compact]))->measureContentWidth($form, $answers));
   }
 
   public function testMeasureContentWidthCoversTheGrid(): void {
@@ -172,7 +174,7 @@ final class ThemeLayoutTest extends TestCase {
     // The widest block is A: field row 4 + 16 + 7 = 27. Two equal columns
     // need 27 * 2 + 2 = 56 - wider than any single linear row.
     $answers = new Answers(['one' => 'Morning'], []);
-    $this->assertSame(56, (new DefaultTheme(40, ['color' => FALSE, 'spacing' => 'compact']))->measureContentWidth($form, $answers));
+    $this->assertSame(56, (new DefaultTheme(40, ['color' => FALSE, 'border' => Border::None, 'spacing' => Spacing::Compact]))->measureContentWidth($form, $answers));
   }
 
   /**

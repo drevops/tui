@@ -439,7 +439,9 @@ final class Tui {
    *
    * A fullscreen frame lays out to the terminal's width (the theme caps it
    * with "max_width"); the width is fixed for the session, like the theme.
-   * Anything else keeps the default width.
+   * Anything else lays out to the default width, clamped to the terminal:
+   * rows and right-aligned badges sized past the terminal hard-wrap onto
+   * the next line and corrupt the whole layout below them.
    *
    * @param array<string,mixed> $options
    *   The resolved theme display options.
@@ -450,7 +452,11 @@ final class Tui {
    *   The frame width.
    */
   public static function frameWidth(array $options, int $terminal_width): int {
-    return ($options['fullscreen'] ?? FALSE) === TRUE ? $terminal_width : DefaultTheme::DEFAULT_WIDTH;
+    if (($options['fullscreen'] ?? FALSE) === TRUE) {
+      return $terminal_width;
+    }
+
+    return $terminal_width > 0 ? min(DefaultTheme::DEFAULT_WIDTH, $terminal_width) : DefaultTheme::DEFAULT_WIDTH;
   }
 
   /**

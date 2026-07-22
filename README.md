@@ -32,7 +32,7 @@
 - **Application-agnostic.** The engine knows nothing about the application it serves; questions and handlers live in the consumer, and applying the collected answers is the consumer's job. It collects; you apply.
 - **Dependency-light.** The runtime dependency surface is a single string-transform package.
 
-The border above is a display option. The same form at the default borderless look, normal spacing:
+The padded rounded border above is the default look. The same form explicitly opted out of the frame (`border` `none`, `normal` spacing):
 
 <p align="center">
   <picture>

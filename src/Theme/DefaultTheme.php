@@ -329,20 +329,21 @@ class DefaultTheme implements ThemeInterface {
    * The vertical spacing option.
    *
    * @return \DrevOps\Tui\Theme\Spacing
-   *   The spacing; normal when unset.
+   *   The spacing; padded when unset.
    */
   protected function spacing(): Spacing {
-    return $this->enumOption('spacing', Spacing::class, Spacing::Normal);
+    return $this->enumOption('spacing', Spacing::class, Spacing::Padded);
   }
 
   /**
    * The border-style option.
    *
    * @return \DrevOps\Tui\Theme\Border
-   *   The border style; none when unset.
+   *   The border style; a rounded box when unset - a form is framed unless
+   *   it explicitly asks for no border.
    */
   protected function borderStyle(): Border {
-    return $this->enumOption('border', Border::class, Border::None);
+    return $this->enumOption('border', Border::class, Border::Rounded);
   }
 
   /**

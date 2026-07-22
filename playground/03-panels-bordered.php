@@ -4,8 +4,10 @@
  * @file
  * Bordered panels: the whole panel browser wrapped in a border frame.
  *
- * The border is a theme display option set as a plain string - 'none',
- * 'line', 'rounded' or 'double' - alongside the 'spacing' option ('compact',
+ * The padded rounded box shown here is also the default look; this demo sets
+ * it explicitly to name the options. The border is a theme display option set
+ * as a plain string - 'rounded', 'line', 'double' or 'none' - alongside the
+ * 'spacing' option ('compact',
  * 'normal' or 'padded'). The theme draws the hub, breadcrumb header, fields
  * and key-hint footer inside the frame, and every drilled-in sub-panel keeps
  * it. A typo in an option value throws at startup, not mid-session.

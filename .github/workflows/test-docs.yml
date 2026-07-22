@@ -31,6 +31,11 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      # The runner image ships a PHP CLI and the auditor is dependency-free,
+      # so the committed assets are gated before anything is built.
+      - name: Audit SVG assets
+        run: php docs/util/audit-svgs.php
+
       - name: Setup Node.js
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:

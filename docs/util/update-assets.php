@@ -312,6 +312,248 @@ EXPECT;
 }
 
 /**
+ * The expect body driving the inline-editing panel TUI.
+ *
+ * Each field opens in place on its row - the confirm's Yes/No, the number's
+ * input, the select's option list - and the standalone calendar contrasts by
+ * taking the whole screen.
+ *
+ * @return string
+ *   The expect script body.
+ */
+function inlineEditingInteraction(): string {
+  return <<<'EXPECT'
+# Wait for the hub, then drill into the options panel.
+expect "Order options" {
+    pause 2000
+    safe_send "\r"
+}
+
+# Confirm: the Yes/No editor opens in place on the row; flip it to Yes.
+pause 1500
+safe_send "\r"
+pause 1000
+type_text "y"
+wait_and_enter
+arrow_down
+
+# Number: the input opens in the row; replace the default.
+pause 800
+safe_send "\r"
+pause 1000
+press_backspace
+press_backspace
+type_text "12"
+wait_and_enter
+arrow_down
+
+# Select: the option list drops under the label, inside the panel.
+pause 800
+safe_send "\r"
+pause 1000
+arrow_down
+wait_and_enter
+arrow_down
+
+# Calendar: the one ->standalone() field - its month grid takes the whole
+# screen and returns to the panel on accept.
+pause 800
+safe_send "\r"
+pause 1500
+arrow_down
+wait_and_enter
+
+# Back to the hub and submit.
+press_escape
+pause 1000
+arrow_down
+pause 600
+safe_send "\r"
+EXPECT;
+}
+
+/**
+ * The expect body driving the derived-values panel TUI.
+ *
+ * @return string
+ *   The expect script body.
+ */
+function derivedValuesInteraction(): string {
+  return <<<'EXPECT'
+# Wait for the hub, then drill into the naming panel.
+expect "Naming" {
+    pause 2000
+    safe_send "\r"
+}
+
+# Hold the initial chain: Red Apple -> red_apple -> RED_APPLE.
+pause 2500
+
+# Rename the produce: trim "Apple", type "Plum".
+safe_send "\r"
+pause 1000
+press_backspace
+press_backspace
+press_backspace
+press_backspace
+press_backspace
+type_text "Plum"
+pause 800
+safe_send "\r"
+
+# The chain re-settles: slug, code and lot all follow the new name.
+pause 3000
+
+# Back to the hub and submit.
+press_escape
+pause 1000
+arrow_down
+pause 600
+safe_send "\r"
+EXPECT;
+}
+
+/**
+ * The expect body driving the conditional-fields panel TUI.
+ *
+ * @return string
+ *   The expect script body.
+ */
+function conditionalFieldsInteraction(): string {
+  return <<<'EXPECT'
+# Wait for the hub, then drill into the packing panel.
+expect "Packing" {
+    pause 2000
+    safe_send "\r"
+}
+
+# Contents: add herbs - the herb-bundle field appears below.
+pause 1500
+safe_send "\r"
+pause 1000
+arrow_down
+arrow_down
+toggle_space
+pause 600
+safe_send "\r"
+pause 2000
+
+# Box size: pick large - the weekly confirm appears, stackable goes.
+arrow_down
+pause 400
+safe_send "\r"
+pause 1000
+arrow_down
+pause 600
+safe_send "\r"
+pause 2500
+
+# Back to the hub and submit.
+press_escape
+pause 1000
+arrow_down
+pause 600
+safe_send "\r"
+EXPECT;
+}
+
+/**
+ * The expect body driving the vim key-bindings panel TUI.
+ *
+ * @return string
+ *   The expect script body.
+ */
+function keyBindingsVimInteraction(): string {
+  return <<<'EXPECT'
+# Wait for the hub, then drill into the order panel.
+expect "Order" {
+    pause 2000
+    safe_send "\r"
+}
+
+# Navigate with the vim keys: j down the fields, k back up.
+pause 1500
+safe_send "j"
+pause 600
+safe_send "j"
+pause 600
+safe_send "k"
+pause 600
+
+# The ? overlay lists whatever is bound; any key dismisses it.
+safe_send "?"
+pause 3000
+press_escape
+
+# Open the select under the cursor and pick the next option with j.
+pause 800
+safe_send "\r"
+pause 1000
+safe_send "j"
+pause 600
+safe_send "\r"
+
+# Back to the hub; j reaches the buttons, Enter submits.
+press_escape
+pause 1000
+safe_send "j"
+pause 600
+safe_send "\r"
+EXPECT;
+}
+
+/**
+ * The expect body driving the translations panel TUI.
+ *
+ * The gate is the form title, the one string the demo leaves untranslated,
+ * so the match stays ASCII while everything else on screen is Ukrainian.
+ * Unchecking three fruits moves the basket's condensed count from the
+ * few-form to the one-form, showing the plural rules at work.
+ *
+ * @return string
+ *   The expect script body.
+ */
+function translationsInteraction(): string {
+  return <<<'EXPECT'
+# Wait for the hub, then drill into the order panel.
+expect "Produce order" {
+    pause 2000
+    safe_send "\r"
+}
+
+# Down to the basket sub-panel and drill in.
+pause 1500
+arrow_down
+pause 400
+safe_send "\r"
+
+# Uncheck three fruits: the pluralized count will drop from four to one.
+pause 1500
+safe_send "\r"
+pause 1000
+toggle_space
+arrow_down
+toggle_space
+arrow_down
+toggle_space
+pause 600
+safe_send "\r"
+
+# Back on the order panel: the basket row condenses to the one-form count.
+pause 1000
+press_escape
+pause 2000
+
+# Back to the hub and submit.
+press_escape
+pause 1000
+arrow_down
+pause 600
+safe_send "\r"
+EXPECT;
+}
+
+/**
  * The expect body driving the nested-panels panel TUI.
  *
  * @return string
@@ -652,13 +894,17 @@ function getJobs(string $project_dir): array {
 
   // The all-widgets montage: every widget on one panel, walked field by
   // field, in all display modes. "Pause" is the last field walked, so its
-  // label proves the whole sequence was recorded.
+  // label proves the whole sequence was recorded. The screen is sized for
+  // the content: all fifteen fields fit without scrolling, and the rows
+  // stay wide enough for the right-aligned provenance badges - on a
+  // narrower terminal a badged row overflows, wraps, and every frame below
+  // it renders torn.
   foreach ($env_variants as $suffix => $env) {
     $jobs['widgets' . $suffix] = [
-      'command' => 'env LINES=16 COLUMNS=64 ' . $env . 'php ' . $project_dir . '/playground/02-widgets-all-widgets.php',
+      'command' => 'env LINES=24 COLUMNS=80 ' . $env . 'php ' . $project_dir . '/playground/02-widgets-all-widgets.php',
       'interact' => allWidgetsInteraction(),
-      'rows' => 16,
-      'cols' => 64,
+      'rows' => 24,
+      'cols' => 80,
       'verify' => 'Pause',
     ];
   }
@@ -674,13 +920,65 @@ function getJobs(string $project_dir): array {
     ];
   }
 
-  // The quick-start form: a static frame of the single panel's fields.
+  // The quick-start form: a static frame of the single panel's fields. The
+  // default padded box spreads the five fields, so the frame is tall enough
+  // to hold them all un-scrolled.
   $jobs['quickstart'] = [
-    'command' => 'env LINES=14 COLUMNS=72 php ' . $project_dir . '/playground/01-quickstart.php',
+    'command' => 'env LINES=18 COLUMNS=72 php ' . $project_dir . '/playground/01-quickstart.php',
     'interact' => quickstartInteraction(),
-    'rows' => 14,
+    'rows' => 18,
     'cols' => 72,
     'at_needle' => 'Vegetables',
+  ];
+
+  // Inline editing: each editor opens in place on its panel row, with the
+  // standalone calendar as the full-screen contrast.
+  $jobs['inline-editing'] = [
+    'command' => 'env LINES=20 COLUMNS=64 php ' . $project_dir . '/playground/04-inline-editing.php',
+    'interact' => inlineEditingInteraction(),
+    'rows' => 20,
+    'cols' => 64,
+    'verify' => 'Harvest date',
+  ];
+
+  // Derived values: renaming the produce re-settles the slug/code/lot chain,
+  // so the re-derived slug proves the edit and the settle were captured.
+  $jobs['derived-values'] = [
+    'command' => 'env LINES=22 COLUMNS=72 php ' . $project_dir . '/playground/05-form-logic-derived-values.php',
+    'interact' => derivedValuesInteraction(),
+    'rows' => 22,
+    'cols' => 72,
+    'verify' => 'red_plum',
+  ];
+
+  // Conditional fields: picking herbs and the large box makes fields appear
+  // and disappear; the herb bundle only renders once herbs are selected.
+  $jobs['conditional-fields'] = [
+    'command' => 'env LINES=22 COLUMNS=72 php ' . $project_dir . '/playground/05-form-logic-conditional-fields.php',
+    'interact' => conditionalFieldsInteraction(),
+    'rows' => 22,
+    'cols' => 72,
+    'verify' => 'Herb bundle',
+  ];
+
+  // The vim key-bindings preset: j/k navigation and the ? help overlay. The
+  // taller screen leaves the overlay room to list the bound keys.
+  $jobs['key-bindings-vim'] = [
+    'command' => 'env LINES=22 COLUMNS=72 php ' . $project_dir . '/playground/10-key-bindings-vim.php',
+    'interact' => keyBindingsVimInteraction(),
+    'rows' => 22,
+    'cols' => 72,
+    'verify' => 'Fruit',
+  ];
+
+  // Translations: the Ukrainian catalog localizes the chrome and the labels;
+  // the translated Fruits label proves the localized render was captured.
+  $jobs['translations'] = [
+    'command' => 'env LINES=20 COLUMNS=64 php ' . $project_dir . '/playground/12-translations.php',
+    'interact' => translationsInteraction(),
+    'rows' => 20,
+    'cols' => 64,
+    'verify' => 'Фрукти',
   ];
 
   // Nested panels with drill-in sub-panels and custom buttons.
@@ -701,7 +999,8 @@ function getJobs(string $project_dir): array {
     'verify' => 'Basics',
   ];
 
-  // The same form at the default borderless look, normal spacing.
+  // The same form explicitly opted out of the default frame: border 'none'
+  // at normal spacing.
   $jobs['borderless-panels'] = [
     'command' => 'env LINES=' . TERMINAL_ROWS . ' COLUMNS=' . TERMINAL_COLS . ' php ' . $project_dir . '/playground/03-panels-borderless.php',
     'interact' => borderedPanelsInteraction(),
@@ -743,9 +1042,9 @@ function getJobs(string $project_dir): array {
   // The custom ocean theme with a banner. It demonstrates a custom palette,
   // not the default light/dark pair, so it has no meaningful light twin.
   $jobs['theme-ocean'] = [
-    'command' => 'env LINES=20 COLUMNS=' . TERMINAL_COLS . ' php ' . $project_dir . '/playground/09-themes-custom.php',
+    'command' => 'env LINES=24 COLUMNS=' . TERMINAL_COLS . ' php ' . $project_dir . '/playground/09-themes-custom.php',
     'interact' => themeOceanInteraction(),
-    'rows' => 20,
+    'rows' => 24,
     'cols' => TERMINAL_COLS,
     'verify' => 'Seaside stall',
     'twin' => FALSE,
@@ -761,6 +1060,31 @@ function getJobs(string $project_dir): array {
     'rows' => 8,
     'cols' => TERMINAL_COLS,
     'at_needle' => 'Box name',
+  ];
+
+  // Headless collection: no terminal, one output flush - the JSON result and
+  // the provenance-badged summary. Everything prints at once, so any needle
+  // anchors the same (complete) frame.
+  $jobs['headless-collect'] = [
+    'command' => 'php ' . $project_dir . '/playground/08-headless-collect.php',
+    'interact' => '# Headless run: wait for the JSON and summary output.',
+    'rows' => 9,
+    'cols' => 72,
+    'at_needle' => 'Weekly Box',
+  ];
+
+  // The test harness: TuiTester drives the panel loop without a TTY and the
+  // script prints the collected answers and the final rendered frame. The
+  // frame marker is the last text printed, so it anchors the full output.
+  // The harness prints its final frame as the default 76-column padded box,
+  // so the pty is wide and tall enough that no output line wraps or scrolls
+  // the marker away.
+  $jobs['testing'] = [
+    'command' => 'php ' . $project_dir . '/playground/13-testing.php',
+    'interact' => '# Headless run: wait for the harness output.',
+    'rows' => 26,
+    'cols' => 80,
+    'at_needle' => 'final frame',
   ];
 
   // The password reveal toggle: a static frame of the revealed plaintext with
@@ -782,7 +1106,7 @@ expect "Password widget" {
     wait_and_enter
 }
 EXPECT,
-    'rows' => 6,
+    'rows' => 12,
     'cols' => 44,
     'at_needle' => 'melon7',
   ];
@@ -797,8 +1121,8 @@ EXPECT,
   // static frame is anchored to an option only visible once the list is open
   // (the hub shows the form title too, so gating on it would capture the hub).
   $group_demos = [
-    'select-groups' => ['gate' => 'Select with groups', 'needle' => 'Rhubarb', 'rows' => 12],
-    'select-multiple-groups' => ['gate' => 'MultiSelect with groups', 'needle' => 'Leek', 'rows' => 15],
+    'select-groups' => ['gate' => 'Select with groups', 'needle' => 'Rhubarb', 'rows' => 18],
+    'select-multiple-groups' => ['gate' => 'MultiSelect with groups', 'needle' => 'Leek', 'rows' => 21],
   ];
 
   foreach ($group_demos as $demo => $meta) {
@@ -925,6 +1249,17 @@ function main(): void {
       info('  ' . $name . ': ' . $output);
     }
     throw new \RuntimeException('Failed to generate ' . count($failed) . ' asset(s).');
+  }
+
+  // The audit gates the whole set, not just the jobs that ran: any leaked
+  // setup text, wrapped row, structural defect or missing twin in ANY asset
+  // fails the run before the results are trusted.
+  info('');
+  info('Auditing the full asset set...');
+  passthru(sprintf('php %s %s', escapeshellarg($script_dir . '/audit-svgs.php'), escapeshellarg($assets_dir)), $audit_exit);
+
+  if ($audit_exit !== 0) {
+    throw new \RuntimeException('The generated assets failed the audit.');
   }
 
   info('');
@@ -1095,11 +1430,22 @@ function verifySvg(string $svg_file, string $name, ?string $expected, bool $sing
     throw new \RuntimeException(sprintf('Generated SVG for "%s" holds more than one frame window - the visible frame may be empty.', $name));
   }
 
+  $text = html_entity_decode(strip_tags($content));
+
+  // Recording-setup text must never ship inside an asset: the spawn
+  // announcement, the pty geometry, the sanitized home path or any script
+  // path in a frame means pre-demo noise was captured. The demo content is
+  // produce-themed, so none of these fingerprints can occur legitimately.
+  foreach (['spawn', 'LINES=', 'COLUMNS=', '/home/user', 'playground/', '.php'] as $fingerprint) {
+    if (str_contains($text, $fingerprint)) {
+      throw new \RuntimeException(sprintf('Generated SVG for "%s" leaked recording-setup text ("%s" found in a frame).', $name, $fingerprint));
+    }
+  }
+
   if ($expected === NULL || $expected === '') {
     return;
   }
 
-  $text = html_entity_decode(strip_tags($content));
   $words = preg_split('/\s+/', $expected);
 
   foreach (is_array($words) ? $words : [] as $word) {
@@ -1248,7 +1594,12 @@ proc press_escape {} {
     safe_send "\033"
 }
 
+# The spawn announcement obeys log_user, and anything expect prints lands
+# in the recording as visible frames - so the announcement is suppressed at
+# the source and output copying resumes before the demo paints.
+log_user 0
 spawn @command@
+log_user 1
 
 @body@
 
