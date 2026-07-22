@@ -9,15 +9,17 @@ Every string the TUI shows can be presented in another language: the framework's
 
 ## Setting a translator
 
-Translation is off by default. Turn it on by giving the form a `Translator` - the active language and the directories its catalogs live in - the same way you set a theme or key map:
+Translation is off by default. Turn it on by giving the form a `Translator` - the active language, and optionally the sources your own catalogs come from - the same way you set a theme or key map:
 
 ```php
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Translation\Translator;
 use DrevOps\Tui\Tui;
 
+// The bundled chrome catalogs load automatically, so this
+// alone renders the chrome in Ukrainian:
 $tui = (new Tui(Form::create('My form')))
-  ->translator(new Translator('es', [__DIR__ . '/translations']));
+  ->translator(new Translator('uk'));
 ```
 
 The facade activates the translator for the run, so labels and chrome resolve to the active language wherever they render - interactively and headlessly.
@@ -33,6 +35,36 @@ The first argument selects the language:
 | Force a language | `'es'`, `'es_ES'`, ...            | that language            |
 
 `'auto'` reads the POSIX locale variables `LC_ALL`, `LC_MESSAGES` and `LANG` (in that order) and strips the encoding, so `LANG=es_ES.UTF-8` selects `es_ES`; a `C` or `POSIX` locale means English. A region locale falls back to its base language, so `es_ES` uses `es.php` when no `es_ES.php` exists.
+
+## Adding and overriding strings
+
+The package's bundled catalogs are always the implicit first source; every source you pass merges on top of them, and a later source overrides an earlier one per key. Chrome strings and your form's strings share one key namespace, so a single source covers any mix: only your own strings, your own plus a few chrome overrides, or a complete chrome replacement.
+
+A source is one of three shapes:
+
+| Source shape | Contents                                          | Loads                                            |
+| ------------ | ------------------------------------------------- | ------------------------------------------------ |
+| Directory    | Per-locale catalog files (`uk.php`, `es.php`)     | The best candidate file for the active language  |
+| File         | A single per-locale catalog file                  | Only when its filename names the active language |
+| Inline map   | Locales keyed to catalogs, e.g. `['uk' => [...]]` | The best-matching locale key                     |
+
+```php
+// Your strings (and any chrome overrides) from one file:
+new Translator('uk', [__DIR__ . '/translations/uk.php']);
+
+// The same from an inline map - no file at all:
+new Translator('uk', [
+  ['uk' => ['Fruits' => 'Фрукти', 'Submit' => 'Готово']],
+]);
+
+// A directory of catalogs, plus a targeted override on top:
+new Translator('auto', [
+  __DIR__ . '/translations',
+  ['uk' => ['Submit' => 'Готово']],
+]);
+```
+
+A file or map section for a language other than the active one contributes nothing - the same per-locale semantics as a directory. A listed path that exists as neither a directory nor a file throws, so a typo surfaces instead of silently rendering English.
 
 ## Writing a catalog
 
@@ -50,16 +82,14 @@ return [
   'move' => 'mover',
   'Passwords do not match.' => 'Las contraseñas no coinciden.',
   // Questions - the labels you declared, keyed by their English source.
-  'Colour theme' => 'Tema de color',
-  'Pick a theme' => 'Elige un tema',
+  'Fruits' => 'Frutas',
+  'Pick your fruits.' => 'Elige tus frutas.',
 ];
 ```
 
 Your form keeps its English source strings; the catalog maps them to the target language, so one form definition serves every language.
 
 Some strings carry `@name` placeholders (for example `Enter a number @constraint.` or `@count items selected`). Keep each placeholder verbatim in the translation - the library substitutes the value at render time.
-
-Directories are searched in order and a later one wins, so you can layer a catalog that overrides individual strings on top of another.
 
 ## Plural messages
 
@@ -111,7 +141,7 @@ return [
 ];
 ```
 
-Without a rule the default applies (the first form when the count is one, the second otherwise), and an index a translation does not cover falls back to the English plural, so a rendering is always defined.
+Without a rule the default applies (the first form when the count is one, the second otherwise), and an index a translation does not cover falls back to the English plural, so a rendering is always defined. Plural-form lists and the rule work in every source shape, so an inline map carries them exactly like a catalog file - a consumer rule overrides the bundled one.
 
 ## The chrome catalog template
 
@@ -121,10 +151,10 @@ The package ships `translations/en.php` - the canonical list of every chrome str
 cp vendor/drevops/tui/translations/en.php translations/de.php
 ```
 
-A ready-to-use Ukrainian catalog, `translations/uk.php`, ships alongside it - point a `Translator` at the package's `translations/` directory to use it directly.
+A ready-to-use Ukrainian catalog, `translations/uk.php`, ships alongside it and loads automatically whenever the active language is Ukrainian.
 
 ## Packaging
 
-Catalogs are ordinary files loaded with `require`, so they bundle into a consumer-built PHAR with no extra configuration - reference them by a path relative to your application (for example `__DIR__ . '/translations'`), which resolves inside the archive.
+The bundled catalogs load from inside the package, and your own catalogs are ordinary files loaded with `require`, so both bundle into a consumer-built PHAR with no extra configuration - reference yours by a path relative to your application (for example `__DIR__ . '/translations'`), which resolves inside the archive.
 
-A runnable demo in [`playground/12-translations.php`](https://github.com/drevops/tui/blob/main/playground/12-translations.php) localizes chrome and questions into Ukrainian - using the shipped `uk.php` for chrome plus a small local catalog for the form's own labels - and exercises pluralized rendering in its multi-select summary.
+A runnable demo in [`playground/12-translations.php`](https://github.com/drevops/tui/blob/main/playground/12-translations.php) localizes chrome and questions into Ukrainian - the bundled `uk.php` supplies the chrome automatically and a small local catalog adds the form's own labels - and exercises pluralized rendering in its multi-select summary.

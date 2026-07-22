@@ -251,7 +251,7 @@ final class Tui {
   /**
    * Set the translator localizing chrome and questions.
    *
-   * The translator carries the active language and catalog directories and is
+   * The translator carries the active language and catalog sources and is
    * activated process-wide so `t()` resolves during a run. Without one, every
    * string renders in its English source.
    *

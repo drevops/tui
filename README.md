@@ -68,7 +68,7 @@ Every feature has a reference page and a runnable, self-contained example in [`p
 | ⌨️ Key bindings | Presets (`default`, `vim`, or a class) plus per-binding overrides scoped to navigation or a widget type; conflicts throw at setup | [key bindings](https://phptui.dev/key-bindings) | [`10-key-bindings-*`](playground) |
 | ✨ Display modes | Dark/light follows the terminal background, glyphs follow the locale, colour honours `NO_COLOR`; all three can be forced | [display modes](https://phptui.dev/display-modes) | [`11-display-modes-*`](playground) |
 | 🧪 Test harness | `TuiTester` drives the real panel loop from scripted keystrokes, no TTY; assert on answers, output and rendered frames | [testing](https://phptui.dev/testing) | [`13-testing`](playground/13-testing.php) |
-| 🌍 Translations | A `Translator` with per-language catalog files localizes chrome and questions, falling back to English | [translations](https://phptui.dev/translations) | [`12-translations`](playground/12-translations.php) |
+| 🌍 Translations | Bundled chrome catalogs load automatically; a directory, a single catalog file or an inline map layers your own strings and chrome overrides on top, falling back to English | [translations](https://phptui.dev/translations) | [`12-translations`](playground/12-translations.php) |
 
 ## Installation
 

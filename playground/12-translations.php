@@ -4,7 +4,7 @@
  * @file
  * Translations: chrome and questions presented in another language.
  *
- * A Translator carries the active language and catalog directories; set on the
+ * A Translator carries the active language and catalog sources; set on the
  * facade, it localizes everything user-facing - key hints, buttons, badges,
  * validation messages, and the form's own labels - with English as the fallback
  * for anything untranslated. The language can also be the 'auto' sentinel to
@@ -51,12 +51,13 @@ $form = Form::create('Produce order')
     });
   });
 
-// Ukrainian: the library's shipped catalog (translations/uk.php) provides the
-// chrome and its three plural forms; the local translations/ adds this form's
-// own labels on top. Directories are searched in order, so a later one wins - a
-// consumer would point at vendor/drevops/tui/translations for the shipped set.
-// Translator('auto', [...]) would follow the terminal locale instead.
-$translator = new Translator('uk', [dirname(__DIR__) . '/translations', __DIR__ . '/translations']);
+// Ukrainian: the library's bundled catalog (translations/uk.php) loads
+// automatically with the chrome and its three plural forms; the local
+// translations/ layers this form's own labels on top, and could override any
+// chrome string the same way. An inline map works too - e.g.
+// ['uk' => ['Fruits' => 'Фрукти']] - and Translator('auto', [...]) would
+// follow the terminal locale instead.
+$translator = new Translator('uk', [__DIR__ . '/translations']);
 
 try {
   $answers = (new Tui($form))->translator($translator)->run();
