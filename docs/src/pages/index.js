@@ -241,7 +241,7 @@ $p->confirm('stackable', 'Stack the boxes?')->when(new Condition('size', in: ['s
   {
     idx: '08',
     name: 'Themes',
-    desc: <>The whole visual representation - colours, glyphs, layout - is a theme class; five presets ship, from <code className={styles.tok}>dos</code> to <code className={styles.tok}>midnight</code>, or subclass your own.</>,
+    desc: <>The whole visual representation - colours, glyphs, layout - is a theme class; six themes ship built-in, from <code className={styles.tok}>dos</code> to <code className={styles.tok}>midnight</code>, or subclass your own.</>,
     demo: {
       svg: 'theme-ocean-dark-animated.svg',
       alt: 'Animated recording of a form rendered by a custom ocean theme with a banner',
