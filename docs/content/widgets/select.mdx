@@ -21,8 +21,8 @@ $p->select('fruit', 'Fruit')
     'banana' => 'Banana',
     'cherry' => 'Cherry',
   ])
-  ->default('banana') // Which option starts highlighted (defaults to the first).
-  ->pageSize(10);     // Options visible before the list pages around the cursor.
+  ->default('banana') // Which option starts highlighted (default: the first).
+  ->pageSize(10);     // Options visible before the list pages.
 ```
 
 Runnable scripts: [`playground/02-widgets-select.php`](https://github.com/drevops/tui/blob/main/playground/02-widgets-select.php) and [`select-multiple.php`](https://github.com/drevops/tui/blob/main/playground/02-widgets-select-multiple.php).

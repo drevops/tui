@@ -21,8 +21,8 @@ $p->reorder('basket', 'Rank your basket')
     'carrot' => 'Carrot',
     'tomato' => 'Tomato',
   ])
-  ->default(['apple', 'carrot']) // Seed the starting order; omitted items are appended.
-  ->pageSize(10);                // Items visible before the list pages around the cursor.
+  ->default(['apple', 'carrot']) // Seed the order; omitted items are appended.
+  ->pageSize(10);                // Items visible before the list pages.
 ```
 
 Runnable script: [`playground/02-widgets-reorder.php`](https://github.com/drevops/tui/blob/main/playground/02-widgets-reorder.php).

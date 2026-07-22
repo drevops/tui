@@ -152,7 +152,8 @@ Tests should use PHPUnit 11 features:
 
 GitHub Actions workflows test across:
 
-- PHP versions: 8.3, 8.4, 8.5 (normal and lowest dependency sets)
+- PHP versions: 8.3, 8.4, 8.5 (normal and lowest dependency sets) on Ubuntu,
+  plus Windows portability jobs on PHP 8.3 and 8.4 (normal dependencies)
 - One matrix job runs lint, tests and the coverage upload (Codecov)
 
 Key workflows:

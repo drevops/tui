@@ -85,8 +85,10 @@ use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Builder\PanelBuilder;
 use DrevOps\Tui\Tui;
 
-$form = Form::create('My form')
-  ->panel('general', 'General', fn(PanelBuilder $p) => $p->text('name', 'Your name')->required());
+$form = Form::create('Quick start')
+  ->panel('order', 'New order', function (PanelBuilder $p): void {
+    $p->text('name', 'Order name')->required();
+  });
 
 $tui = new Tui($form, handler_namespaces: ['App\\Handler']);
 
@@ -100,7 +102,7 @@ The facade's surface:
 | `run($prompts, $version, $directory, $interactive)` | Collect answers; interactive on a TTY, headless otherwise (or forced via `$interactive`) |
 | `collect($prompts, $directory, $update, $version)` | Headless collection from JSON + environment; `$update` enables discovery |
 | `interact()` | The interactive panel TUI, explicitly |
-| `schema()` / `validate($answers)` / `agentHelp()` | Describe the form as a JSON schema, validate a payload against it, emit agent-facing instructions |
+| `schema()` / `validate($answers)` / `agentHelp()` | Describe the questions as structured metadata, validate an answer payload, emit the agent-facing answer schema |
 | `theme($name, $options)` / `keys($preset, $overrides)` | Select the theme and key bindings |
 | `color($bool)` / `unicode($bool)` / `fullscreen($bool)` / `footer($bool)` / `clearOnExit($bool)` / `translator($t)` | Display and runtime switches |
 | `form()` / `engine()` / `registry()` | The internals, for finer control |

@@ -11,8 +11,10 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 In update mode, `->discover()` rules detect defaults from an existing project directory: a `.env` key (`new Dotenv('SEASON')`), a JSON dot-path (`new JsonValue('basket.json', 'name')`), a path check (`new PathExists('harvest.csv')`), a directory scan (`new Scan('baskets', type: ScanType::Dir)`), or a custom `fn(Context $c): mixed` closure:
 
 ```php
-$p->text('name', 'Produce name')->discover(new JsonValue('basket.json', 'name'));
-$p->confirm('inseason', 'In season?')->discover(new PathExists('harvest.csv'));
+$p->text('name', 'Produce name')
+  ->discover(new JsonValue('basket.json', 'name'));
+$p->confirm('inseason', 'In season?')
+  ->discover(new PathExists('harvest.csv'));
 ```
 
 Discovered values are badged in the summary, and explicit input (prompts or environment) always wins over discovery:

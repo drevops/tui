@@ -28,7 +28,8 @@ $tui = (new Tui($form))->keys('default', [
   // Quit with x as well as q.
   new Binding(Scope::navigation(), Action::Quit, 'x'),
   // In the single-choice list, Tab accepts too.
-  new Binding(Scope::field(FieldType::Select), Action::Accept, KeyName::Tab, KeyName::Enter),
+  new Binding(Scope::field(FieldType::Select), Action::Accept,
+    KeyName::Tab, KeyName::Enter),
 ]);
 ```
 

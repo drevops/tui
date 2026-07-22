@@ -92,7 +92,8 @@ Each `env` is the variable that sets its answer - the uppercased id under the ac
 `validate()` checks an answer set against those rules before collection, so an agent can confirm a payload without running the form. Each violation is one message; an empty list means the answers are valid:
 
 ```php
-$errors = $tui->validate(['name' => 'Weekly Box', 'fruit' => 'grape', 'quantity' => 500]);
+$payload = ['name' => 'Weekly Box', 'fruit' => 'grape', 'quantity' => 500];
+$errors = $tui->validate($payload);
 // [
 //   'Question "fruit": value "grape" is not one of: apple, banana, cherry.',
 //   'Question "quantity" must be between 1 and 99.',

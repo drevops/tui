@@ -12,7 +12,8 @@ use DrevOps\Tui\Handler\Context;
 
 $p->text('name', 'Produce name')
   ->default(fn(Context $c): string => basename($c->directory))
-  ->validate(fn(mixed $v): ?string => is_string($v) && trim($v) !== '' ? NULL : 'A name is required.')
+  ->validate(fn(mixed $v): ?string =>
+    is_string($v) && trim($v) !== '' ? NULL : 'A name is required.')
   ->transform(fn(mixed $v): mixed => is_string($v) ? trim($v) : $v);
 ```
 
