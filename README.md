@@ -87,7 +87,28 @@ use DrevOps\Tui\Tui;
 
 $form = Form::create('Quick start')
   ->panel('order', 'New order', function (PanelBuilder $p): void {
+    // A required single-line text field.
     $p->text('name', 'Order name')->required();
+
+    // A single choice, starting on "Banana".
+    $p->select('fruit', 'Fruit')->default('banana')->options([
+      'apple' => 'Apple',
+      'banana' => 'Banana',
+      'cherry' => 'Cherry',
+    ]);
+
+    // A multi-select, with one option pre-checked.
+    $p->select('veg', 'Vegetables')->multiple()->default(['carrot'])->options([
+      'carrot' => 'Carrot',
+      'tomato' => 'Tomato',
+      'spinach' => 'Spinach',
+    ]);
+
+    // An integer bounded to a sensible quantity.
+    $p->number('quantity', 'Quantity')->min(1)->max(99)->default(6);
+
+    // A yes/no gate.
+    $p->confirm('organic', 'Organic only?')->default(FALSE);
   });
 
 $tui = new Tui($form, handler_namespaces: ['App\\Handler']);
