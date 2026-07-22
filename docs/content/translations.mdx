@@ -9,7 +9,7 @@ Every string the TUI shows can be presented in another language: the framework's
 
 ## Setting a translator
 
-Translation is off by default. Turn it on by giving the form a `Translator` - the active language, and optionally the sources your own catalogs come from - the same way you set a theme or key map:
+Translation is off by default. Turn it on by giving the `Tui` facade a `Translator` - the active language, and optionally the sources your own catalogs come from - the same way you set a theme or key map:
 
 ```php
 use DrevOps\Tui\Builder\Form;
@@ -58,7 +58,7 @@ new Translator('uk', [
 ]);
 
 // A directory of catalogs, plus a targeted override on top:
-new Translator('auto', [
+new Translator('uk', [
   __DIR__ . '/translations',
   ['uk' => ['Submit' => 'Готово']],
 ]);
