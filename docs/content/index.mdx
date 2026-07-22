@@ -30,9 +30,9 @@ The engine knows nothing about the application it serves: it stays generic, the 
 - 🔍 [**Discovery**](/discovery) - detect sensible defaults from the target directory (`.env` keys, JSON paths, path existence, directory scans)
 - ⚙️ [**Declared behaviour**](/field-behaviour) - validation, transforms and dynamic defaults as closures on the field; per-field handler classes remain as a fallback
 - 📦 [**Self-describing answers**](/self-describing-answers) - each answer carries a snapshot of its question and its provenance; summaries need no form config
-- 🎨 [**Themes**](/themes) - the whole visual representation (colours, glyphs, layout) is a theme class; ships with dark and light
+- 🎨 [**Themes**](/themes) - the whole visual representation (colours, glyphs, layout) is a theme class; six ship built-in, each serving dark and light
 - ⌨️ [**Key bindings**](/key-bindings) - remap navigation, edit, accept and cancel keys per widget type; ships a vim-style preset, and a bad binding fails loudly at build time
-- ✨ [**Unicode and ASCII**](/display-modes) - glyphs follow the terminal locale and colour honours `NO_COLOR`; both can be forced on the form
+- ✨ [**Unicode and ASCII**](/display-modes) - glyphs follow the terminal locale and colour honours `NO_COLOR`; both can be forced on the `Tui` facade
 - 🧪 [**Test harness**](/testing) - drive the real TUI from scripted keystrokes and assert on the answers and rendered output, no TTY needed
 - 🌍 [**Translations**](/translations) - present chrome and questions in another language through a consumer catalog, falling back to English
 
@@ -77,7 +77,7 @@ $tui = new Tui($form);
 $answers = $tui->run();
 
 // Or drive a mode directly:
-echo $tui->collect('{"name":"Weekly box"}')->toJson(); // headless: JSON + environment
+echo $tui->collect('{"name":"Weekly Box"}')->toJson(); // headless: JSON + environment
 $answers = $tui->interact();                    // interactive panel TUI
 ```
 
