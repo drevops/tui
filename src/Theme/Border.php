@@ -14,7 +14,7 @@ namespace DrevOps\Tui\Theme;
  */
 enum Border: string {
 
-  // No box (the default).
+  // No box.
   case None = 'none';
 
   // A single-line box.

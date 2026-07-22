@@ -17,7 +17,7 @@ enum Spacing: string {
   // Labels and values only, no descriptions, no gaps.
   case Compact = 'compact';
 
-  // Descriptions under each item, no gaps (the default).
+  // Descriptions under each item, no gaps.
   case Normal = 'normal';
 
   // Descriptions plus a blank line between items.

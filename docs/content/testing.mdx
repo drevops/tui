@@ -33,7 +33,7 @@ $this->assertStringContainsString('Ada', $tester->display());
 $this->assertFalse($tester->isCancelled());
 ```
 
-`run()` returns the collected `Answers`. `display()` is the ANSI-stripped output for substring assertions, `output()` the raw frames, and `isCancelled()` reports whether the run ended on the cancel button. `theme()`, `options()`, `rows()`, `version()` and `directory()` tune the run.
+`run()` returns the collected `Answers`. `display()` is the ANSI-stripped output for substring assertions, `output()` the raw frames, and `isCancelled()` reports whether the run ended on the cancel button. `theme()`, `options()`, `rows()`, `cols()`, `version()` and `directory()` tune the run.
 
 For a single widget in isolation, `WidgetRunner::run($widget, ArrayKeyStream::of(...))` remains the lighter tool.
 

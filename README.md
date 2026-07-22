@@ -124,7 +124,7 @@ The facade's surface:
 | `collect($prompts, $directory, $update, $version)` | Headless collection from JSON + environment; `$update` enables discovery |
 | `interact()` | The interactive panel TUI, explicitly |
 | `schema()` / `validate($answers)` / `agentHelp()` | Describe the questions as structured metadata, validate an answer payload, emit the agent-facing answer schema |
-| `theme($name, $options)` / `keys($preset, $overrides)` | Select the theme and key bindings |
+| `theme($theme, $options)` / `keys($preset, $overrides)` | Select the theme and key bindings |
 | `color($bool)` / `unicode($bool)` / `fullscreen($bool)` / `footer($bool)` / `clearOnExit($bool)` / `translator($t)` | Display and runtime switches |
 | `form()` / `engine()` / `registry()` | The internals, for finer control |
 
@@ -244,14 +244,6 @@ Each renders across every widget and degrades to plain text without ANSI. Here t
 </p>
 
 Write your own by subclassing `DefaultTheme` and overriding just its palette - see the [theming guide](https://phptui.dev/themes) and the playground's [`OceanTheme`](playground/themes/OceanTheme.php).
-
-## Maintenance
-
-```bash
-composer install
-composer lint
-composer test
-```
 
 ## Contributing
 
