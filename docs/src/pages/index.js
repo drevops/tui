@@ -254,9 +254,9 @@ $answers = (new Tui($form))
   ->theme(OceanTheme::class, ['border' => 'rounded'])
   ->run('', '1.0.0');
 
-// Or pick a shipped preset by name: 'dos', 'ember', 'frost',
-// 'midnight' or 'mono'. Dark or light is not part of the theme -
-// it is the auto-detected 'mode' display option.
+// Or pick a shipped theme by name: 'default', 'dos', 'ember',
+// 'frost', 'midnight' or 'mono'. Dark or light is not part of the
+// theme - it is the auto-detected 'mode' display option.
 $answers = (new Tui($form))->theme('midnight')->run();`,
     },
   },
