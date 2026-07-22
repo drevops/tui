@@ -894,13 +894,17 @@ function getJobs(string $project_dir): array {
 
   // The all-widgets montage: every widget on one panel, walked field by
   // field, in all display modes. "Pause" is the last field walked, so its
-  // label proves the whole sequence was recorded.
+  // label proves the whole sequence was recorded. The screen is sized for
+  // the content: all fifteen fields fit without scrolling, and the rows
+  // stay wide enough for the right-aligned provenance badges - on a
+  // narrower terminal a badged row overflows, wraps, and every frame below
+  // it renders torn.
   foreach ($env_variants as $suffix => $env) {
     $jobs['widgets' . $suffix] = [
-      'command' => 'env LINES=16 COLUMNS=64 ' . $env . 'php ' . $project_dir . '/playground/02-widgets-all-widgets.php',
+      'command' => 'env LINES=24 COLUMNS=80 ' . $env . 'php ' . $project_dir . '/playground/02-widgets-all-widgets.php',
       'interact' => allWidgetsInteraction(),
-      'rows' => 16,
-      'cols' => 64,
+      'rows' => 24,
+      'cols' => 80,
       'verify' => 'Pause',
     ];
   }

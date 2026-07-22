@@ -268,9 +268,7 @@
 .playerBody { position: relative; flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
 .playerScreen { flex: 1 1 auto; overflow: auto; background: var(--panel); padding: 1rem; display: flex; align-items: flex-start; justify-content: safe center; max-height: 62vh; }
 .playerScreen img { display: block; height: auto; }
-.playerStage { flex: none; }
-.playerStage svg { display: block; width: 100%; height: 100%; }
-.playerStagePaused svg * { animation-play-state: paused !important; }
+.playerObject { display: block; flex: none; border: 0; }
 .playerOverlay {
   position: absolute; inset: 0; z-index: 1;
   display: flex; align-items: center; justify-content: center;

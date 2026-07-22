@@ -540,51 +540,78 @@ function RestartIcon() {
   );
 }
 
-/* The recordings are SVGs animated by CSS keyframes (a filmstrip translate),
- * so an <img> embed exposes no playback control at all. The player inlines
- * the fetched markup instead: pausing sets animation-play-state on the
- * injected tree, and restarting re-mounts it, which restarts the CSS
- * animation from the first frame. */
+/* The recordings are SVGs animated by CSS keyframes (a filmstrip translate).
+ * An <img> embed animates but exposes no playback control, and inlining the
+ * markup breaks playback - Chromium leaves the injected filmstrip animation
+ * permanently play-pending. The player embeds the recording as an <object>
+ * instead: the SVG runs in its own same-origin document, where it provably
+ * animates, and the child document's Web Animations API drives pause, play
+ * and restart. */
 function SvgPlayer({svg, alt, name}) {
   const {withBaseUrl} = useBaseUrlUtils();
   const src = withBaseUrl('/' + svg);
   const animated = svg.includes('-animated');
-  const [markup, setMarkup] = useState(null);
-  const [failed, setFailed] = useState(false);
+  const objectRef = useRef(null);
+  const [natural, setNatural] = useState(null);
   const [zoom, setZoom] = useState(1);
   const [playing, setPlaying] = useState(true);
-  const [runId, setRunId] = useState(0);
 
-  useEffect(() => {
-    let cancelled = false;
+  const childAnimations = () => {
+    const doc = objectRef.current ? objectRef.current.contentDocument : null;
 
-    fetch(src)
-      .then((res) => (res.ok ? res.text() : Promise.reject(new Error(String(res.status)))))
-      .then((text) => {
-        if (!cancelled) {
-          setMarkup(text);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setFailed(true);
-        }
-      });
+    return doc && doc.getAnimations ? doc.getAnimations() : [];
+  };
 
-    return () => {
-      cancelled = true;
-    };
-  }, [src]);
+  const onLoad = () => {
+    const doc = objectRef.current ? objectRef.current.contentDocument : null;
+    const root = doc ? doc.documentElement : null;
 
-  // The generated SVGs carry their pixel size on the root element; the stage
-  // is sized from it so zoom means real pixels, not fit-to-column scaling.
-  const sizeMatch = markup ? markup.match(/width="([\d.]+)" height="([\d.]+)"/) : null;
-  const natural = sizeMatch ? {w: parseFloat(sizeMatch[1]), h: parseFloat(sizeMatch[2])} : null;
+    if (!root || typeof root.getAttribute !== 'function') {
+      return;
+    }
+
+    // The load event can fire more than once for the same document; only
+    // the state with the recording's numeric pixel size is processed, so a
+    // repeat pass never re-reads the percentage sizes set below.
+    const rawWidth = root.getAttribute('width') || '';
+    const rawHeight = root.getAttribute('height') || '';
+
+    if (rawWidth.includes('%') || rawHeight.includes('%')) {
+      return;
+    }
+
+    const w = parseFloat(rawWidth);
+    const h = parseFloat(rawHeight);
+
+    if (!(w > 0) || !(h > 0)) {
+      return;
+    }
+
+    // The recordings carry fixed pixel sizes and no root viewBox, so one is
+    // synthesized before switching the root to 100% - without it the child
+    // document would clip at its native size instead of scaling, and the
+    // zoom buttons could not resize real pixels through the object's box.
+    if (!root.getAttribute('viewBox')) {
+      root.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
+    }
+
+    root.setAttribute('width', '100%');
+    root.setAttribute('height', '100%');
+    setNatural({w, h});
+  };
 
   const step = (delta) => setZoom((z) => Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Math.round((z + delta) * 100) / 100)));
 
+  const setPlay = (next) => {
+    childAnimations().forEach((animation) => (next ? animation.play() : animation.pause()));
+    setPlaying(next);
+  };
+
   const restart = () => {
-    setRunId((id) => id + 1);
+    childAnimations().forEach((animation) => {
+      animation.currentTime = 0;
+      animation.play();
+    });
     setPlaying(true);
   };
 
@@ -595,7 +622,7 @@ function SvgPlayer({svg, alt, name}) {
         <span className={styles.playerName}>{name}</span>
         <span className={styles.playerControls}>
           {animated ? (
-            <button type="button" className={styles.playerBtn} onClick={() => setPlaying((p) => !p)} aria-label={playing ? 'Pause the recording' : 'Play the recording'}>{playing ? <PauseIcon /> : <PlayIcon />}</button>
+            <button type="button" className={styles.playerBtn} onClick={() => setPlay(!playing)} aria-label={playing ? 'Pause the recording' : 'Play the recording'}>{playing ? <PauseIcon /> : <PlayIcon />}</button>
           ) : null}
           {animated ? (
             <button type="button" className={styles.playerBtn} onClick={restart} aria-label="Restart the recording"><RestartIcon /></button>
@@ -607,13 +634,12 @@ function SvgPlayer({svg, alt, name}) {
       </div>
       <div className={styles.playerBody}>
         <div className={styles.playerScreen}>
-          {markup ? (
-            <div key={runId} className={clsx(styles.playerStage, !playing && styles.playerStagePaused)} role="img" aria-label={alt} style={natural ? {width: natural.w * zoom + 'px', height: natural.h * zoom + 'px'} : undefined} dangerouslySetInnerHTML={{__html: markup}} />
-          ) : null}
-          {failed ? <img src={src} alt={alt} decoding="async" /> : null}
+          <object ref={objectRef} type="image/svg+xml" data={src} onLoad={onLoad} role="img" aria-label={alt} tabIndex={-1} className={styles.playerObject} style={natural ? {width: natural.w * zoom + 'px', height: natural.h * zoom + 'px'} : undefined}>
+            <img src={src} alt={alt} decoding="async" />
+          </object>
         </div>
         {animated && !playing ? (
-          <button type="button" className={styles.playerOverlay} onClick={() => setPlaying(true)} aria-label="Play the recording">
+          <button type="button" className={styles.playerOverlay} onClick={() => setPlay(true)} aria-label="Play the recording">
             <span className={styles.playerOverlayIcon} aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M7 4.5 19 12 7 19.5z" /></svg></span>
           </button>
         ) : null}
