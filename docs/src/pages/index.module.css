@@ -97,6 +97,16 @@
 .btnLink { background: transparent; color: var(--ink); padding-inline: .5rem; }
 .btnLink:hover { color: var(--teal-bright); }
 
+/* The generic .home a colour outranks the .btn* classes on anchor buttons,
+ * so each variant restates its text colour at higher specificity - without
+ * this, primary buttons render teal-on-teal and are unreadable. */
+.home a.btnPrimary { color: #08201e; }
+.home a.btnPrimary:hover { color: #08201e; }
+.home a.btnGhost { color: var(--ink); }
+.home a.btnGhost:hover { color: var(--teal-bright); }
+.home a.btnLink { color: var(--ink); }
+.home a.btnLink:hover { color: var(--teal-bright); }
+
 /* hero */
 .hero { padding-top: clamp(2.4rem, 5vw, 4rem); padding-bottom: clamp(3rem, 6vw, 5rem); position: relative; }
 .hero::before {
@@ -198,13 +208,15 @@
 .overlay {
   position: fixed; inset: 0; z-index: 400;
   display: flex; align-items: center; justify-content: center;
-  padding: clamp(.8rem, 3vw, 2rem);
+  padding: clamp(.6rem, 2vw, 1.4rem);
   background: rgba(16, 18, 23, .74);
   backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px);
   animation: overlay-in .22s ease both;
 }
+/* Sized so the two columns hold 80-character code lines and an 80-column
+ * recording at its native 800px width side by side. */
 .dialog {
-  width: min(1060px, 100%); max-height: min(88vh, 100%); overflow: auto;
+  width: min(1660px, 100%); max-height: min(94vh, 100%); overflow: auto;
   background: linear-gradient(180deg, #262b33, var(--bg-deep));
   border: 1px solid var(--line); border-radius: var(--radius);
   box-shadow: var(--shadow), 0 0 0 1px rgba(45, 212, 191, .08);
@@ -224,23 +236,45 @@
   transition: color .16s ease, border-color .16s ease;
 }
 .dialogClose:hover { color: var(--teal-bright); border-color: var(--teal); }
-.dialogBody { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 1rem; padding: 1rem 1.1rem; }
+.dialogBody { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr); gap: 1.1rem; padding: 1rem 1.1rem; }
 .dialogCol { min-width: 0; display: flex; flex-direction: column; gap: .5rem; }
 .dialogLabel { color: var(--faint); font-size: .74rem; letter-spacing: .05em; }
 .dialogLabel::before { content: '// '; color: var(--teal-dim); }
-.dialogCode { background: var(--bg-deep); border: 1px solid var(--line-soft); border-radius: 10px; overflow: auto; max-height: 56vh; flex: 1 1 auto; }
-.home .dialogCode pre.code { font-size: .78rem; line-height: 1.7; padding: 1rem 1.1rem; }
-.dialogScreen { background: var(--panel); border: 1px solid var(--line-soft); border-radius: 10px; padding: .9rem; display: flex; align-items: flex-start; justify-content: center; }
-.dialogScreen img { width: 100%; height: auto; }
+.dialogCode { background: var(--bg-deep); border: 1px solid var(--line-soft); border-radius: 10px; overflow: auto; max-height: 66vh; flex: 1 1 auto; }
+.home .dialogCode pre.code { font-size: .8rem; line-height: 1.7; padding: 1rem 1.1rem; }
 .dialogFoot { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between; padding: .35rem 1.1rem 1.1rem; }
 .dialogDesc { color: var(--muted); font-size: .88rem; margin: 0; flex: 1 1 320px; }
 .dialogLinks { display: flex; flex-wrap: wrap; gap: .6rem; flex: none; }
 @keyframes overlay-in { from { opacity: 0; } }
 @keyframes dialog-in { from { opacity: 0; transform: translateY(14px) scale(.985); } }
 
-@media (max-width: 900px) {
+/* the SVG player: terminal chrome around the recording, rendered at its
+ * native size inside a scrollable viewport, with zoom controls */
+.player { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; background: var(--bg-deep); border: 1px solid var(--line-soft); border-radius: 10px; overflow: hidden; }
+.playerBar { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: .8rem; padding: .5rem .8rem; background: rgba(13, 17, 23, .6); border-bottom: 1px solid var(--line-soft); }
+.playerBar .dots span { width: 10px; height: 10px; }
+.playerName { color: var(--muted); font-size: .74rem; letter-spacing: .02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; }
+.playerZoom { display: inline-flex; align-items: center; gap: .3rem; }
+.playerBtn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 26px; height: 26px; padding: 0 .45rem; font: inherit; font-size: .74rem; font-weight: 700; cursor: pointer;
+  color: var(--muted); background: rgba(72, 79, 93, .18); border: 1px solid var(--line); border-radius: 7px;
+  transition: color .16s ease, border-color .16s ease;
+}
+.playerBtn:hover { color: var(--teal-bright); border-color: var(--teal); }
+.playerBtn:disabled { opacity: .4; cursor: default; }
+.playerBtn:disabled:hover { color: var(--muted); border-color: var(--line); }
+.playerPct { min-width: 52px; }
+.playerScreen { flex: 1 1 auto; overflow: auto; background: var(--panel); padding: 1rem; display: flex; align-items: flex-start; justify-content: safe center; max-height: 62vh; }
+.playerScreen img { display: block; height: auto; }
+
+/* Below this width two columns cannot hold 80-character code lines and the
+ * 800px recording without horizontal scrolling, so the panes stack and each
+ * gets the full dialog width instead. */
+@media (max-width: 1440px) {
   .dialogBody { grid-template-columns: 1fr; }
   .dialogCode { max-height: 42vh; }
+  .playerScreen { max-height: 48vh; }
 }
 
 .tok {

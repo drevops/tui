@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import clsx from 'clsx';
 import Layout from '@theme/Layout';
 import Head from '@docusaurus/Head';
@@ -518,6 +518,50 @@ function CopyButton({text}) {
   );
 }
 
+const ZOOM_MIN = 0.5;
+const ZOOM_MAX = 2;
+const ZOOM_STEP = 0.25;
+
+function SvgPlayer({svg, alt, name}) {
+  const {withBaseUrl} = useBaseUrlUtils();
+  const imgRef = useRef(null);
+  const [naturalWidth, setNaturalWidth] = useState(null);
+  const [zoom, setZoom] = useState(1);
+
+  const onLoad = () => {
+    if (imgRef.current && imgRef.current.naturalWidth > 0) {
+      setNaturalWidth(imgRef.current.naturalWidth);
+    }
+  };
+
+  // A cached image can finish loading before React attaches onLoad, so the
+  // natural size is also read once on mount.
+  useEffect(() => {
+    if (imgRef.current && imgRef.current.complete) {
+      onLoad();
+    }
+  }, []);
+
+  const step = (delta) => setZoom((z) => Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Math.round((z + delta) * 100) / 100)));
+
+  return (
+    <div className={styles.player}>
+      <div className={styles.playerBar}>
+        <span className={styles.dots} aria-hidden="true"><span /><span /><span /></span>
+        <span className={styles.playerName}>{name}</span>
+        <span className={styles.playerZoom}>
+          <button type="button" className={styles.playerBtn} onClick={() => step(-ZOOM_STEP)} disabled={zoom <= ZOOM_MIN} aria-label="Zoom the recording out">&minus;</button>
+          <button type="button" className={clsx(styles.playerBtn, styles.playerPct)} onClick={() => setZoom(1)} aria-label="Reset the recording to its actual size">{Math.round(zoom * 100)}%</button>
+          <button type="button" className={styles.playerBtn} onClick={() => step(ZOOM_STEP)} disabled={zoom >= ZOOM_MAX} aria-label="Zoom the recording in">+</button>
+        </span>
+      </div>
+      <div className={styles.playerScreen}>
+        <img ref={imgRef} onLoad={onLoad} src={withBaseUrl('/' + svg)} alt={alt} decoding="async" style={naturalWidth ? {width: naturalWidth * zoom + 'px', maxWidth: 'none'} : undefined} />
+      </div>
+    </div>
+  );
+}
+
 function FeatureModal({feature, onClose}) {
   const {withBaseUrl} = useBaseUrlUtils();
   const dialogRef = useRef(null);
@@ -587,9 +631,7 @@ function FeatureModal({feature, onClose}) {
           </div>
           <div className={styles.dialogCol}>
             <span className={styles.dialogLabel}>{demo.caption}</span>
-            <div className={styles.dialogScreen}>
-              <img src={withBaseUrl('/' + demo.svg)} alt={demo.alt} loading="lazy" decoding="async" />
-            </div>
+            <SvgPlayer svg={demo.svg} alt={demo.alt} name={demo.svg} />
           </div>
         </div>
         <div className={styles.dialogFoot}>
@@ -611,19 +653,23 @@ export default function Home() {
   const [active, setActive] = useState(null);
   const triggerRef = useRef(null);
 
-  const openFeature = (feature, event) => {
+  // Memoized so the modal's effect keeps a stable onClose: the typewriter
+  // re-renders Home every tick, and a fresh callback identity would re-run
+  // the effect and yank focus back to the close button while the dialog is
+  // open.
+  const openFeature = useCallback((feature, event) => {
     triggerRef.current = event.currentTarget;
     setActive(feature);
-  };
+  }, []);
 
-  const closeFeature = () => {
+  const closeFeature = useCallback(() => {
     setActive(null);
 
     if (triggerRef.current) {
       triggerRef.current.focus();
       triggerRef.current = null;
     }
-  };
+  }, []);
 
   useEffect(() => {
     const root = rootRef.current;
