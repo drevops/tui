@@ -1251,6 +1251,17 @@ function main(): void {
     throw new \RuntimeException('Failed to generate ' . count($failed) . ' asset(s).');
   }
 
+  // The audit gates the whole set, not just the jobs that ran: any leaked
+  // setup text, wrapped row, structural defect or missing twin in ANY asset
+  // fails the run before the results are trusted.
+  info('');
+  info('Auditing the full asset set...');
+  passthru(sprintf('php %s %s', escapeshellarg($script_dir . '/audit-svgs.php'), escapeshellarg($assets_dir)), $audit_exit);
+
+  if ($audit_exit !== 0) {
+    throw new \RuntimeException('The generated assets failed the audit.');
+  }
+
   info('');
   info('Done. ' . count($workers) . ' workers updated the SVG assets in ' . $assets_dir);
 }
