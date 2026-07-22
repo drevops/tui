@@ -25,6 +25,7 @@ use DrevOps\Tui\Theme\Border;
 use DrevOps\Tui\Theme\DefaultTheme;
 use DrevOps\Tui\Theme\DosTheme;
 use DrevOps\Tui\Theme\HAlign;
+use DrevOps\Tui\Theme\Spacing;
 use DrevOps\Tui\Theme\VAlign;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
@@ -107,7 +108,7 @@ final class PanelControllerTest extends TestCase {
       ->panel('p', 'p', function (PanelBuilder $p): void {
         $p->text('a', 'A');
       });
-    $controller = new PanelController($builder->build(), new DefaultTheme(40, ['color' => FALSE]), ['a' => 'x']);
+    $controller = new PanelController($builder->build(), new DefaultTheme(40, ['color' => FALSE, 'border' => Border::None, 'spacing' => Spacing::Normal]), ['a' => 'x']);
 
     $this->assertStringNotContainsString('Submit', Ansi::strip($controller->frame(12)));
 
@@ -159,7 +160,7 @@ final class PanelControllerTest extends TestCase {
         $p->select('env', 'Env')->default('dev')->options(['dev' => 'Development', 'prod' => 'Production']);
         $p->text('note', 'Note');
       });
-    $controller = new PanelController($builder->build(), new DefaultTheme(40, ['color' => FALSE]), ['env' => 'dev', 'note' => 'n']);
+    $controller = new PanelController($builder->build(), new DefaultTheme(40, ['color' => FALSE, 'border' => Border::None, 'spacing' => Spacing::Normal]), ['env' => 'dev', 'note' => 'n']);
 
     $controller->handle(Key::named(KeyName::Enter));
     $controller->handle(Key::named(KeyName::Enter));
@@ -179,7 +180,7 @@ final class PanelControllerTest extends TestCase {
       ->panel('main', 'Main', function (PanelBuilder $p): void {
         $p->confirm('cdn', 'Serve via CDN?')->description('Cache assets at the edge.');
       });
-    $controller = new PanelController($builder->build(), new DefaultTheme(50, ['color' => FALSE]), ['cdn' => TRUE]);
+    $controller = new PanelController($builder->build(), new DefaultTheme(50, ['color' => FALSE, 'border' => Border::None, 'spacing' => Spacing::Normal]), ['cdn' => TRUE]);
 
     $controller->handle(Key::named(KeyName::Enter));
     $controller->handle(Key::named(KeyName::Enter));
@@ -195,7 +196,7 @@ final class PanelControllerTest extends TestCase {
         $p->text('name', 'Name')->standalone();
         $p->text('other', 'Other');
       });
-    $controller = new PanelController($builder->build(), new DefaultTheme(40, ['color' => FALSE]), ['name' => 'Acme', 'other' => 'x']);
+    $controller = new PanelController($builder->build(), new DefaultTheme(40, ['color' => FALSE, 'border' => Border::None, 'spacing' => Spacing::Normal]), ['name' => 'Acme', 'other' => 'x']);
 
     $controller->handle(Key::named(KeyName::Enter));
     $controller->handle(Key::named(KeyName::Enter));
@@ -375,7 +376,7 @@ final class PanelControllerTest extends TestCase {
       ->panel('p', 'p', function (PanelBuilder $p): void {
         $p->text('a', 'A');
       });
-    $controller = new PanelController($builder->build(), new DefaultTheme(40, ['color' => FALSE]), ['a' => 'x'], footer: FALSE);
+    $controller = new PanelController($builder->build(), new DefaultTheme(40, ['color' => FALSE, 'border' => Border::None, 'spacing' => Spacing::Normal]), ['a' => 'x'], footer: FALSE);
 
     // The hub footer is gone.
     $this->assertStringNotContainsString('quit', Ansi::strip($controller->frame(12)));
@@ -463,7 +464,7 @@ final class PanelControllerTest extends TestCase {
         $p->text('name', 'Name');
       })
       ->build();
-    $theme = new DefaultTheme(40, ['color' => FALSE]);
+    $theme = new DefaultTheme(40, ['color' => FALSE, 'border' => Border::None, 'spacing' => Spacing::Normal]);
 
     // An interrupt renders the frame once (one clear) and then forces a second
     // clear at teardown despite clearOnExit being off.
@@ -488,7 +489,7 @@ final class PanelControllerTest extends TestCase {
         $p->text('name', 'Name');
       })
       ->build();
-    $controller = new PanelController($config, new DefaultTheme(40, ['color' => FALSE]), ['name' => 'Acme'], banner: 'WELCOME', version: '2.0');
+    $controller = new PanelController($config, new DefaultTheme(40, ['color' => FALSE, 'border' => Border::None, 'spacing' => Spacing::Normal]), ['name' => 'Acme'], banner: 'WELCOME', version: '2.0');
     // Ctrl-C at the "press any key" banner aborts instead of entering the form.
     $terminal = new BufferedTerminal([KeyEncoder::encode(Key::named(KeyName::Interrupt))]);
 
@@ -505,7 +506,7 @@ final class PanelControllerTest extends TestCase {
       ->panel('general', 'General', function (PanelBuilder $p): void {
         $p->text('name', 'Name');
       });
-    $controller = new PanelController($builder->build(), new DefaultTheme(40, ['color' => FALSE]), ['name' => 'Acme'], banner: 'WELCOME', version: '2.0');
+    $controller = new PanelController($builder->build(), new DefaultTheme(40, ['color' => FALSE, 'border' => Border::None, 'spacing' => Spacing::Normal]), ['name' => 'Acme'], banner: 'WELCOME', version: '2.0');
     // The first key dismisses the banner; input then ends.
     $terminal = new BufferedTerminal([KeyEncoder::encode(Key::named(KeyName::Enter))]);
 
@@ -577,7 +578,7 @@ final class PanelControllerTest extends TestCase {
         $p->textarea('notes', 'Notes')->externalEditor();
       });
 
-    return new PanelController($builder->build(), new DefaultTheme(40, ['color' => FALSE]), ['notes' => 'seeded'], external_editor: $editor);
+    return new PanelController($builder->build(), new DefaultTheme(40, ['color' => FALSE, 'border' => Border::None, 'spacing' => Spacing::Normal]), ['notes' => 'seeded'], external_editor: $editor);
   }
 
   /**
@@ -767,7 +768,7 @@ final class PanelControllerTest extends TestCase {
     for ($i = 1; $i <= 12; $i++) {
       $values['f' . $i] = 'v' . $i;
     }
-    $controller = new PanelController($builder->build(), new DefaultTheme(50, ['color' => FALSE]), $values);
+    $controller = new PanelController($builder->build(), new DefaultTheme(50, ['color' => FALSE, 'border' => Border::None, 'spacing' => Spacing::Normal]), $values);
 
     $controller->handle(Key::named(KeyName::Enter));
     $controller->handle(Key::named(KeyName::Down));
@@ -800,7 +801,7 @@ final class PanelControllerTest extends TestCase {
         $m->text('nick', 'Nickname');
       });
 
-    return new PanelController($builder->build(), new DefaultTheme(50, ['color' => FALSE]), ['name' => 'Acme', 'nick' => 'ace']);
+    return new PanelController($builder->build(), new DefaultTheme(50, ['color' => FALSE, 'border' => Border::None, 'spacing' => Spacing::Normal]), ['name' => 'Acme', 'nick' => 'ace']);
   }
 
   public function testRunFullscreenFillsTheTerminalExactly(): void {
@@ -883,7 +884,7 @@ final class PanelControllerTest extends TestCase {
       ->panel('general', 'General', function (PanelBuilder $p): void {
         $p->text('window', 'Preferred delivery window of the season');
       });
-    $controller = new PanelController($builder->build(), new DefaultTheme(30, ['color' => FALSE, 'unicode' => FALSE, 'fullscreen' => TRUE]), ['window' => 'Morning']);
+    $controller = new PanelController($builder->build(), new DefaultTheme(30, ['color' => FALSE, 'unicode' => FALSE, 'fullscreen' => TRUE, 'border' => Border::None, 'spacing' => Spacing::Normal]), ['window' => 'Morning']);
 
     // Thirty columns cannot fit the measured 50-column field row.
     $terminal = new BufferedTerminal([], 24, 30);
@@ -897,7 +898,7 @@ final class PanelControllerTest extends TestCase {
       ->panel('general', 'General', function (PanelBuilder $p): void {
         $p->text('window', 'Preferred delivery window of the season');
       });
-    $controller = new PanelController($builder->build(), new DefaultTheme(30, ['color' => FALSE, 'unicode' => FALSE, 'fullscreen' => TRUE, 'min_width' => 10]), ['window' => 'Morning']);
+    $controller = new PanelController($builder->build(), new DefaultTheme(30, ['color' => FALSE, 'unicode' => FALSE, 'fullscreen' => TRUE, 'min_width' => 10, 'border' => Border::None, 'spacing' => Spacing::Normal]), ['window' => 'Morning']);
 
     $terminal = new BufferedTerminal([], 24, 30);
     $controller->run($terminal);
@@ -928,7 +929,7 @@ final class PanelControllerTest extends TestCase {
         $m->modal('Apply', 'Discard');
         $m->text('nick', 'Nickname');
       });
-    $controller = new PanelController($builder->build(), new DefaultTheme(40, ['color' => FALSE, 'unicode' => FALSE, 'fullscreen' => TRUE]), ['name' => 'Acme', 'nick' => 'ace']);
+    $controller = new PanelController($builder->build(), new DefaultTheme(40, ['color' => FALSE, 'unicode' => FALSE, 'fullscreen' => TRUE, 'border' => Border::None, 'spacing' => Spacing::Normal]), ['name' => 'Acme', 'nick' => 'ace']);
 
     // Open the modal, then run on a terminal below the minimum height.
     $controller->handle(Key::named(KeyName::Down));
@@ -954,7 +955,7 @@ final class PanelControllerTest extends TestCase {
         $m->text('three', 'Third');
         $m->text('four', 'Fourth');
       });
-    $controller = new PanelController($builder->build(), new DefaultTheme(50, ['color' => FALSE]));
+    $controller = new PanelController($builder->build(), new DefaultTheme(50, ['color' => FALSE, 'border' => Border::None, 'spacing' => Spacing::Normal]));
 
     $controller->handle(Key::named(KeyName::Down));
     $controller->handle(Key::named(KeyName::Enter));
@@ -970,7 +971,7 @@ final class PanelControllerTest extends TestCase {
       ->panel('general', 'General', function (PanelBuilder $p): void {
         $p->text('window', 'Preferred delivery window of the season');
       });
-    $controller = new PanelController($builder->build(), new DefaultTheme(40, ['color' => FALSE, 'unicode' => FALSE, 'fullscreen' => TRUE, 'max_width' => 30]), ['window' => 'Morning']);
+    $controller = new PanelController($builder->build(), new DefaultTheme(40, ['color' => FALSE, 'unicode' => FALSE, 'fullscreen' => TRUE, 'max_width' => 30, 'border' => Border::None, 'spacing' => Spacing::Normal]), ['window' => 'Morning']);
 
     // The content measures ~50 columns, but the 30-column cap is the
     // consumer's word that clipping is acceptable: a 40-column terminal must
@@ -1050,7 +1051,7 @@ final class PanelControllerTest extends TestCase {
           $sp->text('two', 'Two');
         });
       });
-    $controller = new PanelController($builder->build(), new DefaultTheme(40, ['color' => FALSE, 'unicode' => FALSE]));
+    $controller = new PanelController($builder->build(), new DefaultTheme(40, ['color' => FALSE, 'unicode' => FALSE, 'border' => Border::None, 'spacing' => Spacing::Normal]));
 
     // Drill into the mixed panel: the field sits above the grid.
     $controller->handle(Key::named(KeyName::Enter));
@@ -1106,7 +1107,7 @@ final class PanelControllerTest extends TestCase {
         $p->text('three', 'Three');
       });
 
-    return new PanelController($builder->build(), new DefaultTheme(40, ['color' => FALSE, 'unicode' => FALSE]));
+    return new PanelController($builder->build(), new DefaultTheme(40, ['color' => FALSE, 'unicode' => FALSE, 'border' => Border::None, 'spacing' => Spacing::Normal]));
   }
 
   /**
@@ -1126,7 +1127,7 @@ final class PanelControllerTest extends TestCase {
         $p->text('name', 'Name');
       });
 
-    return new PanelController($builder->build(), new DefaultTheme($width, ['color' => FALSE, 'unicode' => FALSE] + $options), ['name' => 'Acme']);
+    return new PanelController($builder->build(), new DefaultTheme($width, ['color' => FALSE, 'unicode' => FALSE] + $options + ['border' => Border::None, 'spacing' => Spacing::Normal]), ['name' => 'Acme']);
   }
 
   /**
@@ -1141,7 +1142,7 @@ final class PanelControllerTest extends TestCase {
       })
       ->build();
 
-    $controller = new PanelController($form, new DefaultTheme(40, ['color' => FALSE]), values: ['name' => '']);
+    $controller = new PanelController($form, new DefaultTheme(40, ['color' => FALSE, 'border' => Border::None, 'spacing' => Spacing::Normal]), values: ['name' => '']);
     $controller->handle(Key::named(KeyName::Enter));
     $controller->handle(Key::named(KeyName::Enter));
     $this->assertTrue($controller->isEditing());
@@ -1165,7 +1166,7 @@ final class PanelControllerTest extends TestCase {
       })
       ->build();
 
-    $controller = new PanelController($form, new DefaultTheme(40, ['color' => FALSE]), values: ['machine_name' => 'Seed'], handlers: new HandlerRegistry(['DrevOps\Tui\Tests\Fixtures\Handler']));
+    $controller = new PanelController($form, new DefaultTheme(40, ['color' => FALSE, 'border' => Border::None, 'spacing' => Spacing::Normal]), values: ['machine_name' => 'Seed'], handlers: new HandlerRegistry(['DrevOps\Tui\Tests\Fixtures\Handler']));
     $controller->handle(Key::named(KeyName::Enter));
     $controller->handle(Key::named(KeyName::Enter));
     $controller->handle(Key::char('X'));
@@ -1184,7 +1185,7 @@ final class PanelControllerTest extends TestCase {
       })
       ->build();
 
-    $controller = new PanelController($form, new DefaultTheme(40, ['color' => FALSE]), ['extra' => FALSE, 'notes' => 'mixed']);
+    $controller = new PanelController($form, new DefaultTheme(40, ['color' => FALSE, 'border' => Border::None, 'spacing' => Spacing::Normal]), ['extra' => FALSE, 'notes' => 'mixed']);
     $controller->handle(Key::named(KeyName::Enter));
 
     // The condition fails, so the field neither renders nor answers.
@@ -1216,7 +1217,7 @@ final class PanelControllerTest extends TestCase {
       })
       ->build();
 
-    $controller = new PanelController($form, new DefaultTheme(40, ['color' => FALSE]), ['gated' => 'g', 'extra' => TRUE]);
+    $controller = new PanelController($form, new DefaultTheme(40, ['color' => FALSE, 'border' => Border::None, 'spacing' => Spacing::Normal]), ['gated' => 'g', 'extra' => TRUE]);
     $controller->handle(Key::named(KeyName::Enter));
     $controller->handle(Key::named(KeyName::Down));
     $this->assertSame(1, $controller->cursor());
@@ -1279,7 +1280,7 @@ final class PanelControllerTest extends TestCase {
       })
       ->build();
 
-    $controller = new PanelController($form, new DefaultTheme(40, ['color' => FALSE]), ['tag' => '', 'note' => '']);
+    $controller = new PanelController($form, new DefaultTheme(40, ['color' => FALSE, 'border' => Border::None, 'spacing' => Spacing::Normal]), ['tag' => '', 'note' => '']);
     $controller->handle(Key::named(KeyName::Enter));
 
     $controller->handle(Key::named(KeyName::Enter));
@@ -1303,7 +1304,7 @@ final class PanelControllerTest extends TestCase {
       })
       ->build();
 
-    return new PanelController($form, new DefaultTheme(40, ['color' => FALSE]), ['name' => 'Red Apple'], ['slug' => Provenance::Derived]);
+    return new PanelController($form, new DefaultTheme(40, ['color' => FALSE, 'border' => Border::None, 'spacing' => Spacing::Normal]), ['name' => 'Red Apple'], ['slug' => Provenance::Derived]);
   }
 
   protected function controller(): PanelController {
@@ -1317,7 +1318,7 @@ final class PanelControllerTest extends TestCase {
       ->panel('drupal', 'Drupal', function (PanelBuilder $p): void {
         $p->text('profile', 'Profile');
       });
-    $theme = new DefaultTheme(40, ['color' => FALSE]);
+    $theme = new DefaultTheme(40, ['color' => FALSE, 'border' => Border::None, 'spacing' => Spacing::Normal]);
 
     return new PanelController($builder->build(), $theme, ['name' => 'Acme', 'debug' => FALSE, 'profile' => 'standard']);
   }

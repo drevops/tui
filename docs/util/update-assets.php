@@ -920,11 +920,13 @@ function getJobs(string $project_dir): array {
     ];
   }
 
-  // The quick-start form: a static frame of the single panel's fields.
+  // The quick-start form: a static frame of the single panel's fields. The
+  // default padded box spreads the five fields, so the frame is tall enough
+  // to hold them all un-scrolled.
   $jobs['quickstart'] = [
-    'command' => 'env LINES=14 COLUMNS=72 php ' . $project_dir . '/playground/01-quickstart.php',
+    'command' => 'env LINES=18 COLUMNS=72 php ' . $project_dir . '/playground/01-quickstart.php',
     'interact' => quickstartInteraction(),
-    'rows' => 14,
+    'rows' => 18,
     'cols' => 72,
     'at_needle' => 'Vegetables',
   ];
@@ -932,9 +934,9 @@ function getJobs(string $project_dir): array {
   // Inline editing: each editor opens in place on its panel row, with the
   // standalone calendar as the full-screen contrast.
   $jobs['inline-editing'] = [
-    'command' => 'env LINES=16 COLUMNS=64 php ' . $project_dir . '/playground/04-inline-editing.php',
+    'command' => 'env LINES=20 COLUMNS=64 php ' . $project_dir . '/playground/04-inline-editing.php',
     'interact' => inlineEditingInteraction(),
-    'rows' => 16,
+    'rows' => 20,
     'cols' => 64,
     'verify' => 'Harvest date',
   ];
@@ -942,9 +944,9 @@ function getJobs(string $project_dir): array {
   // Derived values: renaming the produce re-settles the slug/code/lot chain,
   // so the re-derived slug proves the edit and the settle were captured.
   $jobs['derived-values'] = [
-    'command' => 'env LINES=18 COLUMNS=72 php ' . $project_dir . '/playground/05-form-logic-derived-values.php',
+    'command' => 'env LINES=22 COLUMNS=72 php ' . $project_dir . '/playground/05-form-logic-derived-values.php',
     'interact' => derivedValuesInteraction(),
-    'rows' => 18,
+    'rows' => 22,
     'cols' => 72,
     'verify' => 'red_plum',
   ];
@@ -952,9 +954,9 @@ function getJobs(string $project_dir): array {
   // Conditional fields: picking herbs and the large box makes fields appear
   // and disappear; the herb bundle only renders once herbs are selected.
   $jobs['conditional-fields'] = [
-    'command' => 'env LINES=18 COLUMNS=72 php ' . $project_dir . '/playground/05-form-logic-conditional-fields.php',
+    'command' => 'env LINES=22 COLUMNS=72 php ' . $project_dir . '/playground/05-form-logic-conditional-fields.php',
     'interact' => conditionalFieldsInteraction(),
-    'rows' => 18,
+    'rows' => 22,
     'cols' => 72,
     'verify' => 'Herb bundle',
   ];
@@ -962,9 +964,9 @@ function getJobs(string $project_dir): array {
   // The vim key-bindings preset: j/k navigation and the ? help overlay. The
   // taller screen leaves the overlay room to list the bound keys.
   $jobs['key-bindings-vim'] = [
-    'command' => 'env LINES=20 COLUMNS=72 php ' . $project_dir . '/playground/10-key-bindings-vim.php',
+    'command' => 'env LINES=22 COLUMNS=72 php ' . $project_dir . '/playground/10-key-bindings-vim.php',
     'interact' => keyBindingsVimInteraction(),
-    'rows' => 20,
+    'rows' => 22,
     'cols' => 72,
     'verify' => 'Fruit',
   ];
@@ -972,9 +974,9 @@ function getJobs(string $project_dir): array {
   // Translations: the Ukrainian catalog localizes the chrome and the labels;
   // the translated Fruits label proves the localized render was captured.
   $jobs['translations'] = [
-    'command' => 'env LINES=16 COLUMNS=64 php ' . $project_dir . '/playground/12-translations.php',
+    'command' => 'env LINES=20 COLUMNS=64 php ' . $project_dir . '/playground/12-translations.php',
     'interact' => translationsInteraction(),
-    'rows' => 16,
+    'rows' => 20,
     'cols' => 64,
     'verify' => 'Фрукти',
   ];
@@ -997,7 +999,8 @@ function getJobs(string $project_dir): array {
     'verify' => 'Basics',
   ];
 
-  // The same form at the default borderless look, normal spacing.
+  // The same form explicitly opted out of the default frame: border 'none'
+  // at normal spacing.
   $jobs['borderless-panels'] = [
     'command' => 'env LINES=' . TERMINAL_ROWS . ' COLUMNS=' . TERMINAL_COLS . ' php ' . $project_dir . '/playground/03-panels-borderless.php',
     'interact' => borderedPanelsInteraction(),
@@ -1039,9 +1042,9 @@ function getJobs(string $project_dir): array {
   // The custom ocean theme with a banner. It demonstrates a custom palette,
   // not the default light/dark pair, so it has no meaningful light twin.
   $jobs['theme-ocean'] = [
-    'command' => 'env LINES=20 COLUMNS=' . TERMINAL_COLS . ' php ' . $project_dir . '/playground/09-themes-custom.php',
+    'command' => 'env LINES=24 COLUMNS=' . TERMINAL_COLS . ' php ' . $project_dir . '/playground/09-themes-custom.php',
     'interact' => themeOceanInteraction(),
-    'rows' => 20,
+    'rows' => 24,
     'cols' => TERMINAL_COLS,
     'verify' => 'Seaside stall',
     'twin' => FALSE,
@@ -1073,11 +1076,14 @@ function getJobs(string $project_dir): array {
   // The test harness: TuiTester drives the panel loop without a TTY and the
   // script prints the collected answers and the final rendered frame. The
   // frame marker is the last text printed, so it anchors the full output.
+  // The harness prints its final frame as the default 76-column padded box,
+  // so the pty is wide and tall enough that no output line wraps or scrolls
+  // the marker away.
   $jobs['testing'] = [
     'command' => 'php ' . $project_dir . '/playground/13-testing.php',
     'interact' => '# Headless run: wait for the harness output.',
-    'rows' => 16,
-    'cols' => 72,
+    'rows' => 26,
+    'cols' => 80,
     'at_needle' => 'final frame',
   ];
 
@@ -1100,7 +1106,7 @@ expect "Password widget" {
     wait_and_enter
 }
 EXPECT,
-    'rows' => 6,
+    'rows' => 12,
     'cols' => 44,
     'at_needle' => 'melon7',
   ];
@@ -1115,8 +1121,8 @@ EXPECT,
   // static frame is anchored to an option only visible once the list is open
   // (the hub shows the form title too, so gating on it would capture the hub).
   $group_demos = [
-    'select-groups' => ['gate' => 'Select with groups', 'needle' => 'Rhubarb', 'rows' => 12],
-    'select-multiple-groups' => ['gate' => 'MultiSelect with groups', 'needle' => 'Leek', 'rows' => 15],
+    'select-groups' => ['gate' => 'Select with groups', 'needle' => 'Rhubarb', 'rows' => 18],
+    'select-multiple-groups' => ['gate' => 'MultiSelect with groups', 'needle' => 'Leek', 'rows' => 21],
   ];
 
   foreach ($group_demos as $demo => $meta) {

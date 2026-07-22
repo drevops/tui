@@ -84,10 +84,15 @@ function previewForm(): Form {
  *   The final rendered frame, cleaned for an asciicast.
  */
 function captureFrame(string $theme, Mode $mode, bool $bordered, int $rows): string {
+  // The bordered twin rides the default padded rounded box; the plain twin
+  // opts out of the frame explicitly to show the theme's bare rows. Dos is
+  // never opted out: its double-line window is the theme's own unset-border
+  // default and the point of its preview.
   $options = ['color' => TRUE, 'unicode' => TRUE, 'mode' => $mode];
 
-  if ($bordered) {
-    $options['border'] = 'rounded';
+  if (!$bordered && $theme !== 'dos') {
+    $options['border'] = 'none';
+    $options['spacing'] = 'normal';
   }
 
   $tester = (new TuiTester(previewForm()))->theme($theme)->options($options)->rows($rows);
@@ -242,8 +247,10 @@ foreach ($names as $name) {
   }
 
   // The dos window wraps the whole field list only on the classic 80-column
-  // screen; the adaptive themes fit the narrower default width.
-  $rows = $name === 'dos' ? 16 : 15;
+  // screen; the adaptive themes fit the narrower default width. Dos keeps
+  // its own window and the default padded spacing, so it carries the two
+  // padding rows in its budget.
+  $rows = $name === 'dos' ? 18 : 15;
   $surface_dark = $name === 'dos' ? '--dos' : '';
   $surface_light = $name === 'dos' ? '--dos' : '--light';
 
@@ -254,9 +261,10 @@ foreach ($names as $name) {
   verifyThemeSvg($assets_dir . '/theme-' . $name . '-light-static.svg');
 
   // The rounded-border twins; dos draws its own double-line window instead.
+  // The default padded box needs the border and padding rows in the budget.
   if ($name !== 'dos') {
-    renderThemeFrame(captureFrame($name, Mode::Dark, TRUE, $rows + 2), $rows + 2, $assets_dir . '/theme-' . $name . '-dark-static-bordered.svg', $util_dir, $tmp_dir, $surface_dark);
-    renderThemeFrame(captureFrame($name, Mode::Light, TRUE, $rows + 2), $rows + 2, $assets_dir . '/theme-' . $name . '-light-static-bordered.svg', $util_dir, $tmp_dir, $surface_light);
+    renderThemeFrame(captureFrame($name, Mode::Dark, TRUE, $rows + 4), $rows + 4, $assets_dir . '/theme-' . $name . '-dark-static-bordered.svg', $util_dir, $tmp_dir, $surface_dark);
+    renderThemeFrame(captureFrame($name, Mode::Light, TRUE, $rows + 4), $rows + 4, $assets_dir . '/theme-' . $name . '-light-static-bordered.svg', $util_dir, $tmp_dir, $surface_light);
     verifyThemeSvg($assets_dir . '/theme-' . $name . '-dark-static-bordered.svg');
     verifyThemeSvg($assets_dir . '/theme-' . $name . '-light-static-bordered.svg');
   }

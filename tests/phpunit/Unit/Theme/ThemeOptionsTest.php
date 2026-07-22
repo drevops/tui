@@ -101,7 +101,7 @@ final class ThemeOptionsTest extends TestCase {
 
   public function testPaddedBorderAddsInnerPadding(): void {
     $padded = new DefaultTheme(20, ['color' => FALSE, 'spacing' => Spacing::Padded, 'border' => Border::Line]);
-    $plain = new DefaultTheme(20, ['color' => FALSE, 'border' => Border::Line]);
+    $plain = new DefaultTheme(20, ['color' => FALSE, 'spacing' => Spacing::Normal, 'border' => Border::Line]);
 
     $args = [['H'], ['b'], ['F'], new Viewport(0, FALSE, FALSE), 1];
 
@@ -113,15 +113,28 @@ final class ThemeOptionsTest extends TestCase {
     $args = [['H'], ['b'], ['F'], new Viewport(0, FALSE, FALSE), 1];
 
     // Normal detaches the footer with a blank line; compact keeps it attached.
-    $normal = explode("\n", Ansi::strip((new DefaultTheme(40, ['color' => FALSE]))->renderFrame(...$args)));
+    $normal = explode("\n", Ansi::strip((new DefaultTheme(40, ['color' => FALSE, 'border' => Border::None, 'spacing' => Spacing::Normal]))->renderFrame(...$args)));
     $this->assertSame(['H', 'b', '', 'F'], $normal);
 
-    $compact = explode("\n", Ansi::strip((new DefaultTheme(40, ['color' => FALSE, 'spacing' => Spacing::Compact]))->renderFrame(...$args)));
+    $compact = explode("\n", Ansi::strip((new DefaultTheme(40, ['color' => FALSE, 'border' => Border::None, 'spacing' => Spacing::Compact]))->renderFrame(...$args)));
     $this->assertSame(['H', 'b', 'F'], $compact);
   }
 
+  public function testDefaultLookIsBorderedAndPadded(): void {
+    $args = [['H'], ['b'], ['F'], new Viewport(0, FALSE, FALSE), 1];
+
+    // Unset options draw the padded rounded box; only an explicit opt-out
+    // goes borderless.
+    $default = (new DefaultTheme(24, ['color' => FALSE]))->renderFrame(...$args);
+    $explicit = (new DefaultTheme(24, ['color' => FALSE, 'border' => Border::Rounded, 'spacing' => Spacing::Padded]))->renderFrame(...$args);
+
+    $this->assertSame($explicit, $default);
+    $this->assertStringContainsString('╭', $default);
+    $this->assertStringNotContainsString('╭', (new DefaultTheme(24, ['color' => FALSE, 'border' => Border::None]))->renderFrame(...$args));
+  }
+
   public function testEditorAdoptsBorder(): void {
-    $plain = (new DefaultTheme(30, ['color' => FALSE]))->renderEditor('Name', 'Acme');
+    $plain = (new DefaultTheme(30, ['color' => FALSE, 'border' => Border::None]))->renderEditor('Name', 'Acme');
     $boxed = (new DefaultTheme(30, ['color' => FALSE, 'border' => Border::Line]))->renderEditor('Name', 'Acme');
 
     // Borderless keeps today's label-over-rule editor; a border boxes it.
@@ -180,7 +193,7 @@ final class ThemeOptionsTest extends TestCase {
 
   public function testFieldBoxedInputFillsBehindTheValue(): void {
     // A string value (not the enum case) exercises the option's string path.
-    $line = (new DefaultTheme(40, ['field' => 'boxed']))->renderInput('localhost', '');
+    $line = (new DefaultTheme(40, ['field' => 'boxed', 'border' => Border::None]))->renderInput('localhost', '');
 
     // The fill opens before the value, so the background runs behind the text
     // itself, and the field is padded to a fixed, visible width.
@@ -191,7 +204,7 @@ final class ThemeOptionsTest extends TestCase {
   }
 
   public function testFieldBoxedEmptyInputIsVisible(): void {
-    $line = (new DefaultTheme(40, ['field' => FieldStyle::Boxed]))->renderInput('', '');
+    $line = (new DefaultTheme(40, ['field' => FieldStyle::Boxed, 'border' => Border::None]))->renderInput('', '');
 
     // An empty buffer still renders a full-width filled bar (caret + pad).
     $this->assertStringStartsWith("\033[30;47m", $line);

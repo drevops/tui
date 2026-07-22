@@ -22,6 +22,7 @@ use DrevOps\Tui\Render\Navigator;
 use DrevOps\Tui\Render\Viewport;
 use DrevOps\Tui\Theme\Border;
 use DrevOps\Tui\Theme\DefaultTheme;
+use DrevOps\Tui\Theme\Spacing;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
@@ -513,13 +514,16 @@ final class ThemeRenderTest extends TestCase {
   }
 
   /**
-   * A colourless theme of fixed width.
+   * A colourless borderless theme of fixed width.
+   *
+   * The explicit border and spacing keep these layout assertions on the
+   * plain look, independent of the theme's bordered-and-padded defaults.
    *
    * @return \DrevOps\Tui\Theme\DefaultTheme
    *   The theme.
    */
   protected function theme(): DefaultTheme {
-    return new DefaultTheme(40, ['color' => FALSE]);
+    return new DefaultTheme(40, ['color' => FALSE, 'border' => Border::None, 'spacing' => Spacing::Normal]);
   }
 
 }

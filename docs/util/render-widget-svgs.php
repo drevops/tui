@@ -181,12 +181,12 @@ function widgetSpecs(string $tree): array {
  */
 function renderWidget(string $name, array $spec, string $assets_dir, string $util_dir, string $tmp_dir): void {
   foreach (DISPLAY_MODES as $suffix => $mode) {
-    // The animated hero cards render inside the rounded border - the same
-    // frame the panel demos use - so every animation on the site shares one
-    // look. The border adds a row above and below the content.
+    // The animated hero cards render at the default look - the padded
+    // rounded border every panel demo shares. The border adds a row above
+    // and below the content and the padding another one each side.
     $tester = (new TuiTester($spec['form']))
-      ->options(['color' => $mode['color'], 'unicode' => $mode['unicode'], 'mode' => Mode::Dark, 'border' => 'rounded'])
-      ->rows($spec['rows'] + 2);
+      ->options(['color' => $mode['color'], 'unicode' => $mode['unicode'], 'mode' => Mode::Dark])
+      ->rows($spec['rows'] + 4);
     $tester->run(...$spec['keys']);
 
     $frames = splitFrames($tester->output());
@@ -196,7 +196,7 @@ function renderWidget(string $name, array $spec, string $assets_dir, string $uti
     }
 
     $cast_file = $tmp_dir . '/widget-' . $name . '-animated' . $suffix . '.cast';
-    file_put_contents($cast_file, buildCast($frames, $spec['rows'] + 2));
+    file_put_contents($cast_file, buildCast($frames, $spec['rows'] + 4));
 
     // The unmarked mode is the unicode, colour hero README.md embeds; the
     // light twin derives in the same pass.
@@ -236,9 +236,11 @@ function renderStaticVariants(string $name, array $spec, string $assets_dir, str
   $clear = Ansi::ESC . '[2J' . Ansi::ESC . '[H';
 
   foreach (DISPLAY_MODES as $suffix => $mode) {
+    // The static screenshots share the default padded rounded border, so
+    // the four extra chrome rows join the content budget here too.
     $tester = (new TuiTester($spec['form']))
       ->options(['color' => $mode['color'], 'unicode' => $mode['unicode'], 'mode' => Mode::Dark])
-      ->rows($spec['rows']);
+      ->rows($spec['rows'] + 4);
     $tester->run(...$open);
 
     $frames = splitFrames($tester->output());
@@ -247,7 +249,7 @@ function renderStaticVariants(string $name, array $spec, string $assets_dir, str
     }
 
     $frame = $frames[count($frames) - 1];
-    $cast = json_encode(['version' => 2, 'width' => castWidth([$frame]), 'height' => $spec['rows']]) . "\n"
+    $cast = json_encode(['version' => 2, 'width' => castWidth([$frame]), 'height' => $spec['rows'] + 4]) . "\n"
       . json_encode([0.0, 'o', $clear . $frame]) . "\n";
     $cast_file = $tmp_dir . '/widget-' . $name . '-static' . $suffix . '.cast';
     file_put_contents($cast_file, $cast);
