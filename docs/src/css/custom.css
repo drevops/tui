@@ -5,3 +5,27 @@
  *
  * @see https://docusaurus.io/docs/styling-layout#styling-your-site-with-infima
  */
+
+/**
+ * Sidebar sections: every level-1 category is non-collapsible (see
+ * `sidebars.js`), so its label is a static group heading, not a link -
+ * render it as a small uppercase heading and switch off the link
+ * affordances it inherits from the menu.
+ */
+.theme-doc-sidebar-item-category-level-1 > .menu__list-item-collapsible .menu__link {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ifm-color-emphasis-600);
+  cursor: default;
+}
+
+.theme-doc-sidebar-item-category-level-1 > .menu__list-item-collapsible:hover,
+.theme-doc-sidebar-item-category-level-1 > .menu__list-item-collapsible .menu__link:hover {
+  background: none;
+}
+
+.theme-doc-sidebar-item-category-level-1:not(:first-child) {
+  margin-top: 1.5rem;
+}

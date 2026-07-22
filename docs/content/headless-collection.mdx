@@ -1,6 +1,5 @@
 ---
 title: Headless collection
-sidebar_position: 8
 ---
 
 # Headless collection
@@ -17,5 +16,9 @@ Environment overrides are named `<PREFIX><FIELD_ID>` (the uppercased field id). 
 ```bash
 MYAPP_TIMEZONE=UTC php my-installer.php
 ```
+
+## Self-describing answers
+
+The returned `Answers` set needs no form configuration to present or process: each answer carries a snapshot of its question (label, kind, panel trail) taken at collection time, plus its provenance - default, detected, edited, derived, or override (a user value pinning a derived one). `$answers->toSummary()` prints the provenance-badged, panel-grouped summary, `$answers->toJson()` the raw values, and `$answers->items` exposes the per-answer snapshots.
 
 For automation and AI agents, the form describes itself - `schema()`, `agentHelp()` and `validate()` let a tool discover and drive it without prompting. See [AI agents](/ai-agents) for the full surface, with the runnable scripts in [`playground/08-headless-*`](https://github.com/drevops/tui/tree/main/playground).

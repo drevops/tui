@@ -68,6 +68,19 @@ const config = {
     },
   },
 
+  plugins: [
+    [
+      '@docusaurus/plugin-client-redirects',
+      {
+        // Pages absorbed into larger ones keep their old URLs working.
+        redirects: [
+          {from: '/discovery', to: '/field-behaviour'},
+          {from: '/self-describing-answers', to: '/headless-collection'},
+        ],
+      },
+    ],
+  ],
+
   themes: [
     [
       '@easyops-cn/docusaurus-search-local',

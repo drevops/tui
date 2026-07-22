@@ -241,7 +241,7 @@ $p->confirm('stackable', 'Stack the boxes?')->when(new Condition('size', in: ['s
   {
     idx: '08',
     name: 'Themes',
-    desc: <>The whole visual representation - colours, glyphs, layout - is a theme class; five presets ship, from <code className={styles.tok}>dos</code> to <code className={styles.tok}>midnight</code>, or subclass your own.</>,
+    desc: <>The whole visual representation - colours, glyphs, layout - is a theme class; six themes ship built-in, from <code className={styles.tok}>dos</code> to <code className={styles.tok}>midnight</code>, or subclass your own.</>,
     demo: {
       svg: 'theme-ocean-dark-animated.svg',
       alt: 'Animated recording of a form rendered by a custom ocean theme with a banner',
@@ -254,9 +254,9 @@ $answers = (new Tui($form))
   ->theme(OceanTheme::class, ['border' => 'rounded'])
   ->run('', '1.0.0');
 
-// Or pick a shipped preset by name: 'dos', 'ember', 'frost',
-// 'midnight' or 'mono'. Dark or light is not part of the theme -
-// it is the auto-detected 'mode' display option.
+// Or pick a shipped theme by name: 'default', 'dos', 'ember',
+// 'frost', 'midnight' or 'mono'. Dark or light is not part of the
+// theme - it is the auto-detected 'mode' display option.
 $answers = (new Tui($form))->theme('midnight')->run();`,
     },
   },
