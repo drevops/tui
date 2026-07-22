@@ -1419,11 +1419,22 @@ function verifySvg(string $svg_file, string $name, ?string $expected, bool $sing
     throw new \RuntimeException(sprintf('Generated SVG for "%s" holds more than one frame window - the visible frame may be empty.', $name));
   }
 
+  $text = html_entity_decode(strip_tags($content));
+
+  // Recording-setup text must never ship inside an asset: the spawn
+  // announcement, the pty geometry, the sanitized home path or any script
+  // path in a frame means pre-demo noise was captured. The demo content is
+  // produce-themed, so none of these fingerprints can occur legitimately.
+  foreach (['spawn', 'LINES=', 'COLUMNS=', '/home/user', 'playground/', '.php'] as $fingerprint) {
+    if (str_contains($text, $fingerprint)) {
+      throw new \RuntimeException(sprintf('Generated SVG for "%s" leaked recording-setup text ("%s" found in a frame).', $name, $fingerprint));
+    }
+  }
+
   if ($expected === NULL || $expected === '') {
     return;
   }
 
-  $text = html_entity_decode(strip_tags($content));
   $words = preg_split('/\s+/', $expected);
 
   foreach (is_array($words) ? $words : [] as $word) {
@@ -1572,7 +1583,12 @@ proc press_escape {} {
     safe_send "\033"
 }
 
+# The spawn announcement obeys log_user, and anything expect prints lands
+# in the recording as visible frames - so the announcement is suppressed at
+# the source and output copying resumes before the demo paints.
+log_user 0
 spawn @command@
+log_user 1
 
 @body@
 
