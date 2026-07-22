@@ -57,8 +57,8 @@ $tui = new Tui($form);
 $answers = $tui->run();
 
 // Or drive a mode directly:
-echo $tui->collect('{"name":"Weekly Box"}')->toJson(); // headless: JSON + env
-$answers = $tui->interact();                           // interactive panel TUI
+echo $tui->collect('{"name":"Weekly Box"}')->toJson(); // headless: JSON + environment
+$answers = $tui->interact();                    // interactive panel TUI
 ```
 
 `run()` picks the mode automatically: it drives the interactive panel TUI on a terminal and collects headlessly otherwise (or whenever prompts are supplied). The facade also exposes `schema()`, `agentHelp()` and `validate()`, and - when you want finer control - the internals via `form()`, `engine()` and `registry()`.

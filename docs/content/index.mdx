@@ -77,8 +77,8 @@ $tui = new Tui($form);
 $answers = $tui->run();
 
 // Or drive a mode directly:
-echo $tui->collect('{"name":"Weekly Box"}')->toJson(); // headless: JSON + env
-$answers = $tui->interact();                           // interactive panel TUI
+echo $tui->collect('{"name":"Weekly Box"}')->toJson(); // headless: JSON + environment
+$answers = $tui->interact();                    // interactive panel TUI
 ```
 
 Run it on a terminal and the panel opens on the form's fields, ready to fill:

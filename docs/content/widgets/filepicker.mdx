@@ -17,9 +17,9 @@ Browse the filesystem for a single path. It collects the **chosen path** (a `str
 ```php
 $p->filePicker('list', 'Price list')
   ->startIn(getcwd())   // Directory to open in (and the floor for ←).
-  ->filesOnly()         // Only files selectable; directories stay navigable.
+  ->filesOnly()         // Only files are selectable; directories stay navigable.
   ->extensions(['csv']) // Limit selectable files to these extensions.
-  ->showHidden();       // Show hidden (dot) entries when the browser opens.
+  ->showHidden();        // Show hidden (dot) entries when the browser opens.
 ```
 
 Runnable scripts: [`playground/02-widgets-filepicker.php`](https://github.com/drevops/tui/blob/main/playground/02-widgets-filepicker.php) and [`filepicker-multiple.php`](https://github.com/drevops/tui/blob/main/playground/02-widgets-filepicker-multiple.php).

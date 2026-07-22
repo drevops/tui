@@ -139,17 +139,11 @@ use DrevOps\Tui\Theme\Sgr;
 
 class AquaTheme extends DefaultTheme {
   public function title(string $text): string {
-    $style = $this->isDark
-      ? Sgr::of(Sgr::Bold, Sgr::Cyan)
-      : Sgr::of(Sgr::Bold, Sgr::Blue);
-
-    return $this->paint($style, $text);
+    return $this->paint($this->isDark ? Sgr::of(Sgr::Bold, Sgr::Cyan) : Sgr::of(Sgr::Bold, Sgr::Blue), $text);
   }
 
   public function value(string $text, bool $selected = FALSE): string {
-    $style = $this->isDark ? Sgr::of(Sgr::Sky) : Sgr::of(Sgr::Cobalt);
-
-    return $this->paint($this->emphasize($style, $selected), $text);
+    return $this->paint($this->emphasize($this->isDark ? Sgr::of(Sgr::Sky) : Sgr::of(Sgr::Cobalt), $selected), $text);
   }
 }
 ```

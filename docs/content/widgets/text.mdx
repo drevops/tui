@@ -25,8 +25,7 @@ $p->text('item', 'Item')
 // The candidates can be computed from the answers collected so far
 // (guard the lookup - a field may be unanswered when this runs):
 $p->text('variety', 'Variety')
-  ->complete(fn(array $answers): array =>
-    [($answers['fruit'] ?? 'Apple') . ' - Gala']);
+  ->complete(fn(array $answers): array => [($answers['fruit'] ?? 'Apple') . ' - Gala']);
 ```
 
 Runnable script: [`playground/02-widgets-text.php`](https://github.com/drevops/tui/blob/main/playground/02-widgets-text.php).

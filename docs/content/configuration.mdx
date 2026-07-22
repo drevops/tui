@@ -21,17 +21,14 @@ $form = Form::create('My form')
     $p->text('name', 'Produce name')->required();
 
     // Compute one field from others.
-    $p->text('slug', 'Slug')
-      ->derive(new Derive('{{name}}', transform: 'machine'));
+    $p->text('slug', 'Slug')->derive(new Derive('{{name}}', transform: 'machine'));
 
     $p->select('category', 'Category')
       ->default('fruit')
       ->options(['fruit' => 'Fruit', 'vegetable' => 'Vegetable']);
 
-    // Shown only when the condition holds; compose with
-    // Condition::all()/any()/not().
-    $p->text('variety', 'Variety')
-      ->when(new Condition('category', eq: 'vegetable'));
+    // Shown only when the condition holds; compose with Condition::all()/any()/not().
+    $p->text('variety', 'Variety')->when(new Condition('category', eq: 'vegetable'));
   });
 ```
 
@@ -45,8 +42,7 @@ A `Derive` computes a field from other answers: a template with `{{field}}` plac
 
 ```php
 $p->text('slug', 'Slug')->derive(new Derive('{{name}}', 'machine'));
-$p->text('label', 'Label')
-  ->derive(new Derive('{{category}}/{{slug}}', 'lower'));
+$p->text('label', 'Label')->derive(new Derive('{{category}}/{{slug}}', 'lower'));
 $p->text('code', 'Code')->derive(new Derive('{{name}}', 'constant'));
 ```
 
@@ -55,12 +51,8 @@ $p->text('code', 'Code')->derive(new Derive('{{name}}', 'constant'));
 A `->when()` rule shows or hides a field based on other answers, with operators `eq` / `ne` / `in` / `contains`, composable with `Condition::all()`, `Condition::any()` and `Condition::not()`:
 
 ```php
-$p->text('heat_level', 'Heat level')->default('mild')
-  ->when(new Condition('category', eq: 'vegetable'));
-$p->confirm('warning_label', 'Add a heat warning?')->when(Condition::all(
-  new Condition('category', eq: 'vegetable'),
-  new Condition('heat_level', ne: 'mild'),
-));
+$p->text('heat_level', 'Heat level')->default('mild')->when(new Condition('category', eq: 'vegetable'));
+$p->confirm('warning_label', 'Add a heat warning?')->when(Condition::all(new Condition('category', eq: 'vegetable'), new Condition('heat_level', ne: 'mild')));
 ```
 
 A form-level `->fixup(new Fixup(set: ..., to: ..., when: ...))` reconciles dependent answers on every settle pass, so an answer that no longer makes sense after another change is corrected instead of leaking through.
