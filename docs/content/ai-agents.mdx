@@ -1,6 +1,5 @@
 ---
 title: AI agents
-sidebar_position: 10
 ---
 
 # AI agents
@@ -105,7 +104,7 @@ The schema's `x-precedence` spells out how every field resolves - from the first
 
 1. **Provided** - an explicit value the consumer passes in, however its interface accepts one. Highest precedence.
 2. **Environment** - the per-question variable named in `env` (e.g. `TUI_NAME`), the uppercased id under the active prefix.
-3. **Discovered** - a value detected from the target directory (see [Discovery](/discovery)).
+3. **Discovered** - a value detected from the target directory (see [Discovery](/field-behaviour#discovery)).
 4. **Derived** - a value computed from other fields.
 5. **Default** - the declared default.
 
@@ -113,4 +112,4 @@ The schema's `x-precedence` spells out how every field resolves - from the first
 
 [`playground/08-headless-agent-cli.php`](https://github.com/drevops/tui/tree/main/playground/08-headless-agent-cli.php) folds `agentHelp()` into a consumer tool's help, and `agentHelp()`, `schema()` and `validate()` each have a script of their own beside it in [`playground/08-headless-*`](https://github.com/drevops/tui/tree/main/playground).
 
-See also [Headless collection](/headless-collection) for driving the same form from CI and [Self-describing answers](/self-describing-answers) for what comes back.
+See also [Headless collection](/headless-collection) for driving the same form from CI and [self-describing answers](/headless-collection#self-describing-answers) for what comes back.

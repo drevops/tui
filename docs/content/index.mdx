@@ -1,7 +1,6 @@
 ---
 title: Introduction
 slug: /introduction
-sidebar_position: 1
 ---
 
 import ThemedImage from '@theme/ThemedImage';
@@ -27,9 +26,9 @@ The engine knows nothing about the application it serves: it stays generic, the 
 - 🤖 [**AI agents**](/ai-agents) - the form describes itself: `agentHelp()` returns a JSON Schema of the answers and `schema()` the full question metadata, to fold into your tool's help so an agent can answer it unattended
 - 🔗 [**Derived values**](/configuration#derived-values) - compute one field from others with [str2name](https://github.com/AlexSkrypnyk/str2name) transforms; chains settle to a fixpoint
 - 🔀 [**Conditional fields**](/configuration#conditional-fields) - show or hide fields with `when` rules; a fix-up pass reconciles dependent answers
-- 🔍 [**Discovery**](/discovery) - detect sensible defaults from the target directory (`.env` keys, JSON paths, path existence, directory scans)
+- 🔍 [**Discovery**](/field-behaviour#discovery) - detect sensible defaults from the target directory (`.env` keys, JSON paths, path existence, directory scans)
 - ⚙️ [**Declared behaviour**](/field-behaviour) - validation, transforms and dynamic defaults as closures on the field; per-field handler classes remain as a fallback
-- 📦 [**Self-describing answers**](/self-describing-answers) - each answer carries a snapshot of its question and its provenance; summaries need no form config
+- 📦 [**Self-describing answers**](/headless-collection#self-describing-answers) - each answer carries a snapshot of its question and its provenance; summaries need no form config
 - 🎨 [**Themes**](/themes) - the whole visual representation (colours, glyphs, layout) is a theme class; six ship built-in, each serving dark and light
 - ⌨️ [**Key bindings**](/key-bindings) - remap navigation, edit, accept and cancel keys per widget type; ships a vim-style preset, and a bad binding fails loudly at build time
 - ✨ [**Unicode and ASCII**](/display-modes) - glyphs follow the terminal locale and colour honours `NO_COLOR`; both can be forced on the `Tui` facade

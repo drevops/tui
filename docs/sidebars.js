@@ -1,31 +1,33 @@
 // @ts-check
 
 /**
- * The top-level pages are grouped into categories for a clearer information
- * architecture. No files move, so every page keeps its URL; the widget order
- * follows this list rather than each page's frontmatter position.
+ * The sidebar is a set of always-visible sections: every top-level category is
+ * non-collapsible, so the whole docs map is scannable without expanding
+ * anything, and `custom.css` styles the category labels as section headings.
+ * Ordering lives here alone - pages carry no `sidebar_position` frontmatter.
  *
  * @type {import('@docusaurus/plugin-content-docs').SidebarsConfig}
  */
 const sidebars = {
   tutorialSidebar: [
-    'index',
     {
       type: 'category',
       label: 'Getting started',
-      collapsed: false,
-      items: ['installation', 'panels', 'configuration', 'headless-collection'],
+      collapsible: false,
+      items: ['index', 'installation'],
     },
     {
       type: 'category',
-      label: 'Guides',
-      items: ['field-behaviour', 'discovery', 'self-describing-answers', 'ai-agents', 'testing'],
+      label: 'Forms',
+      collapsible: false,
+      items: ['panels', 'configuration', 'field-behaviour', 'testing'],
     },
     {
       type: 'category',
       label: 'Widgets',
-      link: {type: 'doc', id: 'widgets/index'},
+      collapsible: false,
       items: [
+        {type: 'doc', id: 'widgets/index', label: 'Overview'},
         'widgets/calendar',
         'widgets/confirm',
         'widgets/filepicker',
@@ -44,13 +46,21 @@ const sidebars = {
     },
     {
       type: 'category',
-      label: 'Appearance & input',
+      label: 'Automation',
+      collapsible: false,
+      items: ['headless-collection', 'ai-agents'],
+    },
+    {
+      type: 'category',
+      label: 'Customization',
+      collapsible: false,
       items: ['themes', 'display-modes', 'key-bindings', 'translations'],
     },
     {
       type: 'category',
       label: 'About',
-      items: ['architecture', 'playground', 'contributing'],
+      collapsible: false,
+      items: ['playground', 'architecture', 'contributing'],
     },
   ],
 };

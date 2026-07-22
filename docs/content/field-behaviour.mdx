@@ -1,7 +1,9 @@
 ---
 title: Field behaviour
-sidebar_position: 6
 ---
+
+import ThemedImage from '@theme/ThemedImage';
+import useBaseUrl from '@docusaurus/useBaseUrl';
 
 # Field behaviour
 
@@ -21,3 +23,20 @@ Reusable validators and transformers live as public static methods on a consumer
 The TUI only collects: it presents answers and never applies them. **Applying answers - writing files, renaming directories - is the consumer's job.** A consumer that processes answers defines its own processor interface, keeping the form for collection and the processors for side effects - one class per field can carry both its `process()` and its reusable static behaviour (this is exactly what a consumer CLI does).
 
 Both declaration styles are runnable in [`playground/06-field-behaviour-*`](https://github.com/drevops/tui/tree/main/playground).
+
+## Discovery
+
+In update mode, `->discover()` rules detect defaults from an existing project directory: a `.env` key (`new Dotenv('SEASON')`), a JSON dot-path (`new JsonValue('basket.json', 'name')`), a path check (`new PathExists('harvest.csv')`), a directory scan (`new Scan('baskets', type: ScanType::Dir)`), or a custom `fn(Context $c): mixed` closure:
+
+```php
+$p->text('name', 'Produce name')->discover(new JsonValue('basket.json', 'name'));
+$p->confirm('inseason', 'In season?')->discover(new PathExists('harvest.csv'));
+```
+
+Discovered values are badged in the summary, and explicit input (prompts or environment) always wins over discovery:
+
+<p align="center">
+  <ThemedImage sources={{light: useBaseUrl('/discovery-light-static.svg'), dark: useBaseUrl('/discovery-dark-static.svg')}} alt="Discovery summary with provenance badges" width="100%" />
+</p>
+
+Every rule type runs against a bundled sample project in [`playground/07-discovery.php`](https://github.com/drevops/tui/blob/main/playground/07-discovery.php).
