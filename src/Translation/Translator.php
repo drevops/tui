@@ -9,10 +9,16 @@ namespace DrevOps\Tui\Translation;
  *
  * The English source string is the catalog key: a lookup that misses returns
  * the source unchanged, so an untranslated string always renders in English.
- * Catalogs are per-language PHP files (e.g. "es.php") that return a
- * `source => translation` map; directories are searched in order and a later
- * one overrides an earlier one, so a consumer catalog overrides a bundled one.
- * The array-file format loads under a PHAR without a parser.
+ * A catalog is a per-language `source => translation` map; the array-file
+ * format loads under a PHAR without a parser.
+ *
+ * The package's bundled catalogs always load first, so the shipped chrome
+ * translations apply with no configuration. Consumer sources merge on top in
+ * order, a later one overriding an earlier one per key - so a single source
+ * can carry a form's own strings alone, add overrides for some chrome, or
+ * replace the whole chrome. A source is a directory of per-locale catalog
+ * files (e.g. "es.php"), a single per-locale catalog file, or an inline
+ * locale-keyed map of catalogs.
  *
  * The active language is either empty (translation off), the "auto" sentinel
  * (detected from the environment), or a locale such as "es" or "es_ES". A
@@ -68,13 +74,15 @@ final class Translator {
    *   The active language: empty to disable translation (English source),
    *   "auto" to detect from the environment, or a locale such as "es" or
    *   "es_ES".
-   * @param list<string> $directories
-   *   Catalog directories, searched in order; a later directory overrides an
-   *   earlier one.
+   * @param list<string|array<string,array<string,string|list<string>|\Closure>>> $sources
+   *   Catalog sources merged, in order, on top of the bundled defaults; a
+   *   later entry overrides an earlier one per key. Each is a directory of
+   *   per-locale catalog files, a single per-locale catalog file, or an
+   *   inline locale-keyed map of catalogs.
    */
   public function __construct(
     protected string $language = '',
-    protected array $directories = [],
+    protected array $sources = [],
   ) {
   }
 
@@ -298,7 +306,7 @@ final class Translator {
   }
 
   /**
-   * Load and merge the catalog for a language across the directories.
+   * Load and merge the catalog for a language across the sources.
    *
    * @param string $language
    *   The effective language (a locale such as "es" or "es_ES").
@@ -310,30 +318,82 @@ final class Translator {
     $candidates = self::candidates($language);
     $catalog = [];
 
-    foreach ($this->directories as $directory) {
-      foreach ($candidates as $candidate) {
-        $file = rtrim($directory, '/') . '/' . $candidate . '.php';
-        if (!is_file($file)) {
-          continue;
-        }
+    // The bundled defaults are the implicit first source, so any consumer
+    // source overrides them. A missing bundled directory (a trimmed archive)
+    // degrades to English rather than erroring on every construction.
+    $bundled = self::bundledDirectory();
+    $sources = is_dir($bundled) ? [$bundled, ...$this->sources] : $this->sources;
 
-        $catalog = array_merge($catalog, $this->readCatalog($file));
-
-        // The first candidate present in a directory wins; a region catalog is
-        // not merged on top of its primary-subtag catalog within one directory.
-        break;
-      }
+    foreach ($sources as $source) {
+      $catalog = array_merge($catalog, $this->loadSource($source, $candidates));
     }
 
     return $catalog;
   }
 
   /**
-   * Read a catalog file into the string map, plural forms, and plural rule.
+   * The catalog entries one source contributes for the candidate locales.
    *
-   * Returns the string => string pairs; the plural-form lists and a plural-rule
-   * closure are read as side effects into $this->plurals and $this->pluralRule,
-   * so the caller merges only the returned string map.
+   * A directory is searched for a per-locale catalog file by candidate order;
+   * the first candidate present wins, so a region catalog is not merged on
+   * top of its primary-subtag catalog within one source. A file is a
+   * per-locale catalog loaded only when its filename names a candidate, so a
+   * file for another language contributes nothing. An array is a locale-keyed
+   * map of catalogs, resolved by the same candidate order.
+   *
+   * @param string|array<string,array<string,string|list<string>|\Closure>> $source
+   *   The source: a directory path, a catalog file path, or a locale-keyed
+   *   map of catalogs.
+   * @param list<string> $candidates
+   *   The candidate locales, most specific first.
+   *
+   * @return array<string,string>
+   *   The source => translation entries the source contributes.
+   */
+  protected function loadSource(string|array $source, array $candidates): array {
+    if (is_array($source)) {
+      foreach ($candidates as $candidate) {
+        $section = $source[$candidate] ?? NULL;
+
+        if (is_array($section)) {
+          return $this->absorb($section);
+        }
+      }
+
+      return [];
+    }
+
+    if (is_dir($source)) {
+      foreach ($candidates as $candidate) {
+        $file = rtrim($source, '/') . '/' . $candidate . '.php';
+
+        if (is_file($file)) {
+          return $this->readCatalog($file);
+        }
+      }
+
+      return [];
+    }
+
+    if (is_file($source)) {
+      return in_array(pathinfo($source, PATHINFO_FILENAME), $candidates, TRUE) ? $this->readCatalog($source) : [];
+    }
+
+    throw new \InvalidArgumentException(sprintf('The translation source "%s" is neither a directory nor a catalog file.', $source));
+  }
+
+  /**
+   * The directory the package's default catalogs ship in.
+   *
+   * @return string
+   *   The bundled catalog directory path.
+   */
+  protected static function bundledDirectory(): string {
+    return dirname(__DIR__, 2) . '/translations';
+  }
+
+  /**
+   * Read a catalog file and absorb its entries.
    *
    * @param string $file
    *   The catalog file path.
@@ -344,9 +404,28 @@ final class Translator {
   protected function readCatalog(string $file): array {
     $data = require $file;
 
+    return $this->absorb(is_array($data) ? $data : []);
+  }
+
+  /**
+   * Absorb catalog data into the string map, plural forms, and plural rule.
+   *
+   * Returns the string => string pairs; the plural-form lists and a plural-rule
+   * closure are read as side effects into $this->plurals and $this->pluralRule,
+   * so the caller merges only the returned string map. The one normalisation
+   * routine, shared by file catalogs and inline maps so both shapes honour the
+   * same entry kinds.
+   *
+   * @param array<mixed> $data
+   *   The catalog data: translations, plural-form lists, and the plural rule.
+   *
+   * @return array<string,string>
+   *   The source => translation map.
+   */
+  protected function absorb(array $data): array {
     $catalog = [];
 
-    foreach (is_array($data) ? $data : [] as $key => $value) {
+    foreach ($data as $key => $value) {
       if ($key === self::PLURAL_RULE) {
         if ($value instanceof \Closure) {
           $this->pluralRule = $value;

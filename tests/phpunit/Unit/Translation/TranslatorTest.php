@@ -37,8 +37,9 @@ final class TranslatorTest extends TestCase {
   }
 
   #[DataProvider('dataProviderTranslate')]
-  public function testTranslate(string $language, array $directories, string $source, array $args, string $expected): void {
-    $translator = new Translator($language, array_values(array_map($this->fixtures(...), $directories)));
+  public function testTranslate(string $language, array $sources, string $source, array $args, string $expected): void {
+    $resolved = array_map(fn(string|array $entry): string|array => is_string($entry) ? $this->fixtures($entry) : $entry, $sources);
+    $translator = new Translator($language, array_values($resolved));
 
     $this->assertSame($expected, $translator->translate($source, $args));
   }
@@ -57,8 +58,29 @@ final class TranslatorTest extends TestCase {
     yield 'malformed catalog ignored' => ['es', ['translations-malformed'], 'Submit', [], 'Submit'];
     yield 'mixed catalog keeps string entry' => ['es', ['translations-mixed'], 'Valid', [], 'Valido'];
     yield 'mixed catalog drops non-string value' => ['es', ['translations-mixed'], 'Integer value', [], 'Integer value'];
-    yield 'missing directory ignored' => ['es', ['translations-absent'], 'Submit', [], 'Submit'];
     yield 'path traversal locale is rejected' => ['../../etc/passwd', ['translations'], 'Submit', [], 'Submit'];
+    yield 'file source loads matching locale' => ['es', ['translations/es.php'], 'Submit', [], 'Enviar'];
+    yield 'file source loads for region locale' => ['es_ES', ['translations-override/es.php'], 'Submit', [], 'Enviar (override)'];
+    yield 'file source for another locale is a no-op' => ['de', ['translations/es.php'], 'Submit', [], 'Submit'];
+    yield 'inline map loads matching locale' => ['es', [['es' => ['Submit' => 'Enviar (inline)']]], 'Submit', [], 'Enviar (inline)'];
+    yield 'inline map region falls back to primary' => ['es_ES', [['es' => ['Submit' => 'Enviar (inline)']]], 'Submit', [], 'Enviar (inline)'];
+    yield 'inline map most specific key wins' => ['es_ES', [['es_ES' => ['Submit' => 'Enviar (region)'], 'es' => ['Submit' => 'Enviar (inline)']]], 'Submit', [], 'Enviar (region)'];
+    yield 'inline map for another locale is a no-op' => ['es', [['de' => ['Submit' => 'Senden']]], 'Submit', [], 'Submit'];
+    yield 'inline map non-array section ignored' => ['es', [['es' => 'oops']], 'Submit', [], 'Submit'];
+    yield 'inline map overrides earlier directory' => ['es', ['translations', ['es' => ['Submit' => 'Enviar (inline)']]], 'Submit', [], 'Enviar (inline)'];
+    yield 'bundled chrome loads with no sources' => ['uk', [], 'Password', [], 'Пароль'];
+    yield 'bundled english template is identity' => ['en', [], 'Submit', [], 'Submit'];
+    yield 'inline map overrides bundled chrome' => ['uk', [['uk' => ['Submit' => 'Готово']]], 'Submit', [], 'Готово'];
+    yield 'bundled chrome persists beside overrides' => ['uk', [['uk' => ['Submit' => 'Готово']]], 'Password', [], 'Пароль'];
+  }
+
+  public function testMissingSourceThrows(): void {
+    $translator = new Translator('es', [$this->fixtures('translations-absent')]);
+
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessage('neither a directory nor a catalog file');
+
+    $translator->translate('Submit');
   }
 
   public function testCatalogLoadsOnce(): void {
@@ -192,17 +214,33 @@ final class TranslatorTest extends TestCase {
     $this->assertSame('6 items selected', Translator::formatPlural(6, '1 item selected', '@count items selected'));
   }
 
-  public function testShippedUkrainianCatalog(): void {
-    Translator::setShared(new Translator('uk', [dirname(__DIR__, 4) . '/translations']));
+  public function testBundledCatalogLoadsWithNoSources(): void {
+    Translator::setShared(new Translator('uk'));
 
-    // Chrome and the default button labels resolve from the shipped catalog.
+    // Chrome and the default button labels resolve from the bundled catalog.
     $this->assertSame('Пароль', Translator::t('Password'));
     $this->assertSame('Надіслати', Translator::t('Submit'));
 
-    // The plural message renders its one/few/many forms by the shipped rule.
+    // The plural message renders its one/few/many forms by the bundled rule.
     $this->assertSame('1 елемент вибрано', Translator::formatPlural(1, '1 item selected', '@count items selected'));
     $this->assertSame('4 елементи вибрано', Translator::formatPlural(4, '1 item selected', '@count items selected'));
     $this->assertSame('5 елементів вибрано', Translator::formatPlural(5, '1 item selected', '@count items selected'));
+  }
+
+  public function testInlineMapSuppliesPluralFormsAndRule(): void {
+    // The inline rule (always the last form) replaces the bundled Ukrainian
+    // rule, proving a consumer source overrides the defaults wholesale.
+    Translator::setShared(new Translator('uk', [
+      [
+        'uk' => [
+          Translator::PLURAL_RULE => static fn(int $count): int => 2,
+          '@count items selected' => ['@count елемент вибрано', '@count елементи вибрано', '@count позицій вибрано'],
+        ],
+      ],
+    ]));
+
+    $this->assertSame('1 позицій вибрано', Translator::formatPlural(1, '1 item selected', '@count items selected'));
+    $this->assertSame('7 позицій вибрано', Translator::formatPlural(7, '1 item selected', '@count items selected'));
   }
 
 }

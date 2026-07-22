@@ -294,14 +294,16 @@ $answers = (new Tui($form))
       caption: 'The shipped Ukrainian catalog, plural forms included',
       script: 'playground/12-translations.php',
       doc: '/translations',
-      code: `// The form is declared in English; the catalog translates it at
-// render time, so answer ids and values stay language-neutral.
-$translator = new Translator('uk', [
-  'vendor/drevops/tui/translations',
-  __DIR__ . '/translations',
-]);
+      code: `// The bundled chrome catalogs load automatically - this alone
+// renders the chrome in Ukrainian ('auto' follows the locale).
+$answers = (new Tui($form))->translator(new Translator('uk'))->run();
 
-// 'auto' would follow the terminal locale instead.
+// Layer your own labels and chrome overrides on top from a
+// directory, a single catalog file, or an inline map.
+$translator = new Translator('uk', [
+  __DIR__ . '/translations',
+  ['uk' => ['Submit' => 'Готово']],
+]);
 $answers = (new Tui($form))->translator($translator)->run();`,
     },
   },
