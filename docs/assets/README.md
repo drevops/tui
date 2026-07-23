@@ -47,6 +47,11 @@ from their borderless twins.
   keystroke harness: `theme-<name>-<dark|light>-static[-bordered].svg` for the
   adaptive themes, and the dark/light pair for `dos` (which draws its own window
   on its own surface, so it has no bordered twin).
+- **`render-social-card.php`** - the one non-SVG asset: `social-card.png`, the
+  1200x630 Open Graph image composed from `quickstart-dark-static.svg` and the
+  site branding, screenshotted through agent-browser. It runs after the workers
+  inside `update-assets.php` (the SVG it composes must exist first) and is
+  referenced by `themeConfig.image` in `docusaurus.config.js`.
 
 Every dark SVG derives its `-light-` twin the moment it is written (the shared
 `svg-light-twin.php` recolours the surface and foreground greys; the theme

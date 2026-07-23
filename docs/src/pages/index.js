@@ -60,9 +60,33 @@ $form = Form::create('Quick start')
 // Interactive on a terminal, non-interactive otherwise.
 $answers = (new Tui($form))->run();`;
 
+/* ────────────────────────────────────────────────────────────────────────
+ *  Feature card icons. Path data from Lucide (lucide.dev, ISC License),
+ *  inlined so the page loads no icon library or external asset.
+ * ──────────────────────────────────────────────────────────────────────── */
+const ICONS = {
+  'maximize': <><path d="M8 3H5a2 2 0 0 0-2 2v3" /><path d="M21 8V5a2 2 0 0 0-2-2h-3" /><path d="M3 16v3a2 2 0 0 0 2 2h3" /><path d="M16 21h3a2 2 0 0 0 2-2v-3" /></>,
+  'text-cursor-input': <><path d="M12 20h-1a2 2 0 0 1-2-2 2 2 0 0 1-2 2H6" /><path d="M13 8h7a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-7" /><path d="M5 16H4a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h1" /><path d="M6 4h1a2 2 0 0 1 2 2 2 2 0 0 1 2-2h1" /><path d="M9 6v12" /></>,
+  'layout-grid': <><rect width="7" height="7" x="3" y="3" rx="1" /><rect width="7" height="7" x="14" y="3" rx="1" /><rect width="7" height="7" x="14" y="14" rx="1" /><rect width="7" height="7" x="3" y="14" rx="1" /></>,
+  'braces': <><path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5c0 1.1.9 2 2 2h1" /><path d="M16 21h1a2 2 0 0 0 2-2v-5c0-1.1.9-2 2-2a2 2 0 0 1-2-2V5a2 2 0 0 0-2-2h-1" /></>,
+  'keyboard': <><path d="M10 8h.01" /><path d="M12 12h.01" /><path d="M14 8h.01" /><path d="M16 12h.01" /><path d="M18 8h.01" /><path d="M6 8h.01" /><path d="M7 16h10" /><path d="M8 12h.01" /><rect width="20" height="16" x="2" y="4" rx="2" /></>,
+  'workflow': <><rect width="8" height="8" x="3" y="3" rx="2" /><path d="M7 11v4a2 2 0 0 0 2 2h4" /><rect width="8" height="8" x="13" y="13" rx="2" /></>,
+  'split': <><path d="M16 3h5v5" /><path d="M8 3H3v5" /><path d="M12 22v-8.3a4 4 0 0 0-1.172-2.872L3 3" /><path d="m15 9 6-6" /></>,
+  'palette': <><path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z" /><circle cx="13.5" cy="6.5" r=".5" fill="currentColor" /><circle cx="17.5" cy="10.5" r=".5" fill="currentColor" /><circle cx="6.5" cy="12.5" r=".5" fill="currentColor" /><circle cx="8.5" cy="7.5" r=".5" fill="currentColor" /></>,
+  'command': <path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3" />,
+  'languages': <><path d="m5 8 6 6" /><path d="m4 14 6-6 2-3" /><path d="M2 5h12" /><path d="M7 2h1" /><path d="m22 22-5-10-5 10" /><path d="M14 18h6" /></>,
+  'sun-moon': <><path d="M12 2v2" /><path d="M14.837 16.385a6 6 0 1 1-7.223-7.222c.624-.147.97.66.715 1.248a4 4 0 0 0 5.26 5.259c.589-.255 1.396.09 1.248.715" /><path d="M16 12a4 4 0 0 0-4-4" /><path d="m19 5-1.256 1.256" /><path d="M20 12h2" /></>,
+  'flask-conical': <><path d="M14 2v6a2 2 0 0 0 .245.96l5.51 10.08A2 2 0 0 1 18 22H6a2 2 0 0 1-1.755-2.96l5.51-10.08A2 2 0 0 0 10 8V2" /><path d="M6.453 15h11.094" /><path d="M8.5 2h7" /></>,
+};
+
+function FeatIcon({name}) {
+  return <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">{ICONS[name]}</svg>;
+}
+
 const FEATURES = [
   {
     idx: '01',
+    icon: 'maximize',
     name: 'Full-screen TUI',
     desc: <>A scrollable, keyboard-driven form; fields group into sections that drill in to any depth, with a contextual key-hint footer and a <code className={styles.tok}>?</code> help overlay.</>,
     demo: {
@@ -89,6 +113,7 @@ $answers = (new Tui($form))
   },
   {
     idx: '02',
+    icon: 'text-cursor-input',
     name: 'Inline editing',
     desc: <>A field's editor opens in place on the panel row, with its own view and keys; opt a field out to a full screen with <code className={styles.tok}>{'->standalone()'}</code>.</>,
     demo: {
@@ -115,6 +140,7 @@ $answers = (new Tui($form))
   },
   {
     idx: '03',
+    icon: 'layout-grid',
     name: 'Widget library',
     desc: <>Text, numbers, dates, single and multiple choice, fuzzy search, file browsing, reordering and gates.</>,
     demo: {
@@ -146,6 +172,7 @@ $answers = (new Tui($form))
   },
   {
     idx: '04',
+    icon: 'braces',
     name: 'Builder-driven',
     desc: <>The form is declared in PHP with a fluent builder; the common cases need no extra code.</>,
     demo: {
@@ -159,6 +186,7 @@ $answers = (new Tui($form))
   },
   {
     idx: '05',
+    icon: 'keyboard',
     name: 'Interactive or unattended',
     desc: <>Answer by keyboard, or supply the answers up front as a JSON payload and environment variables so it runs without prompting. Emits a JSON schema for agents.</>,
     demo: {
@@ -180,6 +208,7 @@ echo $answers->toJson();`,
   },
   {
     idx: '06',
+    icon: 'workflow',
     name: 'Derived values',
     desc: <>Compute one field from others with <code className={styles.tok}>str2name</code> transforms; chains settle to a fixpoint.</>,
     demo: {
@@ -206,6 +235,7 @@ echo $answers->toJson();`,
   },
   {
     idx: '07',
+    icon: 'split',
     name: 'Conditional fields',
     desc: <>Show or hide fields with <code className={styles.tok}>when</code> rules; a fix-up pass reconciles dependent answers.</>,
     demo: {
@@ -240,6 +270,7 @@ $p->confirm('stackable', 'Stack the boxes?')->when(new Condition('size', in: ['s
   },
   {
     idx: '08',
+    icon: 'palette',
     name: 'Themes',
     desc: <>The whole visual representation - colours, glyphs, layout - is a theme class; six themes ship built-in, from <code className={styles.tok}>dos</code> to <code className={styles.tok}>midnight</code>, or subclass your own.</>,
     demo: {
@@ -262,6 +293,7 @@ $answers = (new Tui($form))->theme('midnight')->run();`,
   },
   {
     idx: '09',
+    icon: 'command',
     name: 'Key bindings',
     desc: <>Remap navigation, edit, accept and cancel keys per widget type; ships a vim-style preset.</>,
     demo: {
@@ -286,6 +318,7 @@ $answers = (new Tui($form))
   },
   {
     idx: '10',
+    icon: 'languages',
     name: 'Translations',
     desc: <>A <code className={styles.tok}>Translator</code> localizes everything user-facing - hints, buttons, badges and the form's own labels - plural rules included, English as the fallback.</>,
     demo: {
@@ -309,6 +342,7 @@ $answers = (new Tui($form))->translator($translator)->run();`,
   },
   {
     idx: '11',
+    icon: 'sun-moon',
     name: 'Display modes',
     desc: <>A dark or light palette read from the terminal background, Unicode or ASCII glyphs, colour dropped under <code className={styles.tok}>NO_COLOR</code> - auto-detected, or pinned.</>,
     demo: {
@@ -332,6 +366,7 @@ $answers = (new Tui($form))
   },
   {
     idx: '12',
+    icon: 'flask-conical',
     name: 'Testing',
     desc: <><code className={styles.tok}>TuiTester</code> drives the real panel loop from scripted keystrokes - no TTY - returning the answers, the output and the final frame.</>,
     demo: {
@@ -790,8 +825,10 @@ export default function Home() {
     return () => io.disconnect();
   }, []);
 
+  // Layout gets no title: the homepage <title> is then the site title itself
+  // - the slogan - rather than 'phrase | slogan'.
   return (
-    <Layout title={TITLE_PHRASES[0]} description={SUBHEAD}>
+    <Layout description={SUBHEAD}>
       <Head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -886,7 +923,10 @@ export default function Home() {
               <div className={styles.featGrid}>
                 {FEATURES.map((feature, i) => (
                   <button key={feature.name} type="button" className={clsx(styles.feat, styles.revealUp)} style={{'--i': i}} onClick={(event) => openFeature(feature, event)} aria-haspopup="dialog">
-                    <span className={styles.featIdx}>{feature.idx}</span>
+                    <span className={styles.featTop}>
+                      <span className={styles.featIcon}><FeatIcon name={feature.icon} /></span>
+                      <span className={styles.featIdx}>{feature.idx}</span>
+                    </span>
                     <strong className={styles.featName}>{feature.name}</strong>
                     <span className={styles.featDesc}>{feature.desc}</span>
                     <span className={styles.featHint} aria-hidden="true">&#9656; code + demo</span>

@@ -8,7 +8,9 @@ import {themes as prismThemes} from 'prism-react-renderer';
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'TUI',
+  // The official slogan: it suffixes every page's <title> and stands alone as
+  // the homepage title; the navbar keeps its own short 'TUI' brand.
+  title: 'TUI - Terminal user interfaces for PHP',
   tagline: 'Terminal user interfaces for PHP',
   favicon: 'img/logo.svg',
 
@@ -102,7 +104,12 @@ const config = {
   themeConfig:
   /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
-      image: 'img/logo.png',
+      // The social card lives in docs/assets (a static directory), generated
+      // by docs/util/render-social-card.php as part of the asset pipeline.
+      image: 'social-card.png',
+      metadata: [
+        {name: 'keywords', content: 'php, tui, terminal user interface, terminal forms, cli, console, prompts, interactive forms'},
+      ],
       navbar: {
         title: 'TUI',
         logo: {
