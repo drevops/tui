@@ -60,7 +60,7 @@ final class TerminalTest extends TestCase {
     $this->assertSame('frame', $contents);
   }
 
-  public function testIsOutputTtyIsFalseForANonTtyStream(): void {
+  public function testIsOutputTtyIsFalseForNonTtyStream(): void {
     $stream = fopen('php://memory', 'rw');
     $this->assertIsResource($stream);
 

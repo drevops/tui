@@ -105,7 +105,7 @@ final class ProgressBarTest extends TestCase {
     $this->assertStringNotContainsString('2/1', $output);
   }
 
-  public function testZeroTotalRendersAFullBar(): void {
+  public function testZeroTotalRendersFullBar(): void {
     $terminal = new BufferedTerminal();
     $bar = new ProgressBar($terminal, TRUE, TRUE, TRUE, 'Packing', 0);
 

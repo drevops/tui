@@ -359,12 +359,12 @@ final class Tui {
   /**
    * Show a determinate progress bar while a slow callback advances it.
    *
-   * The callback receives the {@see \DrevOps\Tui\Feedback\ProgressBar} so it can
-   * `advance()` the bar one step at a time and update its label; its return
-   * value is passed straight back. On an interactive terminal the bar fills and
-   * settles at its final state; off a TTY it prints the caption once as a plain
-   * line and emits no control sequences. The colour and Unicode switches are
-   * the facade's own.
+   * The callback receives the {@see \DrevOps\Tui\Feedback\ProgressBar} so it
+   * can `advance()` the bar one step at a time and update its label; its
+   * return value is passed straight back. On an interactive terminal the bar
+   * fills and settles at its final state; off a TTY it prints the caption
+   * once as a plain line and emits no control sequences. The colour and
+   * Unicode switches are the facade's own.
    *
    * @param int $total
    *   The number of steps the work advances through.
