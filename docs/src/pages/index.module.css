@@ -198,7 +198,17 @@
 .feat::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: var(--teal); opacity: .35; transition: opacity .2s ease; }
 .feat:hover { transform: translateY(-3px); border-color: var(--line); background: linear-gradient(180deg, rgba(45, 50, 60, .8), rgba(36, 40, 47, .7)); box-shadow: 0 20px 44px -26px rgba(0, 0, 0, .85), 0 0 0 1px rgba(6, 182, 173, .12); }
 .feat:hover::before { opacity: 1; }
-.featIdx { font-weight: 700; color: var(--teal-bright); font-size: .82rem; letter-spacing: .06em; }
+.featTop { display: flex; align-items: center; justify-content: space-between; width: 100%; }
+.featIcon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 38px; height: 38px; border-radius: 10px;
+  color: var(--teal-bright);
+  background: rgba(6, 182, 173, .1);
+  border: 1px solid rgba(6, 182, 173, .22);
+  transition: background .2s ease, border-color .2s ease;
+}
+.feat:hover .featIcon { background: rgba(6, 182, 173, .16); border-color: rgba(6, 182, 173, .4); }
+.featIdx { font-weight: 700; color: var(--faint); font-size: .78rem; letter-spacing: .06em; }
 .featName { display: block; font-weight: 700; font-size: 1.06rem; color: var(--ink-soft); margin: .5rem 0 .55rem; }
 .featDesc { display: block; color: var(--muted); font-size: .9rem; margin: 0; }
 .featHint { display: inline-flex; align-items: center; gap: .35rem; margin-top: auto; padding-top: .85rem; color: var(--faint); font-size: .78rem; font-weight: 700; letter-spacing: .04em; transition: color .2s ease; }
