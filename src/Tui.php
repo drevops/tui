@@ -7,6 +7,8 @@ namespace DrevOps\Tui;
 use DrevOps\Tui\Answers\Answers;
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Engine\Engine;
+use DrevOps\Tui\Feedback\ProgressBar;
+use DrevOps\Tui\Feedback\Spinner;
 use DrevOps\Tui\Handler\Context;
 use DrevOps\Tui\Handler\HandlerRegistry;
 use DrevOps\Tui\Input\KeyMap;
@@ -325,6 +327,68 @@ final class Tui {
   }
 
   /**
+   * Show an animated spinner while a slow callback runs.
+   *
+   * The callback receives the {@see \DrevOps\Tui\Feedback\Spinner} so it can
+   * `tick()` the animation forward as it works; its return value is passed
+   * straight back. On an interactive terminal the spinner animates and clears
+   * itself when the callback returns; off a TTY it prints the caption once as a
+   * plain line and emits no control sequences. The colour and Unicode switches
+   * are the facade's own.
+   *
+   * @param string $caption
+   *   The caption shown beside the spinner.
+   * @param callable(\DrevOps\Tui\Feedback\Spinner): TReturn $work
+   *   The work to run; it receives the spinner and its result is returned.
+   * @param \DrevOps\Tui\Render\Terminal|null $terminal
+   *   The terminal to draw on (defaults to a real one on standard error).
+   *
+   * @return TReturn
+   *   The callback's return value.
+   *
+   * @template TReturn
+   */
+  public function spinner(string $caption, callable $work, ?Terminal $terminal = NULL): mixed {
+    $terminal ??= self::feedbackTerminal();
+
+    $spinner = new Spinner($terminal, $terminal->isOutputTty(), $this->resolvedColor(), $this->resolvedUnicode(), $caption);
+
+    return $spinner->run($work);
+  }
+
+  /**
+   * Show a determinate progress bar while a slow callback advances it.
+   *
+   * The callback receives the {@see \DrevOps\Tui\Feedback\ProgressBar} so it can
+   * `advance()` the bar one step at a time and update its label; its return
+   * value is passed straight back. On an interactive terminal the bar fills and
+   * settles at its final state; off a TTY it prints the caption once as a plain
+   * line and emits no control sequences. The colour and Unicode switches are
+   * the facade's own.
+   *
+   * @param int $total
+   *   The number of steps the work advances through.
+   * @param string $caption
+   *   The caption shown before the bar.
+   * @param callable(\DrevOps\Tui\Feedback\ProgressBar): TReturn $work
+   *   The work to run; it receives the bar and its result is returned.
+   * @param \DrevOps\Tui\Render\Terminal|null $terminal
+   *   The terminal to draw on (defaults to a real one on standard error).
+   *
+   * @return TReturn
+   *   The callback's return value.
+   *
+   * @template TReturn
+   */
+  public function progress(int $total, string $caption, callable $work, ?Terminal $terminal = NULL): mixed {
+    $terminal ??= self::feedbackTerminal();
+
+    $bar = new ProgressBar($terminal, $terminal->isOutputTty(), $this->resolvedColor(), $this->resolvedUnicode(), $caption, $total);
+
+    return $bar->run($work);
+  }
+
+  /**
    * Collect answers interactively through the panel TUI.
    *
    * @param string $theme
@@ -559,11 +623,11 @@ final class Tui {
     $options = $this->themeOptions;
 
     if (!isset($options['color'])) {
-      $options['color'] = $this->color ?? Terminal::detectColor();
+      $options['color'] = $this->resolvedColor();
     }
 
     if (!isset($options['unicode'])) {
-      $options['unicode'] = $this->unicode ?? Terminal::detectUnicode();
+      $options['unicode'] = $this->resolvedUnicode();
     }
 
     if (!isset($options['mode'])) {
@@ -575,6 +639,41 @@ final class Tui {
     }
 
     return $options;
+  }
+
+  /**
+   * The resolved colour switch: the forced value, else auto-detection.
+   *
+   * @return bool
+   *   Whether colour is on.
+   */
+  protected function resolvedColor(): bool {
+    return $this->color ?? Terminal::detectColor();
+  }
+
+  /**
+   * The resolved Unicode switch: the forced value, else auto-detection.
+   *
+   * @return bool
+   *   Whether Unicode glyphs are on.
+   */
+  protected function resolvedUnicode(): bool {
+    return $this->unicode ?? Terminal::detectUnicode();
+  }
+
+  /**
+   * A real terminal that draws feedback on standard error.
+   *
+   * Feedback is chrome, not data, so it stays off standard output where a
+   * consumer's own results are written.
+   *
+   * @return \DrevOps\Tui\Render\Terminal
+   *   The terminal.
+   */
+  protected static function feedbackTerminal(): Terminal {
+    // @codeCoverageIgnoreStart
+    return new Terminal(defined('STDERR') ? STDERR : NULL);
+    // @codeCoverageIgnoreEnd
   }
 
   /**

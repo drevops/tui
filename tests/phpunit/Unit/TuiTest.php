@@ -10,6 +10,7 @@ use DrevOps\Tui\Builder\PanelBuilder;
 use DrevOps\Tui\CancelException;
 use DrevOps\Tui\Derive\Derive;
 use DrevOps\Tui\Engine\Engine;
+use DrevOps\Tui\Feedback\ProgressBar;
 use DrevOps\Tui\Handler\HandlerRegistry;
 use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Binding;
@@ -293,6 +294,30 @@ final class TuiTest extends TestCase {
     $this->assertSame('light', $options['mode']);
     $this->assertFalse($options['color']);
     $this->assertFalse($options['unicode']);
+  }
+
+  public function testSpinnerRunsTheWorkAndReturnsItsResult(): void {
+    $terminal = new BufferedTerminal();
+
+    // Off a TTY the spinner stays plain, but the callback still runs and its
+    // result is passed straight back.
+    $result = (new Tui($this->demoForm()))->spinner('Scanning', static fn(): string => 'scanned', $terminal);
+
+    $this->assertSame('scanned', $result);
+    $this->assertSame("Scanning\n", $terminal->output());
+  }
+
+  public function testProgressRunsTheWorkAndReturnsItsResult(): void {
+    $terminal = new BufferedTerminal();
+
+    $result = (new Tui($this->demoForm()))->progress(3, 'Packing', static function (ProgressBar $bar): string {
+      $bar->advance('apples');
+
+      return 'packed';
+    }, $terminal);
+
+    $this->assertSame('packed', $result);
+    $this->assertSame("Packing\n", $terminal->output());
   }
 
   /**
