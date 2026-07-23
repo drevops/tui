@@ -299,9 +299,9 @@ final class TuiTest extends TestCase {
   public function testProgressAsSpinnerRunsTheWorkAndReturnsItsResult(): void {
     $terminal = new BufferedTerminal();
 
-    // A NULL total is an indeterminate spinner. Off a TTY it stays plain, but the
-    // callback still runs - advancing the forwarded primitive - and its result is
-    // passed straight back.
+    // A NULL total is an indeterminate spinner. Off a TTY it stays plain, but
+    // the callback still runs - advancing the forwarded primitive - and its
+    // result is passed straight back.
     $result = (new Tui($this->demoForm()))->progress(NULL, 'Scanning', static function (Progress $progress): string {
       $progress->advance();
 

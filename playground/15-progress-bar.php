@@ -4,7 +4,7 @@
  * @file
  * Progress as a determinate bar: step-by-step feedback of known length.
  *
- * progress() with a known total renders a filling bar with a step count and a
+ * With a known total, progress() renders a filling bar with a step count and a
  * label, and returns the callback's result. The callback drives it with
  * advance(), which fills one step and replaces the trailing label. The active
  * theme draws the bar in its own accent and Unicode/ASCII mode (set one with
@@ -39,7 +39,7 @@ $tui = new Tui($form);
 
 $items = ['Apple', 'Carrot', 'Tomato', 'Spinach', 'Pear', 'Beet'];
 
-// A known total is a determinate bar; advance() fills one step and sets the label.
+// A known total is a determinate bar; advance() fills a step, sets the label.
 $packed = $tui->progress(count($items), 'Packing the order', function (Progress $progress) use ($items): array {
   $done = [];
 

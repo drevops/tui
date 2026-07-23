@@ -4,7 +4,7 @@
  * @file
  * Progress as a spinner: feedback for slow work of unknown length.
  *
- * progress() with a NULL total renders an indeterminate spinner - an animated
+ * With a NULL total, progress() renders an indeterminate spinner - an animated
  * glyph beside a caption while the callback runs - and returns the callback's
  * result. The callback drives it with advance(), which ticks the animation one
  * frame. The active theme draws the glyph in its own accent and Unicode/ASCII

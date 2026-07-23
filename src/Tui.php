@@ -329,13 +329,13 @@ final class Tui {
    * Show a progress indicator while a slow callback runs.
    *
    * The callback receives the {@see \DrevOps\Tui\Primitive\Progress} and drives
-   * it with `advance()`; its return value is passed straight back. With no total
-   * the indicator is an animated spinner - each advance ticks a frame; with a
-   * total it is a bar that fills as it advances, with a step count and label.
-   * The active theme draws it, so it matches the panel's look and honours the
-   * colour and Unicode switches. On an interactive terminal it animates and
-   * settles when the callback returns; off a TTY it prints the caption once as a
-   * plain line and emits no control sequences.
+   * it with `advance()`; its return value is passed straight back. With no
+   * total the indicator is an animated spinner - each advance ticks a frame;
+   * with a total it is a bar that fills as it advances, with a step count and
+   * label. The active theme draws it, so it matches the panel's look and
+   * honours the colour and Unicode switches. On an interactive terminal it
+   * animates and settles when the callback returns; off a TTY it prints the
+   * caption once as a plain line and emits no control sequences.
    *
    * @param int|null $total
    *   The number of steps for a determinate bar, or NULL for an indeterminate

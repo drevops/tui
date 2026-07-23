@@ -806,20 +806,11 @@ class DefaultTheme implements ThemeInterface {
   }
 
   /**
-   * Render an indeterminate spinner: an accent glyph before the caption.
-   *
-   * The glyph carries the theme's accent through {@see self::highlight()} and
-   * follows the theme's Unicode mode, so every theme spins in its own palette.
-   *
-   * @param int $frame
-   *   The animation frame counter; the glyph cycles through the frame set.
-   * @param string $caption
-   *   The caption shown beside the spinner.
-   *
-   * @return string
-   *   The composed spinner line.
+   * {@inheritdoc}
    */
   public function renderSpinner(int $frame, string $caption): string {
+    // The glyph carries the theme's accent through highlight(), so every theme
+    // spins in its own palette with no per-theme override.
     $frames = $this->unicode ? self::SPINNER_FRAMES : self::SPINNER_ASCII;
     $glyph = $this->highlight($frames[$frame % count($frames)]);
 
@@ -827,25 +818,12 @@ class DefaultTheme implements ThemeInterface {
   }
 
   /**
-   * Render a determinate progress bar: a filling bar, a step count and a label.
-   *
-   * The filled run carries the theme's accent through {@see self::highlight()}
-   * and follows the theme's Unicode mode; the empty track and the count stay
-   * plain, so the bar reads with colour off and in ASCII alike.
-   *
-   * @param int $current
-   *   The number of completed steps.
-   * @param int $total
-   *   The total number of steps; a zero total renders a full bar.
-   * @param string $caption
-   *   The caption shown before the bar.
-   * @param string $label
-   *   The trailing label, or an empty string for none.
-   *
-   * @return string
-   *   The composed bar line.
+   * {@inheritdoc}
    */
   public function renderProgressBar(int $current, int $total, string $caption, string $label): string {
+    // The filled run carries the theme's accent through highlight(); the empty
+    // track and the count stay plain, so the bar reads with colour off and in
+    // ASCII alike.
     [$fill, $track] = $this->unicode ? ['█', '░'] : ['#', '-'];
 
     $ratio = $total > 0 ? $current / $total : 1.0;

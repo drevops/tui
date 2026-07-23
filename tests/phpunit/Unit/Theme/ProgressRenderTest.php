@@ -27,8 +27,8 @@ final class ProgressRenderTest extends TestCase {
     $this->assertStringContainsString('⠙', $theme->renderSpinner(1, 'Scanning'));
     // The frame index wraps around the frame set.
     $this->assertSame($theme->renderSpinner(0, 'x'), $theme->renderSpinner(10, 'x'));
-    // The default dark accent (bold cyan) wraps the glyph, and the caption rides
-    // along.
+    // The default dark accent (bold cyan) wraps the glyph, and the caption
+    // rides along.
     $this->assertStringContainsString("\033[1;36m", $theme->renderSpinner(0, 'Scanning'));
     $this->assertStringContainsString('Scanning', $theme->renderSpinner(0, 'Scanning'));
   }
@@ -76,8 +76,9 @@ final class ProgressRenderTest extends TestCase {
   }
 
   public function testBuiltinThemeRendersProgressInItsOwnAccent(): void {
-    // Ember's highlight is bold orange (1;38;5;208); the spinner and bar inherit
-    // it with no per-theme override, proving the accent flows through highlight().
+    // Ember's highlight is bold orange (1;38;5;208); the spinner and bar
+    // inherit it with no per-theme override, so the accent flows through
+    // highlight().
     $theme = ThemeManager::create('ember', DefaultTheme::DEFAULT_WIDTH, ['color' => TRUE, 'unicode' => TRUE, 'mode' => Mode::Dark]);
 
     $this->assertStringContainsString("\033[1;38;5;208m", $theme->renderSpinner(0, 'x'));
