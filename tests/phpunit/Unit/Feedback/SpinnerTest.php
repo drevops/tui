@@ -135,17 +135,20 @@ final class SpinnerTest extends TestCase {
     $terminal = new BufferedTerminal();
     $spinner = new Spinner($terminal, TRUE, TRUE, TRUE, 'Scanning');
 
+    $message = '';
+
     try {
       $spinner->run(static function (): void {
         throw new \RuntimeException('boom');
       });
-      $this->fail('The exception should propagate.');
     }
     catch (\RuntimeException $exception) {
-      $this->assertSame('boom', $exception->getMessage());
+      $message = $exception->getMessage();
     }
 
-    // The cursor is restored even though the work threw.
+    // The exception propagates - its message reaches here - and the cursor is
+    // restored even though the work threw.
+    $this->assertSame('boom', $message);
     $this->assertStringContainsString("\033[?25h", $terminal->output());
   }
 
