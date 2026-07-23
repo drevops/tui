@@ -38,7 +38,7 @@ const OUTPUT_PNG = 'social-card.png';
  *   The message.
  */
 function info(string $message): void {
-  fwrite(STDOUT, $message . "\n");
+  print $message . PHP_EOL;
 }
 
 /**
@@ -53,10 +53,10 @@ function info(string $message): void {
 function run(array $parts): string {
   $cmd = implode(' ', array_map('escapeshellarg', $parts));
   exec($cmd . ' 2>&1', $output_lines, $exit_code);
-  $output = implode("\n", $output_lines);
+  $output = implode(PHP_EOL, $output_lines);
 
   if ($exit_code !== 0) {
-    throw new \RuntimeException('Command failed (' . $exit_code . '): ' . $cmd . "\n" . $output);
+    throw new \RuntimeException('Command failed (' . $exit_code . '): ' . $cmd . PHP_EOL . $output);
   }
 
   return $output;
@@ -171,7 +171,11 @@ if (!is_dir($tmp_dir)) {
 
 $html_path = $tmp_dir . '/social-card.html';
 $html = cardHtml(dataUri($svg_path, 'image/svg+xml'));
-file_put_contents($html_path, $html);
+
+// A failed write must not let the browser screenshot a stale wrapper file.
+if (file_put_contents($html_path, $html) === FALSE) {
+  throw new \RuntimeException('Cannot write: ' . $html_path);
+}
 
 info('Rendering ' . CARD_WIDTH . 'x' . CARD_HEIGHT . ' via agent-browser...');
 
