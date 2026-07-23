@@ -820,8 +820,8 @@ class DefaultTheme implements ThemeInterface {
     $verbose = $spacing !== Spacing::Compact;
 
     foreach ($panel->fields as $field) {
-      // A presentational field renders as a card but is not navigable, so it
-      // consumes no cursor slot and only takes a leading gap when it has output.
+      // A presentational field renders as a card but is not navigable: it
+      // takes no cursor slot, and a leading gap only when it has output.
       if ($field->type->isPresentational()) {
         $note = $this->renderNoteLines($field, $answers);
 
@@ -1115,7 +1115,7 @@ class DefaultTheme implements ThemeInterface {
    *   The current answers, interpolated into the title and body.
    *
    * @return list<string>
-   *   The card's physical lines; empty when the note has neither title nor body.
+   *   The card's physical lines; empty when it has neither title nor body.
    */
   public function renderNoteLines(Field $field, Answers $answers): array {
     $title = Strings::interpolate(Translator::t($field->label), $answers->values);

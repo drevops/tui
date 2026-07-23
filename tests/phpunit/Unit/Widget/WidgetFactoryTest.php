@@ -63,8 +63,8 @@ final class WidgetFactoryTest extends TestCase {
   }
 
   public function testNoteHasNoEditorWidget(): void {
-    // A note is presentational: the theme renders it and the cursor skips it, so
-    // asking the factory to build an editor for one is a programming error.
+    // A note is presentational: the theme renders it and the cursor skips
+    // it, so asking the factory to build an editor for one is a mistake.
     $this->expectException(\LogicException::class);
     $this->expectExceptionMessage('Note fields are presentational and have no editor widget.');
 

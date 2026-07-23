@@ -45,7 +45,7 @@ class SchemaValidator {
       $known[$field->id] = TRUE;
 
       // A presentational field (a note) carries no answer, so it is never
-      // required and any value supplied for it is ignored rather than validated.
+      // required and any value supplied for it is ignored, not validated.
       if ($field->type->isPresentational()) {
         continue;
       }

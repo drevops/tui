@@ -455,8 +455,8 @@ final class PanelControllerTest extends TestCase {
     $theme = new DefaultTheme(50, ['color' => TRUE, 'border' => Border::None, 'spacing' => Spacing::Normal]);
     $controller = new PanelController($form, $theme, ['name' => 'Acme', 'nick' => '']);
 
-    // Open the modal, then move onto the Apply button. The note before the field
-    // must not count toward the button offset, or Apply would not highlight.
+    // Open the modal, then move onto the Apply button. The note before the
+    // field must not count toward the button offset, or Apply stays unlit.
     $controller->handle(Key::named(KeyName::Down));
     $controller->handle(Key::named(KeyName::Enter));
     $controller->handle(Key::named(KeyName::Down));
