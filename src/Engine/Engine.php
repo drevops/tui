@@ -220,6 +220,9 @@ class Engine {
    */
   protected function transformInputs(array $fields, array $values, array $sources): array {
     foreach ($fields as $field) {
+      if ($field->type->isPresentational()) {
+        continue;
+      }
       if ($sources[$field->id] === Source::Input) {
         $values[$field->id] = $this->transformValue($field, $values[$field->id]);
       }
@@ -249,6 +252,9 @@ class Engine {
    */
   protected function guardInputs(array $fields, array $values, array $sources, array $active): void {
     foreach ($fields as $field) {
+      if ($field->type->isPresentational()) {
+        continue;
+      }
       if (!($active[$field->id] ?? FALSE)) {
         continue;
       }
@@ -452,6 +458,9 @@ class Engine {
   protected function provenanceFor(array $fields, array $sources, array $active): array {
     $provenance = [];
     foreach ($fields as $field) {
+      if ($field->type->isPresentational()) {
+        continue;
+      }
       if (!($active[$field->id] ?? FALSE)) {
         continue;
       }
@@ -485,6 +494,9 @@ class Engine {
   protected function activeAnswers(array $fields, array $values, array $active): array {
     $answers = [];
     foreach ($fields as $field) {
+      if ($field->type->isPresentational()) {
+        continue;
+      }
       if ($active[$field->id] ?? FALSE) {
         $answers[$field->id] = $values[$field->id] ?? NULL;
       }

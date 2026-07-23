@@ -6,6 +6,7 @@ namespace DrevOps\Tui\Tests\Unit\Engine;
 
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Builder\PanelBuilder;
+use DrevOps\Tui\Condition\Condition;
 use DrevOps\Tui\Derive\Derive;
 use DrevOps\Tui\Discovery\Dotenv;
 use DrevOps\Tui\Engine\Engine;
@@ -76,6 +77,33 @@ final class EngineNonInteractiveTest extends TestCase {
     // A --prompts JSON array is taken as the ranking directly.
     $inputs = $resolver->resolve($form->fields(), '{"ranking": ["c", "b", "a"]}', []);
     $this->assertSame(['c', 'b', 'a'], $engine->collect($inputs, new Context('', [], FALSE))->value('ranking'));
+  }
+
+  public function testNoteCollectsNoAnswer(): void {
+    $form = Form::create('T')
+      ->panel('p', 'p', function (PanelBuilder $p): void {
+        $p->note('intro', 'Intro')->description('Welcome.');
+        $p->text('name')->default('pear');
+        // A note may be gated like any field, but still carries no answer.
+        $p->note('gated', 'Gated')->when(new Condition('name', eq: 'pear'));
+      })
+      ->build();
+    $resolver = new InputResolver('APP_');
+    $engine = new Engine($form, new HandlerRegistry());
+
+    // A stray supplied value for a note is ignored, not validated or emitted.
+    $inputs = $resolver->resolve($form->fields(), '{"intro": "ignored"}', ['APP_GATED' => 'ignored']);
+    $answers = $engine->collect($inputs, new Context('', [], FALSE));
+
+    // Neither note contributes a value, provenance or self-describing item.
+    $this->assertArrayNotHasKey('intro', $answers->values);
+    $this->assertArrayNotHasKey('gated', $answers->values);
+    $this->assertArrayNotHasKey('intro', $answers->provenance);
+    $this->assertNull($answers->item('intro'));
+    $this->assertFalse($answers->has('gated'));
+
+    // The real field between the notes still collects normally.
+    $this->assertSame('pear', $answers->value('name'));
   }
 
   public function testReorderRejectsIncompletePermutation(): void {

@@ -72,6 +72,9 @@ class WidgetFactory {
       FieldType::Password => new PasswordWidget($this->text($current), $field->revealable, $field->confirm),
       FieldType::Pause => new PauseWidget(),
       FieldType::Text => new TextWidget($this->text($current), $this->completionsFor($field, $answers)),
+      // A note is presentational: the theme renders it and the cursor skips it,
+      // so it is never edited and needs no widget.
+      FieldType::Note => throw new \LogicException('Note fields are presentational and have no editor widget.'),
     };
 
     // The field declaration always wins over the registry's convention-resolved

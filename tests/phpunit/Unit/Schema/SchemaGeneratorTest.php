@@ -202,6 +202,21 @@ final class SchemaGeneratorTest extends TestCase {
     $this->assertStringContainsString('"value":"a"', $json);
   }
 
+  public function testExcludesPresentationalNote(): void {
+    $form = Form::create('T')
+      ->panel('p', 'p', function (PanelBuilder $p): void {
+        $p->note('intro', 'Intro')->description('Welcome.');
+        $p->text('name', 'Name');
+      })
+      ->build();
+
+    $schema = (new SchemaGenerator($form))->generate();
+
+    // A note collects no answer, so it is not a prompt in the machine schema.
+    $ids = array_column($schema['prompts'], 'id');
+    $this->assertSame(['name'], $ids);
+  }
+
   public function testRoundTripsThroughJson(): void {
     $form = Form::create('T')
       ->panel('p', 'p', function (PanelBuilder $p): void {

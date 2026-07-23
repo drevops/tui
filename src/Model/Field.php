@@ -96,6 +96,9 @@ final readonly class Field {
    * @param bool $multiple
    *   Whether the field collects several values as a list rather than one;
    *   honoured by the select, search and file picker types.
+   * @param bool $bordered
+   *   Note only: whether the card is drawn inside a themed border with minimal
+   *   padding; ignored by other types.
    */
   public function __construct(
     public string $id,
@@ -123,6 +126,7 @@ final readonly class Field {
     public ?DateBounds $dateBounds = NULL,
     public RenderMode $render = RenderMode::Inline,
     public bool $multiple = FALSE,
+    public bool $bordered = FALSE,
   ) {
     if ($this->multiple && !$this->type->supportsMultiple()) {
       throw new FormException(sprintf('Field "%s" of type "%s" does not collect several values; only select, search and file picker fields may be multiple.', $this->id, $this->type->value));

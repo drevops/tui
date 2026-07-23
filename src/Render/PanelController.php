@@ -438,6 +438,10 @@ class PanelController {
     $provenance = [];
 
     foreach ($this->form->fields() as $field) {
+      if ($field->type->isPresentational()) {
+        continue;
+      }
+
       if (!($this->active[$field->id] ?? TRUE)) {
         continue;
       }
@@ -873,7 +877,23 @@ class PanelController {
   }
 
   /**
-   * The number of navigable items on a panel: active fields plus sub-panels.
+   * A panel's navigable fields: the active fields the cursor can land on.
+   *
+   * Presentational fields (notes) render but are display-only, so they are
+   * excluded from navigation while staying in visibleFields() for rendering.
+   *
+   * @param \DrevOps\Tui\Model\Panel $panel
+   *   The panel.
+   *
+   * @return list<\DrevOps\Tui\Model\Field>
+   *   The navigable fields, in declaration order.
+   */
+  protected function navigableFields(Panel $panel): array {
+    return array_values(array_filter($this->visibleFields($panel), static fn(Field $field): bool => !$field->type->isPresentational()));
+  }
+
+  /**
+   * The number of navigable items on a panel: navigable fields plus sub-panels.
    *
    * @param \DrevOps\Tui\Model\Panel $panel
    *   The panel.
@@ -882,7 +902,7 @@ class PanelController {
    *   The item count.
    */
   protected function itemCountFor(Panel $panel): int {
-    return count($this->visibleFields($panel)) + count($panel->panels);
+    return count($this->navigableFields($panel)) + count($panel->panels);
   }
 
   /**
@@ -976,7 +996,7 @@ class PanelController {
     $panel = $this->navigator->current();
     $items = $this->itemCountFor($panel);
     $count = $items + ($this->buttonsVisible() ? self::BUTTON_COUNT : 0);
-    $fields = count($this->visibleFields($panel));
+    $fields = count($this->navigableFields($panel));
     $up = $this->nav->matches($key, Action::MoveUp);
     $down = $this->nav->matches($key, Action::MoveDown);
 
@@ -1068,7 +1088,7 @@ class PanelController {
    */
   protected function activate(): void {
     $panel = $this->navigator->current();
-    $fields = $this->visibleFields($panel);
+    $fields = $this->navigableFields($panel);
     $field_count = count($fields);
 
     if ($this->cursor < $field_count) {
@@ -1212,7 +1232,8 @@ class PanelController {
 
     $seen = [];
     foreach ($this->form->fields() as $field) {
-      if (in_array($field->type, $seen, TRUE)) {
+      // A presentational field has no editor, so no key hints to teach.
+      if ($field->type->isPresentational() || in_array($field->type, $seen, TRUE)) {
         continue;
       }
 

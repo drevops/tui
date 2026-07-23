@@ -167,6 +167,11 @@ final class FieldBuilder {
   protected RenderMode $render = RenderMode::Inline;
 
   /**
+   * Note only: whether the card is drawn inside a themed border.
+   */
+  protected bool $bordered = FALSE;
+
+  /**
    * Construct a field builder.
    *
    * @param string $id
@@ -316,6 +321,21 @@ final class FieldBuilder {
    */
   public function standalone(bool $standalone = TRUE): self {
     $this->render = $standalone ? RenderMode::Standalone : RenderMode::Inline;
+
+    return $this;
+  }
+
+  /**
+   * Note only: draw the card inside a themed border with minimal padding.
+   *
+   * @param bool $bordered
+   *   Whether the note is boxed.
+   *
+   * @return $this
+   *   The builder.
+   */
+  public function border(bool $bordered = TRUE): self {
+    $this->bordered = $bordered;
 
     return $this;
   }
@@ -723,6 +743,7 @@ final class FieldBuilder {
       $this->buildDateBounds(),
       $this->render,
       $this->multiple,
+      $this->bordered,
     );
   }
 

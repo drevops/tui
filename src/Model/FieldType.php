@@ -26,6 +26,7 @@ enum FieldType: string {
   case Reorder = 'reorder';
   case FilePicker = 'filepicker';
   case Pause = 'pause';
+  case Note = 'note';
 
   /**
    * The human label in the active language.
@@ -51,7 +52,22 @@ enum FieldType: string {
       self::Reorder => Translator::t('Reorder'),
       self::FilePicker => Translator::t('File picker'),
       self::Pause => Translator::t('Pause'),
+      self::Note => Translator::t('Note'),
     };
+  }
+
+  /**
+   * Whether the field only presents text and collects no answer.
+   *
+   * A presentational field renders inline but is display-only: the selection
+   * cursor skips it, it carries no value in the answers payload, and it is
+   * absent from the machine schemas.
+   *
+   * @return bool
+   *   TRUE for the display-only field types.
+   */
+  public function isPresentational(): bool {
+    return $this === self::Note;
   }
 
   /**

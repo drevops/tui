@@ -31,6 +31,7 @@ return [
   'Navigation' => 'Navigation',
   'Need at least @width x @height - have @w x @h.' => 'Need at least @width x @height - have @w x @h.',
   'No' => 'No',
+  'Note' => 'Note',
   'Number' => 'Number',
   'Page size must be a positive integer, @size given.' => 'Page size must be a positive integer, @size given.',
   'Password' => 'Password',

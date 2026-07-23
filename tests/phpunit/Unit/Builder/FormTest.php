@@ -228,6 +228,30 @@ final class FormTest extends TestCase {
     $this->assertFalse($form->field('plain')?->externalEditor);
   }
 
+  public function testNoteField(): void {
+    $form = Form::create('T')
+      ->panel('p', 'P', function (PanelBuilder $panel): void {
+        $panel->note('intro', 'Getting started')->description('Fill in each field.');
+        $panel->note('bare');
+        $panel->note('boxed', 'Boxed')->border();
+      })
+      ->build();
+
+    $intro = $form->field('intro');
+    $this->assertSame(FieldType::Note, $intro?->type);
+    // The title is the label and the body is carried by the description.
+    $this->assertSame('Getting started', $intro?->label);
+    $this->assertSame('Fill in each field.', $intro?->description);
+    // A note is not bordered unless it opts in.
+    $this->assertFalse($intro?->bordered);
+
+    // An omitted title stays empty rather than falling back to the id.
+    $this->assertSame('', $form->field('bare')?->label);
+
+    // ->border() draws the card inside a box.
+    $this->assertTrue($form->field('boxed')?->bordered);
+  }
+
   public function testValidateAndTransformStored(): void {
     $validator = fn (mixed $v): ?string => NULL;
     $transformer = fn (mixed $v): mixed => $v;

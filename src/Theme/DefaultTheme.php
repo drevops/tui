@@ -813,13 +813,36 @@ class DefaultTheme implements ThemeInterface {
     $lines = [];
     $cursor_line = 0;
     $index = 0;
+    $rendered = 0;
 
     $spacing = $this->spacing();
     $gap = $spacing === Spacing::Padded ? 1 : 0;
     $verbose = $spacing !== Spacing::Compact;
 
     foreach ($panel->fields as $field) {
-      if ($index > 0 && $gap > 0) {
+      // A presentational field renders as a card but is not navigable, so it
+      // consumes no cursor slot and only takes a leading gap when it has output.
+      if ($field->type->isPresentational()) {
+        $note = $this->renderNoteLines($field, $answers);
+
+        if ($note === []) {
+          continue;
+        }
+
+        if ($rendered > 0 && $gap > 0) {
+          $lines[] = '';
+        }
+
+        foreach ($note as $line) {
+          $lines[] = $line;
+        }
+
+        $rendered++;
+
+        continue;
+      }
+
+      if ($rendered > 0 && $gap > 0) {
         $lines[] = '';
       }
 
@@ -837,6 +860,7 @@ class DefaultTheme implements ThemeInterface {
         }
 
         $index++;
+        $rendered++;
 
         continue;
       }
@@ -850,10 +874,11 @@ class DefaultTheme implements ThemeInterface {
       }
 
       $index++;
+      $rendered++;
     }
 
     if ($panel->layout !== []) {
-      if ($index > 0) {
+      if ($rendered > 0) {
         $lines[] = '';
       }
 
@@ -867,7 +892,7 @@ class DefaultTheme implements ThemeInterface {
     }
 
     foreach ($panel->panels as $subpanel) {
-      if ($index > 0 && $gap > 0) {
+      if ($rendered > 0 && $gap > 0) {
         $lines[] = '';
       }
 
@@ -887,6 +912,7 @@ class DefaultTheme implements ThemeInterface {
       }
 
       $index++;
+      $rendered++;
     }
 
     return [$lines, $cursor_line];
@@ -979,6 +1005,16 @@ class DefaultTheme implements ThemeInterface {
     }
 
     foreach ($panel->fields as $field) {
+      // A presentational field carries no value; it previews as its title.
+      if ($field->type->isPresentational()) {
+        $title = Strings::interpolate(Translator::t($field->label), $answers->values);
+        if ($title !== '') {
+          $lines[] = '  ' . $this->heading($title);
+        }
+
+        continue;
+      }
+
       // A grid cell is one physical row, so a multi-line value previews as
       // its first line - an embedded newline would desync the column zip.
       $value_lines = explode("\n", $this->normalizeLines($this->renderFieldValue($field, $answers->value($field->id))));
@@ -1060,6 +1096,90 @@ class DefaultTheme implements ThemeInterface {
     foreach (explode("\n", $view) as $index => $line) {
       $lines[] = ($index === 0 ? $prefix : $indent) . $line;
     }
+
+    return $lines;
+  }
+
+  /**
+   * Render a note card: its interpolated title and body, boxed when bordered.
+   *
+   * The title and body carry the same `{{field}}` templating derived values
+   * use, interpolated here against the current answers so a note reflects prior
+   * answers. A plain card is a heading title over grey body lines; a bordered
+   * note wraps them in the theme's box with a one-column gutter each side.
+   *
+   * @param \DrevOps\Tui\Model\Field $field
+   *   The note field.
+   * @param \DrevOps\Tui\Answers\Answers $answers
+   *   The current answers, interpolated into the title and body.
+   *
+   * @return list<string>
+   *   The card's physical lines; empty when the note has neither title nor body.
+   */
+  public function renderNoteLines(Field $field, Answers $answers): array {
+    $title = Strings::interpolate(Translator::t($field->label), $answers->values);
+    $body = Strings::interpolate(Translator::t($field->description), $answers->values);
+
+    $content = [];
+
+    if ($title !== '') {
+      $content[] = $this->heading($title);
+    }
+
+    if ($body !== '') {
+      foreach (explode("\n", $this->normalizeLines($body)) as $line) {
+        $content[] = $this->description($line);
+      }
+    }
+
+    if ($content === []) {
+      return [];
+    }
+
+    if (!$field->bordered) {
+      return array_map(static fn(string $line): string => '  ' . $line, $content);
+    }
+
+    return $this->boxedNote($content);
+  }
+
+  /**
+   * Wrap a note's content lines in the theme's border box.
+   *
+   * The box is sized to its widest content line and capped at the frame width;
+   * an explicit note border shows even when the frame itself is borderless, so
+   * a None frame style falls back to the single-line box.
+   *
+   * @param list<string> $content
+   *   The styled content lines (title and body).
+   *
+   * @return list<string>
+   *   The boxed lines.
+   */
+  protected function boxedNote(array $content): array {
+    $style = $this->borderStyle();
+    if ($style === Border::None) {
+      $style = Border::Line;
+    }
+
+    $chars = Box::chars($style, $this->unicode);
+
+    $inner = 0;
+    foreach ($content as $line) {
+      $inner = max($inner, Ansi::width($line));
+    }
+
+    // boxLine adds a one-column gutter and a border column each side, so the
+    // outer width is the content width plus four columns of chrome.
+    $outer = min($this->width, $inner + 4);
+
+    $lines = [$this->borderRule($chars['tl'], $chars['tr'], $chars['h'], $outer)];
+
+    foreach ($content as $line) {
+      $lines[] = $this->boxLine($line, $chars['v'], $outer);
+    }
+
+    $lines[] = $this->borderRule($chars['bl'], $chars['br'], $chars['h'], $outer);
 
     return $lines;
   }
@@ -1215,6 +1335,16 @@ class DefaultTheme implements ThemeInterface {
     $verbose = $this->spacing() !== Spacing::Compact;
 
     foreach ($panel->fields as $field) {
+      // A note renders as a card, not a label/value row; measure its actual
+      // lines so the frame fits its title and body (and box, when bordered).
+      if ($field->type->isPresentational()) {
+        foreach ($this->renderNoteLines($field, $answers) as $line) {
+          $width = max($width, Ansi::width($line));
+        }
+
+        continue;
+      }
+
       // A multi-line value renders one physical row per line, all under the
       // value column, so the widest single line is what the row needs.
       $row = 4 + Strings::length(Translator::t($field->label)) + $this->measureValueWidth($field, $answers);
@@ -1293,6 +1423,15 @@ class DefaultTheme implements ThemeInterface {
     }
 
     foreach ($panel->fields as $field) {
+      if ($field->type->isPresentational()) {
+        $title = Strings::interpolate(Translator::t($field->label), $answers->values);
+        if ($title !== '') {
+          $width = max($width, 2 + Strings::length($title));
+        }
+
+        continue;
+      }
+
       $width = max($width, 4 + Strings::length(Translator::t($field->label)) + $this->measureValueWidth($field, $answers));
     }
 
