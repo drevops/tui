@@ -10,8 +10,7 @@ use DrevOps\Tui\Builder\PanelBuilder;
 use DrevOps\Tui\CancelException;
 use DrevOps\Tui\Derive\Derive;
 use DrevOps\Tui\Engine\Engine;
-use DrevOps\Tui\Feedback\ProgressBar;
-use DrevOps\Tui\Feedback\Spinner;
+use DrevOps\Tui\Primitive\Progress;
 use DrevOps\Tui\Handler\HandlerRegistry;
 use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Binding;
@@ -297,13 +296,14 @@ final class TuiTest extends TestCase {
     $this->assertFalse($options['unicode']);
   }
 
-  public function testSpinnerRunsTheWorkAndReturnsItsResult(): void {
+  public function testProgressAsSpinnerRunsTheWorkAndReturnsItsResult(): void {
     $terminal = new BufferedTerminal();
 
-    // Off a TTY the spinner stays plain, but the callback still runs - ticking
-    // the forwarded spinner instance - and its result is passed straight back.
-    $result = (new Tui($this->demoForm()))->spinner('Scanning', static function (Spinner $spinner): string {
-      $spinner->tick();
+    // A NULL total is an indeterminate spinner. Off a TTY it stays plain, but the
+    // callback still runs - advancing the forwarded primitive - and its result is
+    // passed straight back.
+    $result = (new Tui($this->demoForm()))->progress(NULL, 'Scanning', static function (Progress $progress): string {
+      $progress->advance();
 
       return 'scanned';
     }, $terminal);
@@ -312,11 +312,12 @@ final class TuiTest extends TestCase {
     $this->assertSame("Scanning\n", $terminal->output());
   }
 
-  public function testProgressRunsTheWorkAndReturnsItsResult(): void {
+  public function testProgressAsBarRunsTheWorkAndReturnsItsResult(): void {
     $terminal = new BufferedTerminal();
 
-    $result = (new Tui($this->demoForm()))->progress(3, 'Packing', static function (ProgressBar $bar): string {
-      $bar->advance('apples');
+    // A known total is a determinate bar.
+    $result = (new Tui($this->demoForm()))->progress(3, 'Packing', static function (Progress $progress): string {
+      $progress->advance('apples');
 
       return 'packed';
     }, $terminal);

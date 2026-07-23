@@ -7,13 +7,12 @@ namespace DrevOps\Tui;
 use DrevOps\Tui\Answers\Answers;
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Engine\Engine;
-use DrevOps\Tui\Feedback\ProgressBar;
-use DrevOps\Tui\Feedback\Spinner;
 use DrevOps\Tui\Handler\Context;
 use DrevOps\Tui\Handler\HandlerRegistry;
 use DrevOps\Tui\Input\KeyMap;
 use DrevOps\Tui\Input\KeyMapManager;
 use DrevOps\Tui\Model\FormDefinition;
+use DrevOps\Tui\Primitive\Progress;
 use DrevOps\Tui\Resolver\InputResolver;
 use DrevOps\Tui\Schema\AgentHelp;
 use DrevOps\Tui\Schema\SchemaGenerator;
@@ -327,19 +326,25 @@ final class Tui {
   }
 
   /**
-   * Show an animated spinner while a slow callback runs.
+   * Show a progress indicator while a slow callback runs.
    *
-   * The callback receives the {@see \DrevOps\Tui\Feedback\Spinner} so it can
-   * `tick()` the animation forward as it works; its return value is passed
-   * straight back. On an interactive terminal the spinner animates and clears
-   * itself when the callback returns; off a TTY it prints the caption once as a
-   * plain line and emits no control sequences. The colour and Unicode switches
-   * are the facade's own.
+   * The callback receives the {@see \DrevOps\Tui\Primitive\Progress} and drives
+   * it with `advance()`; its return value is passed straight back. With no total
+   * the indicator is an animated spinner - each advance ticks a frame; with a
+   * total it is a bar that fills as it advances, with a step count and label.
+   * The active theme draws it, so it matches the panel's look and honours the
+   * colour and Unicode switches. On an interactive terminal it animates and
+   * settles when the callback returns; off a TTY it prints the caption once as a
+   * plain line and emits no control sequences.
    *
+   * @param int|null $total
+   *   The number of steps for a determinate bar, or NULL for an indeterminate
+   *   spinner.
    * @param string $caption
-   *   The caption shown beside the spinner.
-   * @param callable(\DrevOps\Tui\Feedback\Spinner): TReturn $work
-   *   The work to run; it receives the spinner and its result is returned.
+   *   The caption shown beside the indicator.
+   * @param callable(\DrevOps\Tui\Primitive\Progress): TReturn $work
+   *   The work to run; it receives the progress primitive and its result is
+   *   returned.
    * @param \DrevOps\Tui\Render\Terminal|null $terminal
    *   The terminal to draw on (defaults to a real one on standard error).
    *
@@ -348,44 +353,12 @@ final class Tui {
    *
    * @template TReturn
    */
-  public function spinner(string $caption, callable $work, ?Terminal $terminal = NULL): mixed {
-    $terminal ??= self::feedbackTerminal();
+  public function progress(?int $total, string $caption, callable $work, ?Terminal $terminal = NULL): mixed {
+    $terminal ??= self::primitiveTerminal();
 
-    $spinner = new Spinner($terminal, $terminal->isOutputTty(), $this->resolvedColor(), $this->resolvedUnicode(), $caption);
+    $theme = ThemeManager::create($this->resolveTheme(''), DefaultTheme::DEFAULT_WIDTH, $this->primitiveThemeOptions());
 
-    return $spinner->run($work);
-  }
-
-  /**
-   * Show a determinate progress bar while a slow callback advances it.
-   *
-   * The callback receives the {@see \DrevOps\Tui\Feedback\ProgressBar} so it
-   * can `advance()` the bar one step at a time and update its label; its
-   * return value is passed straight back. On an interactive terminal the bar
-   * fills and settles at its final state; off a TTY it prints the caption
-   * once as a plain line and emits no control sequences. The colour and
-   * Unicode switches are the facade's own.
-   *
-   * @param int $total
-   *   The number of steps the work advances through.
-   * @param string $caption
-   *   The caption shown before the bar.
-   * @param callable(\DrevOps\Tui\Feedback\ProgressBar): TReturn $work
-   *   The work to run; it receives the bar and its result is returned.
-   * @param \DrevOps\Tui\Render\Terminal|null $terminal
-   *   The terminal to draw on (defaults to a real one on standard error).
-   *
-   * @return TReturn
-   *   The callback's return value.
-   *
-   * @template TReturn
-   */
-  public function progress(int $total, string $caption, callable $work, ?Terminal $terminal = NULL): mixed {
-    $terminal ??= self::feedbackTerminal();
-
-    $bar = new ProgressBar($terminal, $terminal->isOutputTty(), $this->resolvedColor(), $this->resolvedUnicode(), $caption, $total);
-
-    return $bar->run($work);
+    return (new Progress($terminal, $theme, $terminal->isOutputTty(), $total, $caption))->run($work);
   }
 
   /**
@@ -662,18 +635,44 @@ final class Tui {
   }
 
   /**
-   * A real terminal that draws feedback on standard error.
+   * A real terminal that draws a primitive's output on standard error.
    *
-   * Feedback is chrome, not data, so it stays off standard output where a
+   * A primitive is chrome, not data, so it stays off standard output where a
    * consumer's own results are written.
    *
    * @return \DrevOps\Tui\Render\Terminal
    *   The terminal.
    */
-  protected static function feedbackTerminal(): Terminal {
+  protected static function primitiveTerminal(): Terminal {
     // @codeCoverageIgnoreStart
     return new Terminal(defined('STDERR') ? STDERR : NULL);
     // @codeCoverageIgnoreEnd
+  }
+
+  /**
+   * The theme display options for a primitive, filling what the consumer omits.
+   *
+   * Mirrors resolveThemeOptions() for colour and Unicode, but a primitive draws
+   * a single line rather than a framed panel, so it skips the background query
+   * and leaves the dark/light mode at dark unless the consumer set one.
+   *
+   * @return array<string,mixed>
+   *   The resolved options.
+   */
+  protected function primitiveThemeOptions(): array {
+    $options = $this->themeOptions;
+
+    if (!isset($options['color'])) {
+      $options['color'] = $this->resolvedColor();
+    }
+
+    if (!isset($options['unicode'])) {
+      $options['unicode'] = $this->resolvedUnicode();
+    }
+
+    $options['mode'] ??= Mode::Dark;
+
+    return $options;
   }
 
   /**

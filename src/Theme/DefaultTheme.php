@@ -86,6 +86,21 @@ class DefaultTheme implements ThemeInterface {
   protected const int INDICATOR_LINES = 2;
 
   /**
+   * The Unicode spinner animation frames, one glyph per tick.
+   */
+  protected const array SPINNER_FRAMES = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+
+  /**
+   * The ASCII spinner animation frames used when Unicode is off.
+   */
+  protected const array SPINNER_ASCII = ['|', '/', '-', '\\'];
+
+  /**
+   * The determinate progress bar's width in cells.
+   */
+  protected const int PROGRESS_WIDTH = 24;
+
+  /**
    * Whether colour (ANSI) is enabled, resolved from the "color" option.
    */
   protected bool $color;
@@ -788,6 +803,58 @@ class DefaultTheme implements ThemeInterface {
    */
   public function mask(): string {
     return $this->unicode ? '•' : '*';
+  }
+
+  /**
+   * Render an indeterminate spinner: an accent glyph before the caption.
+   *
+   * The glyph carries the theme's accent through {@see self::highlight()} and
+   * follows the theme's Unicode mode, so every theme spins in its own palette.
+   *
+   * @param int $frame
+   *   The animation frame counter; the glyph cycles through the frame set.
+   * @param string $caption
+   *   The caption shown beside the spinner.
+   *
+   * @return string
+   *   The composed spinner line.
+   */
+  public function renderSpinner(int $frame, string $caption): string {
+    $frames = $this->unicode ? self::SPINNER_FRAMES : self::SPINNER_ASCII;
+    $glyph = $this->highlight($frames[$frame % count($frames)]);
+
+    return $caption === '' ? $glyph : $glyph . ' ' . $caption;
+  }
+
+  /**
+   * Render a determinate progress bar: a filling bar, a step count and a label.
+   *
+   * The filled run carries the theme's accent through {@see self::highlight()}
+   * and follows the theme's Unicode mode; the empty track and the count stay
+   * plain, so the bar reads with colour off and in ASCII alike.
+   *
+   * @param int $current
+   *   The number of completed steps.
+   * @param int $total
+   *   The total number of steps; a zero total renders a full bar.
+   * @param string $caption
+   *   The caption shown before the bar.
+   * @param string $label
+   *   The trailing label, or an empty string for none.
+   *
+   * @return string
+   *   The composed bar line.
+   */
+  public function renderProgressBar(int $current, int $total, string $caption, string $label): string {
+    [$fill, $track] = $this->unicode ? ['█', '░'] : ['#', '-'];
+
+    $ratio = $total > 0 ? $current / $total : 1.0;
+    $filled = (int) round($ratio * self::PROGRESS_WIDTH);
+
+    $bar = ($filled > 0 ? $this->highlight(str_repeat($fill, $filled)) : '') . str_repeat($track, self::PROGRESS_WIDTH - $filled);
+    $line = ($caption === '' ? '' : $caption . ' ') . '[' . $bar . '] ' . $current . '/' . $total;
+
+    return $label === '' ? $line : $line . ' ' . $label;
   }
 
   /**
