@@ -4,7 +4,40 @@
 // There are various equivalent ways to declare your Docusaurus config.
 // @see https://docusaurus.io/docs/api/docusaurus-config
 
-import {themes as prismThemes} from 'prism-react-renderer';
+// The docs code blocks highlight with the homepage code-window palette (the
+// token colours in `src/pages/index.module.css`), so every code sample on the
+// site reads as one system: teal keywords and class names, off-white
+// functions, grey-blue variables, sage strings on the deep slate surface. The
+// light variant deepens the same hues for contrast on a light background.
+/** @type {import('prism-react-renderer').PrismTheme} */
+const tuiDark = {
+  plain: {color: '#eae4d4', backgroundColor: '#1a1d23'},
+  styles: [
+    {types: ['comment', 'prolog', 'doctype', 'cdata'], style: {color: '#5f6b63', fontStyle: 'italic'}},
+    {types: ['string', 'attr-value', 'inserted'], style: {color: '#8fb98a'}},
+    {types: ['keyword', 'boolean', 'important', 'atrule'], style: {color: '#2dd4bf'}},
+    {types: ['class-name', 'maybe-class-name', 'builtin', 'tag'], style: {color: '#5ec8c0'}},
+    {types: ['function', 'attr-name'], style: {color: '#f4f1e8'}},
+    {types: ['variable'], style: {color: '#b7c0cd'}},
+    {types: ['punctuation'], style: {color: 'rgba(234, 228, 212, 0.45)'}},
+    {types: ['deleted'], style: {color: '#c98a8a'}},
+  ],
+};
+
+/** @type {import('prism-react-renderer').PrismTheme} */
+const tuiLight = {
+  plain: {color: '#3b4148', backgroundColor: '#fafafa'},
+  styles: [
+    {types: ['comment', 'prolog', 'doctype', 'cdata'], style: {color: '#8a938f', fontStyle: 'italic'}},
+    {types: ['string', 'attr-value', 'inserted'], style: {color: '#557b46'}},
+    {types: ['keyword', 'boolean', 'important', 'atrule'], style: {color: '#0d9488'}},
+    {types: ['class-name', 'maybe-class-name', 'builtin', 'tag'], style: {color: '#0e7490'}},
+    {types: ['function', 'attr-name'], style: {color: '#30363d'}},
+    {types: ['variable'], style: {color: '#64748b'}},
+    {types: ['punctuation'], style: {color: 'rgba(59, 65, 72, 0.5)'}},
+    {types: ['deleted'], style: {color: '#b05b5b'}},
+  ],
+};
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -151,10 +184,8 @@ const config = {
         copyright: `Version: ${process.env.RELEASE_VERSION || 'development'} <br/> Copyright ©${new Date().getFullYear()} DrevOps. Built with Docusaurus.`,
       },
       prism: {
-        // The One Dark/Light pair sits on the same '#282c34' background as
-        // the terminal recordings, so code blocks and recordings match.
-        theme: prismThemes.oneLight,
-        darkTheme: prismThemes.oneDark,
+        theme: tuiLight,
+        darkTheme: tuiDark,
         additionalLanguages: ['php', 'bash'],
       },
       colorMode: {
