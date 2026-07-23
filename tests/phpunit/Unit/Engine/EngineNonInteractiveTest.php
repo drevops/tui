@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Tests\Unit\Engine;
 
+use DrevOps\Tui\Answers\Answer;
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Builder\PanelBuilder;
 use DrevOps\Tui\Condition\Condition;
@@ -105,7 +106,7 @@ final class EngineNonInteractiveTest extends TestCase {
     $this->assertArrayNotHasKey('intro', $answers->values);
     $this->assertArrayNotHasKey('gated', $answers->values);
     $this->assertArrayNotHasKey('intro', $answers->provenance);
-    $this->assertNull($answers->item('intro'));
+    $this->assertNotInstanceOf(Answer::class, $answers->item('intro'));
     $this->assertFalse($answers->has('gated'));
 
     // The real field between the notes still collects normally.

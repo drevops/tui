@@ -1239,10 +1239,12 @@ class PanelController {
     $seen = [];
     foreach ($this->form->fields() as $field) {
       // A presentational field has no editor, so no key hints to teach.
-      if ($field->type->isPresentational() || in_array($field->type, $seen, TRUE)) {
+      if ($field->type->isPresentational()) {
         continue;
       }
-
+      if (in_array($field->type, $seen, TRUE)) {
+        continue;
+      }
       $seen[] = $field->type;
       $widget = $this->widgets->create($field, $this->values[$field->id] ?? $field->default);
       $sections[] = new HelpSection($field->type->label(), $this->keymap->forField($field->type), ...$widget->hints());

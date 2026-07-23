@@ -253,7 +253,7 @@ final class ThemeRenderTest extends TestCase {
     ]);
 
     [$lines] = $theme->renderBody($panel, new Answers(['name' => 'Acme'], []), 0);
-    $stripped = array_map(static fn(string $line): string => Ansi::strip($line), $lines);
+    $stripped = array_map(Ansi::strip(...), $lines);
 
     // Padded spacing inserts a blank line before the note card.
     $index = array_search('  Intro', $stripped, TRUE);
