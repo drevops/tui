@@ -539,6 +539,12 @@ class Engine {
         continue;
       }
 
+      // A presentational field carries no value, so a fix-up can never target
+      // one - a mistargeted rule is ignored rather than reintroducing a note.
+      if ($this->form->field($fixup->set)?->type->isPresentational()) {
+        continue;
+      }
+
       $values[$fixup->set] = $fixup->from !== '' ? ($values[$fixup->from] ?? NULL) : $fixup->to;
     }
 
