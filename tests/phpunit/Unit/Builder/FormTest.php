@@ -238,12 +238,13 @@ final class FormTest extends TestCase {
       ->build();
 
     $intro = $form->field('intro');
-    $this->assertSame(FieldType::Note, $intro?->type);
+    $this->assertInstanceOf(Field::class, $intro);
+    $this->assertSame(FieldType::Note, $intro->type);
     // The title is the label and the body is carried by the description.
-    $this->assertSame('Getting started', $intro?->label);
-    $this->assertSame('Fill in each field.', $intro?->description);
+    $this->assertSame('Getting started', $intro->label);
+    $this->assertSame('Fill in each field.', $intro->description);
     // A note is not bordered unless it opts in.
-    $this->assertFalse($intro?->bordered);
+    $this->assertFalse($intro->bordered);
 
     // An omitted title stays empty rather than falling back to the id.
     $this->assertSame('', $form->field('bare')?->label);
