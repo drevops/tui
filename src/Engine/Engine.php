@@ -539,9 +539,13 @@ class Engine {
         continue;
       }
 
-      // A presentational field carries no value, so a fix-up can never target
-      // one - a mistargeted rule is ignored rather than reintroducing a note.
+      // A presentational field carries no value, so a fix-up can neither write
+      // to one nor copy from one - reading a note's absent value would write
+      // NULL over the target's settled value. A mistargeted rule is ignored.
       if ($this->form->field($fixup->set)?->type->isPresentational()) {
+        continue;
+      }
+      if ($this->form->field($fixup->from)?->type->isPresentational()) {
         continue;
       }
 

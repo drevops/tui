@@ -1005,12 +1005,11 @@ class DefaultTheme implements ThemeInterface {
     }
 
     foreach ($panel->fields as $field) {
-      // A presentational field carries no value; it previews as its title. A
-      // grid cell is one physical row, so a multi-line title shows its first.
+      // A presentational field carries no value; it previews as its title.
       if ($field->type->isPresentational()) {
-        $title = Strings::interpolate(Translator::t($field->label), $answers->values);
+        $title = $this->noteTitleFirstLine($field, $answers);
         if ($title !== '') {
-          $lines[] = '  ' . $this->heading(explode("\n", $this->normalizeLines($title))[0]);
+          $lines[] = '  ' . $this->heading($title);
         }
 
         continue;
@@ -1118,8 +1117,8 @@ class DefaultTheme implements ThemeInterface {
    *   The card's physical lines; empty when it has neither title nor body.
    */
   public function renderNoteLines(Field $field, Answers $answers): array {
-    $title = Strings::interpolate(Translator::t($field->label), $answers->values);
-    $body = Strings::interpolate(Translator::t($field->description), $answers->values);
+    $title = $this->noteText($field->label, $answers);
+    $body = $this->noteText($field->description, $answers);
 
     $content = [];
 
@@ -1187,6 +1186,40 @@ class DefaultTheme implements ThemeInterface {
     $lines[] = $this->borderRule($chars['bl'], $chars['br'], $chars['h'], $outer);
 
     return $lines;
+  }
+
+  /**
+   * Interpolate a translated note source string against the current answers.
+   *
+   * @param string $source
+   *   The note's title or body source text.
+   * @param \DrevOps\Tui\Answers\Answers $answers
+   *   The current answers, interpolated into its `{{field}}` tokens.
+   *
+   * @return string
+   *   The translated, interpolated text.
+   */
+  protected function noteText(string $source, Answers $answers): string {
+    return Strings::interpolate(Translator::t($source), $answers->values);
+  }
+
+  /**
+   * The first physical line of a note's interpolated title.
+   *
+   * A grid cell is one row, so a multi-line title collapses to its first line.
+   *
+   * @param \DrevOps\Tui\Model\Field $field
+   *   The note field.
+   * @param \DrevOps\Tui\Answers\Answers $answers
+   *   The current answers.
+   *
+   * @return string
+   *   The interpolated first line, empty when the title is empty.
+   */
+  protected function noteTitleFirstLine(Field $field, Answers $answers): string {
+    $title = $this->noteText($field->label, $answers);
+
+    return $title === '' ? '' : explode("\n", $this->normalizeLines($title))[0];
   }
 
   /**
@@ -1429,9 +1462,9 @@ class DefaultTheme implements ThemeInterface {
 
     foreach ($panel->fields as $field) {
       if ($field->type->isPresentational()) {
-        $title = Strings::interpolate(Translator::t($field->label), $answers->values);
+        $title = $this->noteTitleFirstLine($field, $answers);
         if ($title !== '') {
-          $width = max($width, 2 + Strings::length(explode("\n", $this->normalizeLines($title))[0]));
+          $width = max($width, 2 + Strings::length($title));
         }
 
         continue;

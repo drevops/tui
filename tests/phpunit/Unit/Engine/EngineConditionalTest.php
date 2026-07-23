@@ -78,6 +78,22 @@ final class EngineConditionalTest extends TestCase {
     $this->assertArrayHasKey('provision', $values);
   }
 
+  public function testFixupReadingFromNoteKeepsTargetSettled(): void {
+    $engine = $this->engine(
+      Form::create('T')
+        ->panel('p', 'p', function (PanelBuilder $p): void {
+          $p->text('target')->default('kept');
+          $p->note('intro', 'Intro')->description('Welcome.');
+        })
+        // Copying from a note would read its absent value and write NULL over
+        // the target; the rule is ignored, so the target keeps its value.
+        ->fixup(new Fixup(set: 'target', from: 'intro'))
+        ->build()
+    );
+
+    $this->assertSame('kept', $engine->collect([], new Context())->value('target'));
+  }
+
   public function testMultiFieldConditional(): void {
     // A when can depend on any number of fields via all / any / not.
     $engine = $this->engine(
