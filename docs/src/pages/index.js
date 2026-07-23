@@ -80,7 +80,7 @@ const ICONS = {
 };
 
 function FeatIcon({name}) {
-  return <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">{ICONS[name]}</svg>;
+  return <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">{ICONS[name]}</svg>;
 }
 
 const FEATURES = [
@@ -825,8 +825,10 @@ export default function Home() {
     return () => io.disconnect();
   }, []);
 
+  // Layout gets no title: the homepage <title> is then the site title itself
+  // - the slogan - rather than 'phrase | slogan'.
   return (
-    <Layout title={TITLE_PHRASES[0]} description={SUBHEAD}>
+    <Layout description={SUBHEAD}>
       <Head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
