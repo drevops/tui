@@ -6,6 +6,13 @@
 
 import {themes as prismThemes} from 'prism-react-renderer';
 
+// The packaged One themes flatten variables, operators and functions into one
+// blue; upstream One Dark/Light gives variables their own red, which keeps
+// '$var->method()' chains readable. A later styles entry wins, so appending
+// the variable override restores the upstream distinction.
+const oneDark = {...prismThemes.oneDark, styles: [...prismThemes.oneDark.styles, {types: ['variable'], style: {color: 'hsl(355, 65%, 65%)'}}]};
+const oneLight = {...prismThemes.oneLight, styles: [...prismThemes.oneLight.styles, {types: ['variable'], style: {color: 'hsl(5, 74%, 59%)'}}]};
+
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   // The official slogan: it suffixes every page's <title> and stands alone as
@@ -151,8 +158,11 @@ const config = {
         copyright: `Version: ${process.env.RELEASE_VERSION || 'development'} <br/> Copyright ©${new Date().getFullYear()} DrevOps. Built with Docusaurus.`,
       },
       prism: {
-        theme: prismThemes.github,
-        darkTheme: prismThemes.dracula,
+        // One Dark sits on the same '#282c34' background as the dark
+        // terminal recordings, so dark code blocks and recordings match;
+        // One Light is its hue-matched twin for light mode.
+        theme: oneLight,
+        darkTheme: oneDark,
         additionalLanguages: ['php', 'bash'],
       },
       colorMode: {
