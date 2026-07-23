@@ -3,7 +3,14 @@ import clsx from 'clsx';
 import Layout from '@theme/Layout';
 import Head from '@docusaurus/Head';
 import {useBaseUrlUtils} from '@docusaurus/useBaseUrl';
+import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
+import {Highlight, Prism} from 'prism-react-renderer';
+import prismIncludeLanguages from '@theme/prism-include-languages';
 import styles from './index.module.css';
+
+// Load the site's configured additionalLanguages (php, bash) into the Prism
+// instance, exactly as the docs code blocks do.
+prismIncludeLanguages(Prism);
 
 /* ────────────────────────────────────────────────────────────────────────
  *  CONFIG - edit these freely.
@@ -415,57 +422,28 @@ const MODES = [
 ];
 
 /* ────────────────────────────────────────────────────────────────────────
- *  A lightweight PHP highlighter for the snippets above. The token classes
- *  map onto the .code span styles; the snippets are our own, so the grammar
- *  only needs comments, strings, variables, member calls, qualified names
- *  and a short keyword list.
+ *  The snippets above render through the same Prism highlighter and theme
+ *  as the docs code blocks, so homepage and docs code always match.
  * ──────────────────────────────────────────────────────────────────────── */
-const PHP_TOKEN = /(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|('(?:[^'\\]|\\.)*')|(\$[A-Za-z_]\w*)|((?:->|::)[A-Za-z_]\w*(?=\())|([A-Za-z_]\w*(?:\\[A-Za-z_]\w*)+)|([A-Za-z_]\w*)|(;)/g;
-const PHP_KEYWORDS = new Set(['use', 'function', 'fn', 'new', 'return', 'void', 'int', 'bool', 'string', 'array', 'match', 'static', 'class', 'declare', 'echo', 'TRUE', 'FALSE', 'NULL', '__DIR__']);
-const PHP_CLASSES = new Set(['Form', 'PanelBuilder', 'Tui', 'Derive', 'Condition', 'Translator', 'TuiTester', 'Key', 'KeyName', 'Binding', 'Scope', 'Action', 'FieldType', 'Mode', 'OceanTheme', 'DefaultTheme']);
-
-function highlightPhp(code) {
-  const tokens = [];
-  let last = 0;
-
-  for (const match of code.matchAll(PHP_TOKEN)) {
-    if (match.index > last) {
-      tokens.push({c: null, t: code.slice(last, match.index)});
-    }
-
-    const [text, comment, str, variable, member, qualified, word, punct] = match;
-
-    if (comment) {
-      tokens.push({c: 'c', t: text});
-    } else if (str) {
-      tokens.push({c: 's', t: text});
-    } else if (variable) {
-      tokens.push({c: 'v', t: text});
-    } else if (member) {
-      const sep = text.startsWith('->') ? '->' : '::';
-      tokens.push({c: null, t: sep});
-      tokens.push({c: 'm', t: text.slice(sep.length)});
-    } else if (qualified) {
-      tokens.push({c: 't', t: text});
-    } else if (word) {
-      tokens.push({c: PHP_KEYWORDS.has(text) ? 'k' : PHP_CLASSES.has(text) ? 't' : null, t: text});
-    } else if (punct) {
-      tokens.push({c: 'p', t: text});
-    }
-
-    last = match.index + text.length;
-  }
-
-  if (last < code.length) {
-    tokens.push({c: null, t: code.slice(last)});
-  }
-
-  return tokens;
-}
-
 function PhpCode({code}) {
+  const {siteConfig} = useDocusaurusContext();
+
+  // The homepage is a fixed dark design, so it always highlights with the
+  // site's dark Prism theme, whatever the colour-mode toggle says.
   return (
-    <pre className={styles.code}><code>{highlightPhp(code).map((tok, i) => (tok.c ? <span key={i} className={styles[tok.c]}>{tok.t}</span> : <React.Fragment key={i}>{tok.t}</React.Fragment>))}</code></pre>
+    <Highlight theme={siteConfig.themeConfig.prism.darkTheme} code={code} language="php">
+      {({style, tokens, getLineProps, getTokenProps}) => (
+        <pre className={styles.code} style={{backgroundColor: style.backgroundColor, color: style.color}}>
+          <code>
+            {tokens.map((line, i) => (
+              <div key={i} {...getLineProps({line})}>
+                {line.map((token, j) => <span key={j} {...getTokenProps({token})} />)}
+              </div>
+            ))}
+          </code>
+        </pre>
+      )}
+    </Highlight>
   );
 }
 

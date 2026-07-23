@@ -333,13 +333,6 @@
 .codewinScroll { overflow-x: auto; }
 .home pre.code { margin: 0; padding: 1.3rem 1.4rem; min-width: max-content; font-size: .86rem; line-height: 1.75; tab-size: 2; background: transparent; }
 .home pre.code code { font-family: inherit; color: var(--ink); background: transparent; padding: 0; border: 0; font-size: inherit; }
-.code .k { color: var(--teal-bright); }
-.code .t { color: #5ec8c0; }
-.code .m { color: var(--ink-soft); }
-.code .v { color: #b7c0cd; }
-.code .s { color: #8fb98a; }
-.code .c { color: #5f6b63; font-style: italic; }
-.code .p { color: var(--faint); }
 
 .modes { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 1rem; margin-top: 1.2rem; }
 .mode { background: linear-gradient(180deg, rgba(40, 44, 52, .6), rgba(33, 37, 43, .5)); border: 1px solid var(--line-soft); border-radius: 12px; padding: 1.25rem 1.3rem; }
