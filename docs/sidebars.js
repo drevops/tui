@@ -20,7 +20,7 @@ const sidebars = {
       type: 'category',
       label: 'Forms',
       collapsible: false,
-      items: ['panels', 'configuration', 'field-behaviour', 'feedback', 'testing'],
+      items: ['panels', 'configuration', 'field-behaviour', 'progress', 'testing'],
     },
     {
       type: 'category',
