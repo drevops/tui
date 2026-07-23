@@ -8,7 +8,9 @@ import {themes as prismThemes} from 'prism-react-renderer';
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'TUI',
+  // The official slogan: it suffixes every page's <title> and stands alone as
+  // the homepage title; the navbar keeps its own short 'TUI' brand.
+  title: 'TUI - Terminal user interfaces for PHP',
   tagline: 'Terminal user interfaces for PHP',
   favicon: 'img/logo.svg',
 

@@ -88,13 +88,11 @@ function dataUri(string $path, string $mime): string {
  *
  * @param string $terminal_uri
  *   The terminal SVG as a data URI.
- * @param string $logo_uri
- *   The site logo as a data URI.
  *
  * @return string
  *   The HTML.
  */
-function cardHtml(string $terminal_uri, string $logo_uri): string {
+function cardHtml(string $terminal_uri): string {
   $width = CARD_WIDTH;
   $height = CARD_HEIGHT;
 
@@ -118,7 +116,6 @@ function cardHtml(string $terminal_uri, string $logo_uri): string {
     background: linear-gradient(90deg, #2dd4bf, #06b6ad 55%, transparent);
   }
   .brand { width: 400px; flex: none; }
-  .brand img { width: 84px; height: 84px; display: block; margin-bottom: 28px; }
   .brand h1 { font-size: 88px; font-weight: 800; color: #f4f1e8; letter-spacing: -.02em; }
   .brand p { margin-top: 18px; font-size: 30px; line-height: 1.35; color: #eae4d4; }
   .brand .url { margin-top: 30px; font-size: 24px; font-weight: 700; color: #2dd4bf; }
@@ -140,9 +137,8 @@ function cardHtml(string $terminal_uri, string $logo_uri): string {
 </head>
 <body>
   <div class="brand">
-    <img src="{$logo_uri}" alt="">
     <h1>TUI</h1>
-    <p>Terminal user interfaces for&nbsp;PHP - keyboard-driven forms, interactive or headless.</p>
+    <p>Terminal user interfaces for&nbsp;PHP</p>
     <div class="url">phptui.dev</div>
   </div>
   <div class="term">
@@ -174,7 +170,7 @@ if (!is_dir($tmp_dir)) {
 }
 
 $html_path = $tmp_dir . '/social-card.html';
-$html = cardHtml(dataUri($svg_path, 'image/svg+xml'), dataUri(dirname($script_dir) . '/static/img/logo.svg', 'image/svg+xml'));
+$html = cardHtml(dataUri($svg_path, 'image/svg+xml'));
 file_put_contents($html_path, $html);
 
 info('Rendering ' . CARD_WIDTH . 'x' . CARD_HEIGHT . ' via agent-browser...');
