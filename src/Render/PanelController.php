@@ -528,7 +528,10 @@ class PanelController {
     [$body, $cursor_line] = $this->theme->renderBody($panel, $this->answers(), $this->cursor, $editing, $view);
 
     if ($this->buttonsVisible()) {
-      $base = $panel->itemCount();
+      // The buttons follow the navigable items, which exclude presentational
+      // notes - so the offset must match the cursor's item count, not the raw
+      // field count, or a note would shift the button selection.
+      $base = $this->itemCountFor($this->navigator->current());
       $selected = $this->cursor >= $base ? $this->cursor - $base : -1;
 
       // The action row always detaches from the items above it.
@@ -607,7 +610,10 @@ class PanelController {
       $view = $this->editor->view($this->theme);
     }
 
-    $base = $modal->itemCount();
+    // The buttons follow the navigable items, which exclude presentational
+    // notes, so the offset uses the cursor's item count rather than the raw
+    // field count.
+    $base = $this->itemCountFor($this->navigator->current());
     $selected = $this->cursor >= $base ? $this->cursor - $base : -1;
 
     // The dialog floats over the whole backdrop frame, so the screen rows -

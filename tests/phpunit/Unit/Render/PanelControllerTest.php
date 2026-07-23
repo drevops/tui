@@ -440,6 +440,30 @@ final class PanelControllerTest extends TestCase {
     $this->assertSame('General', $controller->currentPanel()->title);
   }
 
+  public function testModalButtonSelectionSkipsNoteInTheOffset(): void {
+    $form = Form::create('Demo')
+      ->panel('main', 'Main', function (PanelBuilder $p): void {
+        $p->text('name', 'Name');
+      })
+      ->panel('edit', 'Quick edit', function (PanelBuilder $m): void {
+        $m->modal('Apply', 'Discard');
+        $m->note('hint', 'Heads up')->description('Pick a nickname.');
+        $m->text('nick', 'Nickname');
+      })
+      ->build();
+    // Colour on so the selected button carries the cursor styling.
+    $theme = new DefaultTheme(50, ['color' => TRUE, 'border' => Border::None, 'spacing' => Spacing::Normal]);
+    $controller = new PanelController($form, $theme, ['name' => 'Acme', 'nick' => '']);
+
+    // Open the modal, then move onto the Apply button. The note before the field
+    // must not count toward the button offset, or Apply would not highlight.
+    $controller->handle(Key::named(KeyName::Down));
+    $controller->handle(Key::named(KeyName::Enter));
+    $controller->handle(Key::named(KeyName::Down));
+
+    $this->assertStringContainsString($theme->cursor('[ Apply ]'), $controller->frame(20));
+  }
+
   public function testQuit(): void {
     $controller = $this->controller();
     $this->assertFalse($controller->isDone());
