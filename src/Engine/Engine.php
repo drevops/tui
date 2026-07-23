@@ -79,10 +79,11 @@ class Engine {
    * Resolve and settle every field's value, provenance and activation.
    *
    * The full-map twin of collect(): the same resolution and settling over the
-   * whole form, but keeping every field - an inactive field retains its settled
-   * value and provenance, so a later activation change can surface it without
-   * re-resolving - and skipping the input guard, which belongs to the
-   * collection boundary.
+   * whole form, but keeping every value-carrying field - an inactive one retains
+   * its settled value and provenance, so a later activation change can surface
+   * it without re-resolving - and skipping the input guard, which belongs to the
+   * collection boundary. A presentational field (a note) carries no answer, so
+   * it appears only in the active map, never in the values or provenance.
    *
    * @param array<string,mixed> $inputs
    *   Pre-supplied values keyed by field id.
@@ -91,7 +92,8 @@ class Engine {
    *
    * @return array{array<string,mixed>,array<string,\DrevOps\Tui\Answers\Provenance>,array<string,bool>}
    *   The settled values, the provenance and the active map, keyed by field id;
-   *   the values and provenance cover every field, active or not.
+   *   the values and provenance cover every value-carrying field, active or not,
+   *   while the active map also carries the presentational fields.
    */
   public function resolveState(array $inputs, Context $context): array {
     $fields = $this->form->fields();
@@ -146,6 +148,13 @@ class Engine {
     $sources = [];
 
     foreach ($fields as $field) {
+      // A presentational field carries no answer, so it never enters the value
+      // and source maps: it is neither resolved nor allowed to influence a
+      // later field's context.
+      if ($field->type->isPresentational()) {
+        continue;
+      }
+
       $resolved = new Context($context->directory, $values, $context->update, $context->version);
       [$value, $source] = $this->resolveInitial($field, $inputs, $resolved);
       $sources[$field->id] = $source;
@@ -191,6 +200,11 @@ class Engine {
     $rules = [];
 
     foreach ($fields as $field) {
+      // A presentational field is absent from the value map, so it never carries
+      // a derive rule that would resolve against a missing source.
+      if ($field->type->isPresentational()) {
+        continue;
+      }
       if ($field->derive !== NULL) {
         $rules[$field->id] = $field->derive;
       }

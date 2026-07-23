@@ -82,7 +82,13 @@ final class EngineNonInteractiveTest extends TestCase {
   public function testNoteCollectsNoAnswer(): void {
     $form = Form::create('T')
       ->panel('p', 'p', function (PanelBuilder $p): void {
-        $p->note('intro', 'Intro')->description('Welcome.');
+        // The validator would return an error and the transformer would throw if
+        // a note were ever guarded or transformed; neither runs for a note.
+        $p->note('intro', 'Intro')->description('Welcome.')
+          ->validate(static fn(mixed $value): string => 'notes are never validated')
+          ->transform(static function (mixed $value): mixed {
+            throw new \RuntimeException('notes are never transformed');
+          });
         $p->text('name')->default('pear');
         // A note may be gated like any field, but still carries no answer.
         $p->note('gated', 'Gated')->when(new Condition('name', eq: 'pear'));
@@ -91,8 +97,8 @@ final class EngineNonInteractiveTest extends TestCase {
     $resolver = new InputResolver('APP_');
     $engine = new Engine($form, new HandlerRegistry());
 
-    // A stray supplied value for a note is ignored, not validated or emitted.
-    $inputs = $resolver->resolve($form->fields(), '{"intro": "ignored"}', ['APP_GATED' => 'ignored']);
+    // Stray supplied values for the notes - even a malformed array - are ignored.
+    $inputs = $resolver->resolve($form->fields(), '{"intro": ["not", "a", "string"]}', ['APP_GATED' => 'ignored']);
     $answers = $engine->collect($inputs, new Context('', [], FALSE));
 
     // Neither note contributes a value, provenance or self-describing item.
