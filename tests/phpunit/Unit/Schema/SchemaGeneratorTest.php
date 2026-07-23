@@ -213,7 +213,9 @@ final class SchemaGeneratorTest extends TestCase {
     $schema = (new SchemaGenerator($form))->generate();
 
     // A note collects no answer, so it is not a prompt in the machine schema.
-    $ids = array_column($schema['prompts'], 'id');
+    $prompts = $schema['prompts'];
+    $this->assertIsArray($prompts);
+    $ids = array_column($prompts, 'id');
     $this->assertSame(['name'], $ids);
   }
 

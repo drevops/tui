@@ -1005,11 +1005,12 @@ class DefaultTheme implements ThemeInterface {
     }
 
     foreach ($panel->fields as $field) {
-      // A presentational field carries no value; it previews as its title.
+      // A presentational field carries no value; it previews as its title. A
+      // grid cell is one physical row, so a multi-line title shows its first.
       if ($field->type->isPresentational()) {
         $title = Strings::interpolate(Translator::t($field->label), $answers->values);
         if ($title !== '') {
-          $lines[] = '  ' . $this->heading($title);
+          $lines[] = '  ' . $this->heading(explode("\n", $this->normalizeLines($title))[0]);
         }
 
         continue;
@@ -1122,8 +1123,12 @@ class DefaultTheme implements ThemeInterface {
 
     $content = [];
 
+    // Split the title and body on their own newlines so no returned line ever
+    // carries an embedded newline that would desync the box and scroll maths.
     if ($title !== '') {
-      $content[] = $this->heading($title);
+      foreach (explode("\n", $this->normalizeLines($title)) as $line) {
+        $content[] = $this->heading($line);
+      }
     }
 
     if ($body !== '') {
@@ -1426,7 +1431,7 @@ class DefaultTheme implements ThemeInterface {
       if ($field->type->isPresentational()) {
         $title = Strings::interpolate(Translator::t($field->label), $answers->values);
         if ($title !== '') {
-          $width = max($width, 2 + Strings::length($title));
+          $width = max($width, 2 + Strings::length(explode("\n", $this->normalizeLines($title))[0]));
         }
 
         continue;
