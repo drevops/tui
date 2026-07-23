@@ -1251,6 +1251,16 @@ function main(): void {
     throw new \RuntimeException('Failed to generate ' . count($failed) . ' asset(s).');
   }
 
+  // The social card composes a just-regenerated SVG, so it runs after the
+  // workers rather than among them.
+  info('');
+  info('Rendering the social card...');
+  passthru(sprintf('php %s', escapeshellarg($script_dir . '/render-social-card.php')), $card_exit);
+
+  if ($card_exit !== 0) {
+    throw new \RuntimeException('Failed to render the social card.');
+  }
+
   // The audit gates the whole set, not just the jobs that ran: any leaked
   // setup text, wrapped row, structural defect or missing twin in ANY asset
   // fails the run before the results are trusted.
