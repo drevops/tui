@@ -62,8 +62,10 @@ abstract class Feedback {
     if (!$this->active) {
       // Off a TTY the indicator is invisible chrome, so a single plain caption
       // line is the whole trace - no cursor or colour sequences to corrupt a
-      // redirected log.
+      // redirected log. Flush it so a block-buffered stream shows the caption
+      // before the work runs, not after.
       $this->terminal->write($this->caption . "\n");
+      $this->terminal->flush();
 
       return $work($this);
     }
