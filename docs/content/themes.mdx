@@ -25,10 +25,10 @@ $tui = (new Tui(Form::create('My form')))->theme('midnight');
 | `midnight` | Violet accents, green values, pink highlights.                                                                   |
 | `frost`    | Arctic frost-blue accents, sage values, sand highlights.                                                         |
 | `ember`    | Burnt-orange accents, olive values, gold highlights.                                                             |
-| `mono`     | Hue-free - bold weight, grey levels and reverse video, for maximum compatibility.                                |
+| `mono`     | Hue-free - bold weight, gray levels and reverse video, for maximum compatibility.                                |
 | `dos`      | Retro MS-DOS - the bright white/cyan/yellow CGA palette in a double-line window, painted on its own blue screen. |
 
-The colourful themes use 256-colour palettes, `mono` the greyscale ramp and `dos` the classic 16-colour CGA set. Every one renders across all widgets and degrades to plain text when colour is off. An unknown theme name fails loudly, so a typo never silently lands you back on the default.
+The colorful themes use 256-color palettes, `mono` the grayscale ramp and `dos` the classic 16-color CGA set. Every one renders across all widgets and degrades to plain text when color is off. An unknown theme name fails loudly, so a typo never silently lands you back on the default.
 
 Each adaptive theme below is shown in four looks: the dark and light palettes, each rendered once inside the default rounded [border](/panels#bordered-panels) and once with the frame explicitly stripped (`['border' => 'none']`). Every adaptive theme has a runnable script in [`playground/09-themes-*`](https://github.com/drevops/tui/tree/main/playground).
 
@@ -123,7 +123,7 @@ The CGA blue screen, painted regardless of the terminal background. The theme dr
 
 ## Dark and light
 
-Dark and light aren't separate themes - they're a `mode` display option that every theme honours. When no theme is set (or you pass the explicit `'auto'` sentinel), the interactive TUI picks the mode from the actual terminal background: it queries the background colour over OSC 11, falls back to the `COLORFGBG` environment variable, and settles on dark when neither answers.
+Dark and light aren't separate themes - they're a `mode` display option that every theme honors. When no theme is set (or you pass the explicit `'auto'` sentinel), the interactive TUI picks the mode from the actual terminal background: it queries the background color over OSC 11, falls back to the `COLORFGBG` environment variable, and settles on dark when neither answers.
 
 ```php
 (new Tui($form))->theme('frost', ['mode' => 'light']);  // force light
@@ -149,9 +149,9 @@ class AquaTheme extends DefaultTheme {
 }
 ```
 
-Colours come from the `Sgr` palette map - named cases like `Sgr::Cyan` or `Sgr::Sand`, composed with `Sgr::of(...)` - so a palette reads as colours rather than raw ANSI numbers.
+Colors come from the `Sgr` palette map - named cases like `Sgr::Cyan` or `Sgr::Sand`, composed with `Sgr::of(...)` - so a palette reads as colors rather than raw ANSI numbers.
 
-Override as many atoms as the palette needs. For reference, the built-in themes each redeclare the accent-coloured atoms (`title()`, `highlight()`, `marker()`, `radio()`, `caret()`) plus `value()`, `indicator()`, `highlightMatch()` and `border()`. To change how an element is laid out rather than coloured, override a `render*()` method instead.
+Override as many atoms as the palette needs. For reference, the built-in themes each redeclare the accent-colored atoms (`title()`, `highlight()`, `marker()`, `radio()`, `caret()`) plus `value()`, `indicator()`, `highlightMatch()` and `border()`. To change how an element is laid out rather than colored, override a `render*()` method instead.
 
 The lowest-friction route: name the class directly on the facade, no registration needed:
 

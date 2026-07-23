@@ -40,20 +40,20 @@ Runnable scripts: [`playground/02-widgets-filepicker.php`](https://github.com/dr
 
 ## Keyboard
 
-| Key            | Action                                                                           |
-| -------------- | -------------------------------------------------------------------------------- |
-| `↑` / `↓`      | Move the highlight                                                               |
-| `→`            | Descend into the highlighted directory                                           |
-| `←`            | Ascend to the parent (never above the start directory)                           |
-| printable keys | Filter the current directory                                                     |
-| `Tab`          | Toggle hidden entries                                                            |
-| `Backspace`    | Delete a filter character, or ascend when the filter is empty                    |
-| `Enter`        | Select the highlighted entry if selectable, otherwise descend into the directory |
-| `Esc`          | Cancel                                                                           |
+| Key                         | Action                                                                           |
+| --------------------------- | -------------------------------------------------------------------------------- |
+| <kbd>↑</kbd> / <kbd>↓</kbd> | Move the highlight                                                               |
+| <kbd>→</kbd>                | Descend into the highlighted directory                                           |
+| <kbd>←</kbd>                | Ascend to the parent (never above the start directory)                           |
+| printable keys              | Filter the current directory                                                     |
+| <kbd>Tab</kbd>              | Toggle hidden entries                                                            |
+| <kbd>Backspace</kbd>        | Delete a filter character, or ascend when the filter is empty                    |
+| <kbd>Enter</kbd>            | Select the highlighted entry if selectable, otherwise descend into the directory |
+| <kbd>Esc</kbd>              | Cancel                                                                           |
 
 ## Display modes
 
-In all four [display modes](/display-modes) - Unicode or ASCII, colour on or off:
+In all four [display modes](/display-modes) - Unicode or ASCII, color on or off:
 
 <table>
   <tr>
@@ -75,7 +75,7 @@ In all four [display modes](/display-modes) - Unicode or ASCII, colour on or off
 
 ## Multiple selection
 
-Add `->multiple()` to accumulate **several paths** (a `list<string>`) instead of one: `Space` toggles the highlighted entry, selections stick as you browse between directories, and `Enter` accepts them all.
+Add `->multiple()` to accumulate **several paths** (a `list<string>`) instead of one: <kbd>Space</kbd> toggles the highlighted entry, selections stick as you browse between directories, and <kbd>Enter</kbd> accepts them all.
 
 ```php
 $p->filePicker('lists', 'Price lists')
