@@ -158,8 +158,9 @@ const config = {
         copyright: `Version: ${process.env.RELEASE_VERSION || 'development'} <br/> Copyright ©${new Date().getFullYear()} DrevOps. Built with Docusaurus.`,
       },
       prism: {
-        // The One Dark/Light pair sits on the same '#282c34' background as
-        // the terminal recordings, so code blocks and recordings match.
+        // One Dark sits on the same '#282c34' background as the dark
+        // terminal recordings, so dark code blocks and recordings match;
+        // One Light is its hue-matched twin for light mode.
         theme: oneLight,
         darkTheme: oneDark,
         additionalLanguages: ['php', 'bash'],
