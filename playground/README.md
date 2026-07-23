@@ -29,6 +29,7 @@ Every interactive script also runs unattended: pipe stdin (or run it from CI) an
 | `12-translations` | Chrome and questions localized through a consumer catalog, English fallback. | [`12-translations.php`](12-translations.php), `translations/es.php`, `translations/uk.php` |
 | `13-testing` | The scripted-keystroke harness: drive the real TUI without a terminal, read back answers and rendered frames. | [`13-testing.php`](13-testing.php) |
 | `14-produce-box` | The capstone: panels, widgets, derivation, conditions and behaviour composed into one real form. | [`14-produce-box.php`](14-produce-box.php) |
+| `15-progress-*` | The progress primitive - a spinner when the length is unknown, a determinate bar when it is - theme-drawn, animating on a TTY and degrading to a plain line when piped or headless. | [`15-progress-spinner.php`](15-progress-spinner.php), [`15-progress-bar.php`](15-progress-bar.php) |
 
 ## Running the examples
 

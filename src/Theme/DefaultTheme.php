@@ -86,6 +86,21 @@ class DefaultTheme implements ThemeInterface {
   protected const int INDICATOR_LINES = 2;
 
   /**
+   * The Unicode spinner animation frames, one glyph per tick.
+   */
+  protected const array SPINNER_FRAMES = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+
+  /**
+   * The ASCII spinner animation frames used when Unicode is off.
+   */
+  protected const array SPINNER_ASCII = ['|', '/', '-', '\\'];
+
+  /**
+   * The determinate progress bar's width in cells.
+   */
+  protected const int PROGRESS_WIDTH = 24;
+
+  /**
    * Whether colour (ANSI) is enabled, resolved from the "color" option.
    */
   protected bool $color;
@@ -788,6 +803,38 @@ class DefaultTheme implements ThemeInterface {
    */
   public function mask(): string {
     return $this->unicode ? '•' : '*';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function renderSpinner(int $frame, string $caption): string {
+    // The glyph carries the theme's accent through highlight(), so every theme
+    // spins in its own palette with no per-theme override.
+    $frames = $this->unicode ? self::SPINNER_FRAMES : self::SPINNER_ASCII;
+    $glyph = $this->highlight($frames[$frame % count($frames)]);
+
+    return $caption === '' ? $glyph : $glyph . ' ' . $caption;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function renderProgressBar(int $current, int $total, string $caption, string $label): string {
+    // The filled run carries the theme's accent through highlight(); the empty
+    // track and the count stay plain, so the bar reads with colour off and in
+    // ASCII alike.
+    [$fill, $track] = $this->unicode ? ['█', '░'] : ['#', '-'];
+
+    // Clamp to the bar width: this method is public, so a direct call with
+    // current past total must not hand str_repeat() a negative track length.
+    $ratio = $total > 0 ? $current / $total : 1.0;
+    $filled = max(0, min(self::PROGRESS_WIDTH, (int) round($ratio * self::PROGRESS_WIDTH)));
+
+    $bar = ($filled > 0 ? $this->highlight(str_repeat($fill, $filled)) : '') . str_repeat($track, self::PROGRESS_WIDTH - $filled);
+    $line = ($caption === '' ? '' : $caption . ' ') . '[' . $bar . '] ' . $current . '/' . $total;
+
+    return $label === '' ? $line : $line . ' ' . $label;
   }
 
   /**
