@@ -102,7 +102,12 @@ const config = {
   themeConfig:
   /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
-      image: 'img/logo.png',
+      // The social card lives in docs/assets (a static directory), generated
+      // by docs/util/render-social-card.php as part of the asset pipeline.
+      image: 'social-card.png',
+      metadata: [
+        {name: 'keywords', content: 'php, tui, terminal user interface, terminal forms, cli, console, prompts, interactive forms'},
+      ],
       navbar: {
         title: 'TUI',
         logo: {
