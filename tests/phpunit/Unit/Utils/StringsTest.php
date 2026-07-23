@@ -109,4 +109,20 @@ final class StringsTest extends TestCase {
     $this->assertSame(function_exists('mb_strlen') ? 'pêche' : 'pÊche', Strings::lower('PÊCHE'));
   }
 
+  #[DataProvider('dataProviderInterpolate')]
+  public function testInterpolate(string $template, array $values, string $expected): void {
+    $this->assertSame($expected, Strings::interpolate($template, $values));
+  }
+
+  public static function dataProviderInterpolate(): \Iterator {
+    yield 'no tokens' => ['Fresh produce', ['fruit' => 'pear'], 'Fresh produce'];
+    yield 'single token' => ['A {{fruit}} a day', ['fruit' => 'pear'], 'A pear a day'];
+    yield 'spaced token' => ['{{ fruit }} basket', ['fruit' => 'pear'], 'pear basket'];
+    yield 'repeated token' => ['{{fruit}} and {{fruit}}', ['fruit' => 'plum'], 'plum and plum'];
+    yield 'multiple tokens' => ['{{fruit}} or {{veg}}', ['fruit' => 'pear', 'veg' => 'kale'], 'pear or kale'];
+    yield 'missing token resolves empty' => ['a-{{nope}}-b', [], 'a--b'];
+    yield 'non-scalar token resolves empty' => ['{{list}}', ['list' => ['x']], ''];
+    yield 'numeric value coerces' => ['count: {{n}}', ['n' => 3], 'count: 3'];
+  }
+
 }

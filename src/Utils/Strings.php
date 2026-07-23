@@ -107,4 +107,26 @@ final class Strings {
     return self::mbstring() ? mb_strtolower($text, 'UTF-8') : strtolower($text);
   }
 
+  /**
+   * Replace `{{token}}` placeholders in a template with values.
+   *
+   * A token is `{{name}}` with optional inner whitespace; one missing from the
+   * values, or holding a non-scalar value, resolves to an empty string.
+   *
+   * @param string $template
+   *   The template carrying `{{token}}` placeholders.
+   * @param array<string,mixed> $values
+   *   The replacement values keyed by token name.
+   *
+   * @return string
+   *   The interpolated string.
+   */
+  public static function interpolate(string $template, array $values): string {
+    return (string) preg_replace_callback('/\{\{\s*(\w+)\s*\}\}/', static function (array $matches) use ($values): string {
+      $value = $values[$matches[1]] ?? '';
+
+      return is_scalar($value) ? (string) $value : '';
+    }, $template);
+  }
+
 }
