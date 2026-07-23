@@ -166,6 +166,22 @@ Key workflows:
 Architecture diagrams and a narrative walkthrough live in `docs/architecture/`.
 After a structural change, update them with the `render-tui-diagrams` skill.
 
+Every widget must ship its full SVG set - the docs pages embed them and they
+are not optional. When you add a widget, do all of the following before opening
+a PR:
+
+- Add a `note`-style entry (form, keystrokes, rows) to `widgetSpecs()` in
+  `docs/util/render-widget-svgs.php`, then generate its 16 SVG variants:
+  `php docs/util/render-widget-svgs.php <name>`.
+- Regenerate the all-widgets montage so the gallery includes the new widget:
+  `php docs/util/update-assets.php --record widgets` (and the `-ascii`,
+  `-no-ansi`, `-ascii-no-ansi` variants).
+- Add a `docs/content/widgets/<name>.mdx` page (mirror `pause.mdx`) and a
+  `docs/sidebars.js` entry, then run `php docs/util/audit-svgs.php` to verify.
+
+Visually confirm at least the `-dark-static` render (open the SVG in a browser
+and screenshot it) - a render that completes is not proof the card fits.
+
 ## Updating from the template
 
 This project was generated from a template and can pull the template's latest

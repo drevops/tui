@@ -152,6 +152,14 @@ function widgetSpecs(string $tree): array {
       'keys' => [$enter],
       'rows' => 6,
     ],
+    'note' => [
+      'form' => Form::create('Note widget')->panel('main', 'Note', function (PanelBuilder $p): void {
+        $p->note('intro', 'Fresh produce order')->description('A read-only card - the cursor skips it.');
+        $p->note('packing', 'Ready to pack')->description('Framed with a border.')->border();
+      }),
+      'keys' => [$enter],
+      'rows' => 14,
+    ],
     'filepicker' => [
       'form' => Form::create('File picker widget')->panel('main', 'File picker', function (PanelBuilder $p) use ($tree): void { $p->filePicker('price_list', 'Price list')->startIn($tree)->filesOnly()->extensions(['csv']); }),
       'keys' => [...$open, $down],
@@ -229,10 +237,11 @@ function renderWidget(string $name, array $spec, string $assets_dir, string $uti
  *   A scratch directory for the intermediate cast.
  */
 function renderStaticVariants(string $name, array $spec, string $assets_dir, string $util_dir, string $tmp_dir): void {
-  // A gate settles one Enter in; every other widget opens its editor with the
-  // hub-into-panel-into-field drill.
+  // A gate settles one Enter in and a note is non-interactive, so both open
+  // with a single drill into the panel; every other widget opens its editor
+  // with the hub-into-panel-into-field drill.
   $enter = Key::named(KeyName::Enter);
-  $open = $name === 'pause' ? [$enter] : [$enter, $enter];
+  $open = in_array($name, ['pause', 'note'], TRUE) ? [$enter] : [$enter, $enter];
   $clear = Ansi::ESC . '[2J' . Ansi::ESC . '[H';
 
   foreach (DISPLAY_MODES as $suffix => $mode) {
