@@ -13,7 +13,7 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
   <ThemedImage sources={{light: useBaseUrl('/widget-calendar-light-animated.svg'), dark: useBaseUrl('/widget-calendar-dark-animated.svg')}} alt="Calendar widget" />
 </p>
 
-A month-grid date picker. It collects a single **normalized ISO `YYYY-MM-DD` string** and, with no default, opens on today.
+A month-grid date picker. It collects a single **normalized ISO `YYYY-MM-DD` string**; give it no default and it opens on today.
 
 ```php
 use DrevOps\Tui\Model\Weekday;
@@ -53,7 +53,7 @@ Every move key can be remapped through the [key map](/key-bindings).
 
 ## Headless behaviour
 
-The bounds are enforced when the form runs [headlessly](/headless-collection) too - a value outside the range is rejected - and surface in the JSON schema as `min_date`, `max_date` and `week_start` on the prompt.
+The bounds are enforced when the form runs [headlessly](/headless-collection) too - a value outside the range is rejected - and they surface in the JSON schema as `min_date`, `max_date` and `week_start` on the prompt.
 
 ## Display modes
 

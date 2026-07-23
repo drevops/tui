@@ -34,7 +34,7 @@ Runnable script: [`playground/02-widgets-number.php`](https://github.com/drevops
 | `step()`    | Amount the Up/Down keys adjust by; must be positive. | No       | `1`       |
 | `default()` | Initial value.                                       | No       | `0`       |
 
-With no bounds declared the field is a plain integer entry and the arrow keys are inert. Declaring `min()`, `max()` or `step()` turns on Up/Down adjustment; the value is clamped only when a range (`min()` / `max()`) is set.
+With no bounds declared, the field is a plain integer entry and the arrow keys are inert. Declare `min()`, `max()` or `step()` and Up/Down adjustment turns on; the value is clamped only when a range (`min()` / `max()`) is set.
 
 ## Keyboard
 
@@ -49,7 +49,7 @@ With no bounds declared the field is a plain integer entry and the arrow keys ar
 
 ## Headless behaviour
 
-The bounds are enforced when the form runs [headlessly](/headless-collection) too - a value outside the range is rejected - and surface in the JSON schema as `min`, `max` and `step` on the prompt.
+The bounds are enforced when the form runs [headlessly](/headless-collection) too - a value outside the range is rejected - and they surface in the JSON schema as `min`, `max` and `step` on the prompt.
 
 ## Display modes
 

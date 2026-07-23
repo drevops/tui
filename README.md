@@ -25,11 +25,11 @@
   </picture>
 </p>
 
-`drevops/tui` is a PHP engine for panel-based terminal forms: keyboard-driven questionnaires that collect a set of answers and hand them back to the caller as typed values.
+`drevops/tui` is a PHP engine for panel-based terminal forms: keyboard-driven questionnaires that collect a set of answers and hand them back to your code as typed values.
 
 - **Declarative form model.** A form is declared with a fluent builder (`Form` / `PanelBuilder` / `FieldBuilder`): panels of typed fields, each field a widget with its own options, conditions, derivation rules and behaviour.
 - **Two collection modes, one declaration.** The same form runs as a full-screen interactive TUI on a terminal, or resolves non-interactively from a JSON payload, per-field environment variables, discovery rules and defaults.
-- **Application-agnostic.** The engine knows nothing about the application it serves; questions and handlers live in the consumer, and applying the collected answers is the consumer's job. It collects; you apply.
+- **Application-agnostic.** The engine doesn't know (or care) what application it serves; questions and handlers live in your code, and applying the collected answers is your job. It collects; you apply.
 - **Dependency-light.** The runtime dependency surface is a single string-transform package.
 
 The padded rounded border above is the default look. The same form explicitly opted out of the frame (`border` `none`, `normal` spacing):
@@ -78,7 +78,7 @@ composer require drevops/tui
 
 ## Quick start
 
-Declare a form with the `Form` builder, then drive it through the `Tui` facade - the one class that wires the engine, resolver, schema tools and TUI:
+Declare a form with the `Form` builder, then drive it through the `Tui` facade - the one class that wires up the engine, resolver, schema tools and TUI for you:
 
 ```php
 use DrevOps\Tui\Builder\Form;
@@ -153,7 +153,7 @@ There's a widget for most things you'd want to ask: text entry, numbers and date
 </tr>
 <tr>
 <td width="50%"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/widget-password-dark-animated.svg"><img src="docs/assets/widget-password-light-animated.svg" width="100%" alt="Password widget"></picture></td>
-<td><strong><a href="https://phptui.dev/widgets/password">Password</a></strong><br>Text rendered as a mask in the editor, the field row and the summary; the accepted value stays plain for the consumer, and can be made revealable.</td>
+<td><strong><a href="https://phptui.dev/widgets/password">Password</a></strong><br>Text rendered as a mask in the editor, the field row and the summary; the accepted value stays plain for your code, and can be made revealable.</td>
 </tr>
 <tr>
 <td width="50%"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/widget-pause-dark-animated.svg"><img src="docs/assets/widget-pause-light-animated.svg" width="100%" alt="Pause widget"></picture></td>
