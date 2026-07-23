@@ -18,27 +18,27 @@ Two presets ship: `default` (every binding it declares is listed below) and `vim
 
 The actions are the fixed set of intents the widgets understand - the bindings behind them are configurable, the intents are not. Every `Action` case:
 
-| Action                                        | Meaning                                                          |
-| --------------------------------------------- | ---------------------------------------------------------------- |
-| `MoveUp` / `MoveDown` / `MoveLeft` / `MoveRight` | Move the cursor or caret                                      |
-| `Accept`                                      | Commit the editor's value                                        |
-| `Cancel`                                      | Close the editor without committing                              |
-| `Activate`                                    | Open the focused field or panel (panel browser)                  |
-| `Back`                                        | Go up one panel level                                            |
-| `Quit`                                        | Leave the TUI                                                    |
-| `ScrollUp` / `ScrollDown`                     | Scroll the panel without moving the cursor                       |
-| `Help`                                        | Open the help overlay                                            |
-| `DeleteBack`                                  | Delete the character before the caret                            |
-| `InsertSpace`                                 | Type a space                                                     |
-| `NewLine`                                     | Insert a newline (textarea)                                      |
-| `ExternalEdit`                                | Hand off to the external editor (textarea)                       |
-| `Complete`                                    | Accept the ghost-text completion (text)                          |
-| `Increment` / `Decrement`                     | Step a bounded number                                            |
-| `Toggle`                                      | Check an option, or flip a two-state switch                      |
-| `SelectAll` / `SelectNone`                    | Check or clear every visible option                              |
-| `Grab`                                        | Pick up or drop the held item (reorder)                          |
-| `Yes` / `No`                                  | Set a confirm directly                                           |
-| `Reveal`                                      | Cycle the password display, or show hidden file-picker entries   |
+| Action                                           | Meaning                                                        |
+| ------------------------------------------------ | -------------------------------------------------------------- |
+| `MoveUp` / `MoveDown` / `MoveLeft` / `MoveRight` | Move the cursor or caret                                       |
+| `Accept`                                         | Commit the editor's value                                      |
+| `Cancel`                                         | Close the editor without committing                            |
+| `Activate`                                       | Open the focused field or panel (panel browser)                |
+| `Back`                                           | Go up one panel level                                          |
+| `Quit`                                           | Leave the TUI                                                  |
+| `ScrollUp` / `ScrollDown`                        | Scroll the panel without moving the cursor                     |
+| `Help`                                           | Open the help overlay                                          |
+| `DeleteBack`                                     | Delete the character before the caret                          |
+| `InsertSpace`                                    | Type a space                                                   |
+| `NewLine`                                        | Insert a newline (textarea)                                    |
+| `ExternalEdit`                                   | Hand off to the external editor (textarea)                     |
+| `Complete`                                       | Accept the ghost-text completion (text)                        |
+| `Increment` / `Decrement`                        | Step a bounded number                                          |
+| `Toggle`                                         | Check an option, or flip a two-state switch                    |
+| `SelectAll` / `SelectNone`                       | Check or clear every visible option                            |
+| `Grab`                                           | Pick up or drop the held item (reorder)                        |
+| `Yes` / `No`                                     | Set a confirm directly                                         |
+| `Reveal`                                         | Cycle the password display, or show hidden file-picker entries |
 
 The named keys a binding can use - every `KeyName` case: `Up`, `Down`, `Left`, `Right`, `Enter`, `Escape`, `Interrupt` (<kbd>Ctrl-C</kbd>), `Space`, `Backspace`, `Delete`, `Tab`, `Home`, `End`, `PageUp`, `PageDown`, `MouseWheelUp`, `MouseWheelDown`. Anything printable is bound as the character itself (`'q'`, `'?'`).
 
@@ -46,32 +46,32 @@ The named keys a binding can use - every `KeyName` case: `Up`, `Down`, `Left`, `
 
 What `default` actually declares, scope by scope. Every widget inherits the base layer and overrides only what differs:
 
-| Scope                                | Keys                                                                                     | Action                                          |
-| ------------------------------------ | ---------------------------------------------------------------------------------------- | ----------------------------------------------- |
-| base (every widget)                  | <kbd>↑</kbd> / <kbd>↓</kbd> / <kbd>←</kbd> / <kbd>→</kbd>                                | `MoveUp` / `MoveDown` / `MoveLeft` / `MoveRight` |
-| base                                 | <kbd>Enter</kbd>                                                                         | `Accept`                                        |
-| base                                 | <kbd>Esc</kbd>                                                                           | `Cancel`                                        |
-| base                                 | <kbd>Backspace</kbd>                                                                     | `DeleteBack`                                    |
-| base                                 | <kbd>Space</kbd>                                                                         | `InsertSpace`                                   |
-| navigation                           | <kbd>Enter</kbd>                                                                         | `Activate`                                      |
-| navigation                           | <kbd>Esc</kbd>                                                                           | `Back`                                          |
-| navigation                           | <kbd>q</kbd>                                                                             | `Quit`                                          |
-| navigation                           | <kbd>?</kbd>                                                                             | `Help`                                          |
-| navigation                           | mouse wheel                                                                              | `ScrollUp` / `ScrollDown`                       |
-| number                               | <kbd>↑</kbd> / <kbd>↓</kbd>                                                              | `Increment` / `Decrement`                       |
-| text                                 | <kbd>Tab</kbd>                                                                           | `Complete`                                      |
-| textarea                             | <kbd>Enter</kbd>                                                                         | `NewLine`                                       |
-| textarea                             | <kbd>Tab</kbd>                                                                           | `Accept`                                        |
-| textarea                             | <kbd>Ctrl-E</kbd>                                                                        | `ExternalEdit`                                  |
-| confirm                              | <kbd>y</kbd>/<kbd>Y</kbd> and <kbd>n</kbd>/<kbd>N</kbd>                                  | `Yes` and `No`                                  |
-| confirm, toggle                      | <kbd>←</kbd> / <kbd>→</kbd> / <kbd>Space</kbd> / <kbd>↑</kbd> / <kbd>↓</kbd>             | `Toggle`                                        |
-| password                             | <kbd>Tab</kbd>                                                                           | `Reveal`                                        |
-| pause                                | <kbd>Enter</kbd> / <kbd>Space</kbd>                                                      | `Accept`                                        |
-| select (multiple), search (multiple) | <kbd>Space</kbd>                                                                         | `Toggle`                                        |
-| select (multiple), search (multiple) | <kbd>→</kbd> / <kbd>←</kbd>                                                              | `SelectAll` / `SelectNone`                      |
-| file picker (single and multiple)    | <kbd>Tab</kbd>                                                                           | `Reveal`                                        |
-| file picker (multiple)               | <kbd>Space</kbd>                                                                         | `Toggle`                                        |
-| reorder                              | <kbd>Space</kbd>                                                                         | `Grab`                                          |
+| Scope                                | Keys                                                                         | Action                                           |
+| ------------------------------------ | ---------------------------------------------------------------------------- | ------------------------------------------------ |
+| base (every widget)                  | <kbd>↑</kbd> / <kbd>↓</kbd> / <kbd>←</kbd> / <kbd>→</kbd>                    | `MoveUp` / `MoveDown` / `MoveLeft` / `MoveRight` |
+| base                                 | <kbd>Enter</kbd>                                                             | `Accept`                                         |
+| base                                 | <kbd>Esc</kbd>                                                               | `Cancel`                                         |
+| base                                 | <kbd>Backspace</kbd>                                                         | `DeleteBack`                                     |
+| base                                 | <kbd>Space</kbd>                                                             | `InsertSpace`                                    |
+| navigation                           | <kbd>Enter</kbd>                                                             | `Activate`                                       |
+| navigation                           | <kbd>Esc</kbd>                                                               | `Back`                                           |
+| navigation                           | <kbd>q</kbd>                                                                 | `Quit`                                           |
+| navigation                           | <kbd>?</kbd>                                                                 | `Help`                                           |
+| navigation                           | mouse wheel                                                                  | `ScrollUp` / `ScrollDown`                        |
+| number                               | <kbd>↑</kbd> / <kbd>↓</kbd>                                                  | `Increment` / `Decrement`                        |
+| text                                 | <kbd>Tab</kbd>                                                               | `Complete`                                       |
+| textarea                             | <kbd>Enter</kbd>                                                             | `NewLine`                                        |
+| textarea                             | <kbd>Tab</kbd>                                                               | `Accept`                                         |
+| textarea                             | <kbd>Ctrl-E</kbd>                                                            | `ExternalEdit`                                   |
+| confirm                              | <kbd>y</kbd>/<kbd>Y</kbd> and <kbd>n</kbd>/<kbd>N</kbd>                      | `Yes` and `No`                                   |
+| confirm, toggle                      | <kbd>←</kbd> / <kbd>→</kbd> / <kbd>Space</kbd> / <kbd>↑</kbd> / <kbd>↓</kbd> | `Toggle`                                         |
+| password                             | <kbd>Tab</kbd>                                                               | `Reveal`                                         |
+| pause                                | <kbd>Enter</kbd> / <kbd>Space</kbd>                                          | `Accept`                                         |
+| select (multiple), search (multiple) | <kbd>Space</kbd>                                                             | `Toggle`                                         |
+| select (multiple), search (multiple) | <kbd>→</kbd> / <kbd>←</kbd>                                                  | `SelectAll` / `SelectNone`                       |
+| file picker (single and multiple)    | <kbd>Tab</kbd>                                                               | `Reveal`                                         |
+| file picker (multiple)               | <kbd>Space</kbd>                                                             | `Toggle`                                         |
+| reorder                              | <kbd>Space</kbd>                                                             | `Grab`                                           |
 
 `vim` inherits all of it and adds letters where typing can't swallow them: the panel browser and the single-choice select gain <kbd>k</kbd>/<kbd>j</kbd> for up/down, and the calendar gains <kbd>k</kbd>/<kbd>j</kbd>/<kbd>h</kbd>/<kbd>l</kbd> for week and day movement - each alongside the arrow keys, never replacing them.
 
