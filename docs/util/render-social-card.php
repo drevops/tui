@@ -51,7 +51,7 @@ function info(string $message): void {
  *   The command's stdout.
  */
 function run(array $parts): string {
-  $cmd = implode(' ', array_map('escapeshellarg', $parts));
+  $cmd = implode(' ', array_map(escapeshellarg(...), $parts));
   exec($cmd . ' 2>&1', $output_lines, $exit_code);
   $output = implode(PHP_EOL, $output_lines);
 
