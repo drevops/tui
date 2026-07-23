@@ -109,7 +109,7 @@ final class ProgressBarTest extends TestCase {
     $terminal = new BufferedTerminal();
     $bar = new ProgressBar($terminal, TRUE, TRUE, TRUE, 'Packing', 0);
 
-    $bar->run(static fn() => NULL);
+    $bar->run(static fn(): null => NULL);
 
     $output = $terminal->output();
 
@@ -122,7 +122,7 @@ final class ProgressBarTest extends TestCase {
     $terminal = new BufferedTerminal();
     $bar = new ProgressBar($terminal, TRUE, TRUE, TRUE, 'Packing', -5);
 
-    $bar->run(static fn() => NULL);
+    $bar->run(static fn(): null => NULL);
 
     $this->assertStringContainsString('0/0', $terminal->output());
   }

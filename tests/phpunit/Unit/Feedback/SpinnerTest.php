@@ -84,7 +84,7 @@ final class SpinnerTest extends TestCase {
     $terminal = new BufferedTerminal();
     $spinner = new Spinner($terminal, TRUE, TRUE, TRUE, 'Scanning');
 
-    $spinner->run(static fn() => NULL);
+    $spinner->run(static fn(): null => NULL);
 
     // Bold cyan wraps the glyph when colour is on.
     $this->assertStringContainsString("\033[1;36m", $terminal->output());
@@ -94,7 +94,7 @@ final class SpinnerTest extends TestCase {
     $terminal = new BufferedTerminal();
     $spinner = new Spinner($terminal, TRUE, FALSE, TRUE, 'Scanning');
 
-    $spinner->run(static fn() => NULL);
+    $spinner->run(static fn(): null => NULL);
 
     $this->assertStringNotContainsString("\033[1;36m", $terminal->output());
   }
@@ -103,7 +103,7 @@ final class SpinnerTest extends TestCase {
     $terminal = new BufferedTerminal();
     $spinner = new Spinner($terminal, TRUE, FALSE, TRUE, '');
 
-    $spinner->run(static fn() => NULL);
+    $spinner->run(static fn(): null => NULL);
 
     $output = $terminal->output();
 
@@ -138,7 +138,7 @@ final class SpinnerTest extends TestCase {
     $message = '';
 
     try {
-      $spinner->run(static function (): void {
+      $spinner->run(static function (): never {
         throw new \RuntimeException('boom');
       });
     }
