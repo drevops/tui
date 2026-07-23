@@ -11,6 +11,7 @@ use DrevOps\Tui\CancelException;
 use DrevOps\Tui\Derive\Derive;
 use DrevOps\Tui\Engine\Engine;
 use DrevOps\Tui\Feedback\ProgressBar;
+use DrevOps\Tui\Feedback\Spinner;
 use DrevOps\Tui\Handler\HandlerRegistry;
 use DrevOps\Tui\Input\Action;
 use DrevOps\Tui\Input\Binding;
@@ -299,9 +300,13 @@ final class TuiTest extends TestCase {
   public function testSpinnerRunsTheWorkAndReturnsItsResult(): void {
     $terminal = new BufferedTerminal();
 
-    // Off a TTY the spinner stays plain, but the callback still runs and its
-    // result is passed straight back.
-    $result = (new Tui($this->demoForm()))->spinner('Scanning', static fn(): string => 'scanned', $terminal);
+    // Off a TTY the spinner stays plain, but the callback still runs - ticking
+    // the forwarded spinner instance - and its result is passed straight back.
+    $result = (new Tui($this->demoForm()))->spinner('Scanning', static function (Spinner $spinner): string {
+      $spinner->tick();
+
+      return 'scanned';
+    }, $terminal);
 
     $this->assertSame('scanned', $result);
     $this->assertSame("Scanning\n", $terminal->output());
