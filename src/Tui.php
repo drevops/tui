@@ -354,6 +354,9 @@ final class Tui {
    * @template TReturn
    */
   public function progress(?int $total, string $caption, callable $work, ?Terminal $terminal = NULL): mixed {
+    // Restore this facade's language at the operation boundary (see collect()).
+    Translator::setShared($this->translator);
+
     $terminal ??= self::primitiveTerminal();
 
     $theme = ThemeManager::create($this->resolveTheme(''), DefaultTheme::DEFAULT_WIDTH, $this->primitiveThemeOptions());

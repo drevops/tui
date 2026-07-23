@@ -75,6 +75,15 @@ final class ProgressRenderTest extends TestCase {
     $this->assertStringContainsString("\033[1;36m", $this->theme()->renderProgressBar(1, 2, 'Packing', ''));
   }
 
+  public function testProgressBarClampsAnOverfilledCount(): void {
+    // A direct call past the total must clamp rather than crash str_repeat().
+    $line = $this->theme(color: FALSE)->renderProgressBar(5, 2, 'Packing', '');
+
+    $this->assertStringContainsString('5/2', $line);
+    $this->assertSame(24, substr_count($line, '█'));
+    $this->assertStringNotContainsString('░', $line);
+  }
+
   public function testBuiltinThemeRendersProgressInItsOwnAccent(): void {
     // Ember's highlight is bold orange (1;38;5;208); the spinner and bar
     // inherit it with no per-theme override, so the accent flows through

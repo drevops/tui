@@ -33,7 +33,7 @@ from their borderless twins.
 
 ## What generates what
 
-`update-assets.php` is the single entry point: run without arguments it records every live-terminal job in parallel and spawns the two deterministic sibling generators alongside them, so one command regenerates the whole set.
+`update-assets.php` is the single entry point: run without arguments it records every live-terminal job in parallel and spawns the three deterministic sibling generators alongside them, so one command regenerates the whole set.
 
 - **`update-assets.php`** - the full panel demos, the widget montage and the
   option-group / password-reveal / discovery frames, recorded from a live

@@ -30,9 +30,9 @@ use DrevOps\Tui\Tui;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-$form = Form::create('Produce order')
+$form = Form::create('Quick start')
   ->panel('order', 'New order', function (PanelBuilder $p): void {
-    $p->text('name', 'Order name')->default('Weekly Box');
+    $p->text('name', 'Order name')->required();
   });
 
 $tui = new Tui($form);

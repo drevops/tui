@@ -826,8 +826,10 @@ class DefaultTheme implements ThemeInterface {
     // ASCII alike.
     [$fill, $track] = $this->unicode ? ['█', '░'] : ['#', '-'];
 
+    // Clamp to the bar width: this method is public, so a direct call with
+    // current past total must not hand str_repeat() a negative track length.
     $ratio = $total > 0 ? $current / $total : 1.0;
-    $filled = (int) round($ratio * self::PROGRESS_WIDTH);
+    $filled = max(0, min(self::PROGRESS_WIDTH, (int) round($ratio * self::PROGRESS_WIDTH)));
 
     $bar = ($filled > 0 ? $this->highlight(str_repeat($fill, $filled)) : '') . str_repeat($track, self::PROGRESS_WIDTH - $filled);
     $line = ($caption === '' ? '' : $caption . ' ') . '[' . $bar . '] ' . $current . '/' . $total;
