@@ -129,4 +129,61 @@ final class Strings {
     }, $template);
   }
 
+  /**
+   * Word-wrap text to a column width, breaking on whitespace.
+   *
+   * Runs of whitespace collapse to a single space and a word longer than the
+   * width is hard-split across lines, so every returned line fits the width.
+   *
+   * @param string $text
+   *   The text.
+   * @param int $width
+   *   The maximum line width in characters.
+   *
+   * @return list<string>
+   *   The wrapped lines; empty when the text has no visible characters.
+   */
+  public static function wrap(string $text, int $width): array {
+    $words = preg_split('/\s+/u', trim($text), -1, PREG_SPLIT_NO_EMPTY);
+    if ($words === FALSE || $words === []) {
+      return [];
+    }
+
+    if ($width < 1) {
+      return [implode(' ', $words)];
+    }
+
+    $lines = [];
+    $current = '';
+
+    foreach ($words as $word) {
+      while (self::length($word) > $width) {
+        if ($current !== '') {
+          $lines[] = $current;
+          $current = '';
+        }
+
+        $lines[] = self::substr($word, 0, $width);
+        $word = self::substr($word, $width);
+      }
+
+      if ($current === '') {
+        $current = $word;
+      }
+      elseif (self::length($current) + 1 + self::length($word) <= $width) {
+        $current .= ' ' . $word;
+      }
+      else {
+        $lines[] = $current;
+        $current = $word;
+      }
+    }
+
+    if ($current !== '') {
+      $lines[] = $current;
+    }
+
+    return $lines;
+  }
+
 }

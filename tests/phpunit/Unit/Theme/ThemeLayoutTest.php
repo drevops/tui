@@ -38,6 +38,13 @@ final class ThemeLayoutTest extends TestCase {
     $this->assertStringContainsString('Two  carrot', $lines[1]);
   }
 
+  public function testContentWidthReflectsBorderInset(): void {
+    // A borderless frame keeps the full width for content.
+    $this->assertSame(80, (new DefaultTheme(80, ['border' => Border::None]))->contentWidth());
+    // A bordered frame reserves the border and gutter columns.
+    $this->assertSame(76, (new DefaultTheme(80, ['border' => Border::Line]))->contentWidth());
+  }
+
   public function testLayoutStacksRowsWithBlankLineBetween(): void {
     $theme = new DefaultTheme(40, ['color' => FALSE, 'unicode' => FALSE]);
 

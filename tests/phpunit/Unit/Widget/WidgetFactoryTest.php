@@ -230,6 +230,26 @@ final class WidgetFactoryTest extends TestCase {
     $this->assertStringNotContainsString('gmt', $view);
   }
 
+  public function testPerOptionDescriptionReachesChoiceWidget(): void {
+    $field = new Field('f', 'F', '', FieldType::Select, 'a', [
+      new Option('a', 'Apple', 'Crisp and sweet.'),
+      new Option('b', 'Banana', 'Rich in potassium.'),
+    ]);
+
+    $view = Ansi::strip((new WidgetFactory())->create($field, 'a')->view(new DefaultTheme()));
+
+    $this->assertStringContainsString('Crisp and sweet.', $view);
+  }
+
+  public function testPerOptionDescriptionReachesSuggest(): void {
+    $field = new Field('f', 'F', '', FieldType::Suggest, '', [new Option('apple', 'Apple', 'Crisp and sweet.')]);
+
+    $widget = (new WidgetFactory())->create($field, '');
+    $widget->handle(Key::named(KeyName::Down));
+
+    $this->assertStringContainsString('Crisp and sweet.', Ansi::strip($widget->view(new DefaultTheme())));
+  }
+
   public function testTextCompletionStaticListReachesWidget(): void {
     $field = new Field('name', 'Name', '', FieldType::Text, '', completion: ['acme-site']);
 

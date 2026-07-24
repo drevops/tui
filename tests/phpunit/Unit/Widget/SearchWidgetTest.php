@@ -7,6 +7,7 @@ namespace DrevOps\Tui\Tests\Unit\Widget;
 use DrevOps\Tui\Input\Hint;
 use DrevOps\Tui\Input\Key;
 use DrevOps\Tui\Input\KeyName;
+use DrevOps\Tui\Model\Option;
 use DrevOps\Tui\Render\Ansi;
 use DrevOps\Tui\Testing\ArrayKeyStream;
 use DrevOps\Tui\Testing\WidgetRunner;
@@ -51,6 +52,47 @@ final class SearchWidgetTest extends TestCase {
    * @var array<string,string>
    */
   protected array $services = ['clamav' => 'ClamAV', 'redis' => 'Redis', 'solr' => 'Solr'];
+
+  public function testShowsHighlightedOptionDescription(): void {
+    $widget = new SearchWidget([
+      new Option('apple', 'Apple', 'Crisp and sweet.'),
+      new Option('banana', 'Banana', 'Rich in potassium.'),
+    ], 'apple');
+
+    $view = Ansi::strip($widget->view(new DefaultTheme()));
+    $this->assertStringContainsString('Crisp and sweet.', $view);
+    $this->assertStringNotContainsString('Rich in potassium.', $view);
+
+    $widget->handle(Key::named(KeyName::Down));
+    $view = Ansi::strip($widget->view(new DefaultTheme()));
+    $this->assertStringContainsString('Rich in potassium.', $view);
+    $this->assertStringNotContainsString('Crisp and sweet.', $view);
+  }
+
+  public function testNoDescriptionWhenFilterMatchesNothing(): void {
+    $widget = new SearchWidget([new Option('apple', 'Apple', 'Crisp and sweet.')]);
+
+    // A query that matches nothing leaves no highlighted option, so no
+    // description line is appended.
+    $widget->handle(Key::char('z'));
+
+    $this->assertStringNotContainsString('Crisp', Ansi::strip($widget->view(new DefaultTheme())));
+  }
+
+  public function testDescriptionFollowsFilteredHighlight(): void {
+    $widget = new SearchWidget([
+      new Option('apple', 'Apple', 'Crisp and sweet.'),
+      new Option('banana', 'Banana', 'Rich in potassium.'),
+    ]);
+
+    $widget->handle(Key::char('b'));
+    $widget->handle(Key::char('a'));
+    $widget->handle(Key::char('n'));
+    $view = Ansi::strip($widget->view(new DefaultTheme()));
+
+    $this->assertStringContainsString('Rich in potassium.', $view);
+    $this->assertStringNotContainsString('Crisp and sweet.', $view);
+  }
 
   public function testFilterNarrowsAndEnterAcceptsValue(): void {
     $widget = new SearchWidget($this->labels);

@@ -93,6 +93,31 @@ final class StringsTest extends TestCase {
     yield 'accented' => ['pêche', ['p', 'ê', 'c', 'h', 'e']];
   }
 
+  #[DataProvider('dataProviderWrap')]
+  public function testWrap(string $text, int $width, array $expected): void {
+    Strings::useMbstring(TRUE);
+    $this->assertSame($expected, Strings::wrap($text, $width));
+
+    Strings::useMbstring(FALSE);
+    $this->assertSame($expected, Strings::wrap($text, $width));
+  }
+
+  public static function dataProviderWrap(): \Iterator {
+    yield 'empty' => ['', 10, []];
+    yield 'whitespace only' => ['   ', 10, []];
+    yield 'single word fits' => ['Pear', 10, ['Pear']];
+    yield 'words fit on one line' => ['Ripe sweet Pear', 20, ['Ripe sweet Pear']];
+    yield 'wraps on width' => ['Ripe sweet Pear', 10, ['Ripe sweet', 'Pear']];
+    yield 'collapses whitespace' => ["Ripe\t  sweet   Pear", 20, ['Ripe sweet Pear']];
+    yield 'hard-splits long word' => ['Pomegranate', 5, ['Pomeg', 'ranat', 'e']];
+    yield 'long word then word' => ['Pomegranate Pear', 5, ['Pomeg', 'ranat', 'e', 'Pear']];
+    yield 'word then long word' => ['Pear Pomegranate', 5, ['Pear', 'Pomeg', 'ranat', 'e']];
+    yield 'zero width joins to one line' => ['Ripe Pear', 0, ['Ripe Pear']];
+    yield 'negative width joins to one line' => ['Ripe Pear', -3, ['Ripe Pear']];
+    yield 'multibyte words' => ['pêche mûre', 5, ['pêche', 'mûre']];
+    yield 'emoji words' => ['🍎 🍐 🍒', 3, ['🍎 🍐', '🍒']];
+  }
+
   public function testMalformedInputFallsBackToBytes(): void {
     Strings::useMbstring(FALSE);
 

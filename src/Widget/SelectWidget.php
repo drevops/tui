@@ -93,8 +93,8 @@ class SelectWidget extends AbstractWidget implements OptionsCapableInterface, Se
   /**
    * {@inheritdoc}
    */
-  public function view(ThemeInterface $theme): string {
-    return $this->withError($theme, $this->renderChoiceList($theme));
+  protected function renderBody(ThemeInterface $theme): string {
+    return $this->renderChoiceList($theme);
   }
 
 }

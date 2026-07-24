@@ -326,6 +326,13 @@ class DefaultTheme implements ThemeInterface {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function contentWidth(): int {
+    return $this->width;
+  }
+
+  /**
    * The vertical spacing option.
    *
    * @return \DrevOps\Tui\Theme\Spacing

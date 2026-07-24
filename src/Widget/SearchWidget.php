@@ -94,8 +94,8 @@ class SearchWidget extends AbstractWidget implements
   /**
    * {@inheritdoc}
    */
-  public function view(ThemeInterface $theme): string {
-    return $this->withError($theme, $this->queryLine($theme) . "\n" . $this->renderChoiceList($theme));
+  protected function renderBody(ThemeInterface $theme): string {
+    return $this->queryLine($theme) . "\n" . $this->renderChoiceList($theme);
   }
 
 }

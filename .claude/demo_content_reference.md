@@ -51,6 +51,22 @@ always match.
 | filepicker | `Price list` | - | extensions `csv` |
 | multifilepicker | `Price lists` | - | - |
 
+## Option descriptions
+
+For examples of the highlighted-option description line, use these one-line
+notes so the scripts and screenshots stay consistent:
+
+- **Apple**: Crisp and sweet, the everyday choice.
+- **Apricot**: Small and tart; best when soft.
+- **Banana**: Rich in potassium; ripens off the tree.
+- **Cherry**: Short season; best eaten fresh.
+- **Mango**: Fragrant and juicy when it yields to a squeeze.
+- **Carrot**: Stays crisp for weeks when kept cold.
+- **Onion**: Sharp raw, sweet once cooked.
+- **Pepper**: Crunchy and bright; sweetest when red.
+- **Potato**: Stores best somewhere cool and dark.
+- **Tomato**: Best ripened on the vine, never chilled.
+
 ## Quick-start order form
 
 The quick start and its playground script (`playground/01-quickstart.php`) build a
