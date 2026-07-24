@@ -39,6 +39,12 @@ class SchemaGenerator {
     $prompts = [];
 
     foreach ($this->form->fields() as $field) {
+      // A presentational field (a note) collects no answer, so it is not a
+      // prompt external tooling drives or validates.
+      if ($field->type->isPresentational()) {
+        continue;
+      }
+
       $prompts[] = [
         'id' => $field->id,
         'type' => $field->type->value,

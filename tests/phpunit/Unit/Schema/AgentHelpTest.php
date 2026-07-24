@@ -139,4 +139,19 @@ final class AgentHelpTest extends TestCase {
     $this->assertStringNotContainsString('ready', $help);
   }
 
+  public function testNoteIsSkipped(): void {
+    $form = Form::create('T')
+      ->panel('p', 'p', function (PanelBuilder $p): void {
+        $p->text('name', 'Name')->required();
+        $p->note('intro', 'Intro')->description('Welcome.');
+      })
+      ->build();
+
+    $help = (new AgentHelp($form, 'APP_'))->generate();
+
+    // A note carries no answer, so an agent is not asked to provide one.
+    $this->assertStringContainsString('"name"', $help);
+    $this->assertStringNotContainsString('intro', $help);
+  }
+
 }

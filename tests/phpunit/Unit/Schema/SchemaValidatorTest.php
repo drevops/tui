@@ -54,6 +54,9 @@ final class SchemaValidatorTest extends TestCase {
     yield 'disabled multiselect option' => [['name' => 'Acme', 'mods' => ['a', 'c']], 'Question "mods": option "c" is disabled.'];
     yield 'multiselect wrong type' => [['name' => 'Acme', 'mods' => 'notalist'], 'Question "mods" must be a list.'];
     yield 'unknown question' => [['name' => 'Acme', 'bogus' => 'x'], 'Unknown question "bogus".'];
+    // A note is a known field but carries no answer: a stray value for it is
+    // neither flagged unknown nor validated (a list would fail a string field).
+    yield 'note value ignored' => [['name' => 'Acme', 'intro' => ['not', 'a', 'string']], NULL];
     // 'custom' is required but only appears when profile == custom.
     yield 'inactive required field skipped' => [['name' => 'Acme', 'profile' => 'standard'], NULL];
     yield 'number int accepted' => [['name' => 'Acme', 'port' => 8080], NULL];
@@ -103,6 +106,7 @@ final class SchemaValidatorTest extends TestCase {
   protected function form(): FormDefinition {
     return Form::create('T')
       ->panel('p', 'p', function (PanelBuilder $p): void {
+        $p->note('intro', 'Intro')->description('Welcome.');
         $p->text('name')->required();
         $p->select('profile')->option('standard')->option('minimal')->option('demo', 'Demo', disabled: TRUE, disabled_reason: 'unavailable');
         $p->confirm('agree');

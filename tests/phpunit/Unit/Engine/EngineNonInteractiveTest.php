@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace DrevOps\Tui\Tests\Unit\Engine;
 
+use DrevOps\Tui\Answers\Answer;
 use DrevOps\Tui\Builder\Form;
 use DrevOps\Tui\Builder\PanelBuilder;
+use DrevOps\Tui\Condition\Condition;
 use DrevOps\Tui\Derive\Derive;
 use DrevOps\Tui\Discovery\Dotenv;
 use DrevOps\Tui\Engine\Engine;
@@ -76,6 +78,39 @@ final class EngineNonInteractiveTest extends TestCase {
     // A --prompts JSON array is taken as the ranking directly.
     $inputs = $resolver->resolve($form->fields(), '{"ranking": ["c", "b", "a"]}', []);
     $this->assertSame(['c', 'b', 'a'], $engine->collect($inputs, new Context('', [], FALSE))->value('ranking'));
+  }
+
+  public function testNoteCollectsNoAnswer(): void {
+    $form = Form::create('T')
+      ->panel('p', 'p', function (PanelBuilder $p): void {
+        // The validator returns an error and the transformer throws if a
+        // note is ever guarded or transformed; neither runs for a note.
+        $p->note('intro', 'Intro')->description('Welcome.')
+          ->validate(static fn(mixed $value): string => 'notes are never validated')
+          ->transform(static function (mixed $value): mixed {
+            throw new \RuntimeException('notes are never transformed');
+          });
+        $p->text('name')->default('pear');
+        // A note may be gated like any field, but still carries no answer.
+        $p->note('gated', 'Gated')->when(new Condition('name', eq: 'pear'));
+      })
+      ->build();
+    $resolver = new InputResolver('APP_');
+    $engine = new Engine($form, new HandlerRegistry());
+
+    // Stray supplied values for the notes - even a malformed one - are ignored.
+    $inputs = $resolver->resolve($form->fields(), '{"intro": ["not", "a", "string"]}', ['APP_GATED' => 'ignored']);
+    $answers = $engine->collect($inputs, new Context('', [], FALSE));
+
+    // Neither note contributes a value, provenance or self-describing item.
+    $this->assertArrayNotHasKey('intro', $answers->values);
+    $this->assertArrayNotHasKey('gated', $answers->values);
+    $this->assertArrayNotHasKey('intro', $answers->provenance);
+    $this->assertNotInstanceOf(Answer::class, $answers->item('intro'));
+    $this->assertFalse($answers->has('gated'));
+
+    // The real field between the notes still collects normally.
+    $this->assertSame('pear', $answers->value('name'));
   }
 
   public function testReorderRejectsIncompletePermutation(): void {

@@ -177,6 +177,32 @@ final class ThemeLayoutTest extends TestCase {
     $this->assertSame(56, (new DefaultTheme(40, ['color' => FALSE, 'border' => Border::None, 'spacing' => Spacing::Compact]))->measureContentWidth($form, $answers));
   }
 
+  public function testLayoutPreviewsNoteAsItsTitle(): void {
+    $theme = new DefaultTheme(60, ['color' => FALSE, 'unicode' => FALSE]);
+    $panel = new Panel('p', 'P', '', [], [
+      new Panel('a', 'A', '', [new Field('intro', 'Getting started', 'Body text.', FieldType::Note, '')]),
+      new Panel('b', 'B', '', [new Field('two', 'Two', '', FieldType::Text, '')]),
+    ], NULL, [2]);
+
+    [$lines] = $theme->renderBody($panel, new Answers(), 0);
+
+    // A note in a grid column previews as its title.
+    $this->assertStringContainsString('Getting started', implode("\n", $lines));
+  }
+
+  public function testMeasureContentWidthCoversNoteInGrid(): void {
+    $form = Form::create('T')
+      ->buttons(FALSE)
+      ->layout(2)
+      ->panel('a', 'A', fn(PanelBuilder $p): FieldBuilder => $p->note('intro', 'A fairly long note title here'))
+      ->panel('b', 'B', fn(PanelBuilder $p): FieldBuilder => $p->text('two', 'Two'))
+      ->build();
+
+    // Block A is driven by the note title: 2 + 29 = 31. Two equal columns need
+    // 31 * 2 + 2 = 64. Measuring panel A on its own also walks the note row.
+    $this->assertSame(64, (new DefaultTheme(40, ['color' => FALSE, 'border' => Border::None, 'spacing' => Spacing::Compact]))->measureContentWidth($form, new Answers()));
+  }
+
   /**
    * A panel whose lettered sub-panels are arranged by the given layout.
    *

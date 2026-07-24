@@ -47,6 +47,7 @@ always match.
 | confirm | `Organic only?` | `TRUE` | - |
 | toggle | `Ripeness` | `ripe` | `ripe` Ripe, `unripe` Unripe |
 | pause | `Review your basket` | - | - |
+| note | `Fresh produce order` | - | title + body card, optional `->border()`, collects no value |
 | filepicker | `Price list` | - | extensions `csv` |
 | multifilepicker | `Price lists` | - | - |
 

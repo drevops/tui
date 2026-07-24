@@ -47,11 +47,14 @@ class AgentHelp {
     $required = [];
 
     foreach ($this->form->fields() as $field) {
-      // A pause is a gate, not a question, so it carries no answer.
+      // A pause is a gate and a note is presentational: neither is a question,
+      // so neither carries an answer.
       if ($field->type === FieldType::Pause) {
         continue;
       }
-
+      if ($field->type->isPresentational()) {
+        continue;
+      }
       $properties[$field->id] = $this->property($field);
 
       if ($field->required) {

@@ -62,6 +62,15 @@ final class WidgetFactoryTest extends TestCase {
     $this->assertInstanceOf(PauseWidget::class, $factory->create($this->field(FieldType::Pause), TRUE));
   }
 
+  public function testNoteHasNoEditorWidget(): void {
+    // A note is presentational: the theme renders it and the cursor skips
+    // it, so asking the factory to build an editor for one is a mistake.
+    $this->expectException(\LogicException::class);
+    $this->expectExceptionMessage('Note fields are presentational and have no editor widget.');
+
+    (new WidgetFactory())->create($this->field(FieldType::Note), NULL);
+  }
+
   public function testFilePickerFlagsPassedThrough(): void {
     $single = new Field('f', 'F', '', FieldType::FilePicker, '', pickerStart: '/nonexistent');
     $multi = new Field('g', 'G', '', FieldType::FilePicker, [], pickerStart: '/nonexistent', multiple: TRUE);
