@@ -37,7 +37,7 @@ Runnable scripts: [`playground/02-widgets-search.php`](https://github.com/drevop
 | `default()`  | Which option starts highlighted, by value.                                       | No       | First option |
 | `pageSize()` | Matches shown before the list pages around the cursor.                           | No       | `10`         |
 
-For headings, separators and disabled options, see [Option groups](/widgets/option-groups).
+For headings, separators and disabled options, see [Option groups](/widgets/option-groups). For a per-option [description line](/widgets/select#option-descriptions) shown beneath the highlighted match, declare it with `->option(..., description: ...)`.
 
 ## Keyboard
 
@@ -106,5 +106,27 @@ $p->search('basket', 'Basket')
     <td align="right"><strong>ASCII</strong></td>
     <td><ThemedImage sources={{light: useBaseUrl('/widget-search-multiple-light-static-ascii.svg'), dark: useBaseUrl('/widget-search-multiple-dark-static-ascii.svg')}} alt="Search (multiple): ASCII + ANSI" /></td>
     <td><ThemedImage sources={{light: useBaseUrl('/widget-search-multiple-light-static-ascii-no-ansi.svg'), dark: useBaseUrl('/widget-search-multiple-dark-static-ascii-no-ansi.svg')}} alt="Search (multiple): ASCII + No ANSI" /></td>
+  </tr>
+</table>
+
+## Option descriptions
+
+The highlighted match's [description](/widgets/select#option-descriptions), in every display mode:
+
+<table>
+  <tr>
+    <td></td>
+    <td align="center"><strong>ANSI</strong></td>
+    <td align="center"><strong>No ANSI</strong></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>Unicode</strong></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-search-descriptions-light-static.svg'), dark: useBaseUrl('/widget-search-descriptions-dark-static.svg')}} alt="Search option descriptions: Unicode + ANSI" /></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-search-descriptions-light-static-no-ansi.svg'), dark: useBaseUrl('/widget-search-descriptions-dark-static-no-ansi.svg')}} alt="Search option descriptions: Unicode + No ANSI" /></td>
+  </tr>
+  <tr>
+    <td align="right"><strong>ASCII</strong></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-search-descriptions-light-static-ascii.svg'), dark: useBaseUrl('/widget-search-descriptions-dark-static-ascii.svg')}} alt="Search option descriptions: ASCII + ANSI" /></td>
+    <td><ThemedImage sources={{light: useBaseUrl('/widget-search-descriptions-light-static-ascii-no-ansi.svg'), dark: useBaseUrl('/widget-search-descriptions-dark-static-ascii-no-ansi.svg')}} alt="Search option descriptions: ASCII + No ANSI" /></td>
   </tr>
 </table>

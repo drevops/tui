@@ -220,7 +220,7 @@ class FilePickerWidget extends AbstractWidget implements FilterCapableInterface,
   /**
    * {@inheritdoc}
    */
-  public function view(ThemeInterface $theme): string {
+  protected function renderBody(ThemeInterface $theme): string {
     $lines = [$theme->breadcrumb($this->crumb())];
 
     if ($this->filter !== '') {
@@ -241,7 +241,7 @@ class FilePickerWidget extends AbstractWidget implements FilterCapableInterface,
       $rows[] = $this->renderRow($theme, $name, $viewport->offset + $slot === $this->cursor);
     }
 
-    return $this->withError($theme, implode("\n", array_merge($lines, $this->wrapScrolled($theme, $rows, $viewport))));
+    return implode("\n", array_merge($lines, $this->wrapScrolled($theme, $rows, $viewport)));
   }
 
   /**

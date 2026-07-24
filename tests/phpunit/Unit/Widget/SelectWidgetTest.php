@@ -147,6 +147,70 @@ final class SelectWidgetTest extends TestCase {
     $this->assertStringContainsString('──', $view);
   }
 
+  public function testShowsHighlightedOptionDescription(): void {
+    $widget = new SelectWidget([
+      new Option('apple', 'Apple', 'Crisp and sweet.'),
+      new Option('banana', 'Banana', 'Rich in potassium.'),
+    ], 'apple');
+
+    $view = Ansi::strip($widget->view(new DefaultTheme()));
+    $this->assertStringContainsString('Crisp and sweet.', $view);
+    $this->assertStringNotContainsString('Rich in potassium.', $view);
+
+    $widget->handle(Key::named(KeyName::Down));
+    $view = Ansi::strip($widget->view(new DefaultTheme()));
+    $this->assertStringContainsString('Rich in potassium.', $view);
+    $this->assertStringNotContainsString('Crisp and sweet.', $view);
+  }
+
+  public function testOmitsDescriptionWhenHighlightedOptionHasNone(): void {
+    $widget = new SelectWidget([
+      new Option('apple', 'Apple', 'Crisp and sweet.'),
+      new Option('banana', 'Banana'),
+    ], 'banana');
+
+    // The highlighted Banana has no description, and Apple's never leaks in.
+    $this->assertSame("○ Apple\n● Banana", Ansi::strip($widget->view(new DefaultTheme())));
+  }
+
+  public function testMultipleShowsCursorOptionDescription(): void {
+    $widget = new SelectWidget([
+      new Option('apple', 'Apple', 'Crisp and sweet.'),
+      new Option('banana', 'Banana', 'Rich in potassium.'),
+    ], [], TRUE);
+
+    $this->assertStringContainsString('Crisp and sweet.', Ansi::strip($widget->view(new DefaultTheme())));
+  }
+
+  public function testWrapsDescriptionToContentWidth(): void {
+    $widget = new SelectWidget([
+      new Option('apple', 'Apple', 'Crisp and sweet and best eaten fresh from the tree.'),
+    ], 'apple');
+
+    $theme = new DefaultTheme(24);
+    $lines = explode("\n", Ansi::strip($widget->view($theme)));
+
+    // The option row plus at least two wrapped description lines, each fitting.
+    $this->assertGreaterThan(2, count($lines));
+    foreach (array_slice($lines, 1) as $line) {
+      $this->assertLessThanOrEqual($theme->contentWidth(), mb_strlen($line));
+    }
+  }
+
+  public function testOmitsDescriptionWhenPanelTooNarrow(): void {
+    $widget = new SelectWidget([new Option('apple', 'Apple', 'Crisp and sweet.')], 'apple');
+
+    $this->assertStringNotContainsString('Crisp', Ansi::strip($widget->view(new DefaultTheme(6))));
+  }
+
+  public function testNonSelectableRowDescriptionNeverShows(): void {
+    // With no selectable option the cursor parks on the heading; its
+    // description must not render as an option description.
+    $widget = new SelectWidget([new Option('', 'Fruit', 'group note', OptionKind::Heading)]);
+
+    $this->assertStringNotContainsString('group note', Ansi::strip($widget->view(new DefaultTheme())));
+  }
+
   public function testNoSelectableRowYieldsNoValue(): void {
     $widget = new SelectWidget([new Option('', 'Group', '', OptionKind::Heading)]);
 
