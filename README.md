@@ -1,5 +1,8 @@
 <p align="center">
-  <img height="200" src="logo.svg" alt="TUI logo">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="logo-light.svg">
+    <img width="300" src="logo-dark.svg" alt="TUI logo">
+  </picture>
 </p>
 
 <h1 align="center">Terminal user interfaces for PHP</h1>
