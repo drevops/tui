@@ -19,7 +19,9 @@ A non-interactive informational card. It renders a **title and body inline** in 
 $p->note('intro', 'Fresh produce order')
   ->description('A read-only card - the cursor skips it.');
 
-// ->border() frames the card; the body reflects earlier answers.
+$p->text('item', 'Produce name')->default('Pear');
+
+// ->border() frames the card; the body reflects the earlier answer.
 $p->note('summary', 'Ready to pack')
   ->description('Packing {{item}} into the basket.')
   ->border();
